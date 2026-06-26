@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /data-entry
+Disallow: /ecz-entry
+
+Sitemap: /sitemap.xml

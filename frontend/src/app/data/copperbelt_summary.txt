@@ -1,0 +1,50 @@
+Copperbelt Province Parsing Summary
+========================================
+Districts:      10
+Constituencies: 27
+Wards:          253
+Polling Stn:    1934
+
+Districts breakdown:
+  CHILILABOMBWE: 2 constituencies, 24 wards, 103 stations
+    CHILILABOMBWE: 11 wards, 57 stations
+    KONKOLA: 13 wards, 46 stations
+  CHINGOLA: 3 constituencies, 29 wards, 233 stations
+    CHINGOLA CENTRAL: 10 wards, 81 stations
+    NCHANGA: 11 wards, 88 stations
+    CHINGOLA WEST: 8 wards, 64 stations
+  KALULUSHI: 2 constituencies, 24 wards, 130 stations
+    KALULUSHI: 14 wards, 68 stations
+    CHAMBISHI: 10 wards, 62 stations
+  KITWE: 4 constituencies, 32 wards, 441 stations
+    CHIMWEMWE: 7 wards, 94 stations
+    KAMFINSA: 4 wards, 77 stations
+    NKANA: 15 wards, 194 stations
+    WUSAKILE: 6 wards, 76 stations
+  LUANSHYA: 2 constituencies, 30 wards, 164 stations
+    LUANSHYA: 16 wards, 104 stations
+    ROAN: 14 wards, 60 stations
+  LUFWANYAMA: 2 constituencies, 20 wards, 93 stations
+    LUFWANYAMA WEST: 10 wards, 43 stations
+    LUFWANYAMA EAST: 10 wards, 50 stations
+  MASAITI: 3 constituencies, 19 wards, 134 stations
+    KAFULAFUTA: 6 wards, 42 stations
+    MASAITI: 7 wards, 44 stations
+    KALALANGABO: 6 wards, 48 stations
+  MPONGWE: 2 constituencies, 15 wards, 100 stations
+    MPONGWE WEST: 8 wards, 56 stations
+    MPONGWE EAST: 7 wards, 44 stations
+  MUFULIRA: 2 constituencies, 30 wards, 165 stations
+    KANTANSHI: 20 wards, 94 stations
+    MUFULIRA: 10 wards, 71 stations
+  NDOLA: 5 constituencies, 30 wards, 371 stations
+    BWANA MKUBWA: 6 wards, 83 stations
+    CHIFUBU: 6 wards, 78 stations
+    KABUSHI: 10 wards, 96 stations
+    NDOLA CENTRAL: 5 wards, 74 stations
+    DAG HAMMERSKJOELD: 3 wards, 40 stations
+
+Warnings (3):
+  Line 16: Created placeholder constituency
+  Line 1417: Created placeholder constituency
+  Line 1851: Created placeholder constituency

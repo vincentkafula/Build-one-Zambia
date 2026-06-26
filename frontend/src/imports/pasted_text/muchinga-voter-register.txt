@@ -1,0 +1,135 @@
+MUCHINGA PROVINCE — VOTER REGISTER HIERARCHY
+Province 6  |  8 Districts  |  8 Constituencies  |  104 Wards
+======================================================================
+
+▶  DISTRICT: CHINSALI    56,562 voters    1 constituency    17 wards
+      ▷  CONSTITUENCY: CHINSALI    56,562 voters    17 wards
+              ·  WARD: ITAPA    2,484
+              ·  WARD: CHUNGA    2,212
+              ·  WARD: CHILUNDA    1,702
+              ·  WARD: CHILINDA    3,154
+              ·  WARD: MIKUNKU    1,863
+              ·  WARD: MILEMBA    2,537
+              ·  WARD: KAUNGA    2,785
+              ·  WARD: MALALO    2,354
+              ·  WARD: CHIPANGA    3,368
+              ·  WARD: LUBU    3,086
+              ·  WARD: MUNWAKUBILI    4,409
+              ·  WARD: ITUNTWE    2,152
+              ·  WARD: NKAKULA    3,897
+              ·  WARD: LUBWA    4,477
+              ·  WARD: ICHINGA    9,822
+              ·  WARD: CHINSALI    3,170
+              ·  WARD: CHAMBESHI    3,090
+
+▶  DISTRICT: ISOKA    39,024 voters    1 constituency    14 wards
+      ▷  CONSTITUENCY: ISOKA    39,024 voters    14 wards
+              ·  WARD: MILONGO    895
+              ·  WARD: ITUKUTA    1,750
+              ·  WARD: CHINYONGA    2,630
+              ·  WARD: KASOKA    7,381
+              ·  WARD: KAWENGA    3,773
+              ·  WARD: KANTENSHYA    2,316
+              ·  WARD: KAPILILONGA    3,224
+              ·  WARD: KALUNGU    2,367
+              ·  WARD: SANSAMWENJE    2,979
+              ·  WARD: MPUNGU    3,592
+              ·  WARD: KANYALA    2,881
+              ·  WARD: KABANDAMA    487
+              ·  WARD: LUANGWA    2,344
+              ·  WARD: NKOMBWA    2,405
+
+▶  DISTRICT: MAFINGA    39,376 voters    1 constituency    13 wards
+      ▷  CONSTITUENCY: MAFINGA    39,376 voters    13 wards
+              ·  WARD: MAFINGA    2,374
+              ·  WARD: MUSIPIZI    2,014
+              ·  WARD: SENJE    1,881
+              ·  WARD: NTONGA    3,427
+              ·  WARD: THENDERE    3,689
+              ·  WARD: MULULU    4,532
+              ·  WARD: BEMBA    3,768
+              ·  WARD: KAKOMA    2,652
+              ·  WARD: MAHOBE    2,248
+              ·  WARD: KALANGA    6,451
+              ·  WARD: VUMBO    2,351
+              ·  WARD: LUHOKA    1,546
+              ·  WARD: MUKUTU    2,443
+
+▶  DISTRICT: MPIKA    62,134 voters    1 constituency    12 wards
+      ▷  CONSTITUENCY: MPIKA    62,134 voters    12 wards
+              ·  WARD: CHIPEMBELE    3,634
+              ·  WARD: MUTEKWE    1,410
+              ·  WARD: KAPAMBA    2,018
+              ·  WARD: CHIFUNGWE    3,424
+              ·  WARD: MUCHINGA    1,809
+              ·  WARD: NACHIKUFU    8,001
+              ·  WARD: CHISHIBESONDE    4,739
+              ·  WARD: LUBAMBALA    8,781
+              ·  WARD: MUSAKANYA    18,402
+              ·  WARD: MUKUNGWA    3,510
+              ·  WARD: LWITIKILA    3,671
+              ·  WARD: MUTAMBA    2,735
+
+▶  DISTRICT: NAKONDE    64,785 voters    1 constituency    15 wards
+      ▷  CONSTITUENCY: NAKONDE    64,785 voters    15 wards
+              ·  WARD: MWANGA    1,534
+              ·  WARD: MULALO    3,388
+              ·  WARD: LUCHINDE    2,483
+              ·  WARD: NG'UMBA    3,183
+              ·  WARD: POPOMOZI    2,774
+              ·  WARD: MUSYANI    3,903
+              ·  WARD: IKUMBI    12,874
+              ·  WARD: NAKONDE    9,670
+              ·  WARD: ISUNDA    2,961
+              ·  WARD: OLD FIFE    9,886
+              ·  WARD: MUSELE    2,796
+              ·  WARD: MPANDE    2,332
+              ·  WARD: MUKULIKA    1,558
+              ·  WARD: CHIWANZA    2,376
+              ·  WARD: ILONDA    3,067
+
+▶  DISTRICT: SHIWAN'GANDU    35,477 voters    1 constituency    17 wards
+      ▷  CONSTITUENCY: SHIWAN'GANDU    35,477 voters    17 wards
+              ·  WARD: NKULUNGWE    2,146
+              ·  WARD: NYIMBWE    2,337
+              ·  WARD: CHIMPUNDU    2,914
+              ·  WARD: KALEBE    1,251
+              ·  WARD: MWILAKABUSWE    2,311
+              ·  WARD: MUCHINGA    3,887
+              ·  WARD: MWAMBWA    2,138
+              ·  WARD: CHAMUSENGA    2,258
+              ·  WARD: CHANDAULA    2,682
+              ·  WARD: MANSHYA    3,298
+              ·  WARD: MUKUMBI    1,960
+              ·  WARD: KULAMWELE    1,530
+              ·  WARD: LUKALASHI    972
+              ·  WARD: MAYEMBE    849
+              ·  WARD: CHIBINDA    660
+              ·  WARD: ICHINGO    1,390
+              ·  WARD: MWICHE    2,894
+
+▶  DISTRICT: KANCHIBIYA    34,856 voters    1 constituency    10 wards
+      ▷  CONSTITUENCY: KANCHIBIYA    34,856 voters    10 wards
+              ·  WARD: CHAMBESHI    4,760
+              ·  WARD: MANSHA    2,146
+              ·  WARD: MUMBUBU    3,246
+              ·  WARD: LUBALESHI    6,060
+              ·  WARD: CHIBWA    4,117
+              ·  WARD: CHEWE SHIMFWAMBA    958
+              ·  WARD: CHINAMA    3,785
+              ·  WARD: MUNIKASHI    4,015
+              ·  WARD: LULINGILA    3,310
+              ·  WARD: MBATI    2,459
+
+▶  DISTRICT: LAVUSHIMANDA    20,881 voters    1 constituency    6 wards
+      ▷  CONSTITUENCY: MFUWE    20,881 voters    6 wards
+              ·  WARD: LULIMALA    2,876
+              ·  WARD: LUKULU    6,675
+              ·  WARD: LUPEMBASHI    1,611
+              ·  WARD: MUTINONDO    2,175
+              ·  WARD: MUPAMADZI    2,597
+              ·  WARD: CHIKANDA    4,947
+
+======================================================================
+MUCHINGA PROVINCE TOTAL: 353,095 voters
+8 Districts  |  8 Constituencies  |  104 Wards

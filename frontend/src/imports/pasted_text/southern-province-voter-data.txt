@@ -1,0 +1,301 @@
+PROVINCE: SOUTHERN
+
+DISTRICT 1: ITEZHI-TEZHI | Total Voters: 39,647
+  CONSTITUENCY 5: ITEZH-ITEZHI | Total Voters: 39,647
+    WARD: ITEZHI-TEZHI | Voters: 2,797
+    WARD: ITUMBI | Voters: 3,344
+    WARD: KAANZWA | Voters: 4,305
+    WARD: MASEMU | Voters: 7,965
+    WARD: BABIZHI | Voters: 1,792
+    WARD: LUBANDA | Voters: 1,888
+    WARD: BANAMWAZE | Voters: 1,991
+    WARD: MAKUNKU | Voters: 1,965
+    WARD: NYAMBO | Voters: 1,308
+    WARD: KABULUNGWE | Voters: 826
+    WARD: BASANGA | Voters: 2,333
+    WARD: LUUBWE | Voters: 2,250
+    WARD: MBILA | Voters: 2,934
+    WARD: SHAMBALA | Voters: 2,767
+    WARD: LUCHENA | Voters: 1,182
+
+DISTRICT 2: CHIRUNDU | Total Voters: 30,011
+  CONSTITUENCY 72: CHIRUNDU | Total Voters: 30,011
+    WARD: MUSAYA | Voters: 1,604
+    WARD: KAPULULIRA | Voters: 1,942
+    WARD: CHIRUNDU | Voters: 7,660
+    WARD: CHIRUNDU WEST | Voters: 3,987
+    WARD: MUSHUNGU | Voters: 2,570
+    WARD: NJAME | Voters: 1,442
+    WARD: NG'OMBE ILEDE | Voters: 2,438
+    WARD: NKANDABWE | Voters: 1,438
+    WARD: LUSITU | Voters: 1,900
+    WARD: KANYANGA | Voters: 1,467
+    WARD: SIKOONGO | Voters: 1,434
+    WARD: IBBWEMUNYAMA | Voters: 2,129
+
+DISTRICT 3: CHIKANKATA | Total Voters: 36,813
+  CONSTITUENCY 120: CHIKANKATA | Total Voters: 36,813
+    WARD: KASENGO | Voters: 3,104
+    WARD: NANSENGA | Voters: 2,192
+    WARD: TURNPIKE | Voters: 2,625
+    WARD: NAMALUNDU | Voters: 2,125
+    WARD: MUSAYA | Voters: 1,320
+    WARD: CHIKANI | Voters: 1,782
+    WARD: NZINGU | Voters: 2,319
+    WARD: CHITETE | Voters: 3,770
+    WARD: MALALA | Voters: 2,340
+    WARD: CHIKOMBOLA | Voters: 2,801
+    WARD: MUNYOMENZYI | Voters: 2,085
+    WARD: MABWETUBA | Voters: 5,108
+    WARD: UPPER KALEYA | Voters: 3,063
+    WARD: CHAKANZA | Voters: 2,179
+
+DISTRICT 4: CHOMA | Total Voters: 109,480
+  CONSTITUENCY 121: CHOMA CENTRAL | Total Voters: 76,438
+    WARD: NAMUSWA | Voters: 2,304
+    WARD: MASUKU | Voters: 3,048
+    WARD: SIASIKABOLE | Voters: 3,693
+    WARD: SINGANI | Voters: 2,180
+    WARD: NAKEEMPA | Voters: 2,315
+    WARD: MUTANDALIKE | Voters: 1,749
+    WARD: MUBULA | Voters: 6,595
+    WARD: SIKALUNDU | Voters: 7,740
+    WARD: STATELAND | Voters: 2,690
+    WARD: KULUNDANA | Voters: 12,755
+    WARD: SIMACHECHE | Voters: 11,957
+    WARD: SIAMAMBO | Voters: 2,731
+    WARD: SIKALONGO | Voters: 4,680
+    WARD: BATOKA | Voters: 6,484
+    WARD: MOOMBA | Voters: 1,595
+    WARD: SIMAMVWA | Voters: 3,922
+  CONSTITUENCY 122: MBABALA | Total Voters: 33,042
+    WARD: NG'ONGA | Voters: 2,101
+    WARD: KABIMBA | Voters: 2,715
+    WARD: MUTANGA | Voters: 1,601
+    WARD: MACHA | Voters: 4,297
+    WARD: KABANZE-MAYOBO | Voters: 2,409
+    WARD: SIMAUBI | Voters: 3,128
+    WARD: CHILALANTAMBO | Voters: 4,298
+    WARD: MAPANZA | Voters: 2,737
+    WARD: KALUNDU | Voters: 1,718
+    WARD: NCHEMBE | Voters: 2,449
+    WARD: MANG'ANJO | Voters: 1,887
+    WARD: MBABALA | Voters: 3,702
+
+DISTRICT 5: GWEMBE | Total Voters: 27,591
+  CONSTITUENCY 123: GWEMBE | Total Voters: 27,591
+    WARD: JONGOLA | Voters: 594
+    WARD: FUMBO | Voters: 2,750
+    WARD: MAKUYU | Voters: 930
+    WARD: LUKONDE | Voters: 3,567
+    WARD: BBONDO | Voters: 2,846
+    WARD: CHAAMWE | Voters: 1,518
+    WARD: LUUMBO | Voters: 2,536
+    WARD: KKOLE | Voters: 1,921
+    WARD: SIAMPANDE | Voters: 1,493
+    WARD: KKOTA KKOTA | Voters: 1,061
+    WARD: CHIBUWE | Voters: 2,193
+    WARD: SYAMBABALA | Voters: 1,230
+    WARD: SINAFALA | Voters: 1,616
+    WARD: CHISANGA | Voters: 1,292
+    WARD: JUMBO SOMPANI | Voters: 1,114
+
+DISTRICT 6: KALOMO | Total Voters: 85,402
+  CONSTITUENCY 124: DUNDUMWEZI | Total Voters: 33,462
+    WARD: KASUKWE | Voters: 3,574
+    WARD: NALUJA | Voters: 5,861
+    WARD: BBILILI | Voters: 3,965
+    WARD: KATANDA | Voters: 2,987
+    WARD: OMBA | Voters: 4,516
+    WARD: MIKATA | Voters: 3,967
+    WARD: CHIKANTA | Voters: 5,250
+    WARD: CHAMUKA | Voters: 3,342
+  CONSTITUENCY 125: KALOMO CENTRAL | Total Voters: 51,940
+    WARD: CHIFUSA | Voters: 3,570
+    WARD: SIACHITEMA | Voters: 4,339
+    WARD: KALONDA | Voters: 5,356
+    WARD: CHOONGA | Voters: 3,163
+    WARD: MWAATA | Voters: 11,951
+    WARD: CHILESHA | Voters: 1,687
+    WARD: MAYOBA | Voters: 2,864
+    WARD: NAMWIANGA | Voters: 4,118
+    WARD: SIPATUNYANA | Voters: 3,402
+    WARD: CHAWILA | Voters: 3,888
+    WARD: SIMAYAKWE | Voters: 3,002
+    WARD: NACHIKUNGU | Voters: 4,600
+
+DISTRICT 7: KAZUNGULA | Total Voters: 55,024
+  CONSTITUENCY 126: KATOMBOLA | Total Voters: 55,024
+    WARD: MOOMBA | Voters: 1,849
+    WARD: CHOOMA | Voters: 2,745
+    WARD: NGUBA | Voters: 3,698
+    WARD: NYAWA | Voters: 5,738
+    WARD: BOMBWE | Voters: 1,110
+    WARD: SIKAUNZWE | Voters: 1,792
+    WARD: KAZUNGULA CENTRAL | Voters: 7,822
+    WARD: MANDIA | Voters: 1,995
+    WARD: SEKUTE | Voters: 1,932
+    WARD: NGWEZI | Voters: 2,730
+    WARD: KANCHELE | Voters: 3,742
+    WARD: SIMANGO | Voters: 3,661
+    WARD: KATAPAZI | Voters: 3,032
+    WARD: MUKUNI | Voters: 4,617
+
+DISTRICT 8: LIVINGSTONE | Total Voters: 79,798
+  CONSTITUENCY 127: LIVINGSTONE | Total Voters: 79,798
+    WARD: FREEDOM | Voters: 7,464
+    WARD: MUSI-OA-TUNYA | Voters: 3,279
+    WARD: AKAPELWA | Voters: 4,887
+    WARD: LIZUMA | Voters: 1,662
+    WARD: DAMBWA CENTRAL | Voters: 3,850
+    WARD: ZAMBEZI | Voters: 7,234
+    WARD: NAKATINDI | Voters: 5,507
+    WARD: SIMONGA | Voters: 1,960
+    WARD: DR LIVINGSTONE | Voters: 4,000
+    WARD: KASIYA | Voters: 1,908
+    WARD: SIMATOBOLO | Voters: 3,819
+    WARD: LIBUYU | Voters: 5,196
+    WARD: KABILA | Voters: 3,735
+    WARD: SHUNGU | Voters: 953
+    WARD: NANSANZU | Voters: 3,556
+    WARD: KARIBA | Voters: 2,221
+    WARD: MARAMBA | Voters: 4,791
+    WARD: MULUNGUSHI | Voters: 2,978
+    WARD: MWALIBONENA | Voters: 2,860
+    WARD: NAMATAMA | Voters: 7,938
+
+DISTRICT 9: MAZABUKA | Total Voters: 89,802
+  CONSTITUENCY 128: MAGOYE | Total Voters: 30,855
+    WARD: NKONKOLA | Voters: 2,721
+    WARD: CHIVUNA | Voters: 3,914
+    WARD: MBAYA | Voters: 2,105
+    WARD: MUSUMA | Voters: 2,698
+    WARD: MUNJILE | Voters: 1,830
+    WARD: NGWEZI | Voters: 3,650
+    WARD: NACHIPOOMA | Voters: 4,488
+    WARD: MWANACHINGWALA | Voters: 2,780
+    WARD: MUNENGA | Voters: 2,928
+    WARD: KALAMA | Voters: 2,388
+    WARD: ITEBE | Voters: 1,353
+  CONSTITUENCY 129: MAZABUKA CENTRAL | Total Voters: 58,947
+    WARD: SIYOOWI | Voters: 3,092
+    WARD: MAZABUKA CENTRAL | Voters: 18,983
+    WARD: BENNIE MWIINGA | Voters: 9,717
+    WARD: CHIZOBO | Voters: 964
+    WARD: KAONGA | Voters: 5,203
+    WARD: NAKAMBALA | Voters: 7,643
+    WARD: NEGA NEGA | Voters: 4,245
+    WARD: LUBOMBO | Voters: 5,840
+    WARD: MUGOTO | Voters: 3,260
+
+DISTRICT 10: MONZE | Total Voters: 101,502
+  CONSTITUENCY 130: BWEENGWA | Total Voters: 24,949
+    WARD: MALUNDU | Voters: 2,089
+    WARD: HAMUSONDE | Voters: 2,006
+    WARD: KAILA | Voters: 3,442
+    WARD: KEEMBA | Voters: 3,058
+    WARD: CHOONGO EAST | Voters: 4,793
+    WARD: CHOONGO WEST | Voters: 2,981
+    WARD: BWEENGWA | Voters: 4,209
+    WARD: HAMANGABA | Voters: 2,371
+  CONSTITUENCY 131: MONZE CENTRAL | Total Voters: 59,657
+    WARD: HAMAMVWA | Voters: 2,967
+    WARD: KATIMBA | Voters: 2,690
+    WARD: BBOMBO | Voters: 2,026
+    WARD: HATONTOLA | Voters: 3,904
+    WARD: HUFWA-HAMAPANDE | Voters: 3,002
+    WARD: MAYABA | Voters: 4,544
+    WARD: CHISEKESE | Voters: 5,577
+    WARD: UFWENUKA | Voters: 3,389
+    WARD: SINGONYA | Voters: 2,743
+    WARD: CHIPEMBELE | Voters: 4,184
+    WARD: MANUNGU | Voters: 10,154
+    WARD: MONZE URBAN | Voters: 14,477
+  CONSTITUENCY 132: MOOMBA | Total Voters: 16,896
+    WARD: MWANZA WEST | Voters: 1,334
+    WARD: MWANZA CENTRAL | Voters: 3,821
+    WARD: MWANZA EAST | Voters: 4,069
+    WARD: MOOMBA | Voters: 2,257
+
+DISTRICT 11: NAMWALA | Total Voters: 44,638
+  CONSTITUENCY 133: NAMWALA | Total Voters: 44,638
+    WARD: MOOBOLA | Voters: 3,997
+    WARD: NAMAKUBE | Voters: 4,712
+    WARD: ITAPA | Voters: 3,171
+    WARD: ICHILA | Voters: 1,631
+    WARD: NGABO | Voters: 1,540
+    WARD: NAMWALA CENTRAL | Voters: 6,667
+    WARD: BAAMBWE | Voters: 1,988
+    WARD: MAALA | Voters: 2,555
+    WARD: NAMUSONDE | Voters: 1,899
+    WARD: KABULAMWANDA | Voters: 2,299
+    WARD: KANTENGWA | Voters: 1,767
+    WARD: MANDONDO | Voters: 2,167
+    WARD: MBEZA | Voters: 2,228
+    WARD: NAKAMBOMA | Voters: 2,707
+    WARD: CHITONGO | Voters: 3,275
+    WARD: NDEMA | Voters: 2,035
+
+DISTRICT 12: PEMBA | Total Voters: 34,426
+  CONSTITUENCY 134: PEMBA | Total Voters: 34,426
+    WARD: KASIYA | Voters: 2,586
+    WARD: PEMBA | Voters: 2,921
+    WARD: HAMAUNDU | Voters: 3,035
+    WARD: DEMU | Voters: 3,764
+    WARD: KASIKILI | Voters: 3,011
+    WARD: MAAMBO | Voters: 2,416
+    WARD: KAUBA | Voters: 3,022
+    WARD: YOTAM MULEYA | Voters: 2,326
+    WARD: HABUNKULULU | Voters: 1,975
+    WARD: DOBO | Voters: 2,763
+    WARD: NACHIBANGA | Voters: 2,808
+    WARD: MUZOKA | Voters: 3,799
+
+DISTRICT 13: SIAVONGA | Total Voters: 26,268
+  CONSTITUENCY 135: SIAVONGA | Total Voters: 26,268
+    WARD: MANCHAMVWA INLAND | Voters: 1,118
+    WARD: SINADAMBWE | Voters: 2,189
+    WARD: LUSANGAZI | Voters: 1,611
+    WARD: MULIMYA | Voters: 1,436
+    WARD: MUTUBA | Voters: 1,506
+    WARD: NABUTEEZI | Voters: 1,363
+    WARD: NANYANGA | Voters: 1,382
+    WARD: SIMAMBA | Voters: 1,291
+    WARD: KARIBA | Voters: 10,864
+    WARD: NAMUZUNGA | Voters: 1,517
+    WARD: MUNYAMA | Voters: 910
+    WARD: MANCHAMVWA LAKE SHORE | Voters: 1,081
+
+DISTRICT 14: SINAZONGWE | Total Voters: 61,692
+  CONSTITUENCY 136: SINAZONGWE | Total Voters: 61,692
+    WARD: CHIYABI | Voters: 1,926
+    WARD: MALIMA | Voters: 4,658
+    WARD: SINENGE | Voters: 3,808
+    WARD: NANG'OMBE | Voters: 4,066
+    WARD: NKANDABBWE | Voters: 7,667
+    WARD: SINAZONGWE | Voters: 6,486
+    WARD: MWEEZYA | Voters: 3,620
+    WARD: MAAMBA | Voters: 9,134
+    WARD: MUCHEKWA | Voters: 3,804
+    WARD: MWEEMBA | Voters: 5,572
+    WARD: MUUKA | Voters: 1,846
+    WARD: TEKELO | Voters: 2,541
+    WARD: MWEENDA | Voters: 1,605
+    WARD: SIAMEJA | Voters: 1,684
+    WARD: NAMAZAMBWE | Voters: 2,138
+    WARD: MABINGA | Voters: 1,137
+
+DISTRICT 15: ZIMBA | Total Voters: 36,009
+  CONSTITUENCY 137: MAPATIZYA | Total Voters: 36,009
+    WARD: ZIMBA | Voters: 6,485
+    WARD: MANGONDA | Voters: 1,343
+    WARD: CHUUNDWE | Voters: 1,507
+    WARD: MAFUMBA | Voters: 2,409
+    WARD: LUYABA | Voters: 2,980
+    WARD: CHIDI | Voters: 4,020
+    WARD: MULAMFU | Voters: 2,572
+    WARD: MBWIKO | Voters: 2,068
+    WARD: SIMWATACHELA | Voters: 4,161
+    WARD: SIAMAFUMBA | Voters: 3,296
+    WARD: CHALIMONGELA | Voters: 1,963
+    WARD: KANYANGA | Voters: 3,205

@@ -1,0 +1,1838 @@
+EASTERN PROVINCE
+Hierarchical Ward → Polling Station List
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISTRICT: CHADIZA
+
+  ▸ CONSTITUENCY: CHADIZA
+      WARD: AMBIDZI
+          • Mwangala Community School-01
+          • Mkumbudzi School-01
+          • Mkumbudzi School-02
+          • Ambizi Primary School-01
+          • Kapirimpika School-01
+          • Kapirimpika School-02
+      WARD: BWANUNKHA
+          • Bwanunkha School-01
+          • Bwanunkha School-02
+          • Chisewa Primary School-01
+      WARD: CHADIZA
+          • Tigwilizane Primary School-01
+          • Chadiza Basic School-01
+          • Chadiza Basic School-02
+          • Chadiza Basic School-03
+          • Chadiza Basic School-04
+          • Chadiza Correctional Facility-01
+      WARD: CHAMANDALA
+          • Chafulu School-01
+          • Chamandala School-01
+          • Chamandala School-02
+      WARD: CHANJOWE
+          • Kawene RCZ Church-01
+          • Chayambi Primary School-01
+          • Chanjowe School-01
+          • Chanjowe School-02
+      WARD: CHILENGA
+          • Nsadzu Basic School-01
+          • Chilenga School-01
+          • Chilenga School-02
+          • Chilenga School-03
+      WARD: KABVUMO
+          • Khomani School-01
+          • Kabvumo School-01
+          • Lafuteni Village-01
+      WARD: KALUMA
+          • Msokosela School-01
+          • Kaluma Primary School-01
+          • Champhanda Primary School-01
+      WARD: KAMPINI
+          • Chamashe Primary School-01
+          • Mlolo Local Court-01
+          • Chimbala Village-01
+          • Kampini Primary School-01
+          • Kampini Primary School-02
+      WARD: KANDABWAKO
+          • Zingalume School-01
+          • Katantha Basic School-01
+          • Robbie Primary School-01
+      WARD: KAPACHI
+          • Tadyela Community School-01
+          • Kapachi School-01
+          • Kalongwezi Primary School-01
+      WARD: KHUMBA
+          • Kalemba School-01
+          • Mtaya Primary School-01
+      WARD: MANGWE
+          • Kamchacha Basic School-01
+          • Mangwe Basic School-01
+          • Zemba Basic School-01
+          • Chandolo 1 ECCD Centre-01
+      WARD: MANJE
+          • John Farms School-01
+          • Mwala School-01
+          • Manje School-01
+      WARD: MWANGAZI
+          • Mwangazi School-01
+          • Ndapsya Primary School-01
+      WARD: NAVILURI
+          • Msakanyama School-01
+          • Naviluri Basic School-01
+          • Naviluri Basic School-02
+          • Kaundu Primary School-01
+          • Sinalo School-01
+      WARD: NGALA
+          • Ngala Primary School-01
+          • Kampandeni New Apostolic Church-01
+      WARD: NSADZU
+          • Chiwongo Primary School-01
+          • ROBI Farms Catholic Church-01
+          • Madzaela School-01
+          • Luli Primary School-01
+      WARD: TAFERANSONI
+          • Kasiya Primary School-01
+          • Namwela School-01
+          • Tafelansoni Basic School-01
+          • Tafelansoni Basic School-02
+      WARD: TIKONDANE
+          • Chisomo Co-operatie Shed-01
+          • Tikondane School-01
+          • Tikondane School-02
+          • Kazionele Basic School-01
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISTRICT: CHAMA
+
+  ▸ CONSTITUENCY: CHAMA
+      WARD: BAZIMU
+          • Champhanda Community School-01
+          • Mundalanga School-01
+          • Chibungwe Primary School-01
+      WARD: CHIBUNGWE
+          • Nkhoka School-01
+          • Chitukula Primary School-01
+          • Lumbailo Community School-01
+      WARD: CHILENJE
+          • Zebe School-01
+          • Kasela School-01
+          • Kanyolonyolo Primary School-01
+          • Chifunda School-01
+          • Chifunda School-02
+      WARD: CHILUBALUBA
+          • Kalovya School-01
+          • Manda hill Pimary School-01
+      WARD: CHIPALA
+          • Luvila School-01
+          • Mwila School-01
+          • Kaundya Community School-01
+          • Pondo School-01
+      WARD: CHISUNGA
+          • Kamunga Community School-01
+          • Bilabila School-01
+          • Mulilo School-01
+          • Kakoma School-01
+          • Chikontha School-01
+      WARD: KALINKHU
+          • Malama School-01
+          • Nthonkho School-01
+          • Gombe Primary School-01
+          • Kambombo Basic School-01
+          • Kambombo Basic School-02
+      WARD: KAMPHEMBA
+          • Nkhanga School-01
+          • Nkhanga School-02
+          • Chama Day High School-01
+          • Chama Day High School-02
+          • Chama Day High School-03
+          • Chama Day High School-04
+          • Chama Day High School-05
+          • Kamphemba Primary School-01
+      WARD: KAOZI
+          • Chilubuntha Primary School-01
+          • Kapalakonje Primary School-01
+          • Kasangani School-01
+          • Kaozi Primary School-01
+      WARD: LUANGWA
+          • Kasempwe Primary School-01
+          • Ng'anjo School-01
+          • Kankhomba School-01
+          • Kambowe School-01
+      WARD: LUMEZI
+          • Chimphamba School-01
+          • Kapichilasenga School-01
+          • Zoole School-01
+          • Simulemba Primary School-01
+          • Lunga School-01
+      WARD: LUNZI
+          • Chilumba Primary School-01
+          • Chizizi Community School-01
+          • Mutembwa School-01
+          • Mangwele School-01
+          • Mangwele School-02
+          • Mangwele School-03
+      WARD: LUPAMAZI
+          • Kapampha Community School-01
+          • Buli School-01
+          • Zibambale Community School-01
+      WARD: MABINGA
+          • Ng`anjo Bazimu School-01
+          • Chiteba School-01
+          • Kabele School-01
+          • Mabinga School-01
+          • Mabinga School-02
+          • Chiteba Day High School-01
+      WARD: MANTHEPA
+          • Manthepa School-01
+          • Mwimba School-01
+      WARD: MAPAMBA
+          • Chingozi School-01
+          • Chitemwa Community School-01
+          • Kalasa School-01
+      WARD: MAZONDE
+          • Chilubanama School-01
+          • Mung'ang'a Community School-01
+      WARD: MBAZI
+          • Chafuko Primary School-01
+          • Chiri School-01
+          • Chiri School-02
+          • Nyika Community Schoololl-01
+          • Mwanda School-01
+      WARD: MPHALAUSENGA
+          • Katete School-01
+          • Katete School-02
+          • Chimilila Primary School-01
+          • Dungululu School-01
+          • Dungululu School-02
+          • Bambanda School-01
+          • Kamfutu School-01
+          • Kajimono Primary School-01
+      WARD: MUCHINGA
+          • Mphyanakunda School-01
+          • Mwakana Community School-01
+          • Mwinichipeta Basic School-01
+          • Lundu School-01
+          • Lundu School-02
+          • Kabale Primary School-01
+      WARD: MWALALA
+          • Kalilondo Community School-01
+          • Kapembe School-01
+          • Mwalala School-01
+          • Mwalala School-02
+          • Katangalika School-01
+      WARD: NDUNDA
+          • Sitwe School-01
+          • Pina Community School-01
+      WARD: NKHANKHA
+          • Maimbi Community School-01
+          • Kabanjila School-01
+          • Chinji Primary School-01
+          • Chibale School-01
+          • Chibale School-02
+      WARD: VILIMUKULU
+          • Kanga Community School-01
+          • Chigoma School-01
+          • Chunyu (Chipangono Church)-01
+          • Nangwa Community School-01
+          • Manga School-01
+          • Chasato Community School-01
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISTRICT: CHASEFU
+
+  ▸ CONSTITUENCY: CHASEFU
+      WARD: CHABOLI
+          • Kamsisi School-01
+          • Muzululwa Primary School-01
+          • Kaponga Hills Primary School (CCAP)-01
+          • Kaponga Hills Primary School (CCAP)-02
+          • Kaponga Hills Primary School (CCAP)-03
+          • Lusuntha School-01
+          • Lusuntha School-02
+          • Dambo School-01
+          • Eluhangeni School-01
+          • Eluhangeni School-02
+          • Mvakule Community School-01
+      WARD: CHIZINGIZI
+          • Chizingizi School-01
+          • Chizingizi School-02
+          • Champhero Community School-01
+          • Elija Community School-01
+          • Gumba School-01
+          • Mwangavula Community School-01
+          • Chinana Community School-01
+      WARD: KAJILIME
+          • Katete Community School-01
+          • Kambeteka Primary School-01
+          • Khulikuli School-01
+          • Zovulume Community School-01
+          • Khuyu Primary School-01
+          • Chasefu School-01
+          • Chasefu School-02
+      WARD: KAPILISANGA
+          • Champheta Community School-01
+          • Munthyengu School-01
+          • Mbenje School-01
+          • Mbenje School-02
+          • Zozo School-01
+          • Hoya School-01
+          • Hoya School-02
+          • Chankhama School-01
+          • Manyi School-01
+          • Manyi School-02
+          • Katondo Community School-01
+      WARD: LUWEREZI
+          • Kapenbele Community School-01
+          • Chamusolo Community School-01
+          • Kachizutu Community School-01
+          • Munyukwa School-01
+          • Munyukwa School-02
+          • Chahiro School-01
+          • Mwasa Community School-01
+          • Chidolo School-01
+          • Emusa High School-01
+          • Emusa High School-02
+          • Kanyanga Basic School-01
+          • Kanyanga Basic School-02
+          • Masindila School-01
+      WARD: MAGODI
+          • Kabumba School-01
+          • Chenjeuzi Community School-01
+          • Kamnchombi Community School-01
+          • Kamzoole School-01
+          • Kamzoole School-02
+          • Mphiri School-01
+          • Egichikeni School-01
+          • Egichikeni School-02
+          • Beu School-01
+          • Malandula School-01
+          • Munchenja Primary School-01
+          • Msuka School-01
+      WARD: MANDA HILL
+          • Khulamayembe School-01
+          • Kamwa Primary School-01
+          • Chamsebe Primary School-01
+          • Mwata School-01
+          • Thunkhu School-01
+          • Lupamazi School-01
+          • Kathale School-01
+      WARD: MEMBE
+          • Kapekesa Primary School-01
+          • Kanonono Primary School-01
+          • Chiginya School-01
+          • Phikamalaza School-01
+          • Phikamalaza School-02
+          • Kakoma School-01
+          • Kakoma School-02
+      WARD: NKHANGA
+          • Boyole School-01
+          • Vuvumwe Community School-01
+          • Chasamwa School-01
+          • Kamatete Community School-01
+          • Nkhanga School-01
+          • Nkhanga School-02
+          • Chikuyu Primary School-01
+      WARD: SUSA
+          • Lumbwa School-01
+          • Chambuzi School-01
+          • Chibangu School-01
+          • Chibangu School-02
+          • Kambeba Primary School-01
+          • Kambeba Primary School-02
+          • Kasongolo Community School-01
+          • Mthwalo School-01
+          • Mthwalo School-02
+          • Kaluwe School-01
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISTRICT: CHIPANGALI
+
+  ▸ CONSTITUENCY: CHIPANGALI
+      WARD: CHIPANGALI
+          • Nkhalikali School-01
+          • Chipangali School-01
+          • Chipangali School-02
+          • Chamanda School-01
+          • Chamanda School-02
+          • Mwita School-01
+          • Mwita School-02
+          • Dwankhozi Primary School-01
+          • Dwankhozi Primary School-02
+          • Nkhoto School-01
+          • Vizenge Primary School-01
+          • Vizenge Primary School-02
+          • Rukuzye School-01
+          • Kapasa Primary School-01
+      WARD: KASENGA
+          • Khokwe Shed-01
+          • Khokwe Shed-02
+          • Mphotu Village (Tent)-01
+          • Mphotu Village (Tent)-02
+          • Mafuta School-01
+          • Mafuta School-02
+          • Manolo Community School-01
+          • Chingoma Community School-01
+          • Chikoka School-01
+          • Chikoka School-02
+          • Ngwanda Primary School-01
+          • Kamazila Primary School-01
+          • Kamazila Primary School-02
+      WARD: LUNKHUSWE
+          • Mnukwa School-01
+          • Mnukwa School-02
+          • Lukhalo School-01
+          • Chizukwe School-01
+          • Chizukwe School-02
+          • Chiziye School-01
+      WARD: MADZIATUBA
+          • Kapiriminyangas School-01
+          • Madziatuwa School-01
+          • Madziatuwa School-02
+          • Kadiula Primary School-01
+      WARD: MSANDILE
+          • Molozi School-01
+          • Chamasongwe School-01
+          • Muchenga Primary School-01
+          • Mbulwe School-01
+          • Chibamba Village (Tent)-01
+          • Mshawa Local Court-01
+          • Chalumbe School-01
+          • Chalumbe School-02
+          • Changa African National Church-01
+          • Mgwazo School-01
+          • Mgwazo School-02
+          • Ngonzi Primary School-01
+          • Ngonzi Primary School-02
+          • Nguluwe School-01
+          • Kawambe School-01
+          • Mnoro School-01
+          • Mnoro School-02
+          • Zingale School-01
+          • Kapatamoyo School-01
+      WARD: NTHOPE
+          • Mnduwi Community School-01
+          • Mnduwi Community School-02
+          • Chideza Primary School-01
+          • Chipture Community School-01
+          • Kaonga Primary School-01
+          • Kalanda Community School-01
+          • Kalanda Community School-02
+          • Chanyumbu Primary School-01
+          • Kapata School-01
+          • Sese School-01
+          • Mwalauka Primary School-01
+      WARD: RUKUZYE
+          • Lukusuzi Primary School-01
+          • Vizenge Shed-01
+          • Nyauzi School-01
+          • Nyauzi School-02
+          • Nyauzi School-03
+          • Chanje Local Court-01
+          • Pafuluji Primary School-01
+          • Mndemba Primary School-01
+          • Tamanda School-01
+          • Tamanda School-02
+          • Tamanda School-03
+          • Tamanda School-04
+          • Tamanda School-05
+          • Tamanda School-06
+          • Tamanda School-07
+          • Tamanda School-08
+          • Kamkhumba Primary School-01
+          • Kasonjola School-01
+          • Kasonjola School-02
+          • Mkanda Mateyo Primary School-01
+          • Mgubudu MPC. Society-01
+          • Mgubudu MPC. Society-02
+          • Dzoole School-01
+      WARD: SISINJE
+          • Nyaviwombo School-01
+          • Nyaviwombo School-02
+          • Kapara School-01
+          • Kapara School-02
+          • Kalichelo Catholic Parish-01
+          • Nkhwinjiri Primary School-01
+          • Mtewe School-01
+          • Mtewe School-02
+          • Chisitu School-01
+          • Chisitu School-02
+          • Mchenja School-01
+          • Chakhota Primary School-01
+          • Sisinje School-01
+          • Eastern Girls Technical School-01
+          • Mbenjele School-01
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISTRICT: CHIPATA
+
+  ▸ CONSTITUENCY: CHIPATA
+      WARD: DILIKA
+          • Council Chamber-01
+          • Council Chamber-02
+          • Council Chamber-03
+          • Chipata Christian School-01
+          • Umodzi School-01
+          • Umodzi School-02
+          • Umodzi School-03
+          • Umodzi Primary School-01
+          • Umodzi Primary School-02
+          • Mchini Primary School-01
+          • Mchini Primary School-02
+          • Mchini Primary School-03
+          • Mchini Primary School-04
+          • Mchini Primary School-05
+          • Mchini Primary School-06
+          • Mchini Primary School-07
+          • Lutembwe School-01
+          • Lutembwe School-02
+          • Mchini Primary School-01
+          • Mchini Primary School-02
+          • Chipata Trades-01
+          • Chipata Trades-02
+          • Chipata Trades-03
+          • Chipata Trades-04
+          • Kamoto Farm-01
+          • Inthembeni Primary School-01
+          • St. Johns Catholic Church-01
+          • St. Johns Catholic Church-02
+          • Magwero Standard School-01
+          • Magwero Standard School-02
+          • Dambe School-01
+          • Chipata Correctional Facility-01
+          • Chipata Female Correctional Facility-01
+      WARD: KANJALA
+          • Madzimoyo Secondary School-01
+          • Mazala Farm-01
+          • Kagunda School-01
+          • Kagunda School-02
+          • CEEC-01
+          • Marco Primary School-01
+          • Hope Campus Primary School-01
+          • Hope Campus Primary School-02
+          • Hope Campus Primary School-03
+          • Hope Campus Primary School-04
+          • Luangwa Lodge-01
+          • Luangwa Lodge-02
+          • Luangwa Lodge-03
+          • Kanjala School-01
+          • Kanjala School-02
+          • Road Board Offices-01
+          • Road Board Offices-02
+          • Road Board Offices-03
+          • Road Board Offices-04
+          • Road Board Offices-05
+      WARD: KAPATA
+          • Pentecoastal Assemblies Church-01
+          • Pentecoastal Assemblies Church-02
+          • Eklesia Church-01
+          • Eklesia Church-02
+          • Mary Mother Of God Catholic Church-01
+          • Mary Mother Of God Catholic Church-02
+          • Nadalitsika Community School-01
+          • Nadalitsika Community School-02
+          • Nadalitsika Community School-03
+          • Nadalitsika Community School-04
+          • Nadalitsika Community School-05
+          • Lutheren Church-01
+          • Tennis Club-01
+          • Tennis Club-02
+          • Tennis Club-03
+          • Tennis Club-04
+          • Chipata Day Secondary School-01
+          • Chipata Day Secondary School-02
+          • Beit Stadium-01
+          • Beit Stadium-02
+          • Anoya Zulu Secondary School-01
+          • Anoya Zulu Secondary School-02
+          • Kapata Housing Offices-01
+          • Kapata Housing Offices-01
+          • Kapata Welfare Hall-01
+          • Kapata Welfare Hall-01
+          • Kapata Welfare Hall-02
+          • Mpezeni Park School-01
+          • Mpezeni Park School-02
+          • Dzithandizeni Nutrition Centre-01
+          • Dzithandizeni Nutrition Centre-02
+          • St. Annes Primary School-01
+      WARD: MASUPE
+          • Chipata Motel-01
+          • Chipata Motel-02
+          • Chilambe Catholic School-01
+          • Msekera School-01
+          • Msekera School-02
+          • Clark Cotton Ginnery-01
+          • Jimoli-01
+          • Taonga Primary School-01
+          • Airport Offices-01
+      WARD: MSANGA
+          • Masupe Fish Farm-01
+          • Liona Catholic Church-01
+          • Chisomo Primary School-01
+          • Gondar Secondary School-01
+          • Gondar Basic School-01
+          • Nyakutwa School-01
+          • Nyakutwa School-02
+          • Madaliso Community School-01
+          • Munga Primary School-01
+          • Munga Primary School-02
+          • Munga Primary School-03
+          • Katopola Farm Institute-01
+          • Katopola Farm Institute-02
+          • Katopola Farm Institute-03
+          • Walela School-01
+          • Walela School-02
+          • Walela School-03
+
+  ▸ CONSTITUENCY: LUANGENI
+      WARD: CHIKANDO
+          • Nyane Primary School-01
+          • Nyane Primary School-02
+          • Chilobwe Primary School-01
+          • Kamwala Primary School-01
+          • Mzilikazi Primary School-01
+          • Tanthwe Primary School-01
+          • Makungwa School-01
+          • Kazimomwe School-01
+          • Chikando School-01
+          • Chikando School-02
+          • Nyakatali School-01
+          • Mbazima Primary School-01
+          • Chankhozi School-01
+      WARD: KAZIMULE
+          • Number One Farms - RCZ Church-01
+          • Katawa Primary School-01
+          • Kazimule Community School-01
+          • Chiswa School-01
+          • Chiswa School-02
+          • Tiimbe Village (Tent)-01
+      WARD: KHOVA
+          • Chinyama Community School-01
+          • Kaphinde School-01
+          • Mshasho Village (Tent)-01
+          • Kalolesha Village (Tent)-01
+          • Maguya School-01
+          • Maguya School-02
+          • Kachomba Community School-01
+          • Mtande School-01
+          • Sayiri School-01
+          • Sayiri School-02
+          • Nyakalungu School-01
+          • Nyakalungu School-02
+          • Mwasauka School-01
+          • Mwasauka School-02
+          • Kalolo School-01
+          • Mafemula Community School-01
+      WARD: MAKANGILA
+          • Kabele Community School-01
+          • Mtowe School-01
+          • Nsingo School-01
+          • Makangila Community School-01
+          • Chawilila Community School-01
+          • Kanyanja School-01
+          • Fulata SDA Church-01
+          • Mtizwa School-01
+      WARD: MWAMI
+          • Chigumukile Primary School-01
+          • Katambo School-01
+          • Katambo School-02
+          • Chifunge Primary School-01
+          • Mulanga Community School-01
+          • Manda Primary School-01
+          • Lunyike School-01
+          • Kafoteka Community School-01
+      WARD: NSINGO
+          • Jenda School-01
+          • Katandala School-01
+          • Katandala School-02
+          • Nsanjika School-01
+          • Nsanjika School-02
+          • Mgabi Village (Tent)-01
+          • Mgabi Village (Tent)-02
+          • St.Martin Catholic Church-01
+          • Nthombimbi School-01
+          • Nyanfizi Primary School-01
+          • Makwe School-01
+          • Makwe School-02
+          • Chithaza Village (Tent)-01
+          • Feni Sub-Centre-01
+          • Feni Sub-Centre-02
+          • Mwami School-01
+          • Mwami School-02
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISTRICT: KASENENGWA
+
+  ▸ CONSTITUENCY: KASENENGWA
+      WARD: CHINGAZI
+          • Manjanja Village (Tent)-01
+          • Shamombo School-01
+          • Champhundu Community School-01
+          • Kamboma School-01
+          • Kamboma School-02
+          • Msamaria Wabwino Primary School-01
+          • Chingazi School-01
+          • Chandembela Catholic Church-01
+          • Mkanile School-01
+          • Mkanile School-02
+          • Mchacha Village-01
+      WARD: CHIPARAMBA
+          • Kawawa School-01
+          • Pilgrim Church-01
+          • Chawa School-01
+          • Chawa School-02
+          • Chiparamba Sub-Centre-01
+          • Chiparamba Sub-Centre-02
+          • Chiparamba Sub-Centre-03
+          • Kapita Primary School-01
+          • Musukwala New Apostolic Church-01
+          • Chanyumbu Catholic Church-01
+          • Chanyumbu Catholic Church-02
+          • Mangena Primary School-01
+          • Mtaya School-01
+          • Mtachi Community School-01
+          • Chinjala School-01
+          • Kamanga Farm-01
+      WARD: KWENJE
+          • Chilile Community School-01
+          • Chiwoko School-01
+          • Vuze School-01
+          • Vuze School-02
+          • Kwenje Primary School-01
+          • Thiwi Primary School-01
+          • Chonjowe SDA Church-01
+          • Chizuzu School-01
+          • Kafupa Primary School-01
+      WARD: MAKUNGWA
+          • Chadyela Primary School-01
+          • Mponda Village (Tent)-01
+          • Katintha School-01
+          • Katintha School-02
+          • Kapoko School-01
+          • Chankhanga School-01
+          • Madzimawe School-01
+          • Madzimawe School-02
+          • Kawiwe Primary School-01
+          • Kanzutu School-01
+          • Ndembela Primary School-01
+          • Njenje Women Co-operatives-01
+      WARD: MBOZA
+          • Mandondo Primary School-01
+          • Katondo School-01
+          • Langa School-01
+          • Kasuma School-01
+          • Gundani School-01
+          • Kasenengwa Tsetse Control Offices-01
+          • Vungulumwe Community School-01
+          • Chipembere School-01
+          • Chitheko Community School-01
+          • Chisempele Community School-01
+          • Mchedwa Catholic Church-01
+      WARD: MKOWE
+          • Masamba School-01
+          • Nthambo Community School-01
+          • Mkowe School-01
+          • Kambwatike Primary School-01
+          • Chikuwe Local Court-01
+          • Malochi Primary School-01
+      WARD: MPUNZA
+          • St. Lukes Roman Catholic Church-01
+          • Chikungu School-01
+          • Mpunza Community School-01
+          • Jim Village (Tent)-01
+          • Mankhangwe Community School-01
+          • Kesenjele Primary School-01
+          • Samuel School-01
+          • Chipembaulo Primary School-01
+      WARD: NGONGWE
+          • Chimulambe Primary School-01
+          • Chamubobo Community School-01
+          • Msekenji Zion Church-01
+          • Kadama Community School-01
+          • Chambidzi Primary School-01
+          • Chamaseche Community School-01
+          • Nkhuni Village (Tent)-01
+          • Ngongwe Local Court-01
+          • Ngongwe Local Court-02
+          • Chibamu School-01
+          • Chibamu School-02
+          • Mkotamu Primary School-01
+          • Kasenengwa School-01
+          • Mkondo RCZ Church-01
+          • Kamuna Primary School-01
+          • Luona School-01
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISTRICT: KATETE
+
+  ▸ CONSTITUENCY: MILANZI
+      WARD: CHINDWALE
+          • Chibondo Community School-01
+          • Chisaka cooperative Shed-01
+          • Kathumba School-01
+          • Kandiwo Reformed Church in Zambia-01
+      WARD: DOLE
+          • Simoni Roman Catholic Church-01
+          • Katawa School-01
+          • Chinkhanzo Roman Catholic Church-01
+          • Chikondi Co-operative Shed-01
+          • Dole School-01
+          • Dole School-02
+          • Chakohomphwa Co-operative Shed-01
+          • Chafela RCZ Church-01
+      WARD: KAFUMBWE
+          • Mnthemba Central African Church-01
+          • Msolo Roman Catholic Church-01
+          • Bombwe School-01
+          • Nkhungulu Roman Catholic Church-01
+          • Nkhungulu Roman Catholic Church-02
+          • Mnthipa School-01
+          • Lunga School-01
+          • Lunga School-02
+      WARD: KAMPHAMBE
+          • Kamphambe School-01
+          • Chilingondi Community School-01
+          • Kalimeta School-01
+          • Zakonka Primary School-01
+      WARD: KAPANGULULA
+          • Chamiwawa School-01
+          • Chikwa Central African Church-01
+          • Mawano Roman Catholic Church-01
+          • Kagoro School-01
+          • Kagoro School-02
+          • Matope Roman Catholic Church-01
+          • Chimwa School-01
+      WARD: KAPOCHE
+          • Chimwalala Primary School-01
+          • Chimwalala Primary School-02
+          • Mthilansembe Community School-01
+          • Kakula School-01
+          • Kakula School-02
+      WARD: KASAMBANDOLA
+          • Kambila School-01
+          • Kapala RCZ Church-01
+          • Chimbundire School-01
+          • Kholowa Reformed Church in Zambia-01
+      WARD: KATIULA
+          • Mwandafisi School-01
+          • Malaiti Central African Church-01
+          • Katiula School-01
+          • Katiula School-02
+          • Kaputu Community School-01
+          • Chadzuma Primary School-01
+      WARD: KAZAKALOBA
+          • Kapondeni Roman Catholic Church-01
+          • Umodzi School-01
+          • Chilungamo RCZ Church-01
+          • Mbalani Community School-01
+      WARD: KAZALA
+          • Bvunda Community School-01
+          • Milanzi Primary School-01
+          • Kapepe Basic School-01
+          • Mbinga School-01
+          • Mbinga School-02
+          • Kazala School-01
+      WARD: MILANZI
+          • Kalongwe Roman Catholic Church-01
+          • Kawaza School-01
+          • Mphamba Roman Catholic Church-01
+          • Chisindiko Roman Catholic Church-01
+      WARD: YOWOYANI
+          • Kafumbwe Secondary School-01
+          • Kafumbwe School-01
+          • Chioza Primary School-01
+          • Yeliko- Co-operative shed-01
+
+  ▸ CONSTITUENCY: MKAIKA
+      WARD: CHAVUKA
+          • Chavuka Community School-01
+          • Chavisikwa Community School-01
+          • Chikwanda School-01
+          • Chikwanda School-02
+          • Twigwilizane Primary School-01
+          • Chimasuko School-01
+          • Chimasuko School-02
+          • Nyembe School-01
+          • Chankhanga School-01
+      WARD: CHILONGAMABWE
+          • Zinaka School-01
+          • Chinkhombe School-01
+          • Kapelenawo Church of God-01
+          • Kamasa Primary School-01
+          • Mukantha RCZ Church-01
+      WARD: CHIMTENDE
+          • Mkumbaleza School-01
+          • Walila School-01
+          • Walila School-02
+          • Nthambo School-01
+          • Mnyaula Community School-01
+          • Chamboo Community School-01
+          • Zatonse Community School-01
+          • Chimtende School-01
+          • Chimtende School-02
+      WARD: KADULA
+          • Pachulu Community School-01
+          • Mkhazika Community School-01
+          • Kalumbi School-01
+          • Kafunkha School-01
+          • Kafunkha School-02
+          • Chivuse Community School-01
+          • Kanjeza School-01
+          • Keni Roman Catholic Church-01
+          • Keni Roman Catholic Church-02
+      WARD: KAMIZA
+          • Magobo School-01
+          • Gaveni School-01
+          • Gaveni School-02
+          • Chamalaza Primary School-01
+      WARD: LUKWETA
+          • Mtsanya Primary School-01
+          • Lupande School-01
+          • Kankhande School-01
+          • Lukweta School-01
+      WARD: MATUNGA
+          • Matunga School-01
+          • Walubwe School-01
+          • Mtetezi School-01
+          • Mwaziputa School-01
+      WARD: MKAIKA
+          • Chisale School-01
+          • St. Francis Hospital-01
+          • St. Francis Hospital-02
+          • Undi School-01
+          • Undi School-02
+          • Mkangazi School-01
+          • Kapako Primary School-01
+      WARD: MPHANGWE
+          • Chibolya Primary School-01
+          • Chibolya Primary School-02
+          • Omelo Mumba School-01
+          • Omelo Mumba School-02
+          • Omelo Mumba School-03
+          • Omelo Mumba School-04
+          • Omelo Mumba School-05
+          • Omelo Mumba School-06
+          • Omelo Mumba School-07
+          • Bethel Primary School-01
+          • Bethel Primary School-02
+          • Boma School-01
+          • Boma School-02
+          • Boma School-03
+          • Boma Offices-01
+          • Boma Offices-02
+          • Mphangwe School-01
+          • Katete Correctional Facility-01
+      WARD: VULAMKOKO
+          • Fisi Co-operative-01
+          • Zemba Roman Catholic Church-01
+          • Waseka Primary School-01
+          • Vulamkoko School-01
+          • Kanyelere Community School-01
+          • Kabiliwili United Church of Zambia-01
+          • Tosa School-01
+          • Kwenje Roman Catholic Church-01
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISTRICT: LUMEZI
+
+  ▸ CONSTITUENCY: LUMEZI
+      WARD: CHAMTOWA
+          • Kapongolo School-01
+          • Kamukhongono Primary School-01
+          • Sikatengwa Basic School-01
+          • Sikatengwa Basic School-02
+          • Lumezi Basic School-01
+          • Lumezi Basic School-02
+          • Lumezi Basic School-03
+          • Kamtolo Primary School-01
+          • Kamphanda Community School-01
+      WARD: CHIBANDE
+          • Mkasanga School-01
+          • Chibombomele New Apostolic Church-01
+          • Chasera School-01
+          • Chasera School-02
+          • Katondolo Community School-01
+      WARD: DIWA
+          • Ngambu Ngambu Community School-01
+          • Mbuluzi Primary School-01
+          • Champhoyo School-01
+          • Katunula School-01
+          • Chauluma Community School-01
+          • Mwasemphangwe School-01
+          • Mwasemphangwe School-02
+          • Mpingozi School-01
+          • Mpingozi School-02
+          • Diwa School-01
+          • Kasasa Primary School-01
+          • Nkhanyu School-01
+          • Nkhanyu School-02
+          • Chafisi School-01
+          • Chafisi School-02
+          • Chakoloma Primary School-01
+          • Kabelu Community School-01
+          • Kalindi Community School-01
+      WARD: KACHAMA
+          • Luasila School-01
+          • Ndundundu School-01
+          • Masutwe Primary School-01
+          • Kazonde School-01
+          • Katube School-01
+          • Kangobe Primary School-01
+          • Katube Correctional Farm-01
+      WARD: KAIKUMBE
+          • Mitondo Community School-01
+          • Vyasoyo School-01
+          • Chitala School-01
+          • Kamsaro School-01
+          • Kaikumbe Primary School-01
+          • Katope Primary School-01
+          • Kavinaka Community School-01
+          • Kavinaka Community School-02
+      WARD: KAMIMBA
+          • Kasinde Community School-01
+          • Chamkoma Community School-01
+          • Lumamba School-01
+          • Lumamba School-02
+          • Mwimba School-01
+          • Chikomeni Basic School-01
+          • Kamkwezi School-01
+          • Changulube School-01
+          • Lupampha Primary School-01
+          • Ndaiwala School-01
+      WARD: KAPANGALA
+          • Mbuzi School-01
+          • Mtimbasonjo School-01
+          • Njoka Community School-01
+          • Njoka Community School-02
+      WARD: KAZEMBE
+          • Kapangala School-01
+          • Chibembe Primary School-01
+          • Chibeza School-01
+          • Kazembe School-01
+          • Kazembe School-02
+      WARD: LUKUSUZI
+          • Yakobe School-01
+          • Lukusuzi-01
+          • Lukusuzi-02
+          • Muzongolo Community School-01
+          • Mwanya School-01
+          • Kakulo Community School-01
+      WARD: LUMIMBA
+          • Kataba School-01
+          • Nthumbe School-01
+          • Chocha Community School-01
+          • Chitungulu School-01
+          • Chilubezi Community School-01
+          • Lumimba High School-01
+      WARD: WACHITANGACHI
+          • Kapaipi Primary School-01
+          • Chanyalubwe School-01
+          • Chanyalubwe School-02
+          • Kachunga Primary School-01
+          • Kalungambewa School-01
+          • Luamphamba School-01
+          • Luamphamba School-02
+          • Mpheluke School-01
+          • Zumwanda School-01
+          • Chatemwa School-01
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISTRICT: LUNDAZI
+
+  ▸ CONSTITUENCY: LUNDAZI
+      WARD: CHILOLA
+          • Chilola School-01
+          • Chilola School-02
+          • Kambaza School-01
+          • Kamilenje School-01
+          • Bokosi School-01
+          • Bokosi School-02
+          • Kahuji Primary School-01
+          • Nyangwe School-01
+          • Nyangwe School-02
+          • Nyangwe School-03
+          • Chagona Community School-01
+      WARD: CHIMALIRO
+          • Kabindula Community School-01
+          • Kabindula Community School-02
+          • Swiswi School-01
+          • Mwase High School-01
+          • Mwase High School-02
+          • Mwase Local Court-01
+          • Chigando School-01
+          • Kadamsana School-01
+          • Nthakalavu School-01
+      WARD: LUNEVWA
+          • Bowe School-01
+          • Mankhaka School-01
+          • Mankhaka School-02
+          • Mankhaka School-03
+          • Mankhaka School-04
+          • Kaviskeske School-01
+          • Kaviskeske School-02
+          • Malawila School-01
+          • Donje Community School-01
+          • Kambale School-01
+          • Chikumbi School-01
+      WARD: MKOMBA
+          • Mkomba School-01
+          • Mkomba School-02
+          • Chalimbana Catholic Church-01
+          • Chanyondo School-01
+          • Molozi Community School-01
+          • Katopola School-01
+      WARD: MNYAMAZI
+          • Tigone School-01
+          • Tigone School-02
+          • Tigone School-03
+          • Lundazi Day Secondary School-01
+          • Lundazi Day Secondary School-02
+          • Lundazi Day Secondary School-03
+          • Community Development Centre-01
+          • Community Development Centre-02
+          • Community Development Centre-03
+          • Council Hall-01
+          • Council Hall-02
+          • Council Hall-03
+          • Council Hall-04
+          • Lundazi Boarding High School-01
+          • Chinthyulu Livestock Centre-01
+          • Chinthyulu Livestock Centre-02
+          • Kapili School-01
+          • Chijemu School-01
+          • Chipembere School-01
+          • Islamic Centre-01
+          • Islamic Centre-02
+          • Chatemwa CCAP Church-01
+          • Lundazi Correctional Facility-01
+      WARD: MPHAMBA
+          • Matembe Primary School-01
+          • Fyofyo School-01
+          • Kaithinde School-01
+          • Mphamba School-01
+          • Mphamba School-02
+          • Mphamba School-03
+          • Tematema Primary School-01
+          • Mcheleka School-01
+          • Mcheleka School-02
+          • Kazinda Primary School-01
+      WARD: MSUZI
+          • Msuzi Basic School-01
+          • Kakumba School-01
+          • Nkhazimwene School-01
+          • Champeta School-01
+          • Mapala School-01
+          • Mapala School-02
+          • Kasuku Community School-01
+      WARD: NDONDA
+          • Kamunyunga School-01
+          • Romase School-01
+          • Lobi Primary School-01
+          • Chiwe School-01
+          • Matipa Primary School-01
+          • Chideza School-01
+          • Chigona School-01
+          • Kapichila School-01
+          • Kapichila School-02
+      WARD: NTHITIMILA
+          • Ng'onga School-01
+          • Kachenche School-01
+          • Mutuwanjovu Community School-01
+          • Nthitimila School-01
+          • Nthitimila School-02
+          • Phalaza School-01
+          • Zaninge Primary School-01
+          • Mtelwe Primary School-01
+          • Umi School-01
+          • Umi School-02
+          • Umi School-03
+      WARD: VUU
+          • Kanolo Community School-01
+          • Lukwizizi School-01
+          • Nyalubanga School-01
+          • Vuu School-01
+          • Mphandupandu Community School-01
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISTRICT: LUSANGAZI
+
+  ▸ CONSTITUENCY: MSANZALA
+      WARD: CHIKOWA
+          • Sichilima Community School-01
+          • Teteke Community School-01
+          • Chinkhombe Community School-01
+          • Chikowa Primary School-01
+      WARD: CHINGOLO
+          • Ray Primary School-01
+          • Ray Primary School-02
+          • Chingolo Community School-01
+          • Masosi Community School-01
+          • Kautu Community School-01
+          • Kalama Baptist Church-01
+          • Chiwa Community School-01
+      WARD: CHISANGU
+          • Haugen Primary School-01
+          • Mwanika Primary School-01
+          • Mwanika Primary School-02
+          • Mangolo Community School-01
+          • Maila Primary School-01
+      WARD: LUSANGAZI
+          • Chiwale Primary School-01
+          • Fuwe Anglican Church-01
+          • Lumbuka Community School-01
+          • Sandwe Primary School-01
+          • New Kasawi St. Philip Anglican Church-01
+          • Mileka Community School-01
+      WARD: LUTWAZI
+          • Mwambula Shamatala Primary School-01
+          • Nyamphondolo Primary School-01
+          • Chaingo Community School-01
+          • Chipungu Agriculture Camp-01
+          • Mwanza Primary School-01
+          • Wasonkho Community School-01
+      WARD: MATEYO MZEKA
+          • Nsenya Primary School-01
+          • Nsenya Primary School-02
+          • Misolo Primary School-01
+          • Misolo Primary School-02
+          • Chitwelele Community School-01
+          • Mkonda Primary School-01
+          • Nsamba Community School-01
+      WARD: MAWANDA
+          • Nyaliwilo Primary School-01
+          • Mwelwa Anglican Church-01
+          • Kachewele Community School-01
+          • Makale Primary School-01
+          • Mawanda Primary School-01
+          • Mawanda Primary School-02
+          • Chizalila Primary School-01
+      WARD: MUDONSA
+          • Chokha RCZ Church-01
+          • Lusandwa Primary Schoool-01
+          • Sopa Primary School-01
+          • Chikuse RCZ Church-01
+          • Riverside Secondary School-01
+          • Riverside Secondary School-02
+          • Sonja Primary School-01
+      WARD: NYAKAWISE
+          • Chikokwe Lutheran Church-01
+          • Chiwizi Primary School-01
+          • Malenga Community School-01
+          • Simwenda Mothers Shelter-01
+          • Nyanphande Primary School-01
+          • Nyanphande Primary School-02
+          • Nyanphande Primary School-03
+          • Chikusu Community School-01
+          • Katasha Catholic Church-01
+          • Matonga Primary School-01
+          • Kanthangwila Clinic-01
+      WARD: SINGOZI
+          • Mzenje Primary School-01
+          • Mandevu Anglican Church-01
+          • Sasu Primary School-01
+          • Kasuma Community School-01
+          • Ndambwe Community School-01
+          • Monde Day Secondary School-01
+          • Kalumbi Community School-01
+      WARD: UKWIMI
+          • New Mzumwa Primary School-01
+          • Kasangazi Primary School-01
+          • Ukwimi 'A' Primary School-01
+          • Ukwimi 'A' Primary School-02
+          • Sandwe Local Court-01
+          • Songovwa Community School-01
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISTRICT: MAMBWE
+
+  ▸ CONSTITUENCY: MALAMBO
+      WARD: CHIKOWA
+          • Chikowa Primary School-01
+          • Chikowa Primary School-02
+          • Temani Community School-01
+          • Kambwili Primary School-01
+      WARD: CHIPAKO
+          • Chipako Primary School-01
+          • Chipako Primary School-02
+          • Lubimbi RCZ Church-01
+      WARD: CHIPAPA
+          • Kamoto Primary School-01
+          • Kamoto Primary School-02
+          • Kamphasa Primary School-01
+          • Kamphasa Primary School-02
+          • Kasinga Primary School-01
+      WARD: CHISENGU
+          • Kaungwe Primary School-01
+          • Kamwanjiri Primary School-01
+          • Chisengu Primary School-01
+      WARD: JUMBE
+          • Mphata Primary School-01
+          • Jumbe Primary School-01
+          • Jumbe Primary School-02
+          • Jumbe Primary School-03
+      WARD: KAKUMBI
+          • Kakumbi Primary School-01
+          • Mwendakwisano Primary School-01
+          • Uyoba Primary School-01
+          • Uyoba Primary School-02
+          • Uyoba Primary School-03
+          • Yosefe Primary School-01
+          • Yosefe Primary School-02
+          • Yosefe Primary School-03
+      WARD: KASAMANDA
+          • Wazaza Primary School-01
+          • Kasamanda Primary School-01
+          • Kasamanda Primary School-02
+          • Kamuwawa Primary School-01
+          • Musolo Correctional Farm-01
+      WARD: MALAMA
+          • Chilongozi Primary School-01
+          • Malanga Primary School-01
+      WARD: MDIMA
+          • Mdima Primary School-01
+          • Mdima Primary School-02
+          • Mphandika Primary School-01
+          • St Luke's Secondary School-01
+          • St Luke's Secondary School-02
+          • Holy Hill Primary School-01
+          • Kapirisongola Primary School-01
+          • Pendwe Primary School-01
+      WARD: MNKHANYA
+          • Chiutika Primary School-01
+          • Chiutika Primary School-02
+          • Chiutika Primary School-03
+          • Chitempha Primary School-01
+          • Matula Primary School-01
+          • Matula Primary School-02
+          • Matula Primary School-03
+          • Malimba Primary School-01
+          • Chiwawatala Primary School-01
+      WARD: MPHOMWA
+          • Chikokola Primary School-01
+          • Tafika Primary School-01
+          • Mphomwa Primary School-01
+          • Mphomwa Primary School-02
+      WARD: MSORO
+          • Chivyololo Primary School-01
+          • Msoro Primary School-01
+          • Chigombe Primary School-01
+          • Chombe Primary School-01
+      WARD: NCHEKA
+          • Ncheka Primary School-01
+          • Ncheka Primary School-02
+          • Katemo Primary School-01
+      WARD: NSEFU
+          • Chitunda Community School-01
+          • Kawaza Primary School-01
+          • Kawaza Primary School-02
+          • Nsefu Primary School-01
+          • Chulu Community School-01
+          • Kapita Primary School-01
+      WARD: NYAKATOKOLI
+          • Kaungo Primary School-01
+          • Chambobo Primary School-01
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISTRICT: NYIMBA
+
+  ▸ CONSTITUENCY: NYIMBA
+      WARD: CHAMILALA
+          • Nyalugwe Primary School-01
+          • Kasansamula Primary School-01
+          • Mvuwa Primary School-01
+          • Kalai Church of God-01
+          • Unyanya Primary School-01
+          • Mkoma Primary School-01
+      WARD: CHINAMBI
+          • Ambo Primary School-01
+          • Mulamba Community School-01
+          • Simalama Primary School-01
+          • Luangazi Primary School-01
+          • Chinambi Day Secondary School-01
+          • Chinambi Day Secondary School-02
+          • Ng'ambwa Primary School-01
+      WARD: CHINSIMBWE
+          • Muliro Primary School-01
+          • Nyakolwe Primary School-01
+          • Misebe Community School-01
+          • Lubanza Community School-01
+      WARD: CHIWEZA
+          • Hofmeyr Day Secondary School-01
+          • Hofmeyr Day Secondary School-02
+          • Mombwe Primary School-01
+          • Gosite Primary School-01
+          • Nyakaloko Primary School-01
+      WARD: KALIWE
+          • Mnyazi Primary School-01
+          • Mnyazi Primary School-02
+          • Fumba Primary School-01
+          • Machinkha Primary School-01
+          • Chiware Boarding Secondary School-01
+          • Kamono Primary School-01
+          • Milembo Primary School-01
+          • Milembo Primary School-02
+      WARD: KATIPA
+          • Kalongo Mwape Primary School-01
+          • Kalama Community School-01
+          • Chanda Primary School-01
+          • Chifukuzi Primary School-01
+          • Chifukuzi Primary School-02
+      WARD: LUANGWA
+          • Chikwasha Primary School-01
+          • Mantungulu Community School-01
+          • Mshalira Primary School-01
+          • Malopa Catholic Church-01
+          • Mbilisao Community School-01
+      WARD: LWEZI
+          • Ndake Day Secondary School-01
+          • Ndake Day Secondary School-02
+          • Betele Primary School-01
+          • Mayawa Primary School-01
+          • Zindikilani Catholic Church-01
+      WARD: MOMBE
+          • Mchimadzi Primary School-01
+          • Mombe Primary School-01
+          • Mombe Primary School-02
+          • Siwalya Primary School-01
+      WARD: MPHUNDWE
+          • Nsangano Primary School-01
+          • Chimbwambwa Community Hall-01
+          • Kanyena Primary School-01
+          • Kanyena Primary School-02
+          • Mphundwe Primary School-01
+      WARD: MSIMA
+          • Msima Primary School-01
+          • Msima Primary School-02
+          • Utotwe Primary School-01
+          • Njalazi Primary School-01
+      WARD: MTILIZI
+          • Kachenja Primary School-01
+          • Mtilizi Primary School-01
+          • Mtilizi Primary School-02
+          • Mchenga Primary School-01
+          • Mambo Day Secondary School-01
+          • Mambo Day Secondary School-02
+          • Mulira Primary School-01
+          • Mulira Primary School-02
+          • Luthren Church-01
+      WARD: NGOZI
+          • Nyatubanda Primary School-01
+          • Chipembe Community Hall-01
+          • Chipembe Community Hall-02
+          • Kalambakuwa Day Secondary School-01
+          • Chininkhu Primary School-01
+          • Chikontha Primary School-01
+          • Kabvuma Primary School-01
+      WARD: NYIMBA
+          • Chipilinyuma Primary School-01
+          • Kamphoni Primary School-01
+          • Mfumbizi Primary School-01
+          • Mfumbizi Primary School-02
+          • Kampala Primary School-01
+          • Kampala Primary School-02
+          • Nyimba Boarding Secondary School-01
+          • Nyimba Boarding Secondary School-02
+          • Nyimba Primary School-01
+          • Nyimba Primary School-02
+          • Nyimba Primary School-03
+          • Nyimba Primary School-04
+          • Nyimba Primary School-05
+          • Mwase Primary School-01
+          • Nyimba Correctional Facility-01
+      WARD: VIZIMUMBA
+          • Nchowa Primary School-01
+          • Lupala Primary School-01
+          • Lupala Primary School-02
+          • Kapakasa Primary School-01
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISTRICT: PETAUKE
+
+  ▸ CONSTITUENCY: KAUMBWE
+      WARD: KANYANGA
+          • Chimunzi Community School-01
+          • Kanyanga Primary School-01
+          • Nyakutwa Community School-01
+          • Kasusu Primary School-01
+          • Nyakwalala Roman Catholic Church-01
+          • Mwambezi Primary School-01
+      WARD: KAUMBWE
+          • Mbaza Community School-01
+          • Wanthala Primary School-01
+          • Mwanjawanthu Primary School-01
+          • Mwanjawanthu Primary School-02
+          • Kalasawu Baptist Church-01
+          • Lenda Community School-01
+          • Zumaile Primary School-01
+          • Zumaile Primary School-02
+          • Nyalingu Primary School-01
+          • Nyawalila Community School-01
+      WARD: LUSINDE
+          • Katayauchi Catholic Church-01
+          • Lusinde Primary School-01
+          • Lusinde Primary School-02
+          • Mtukuzi Primary School-01
+          • Mtukuzi Primary School-02
+          • Nzumbi Community School-01
+          • Kafuwele Community School-01
+          • Nyakuluma Primary School-01
+          • Nyakuluma Primary School-02
+          • Nyakuluma Primary School-03
+          • Nyanduwane Primary School-01
+      WARD: MANJAZI
+          • Nyimbamwana Community School-01
+          • Chikoko Community School-01
+          • Kabanga Community School-01
+          • Manjazi Community School-01
+          • Manjazi Community School-02
+          • Kamjoma Primary School-01
+          • Kamjoma Primary School-02
+          • Manyane Primary School-01
+          • Manyane Primary School-02
+          • Mukunga Roman Catholic Church-01
+      WARD: MANYANE
+          • Pilimbila Community School-01
+          • Sanjama Community School-01
+          • Mankhungwe Primary School-01
+          • Matonje Primary School-01
+          • Mando Community School-01
+          • Mando Community School-02
+          • Chizamda Primary School-01
+          • Chizamda Primary School-02
+          • Nyama Village (Tent)-01
+
+  ▸ CONSTITUENCY: PETAUKE
+      WARD: CHILIMANYAMA
+          • Cheuka Community School-01
+          • Chiputula Baptist Church-01
+          • Msanzala Primary School-01
+          • Lukasi Primary School-01
+          • Kalambalika Community School-01
+          • Chilimanyama Primary School-01
+          • Chilimanyama Primary School-02
+          • Chandema RCZ Church-01
+          • Mkhumbaleza Baptist Church-01
+          • Luamphande Primary School-01
+          • Kawere Primary School-01
+          • Kafyula Baptist Church-01
+          • Mngoza Primary School-01
+          • Mngoza Primary School-02
+          • Musanzala Correctional Farm-01
+      WARD: KOVYANE
+          • Kambvumbe Basic School-01
+          • Kambvumbe Basic School-02
+          • Kaombwe Primary School-01
+          • Kamwankhuku Community School-01
+          • Kalulu Catholic Church-01
+          • Chitimba Primary School-01
+          • Chitimba Primary School-02
+          • Kanjala Muba Community School-01
+          • Chisenjere Primary School-01
+          • Chisenjere Primary School-02
+          • Chileka Primary School-01
+          • Mtumpha Community School-01
+      WARD: MBALA
+          • Chilunda Community School-01
+          • Kamkwamba Mothers Shelter-01
+          • Chamanika Community School-01
+          • Kaulu Day Secondary School-01
+          • Kaulu Day Secondary School-02
+          • Madzi Atuwa Community School-01
+          • Esther Lungu Primary School-01
+          • Kazala Primary School-01
+          • Kazala Primary School-02
+          • Nseko Primary School-01
+          • Nseko Primary School-02
+          • Nseko Primary School-03
+          • Old Tractor Unit Camp-01
+          • Lusowe Primary School-01
+      WARD: MINGA
+          • Mwambulazumba Primary School-01
+          • Ngoli Baptist Church-01
+          • Mtumbata Primary School-01
+          • Mtumbata Primary School-02
+          • Kaluba Primary School-01
+          • Kaluba Primary School-02
+          • Mlanzi Community School-01
+          • Malowe Community School-01
+      WARD: MSUMBAZI
+          • Chisonso Primary School-01
+          • Mkapala Community School-01
+          • Nkhuntha Primary School-01
+          • Chifundo Community School-01
+          • Minga Stop Primary School-01
+          • Minga Stop Primary School-02
+          • Minga Day Secondary School-01
+          • Minga Day Secondary School-02
+          • Mng'omba Community School-01
+      WARD: NSIMBO
+          • Mpweka Baptist Fellowship Church-01
+          • Merwe Basic School-01
+          • Mtondo Primary School-01
+          • Kawawa Roman Catholic Church-01
+          • Chalimbabana Roman Catholic Church-01
+          • Kang'ambwa Primary School-01
+          • Mulawa Community School-01
+          • Nyamia Primary School-01
+      WARD: NYIKA
+          • Petauke Boarding High School-01
+          • Petauke Boarding High School-02
+          • Stambuli Corner Stone Baptist Church-01
+          • Stambuli Corner Stone Baptist Church-02
+          • Mizyu Basic School-01
+          • Mizyu Basic School-02
+          • Mizyu Basic School-03
+          • Mizyu Basic School-04
+          • Mizyu Basic School-05
+          • Anusa Primary School-01
+          • Social Welfare Office-01
+          • Social Welfare Office-02
+          • Petauke Primary School-01
+          • Petauke Primary School-02
+          • Petauke Primary School-03
+          • Petauke Primary School-04
+          • Petauke Primary School-05
+          • Petauke Primary School-06
+          • Petauke Primary School-07
+          • Petauke Primary School-08
+          • Tasala Primary School-01
+          • Tasala Primary School-02
+          • Hillside Grace Ministries Mission (Church)-01
+          • Kazulamane Community School-01
+          • Lutwazi Primary School-01
+          • Lutwazi Primary School-02
+          • Chipatila Cooperative Shed-01
+          • Nkhwewakwewa Community School-01
+          • Petauke Correctional Facility-01
+      WARD: ONGOLWE
+          • Fulu Community School-01
+          • Ongolwe Primary School-01
+          • Kainga RCZ Church-01
+          • MondolaPrimary School-01
+          • Tisangalale Community School-01
+          • Tisangalale Community School-02
+          • Kasonde Basic School-01
+          • Ching'ombi Primary School-01
+          • Mng'ong'o Primary School-01
+          • Chisewa Community School-01
+          • Mumbi Primary School-01
+          • Mumbi Primary School-02
+          • Chisoyo Community School-01
+          • Chumbe Primary School-01
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISTRICT: SINDA
+
+  ▸ CONSTITUENCY: KAPOCHE
+      WARD: CHAMAKUWI
+          • Mjancha RCZ Church-01
+          • Mwanjangulu Multi-Purpose Co-operative-01
+          • Champhala School-01
+          • Kamfuneni Roman Catholic Church-01
+      WARD: CHING’OMBE
+          • Ching'ombe Primary School-01
+          • Kawenda RCZ Church-01
+          • Chaukato Community School-01
+          • Mimbayakana Primary School-01
+          • Nyanje Local Court-01
+          • Nyanje Local Court-02
+          • Nyanje Secondary School-01
+          • Mng'ona Primary School-01
+      WARD: KAMWAZA
+          • Mtole School-01
+          • Mtole School-02
+          • Butawo Roman Catholic Church-01
+          • Chimvila Roman Catholic Church-01
+          • Kondwelani School-01
+          • Kondwelani School-02
+          • Mancheula School-01
+          • Kaeluze Roman Catholic Church-01
+      WARD: KAPOCHE
+          • Mpambeni Primary School-01
+          • Kafunde Primary School-01
+          • Chassa Basic School-01
+          • Tiritonse Primary School-01
+          • Tiritonse Primary School-02
+      WARD: KAPUNGWE
+          • Matula Community School-01
+          • Mlela Primary School-01
+          • Mlela Primary School-02
+          • Kalimba Community School-01
+          • Kapungwe Primary School-01
+          • Kapungwe Primary School-02
+          • Chisaika Community School-01
+          • Walokwa Community School-01
+          • Chikuzya RCZ Church-01
+          • Nyantuza Community School-01
+          • Katete Community School-01
+      WARD: LUANDAZI
+          • Lemi Roman Catholic Church-01
+          • Chilasa School-01
+          • Chilasa School-02
+          • Chanjoka School-01
+          • Chanjoka School-02
+      WARD: MATAMBAZI
+          • Chikalawa Primary School-01
+          • Chikalawa Primary School-02
+          • Chipungu Community School-01
+          • Luamba Community School-01
+          • Matambazi Primary School-01
+          • Matambazi Primary School-02
+          • Nkangawa Community School-01
+          • Old Cooperative Camp-01
+          • Kakama Community School-01
+          • Chimphundu Primary School-01
+          • Chimphundu Primary School-02
+          • Mbwindi Secondary School-01
+      WARD: MWANGAILA
+          • Nthongole Multi-Purpose Co-operative Shed-0
+          • Zion Paradise Church-01
+          • Kalole Primary School-01
+          • Kanchito RCZ Church-01
+          • Pandala Community School-01
+          • Chataika Primary School-01
+          • Kayoozi Community School-01
+      WARD: NCHEMBWE
+          • Makoma Primary School-01
+          • Kapandula Primary School-01
+          • Petulo Village (Tent)-01
+          • Tantha Primary School-01
+          • Chiuta Lutheren Church-01
+          • Mnchembwe Community School-01
+      WARD: NCHINGILIZYA
+          • Mtandaza Primary School-01
+          • Mtandaza Primary School-02
+          • Layeni Roman Catholic Church-01
+          • Msunda Farmers Agric. Co-operative-01
+          • Kapelepeta Reformed Church in Zambia-01
+          • Chinzule School-01
+      WARD: SIWVA
+          • Kaluwani Village (Tent)-01
+          • Chakaka Village (Tent)-01
+          • Katema Primary School-01
+          • Mwalimu Community School-01
+          • Nyamtuma Primary School-01
+          • Siwva Community School-01
+          • Moyo Village Under Five Post-01
+
+  ▸ CONSTITUENCY: SINDA
+      WARD: CHILONGOZI
+          • Nthongole Primary School-01
+          • Sense St. Margret Catholic Church-01
+          • Zondola RCZ Church-01
+          • Kaphika Co-operative-01
+          • Jasi Community School-01
+      WARD: CHITAWE
+          • Namichenja School-01
+          • Kamphamule School-01
+          • Mnjuzi Village UCI-01
+          • Vunda St. Dominic Catholic Church-01
+          • Sambani Community School-01
+          • Chitawe School-01
+          • Chitawe School-02
+      WARD: CHIWUYU
+          • Msemphe Roman Catholic Church-01
+          • Chiwuyu School-01
+          • Chiwuyu School-02
+          • Masulwe School-01
+          • Masulwe School-02
+          • Michembo Roman Catholic Church-01
+          • Makwesa Community School-01
+      WARD: KASANGAZI
+          • Seya School-01
+          • Kasamba School-01
+          • Adoni Mothers Shelter UCI-01
+          • Mkwinda Community School-01
+          • Nyamanzi School-01
+          • Tikondane UCI Khoza Village-01
+          • Chindeza School-01
+          • Chindeza School-02
+      WARD: MNG’OMBA
+          • Kamwankhuku School-01
+          • Chisinga Mothers Shelter-UCI-01
+          • Tilewe School-01
+          • Nyalubilo School-01
+          • Senjele Community School-01
+          • Mng'omba School-01
+          • Mng'omba School-02
+          • Kainja Community School-01
+          • Mphandule School-01
+      WARD: MNYAMANZI
+          • Chanjobvu School-01
+          • Chanjobvu School-02
+          • Mtalimanja Baptist Church-01
+          • Mthunya School-01
+          • Mwala Primary School-01
+          • Chamayela School-01
+          • Pulani Primary School-01
+          • Gumbi Roman Catholic Church-01
+      WARD: NYAMASONKHO
+          • Mwembezi Community School-01
+          • Kalayile St.Peter's Roman Catholic Church-01
+          • Chimunsi School-01
+          • Kaingo School-01
+          • Kaingo School-02
+          • Chimtengo School-01
+      WARD: SINDA
+          • Kamtambe Reformed Curch in Zambia-01
+          • Chafulu School-01
+          • Chafulu School-02
+          • Simumbi Agriculture Co-operative Hall-01
+          • Sinda School-01
+          • Sinda School-02
+          • Sinda School-03
+          • Sinda School-04
+          • Sinda School-05
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISTRICT: VUBWI
+
+  ▸ CONSTITUENCY: VUBWI
+      WARD: CHIMPHANJE
+          • Likawe Primary School-01
+          • Chankhandwe Primary School-01
+          • Chankhandwe Primary School-02
+      WARD: CHISIYA
+          • Mzigawa Primary School-01
+          • Mzigawa Primary School-02
+          • Mzigawa Primary School-03
+          • Nsole Primary School-01
+      WARD: MATEMBA
+          • Chaoleka Primary School-01
+          • Matemba Primary School-01
+          • Matemba Primary School-02
+      WARD: MBANDE
+          • Muwiza Catholic Church-01
+          • Mbande Primary School-01
+          • Mchima Primary School-01
+      WARD: MBOZI
+          • Maumba Primary School-01
+          • Songeya Primary School-01
+          • Mbozi Primary School-01
+          • Mbozi Primary School-02
+          • Chipanje Primary School-01
+          • Chipanje Primary School-02
+      WARD: MLAWE
+          • Chigwe Primary School-01
+          • Chigwe Primary School-02
+          • Chigwe Primary School-03
+          • Malaya Primary chool-01
+          • Mlawe Primary School-01
+          • Chithumba Primary School-01
+      WARD: SINDEMISALE
+          • Taferadziko Primary School-01
+          • Taferadziko Primary School-02
+          • Taferadziko Primary School-03
+      WARD: VUBWI
+          • Nakhoma Primary School-01
+          • Nakhoma Primary School-02
+          • Vubwi Primary School-01
+          • Vubwi Primary School-02
+          • Vubwi Primary School-03
+          • Msengelezi Primary School-01
+      WARD: ZOZWE
+          • Zozwe Primary School-01
+          • Zozwe Primary School-02
+          • Zozwe Primary School-03
+          • Kampisandodo Primary School-01
+          • Kampisandodo Primary School-02
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SUMMARY: 15 Districts | 19 Constituencies | 206 Wards | 1544 Polling Stations

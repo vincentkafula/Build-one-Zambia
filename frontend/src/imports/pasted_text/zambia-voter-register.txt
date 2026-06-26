@@ -1,0 +1,1528 @@
+ZAMBIA — ALL PROVINCES VOTER REGISTER HIERARCHY
+10 Provinces  |  68 Districts  |  165 Constituencies  |  1181 Wards
+===========================================================================
+
+◆  PROVINCE: CENTRAL PROVINCE    8 districts  |  19 constituencies  |  142 wards
+
+   ▶  DISTRICT: CHIBOMBO    2 constituencies  |  13 wards
+         ▷  CONSTITUENCY: KEEMBE EAST    8 wards
+                 ·  WARD: KEEMBE
+                 ·  WARD: KALOLA
+                 ·  WARD: CHALOSHI
+                 ·  WARD: CHIBOMBO
+                 ·  WARD: CHIKOBO
+                 ·  WARD: KAKOMA
+                 ·  WARD: MASHIKILI
+                 ·  WARD: MALAMBANYAMA
+         ▷  CONSTITUENCY: KEEMBE WEST    5 wards
+                 ·  WARD: LUNJOFWA
+                 ·  WARD: CHITANDA
+                 ·  WARD: MUUNDU
+                 ·  WARD: IPONGO
+                 ·  WARD: ITUMBWE
+
+   ▶  DISTRICT: CHISAMBA    2 constituencies  |  12 wards
+         ▷  CONSTITUENCY: CHISAMBA    6 wards
+                 ·  WARD: MWANTAYA
+                 ·  WARD: MWAPULA
+                 ·  WARD: CHAMUKA
+                 ·  WARD: KAMANO
+                 ·  WARD: CHISAMBA
+                 ·  WARD: MISWA
+         ▷  CONSTITUENCY: MWOMBOSHI    6 wards
+                 ·  WARD: LITETA
+                 ·  WARD: MONANG`OMBE
+                 ·  WARD: MUTENGA
+                 ·  WARD: CHIKONKOMENE
+                 ·  WARD: MUSWISHI
+                 ·  WARD: MULUNGUSHI
+
+   ▶  DISTRICT: KABWE    3 constituencies  |  29 wards
+         ▷  CONSTITUENCY: BWACHA NORTH    9 wards
+                 ·  WARD: BEN KAPUFI
+                 ·  WARD: MUWOWO WEST
+                 ·  WARD: MUWOWO EAST
+                 ·  WARD: NGUNGU
+                 ·  WARD: CHIMANIMANI
+                 ·  WARD: BWACHA
+                 ·  WARD: KAWAMA
+                 ·  WARD: NAKOLI
+                 ·  WARD: KAPUTULA
+         ▷  CONSTITUENCY: BWACHA SOUTH    11 wards
+                 ·  WARD: KANG'OMBA
+                 ·  WARD: CHINYANJA
+                 ·  WARD: MUNYAMA
+                 ·  WARD: MUNGA
+                 ·  WARD: CHILILALILA
+                 ·  WARD: MOOMBA
+                 ·  WARD: ZAMBEZI
+                 ·  WARD: MAKULULU
+                 ·  WARD: LUANGWA
+                 ·  WARD: JUSTINE KABWE
+                 ·  WARD: DAVID RAMUSHU
+         ▷  CONSTITUENCY: KABWE CENTRAL    9 wards
+                 ·  WARD: LUKANGA
+                 ·  WARD: KALONGA
+                 ·  WARD: MPIMA
+                 ·  WARD: LUANSASE
+                 ·  WARD: WAYA
+                 ·  WARD: KATONDO
+                 ·  WARD: CHIRWA
+                 ·  WARD: NJANJI
+                 ·  WARD: HIGHRIDGE
+
+   ▶  DISTRICT: KAPIRI MPOSHI    2 constituencies  |  18 wards
+         ▷  CONSTITUENCY: KAPIRI MPOSHI EAST    11 wards
+                 ·  WARD: KASHITU
+                 ·  WARD: KASANTA
+                 ·  WARD: MUSHIMBILI
+                 ·  WARD: KAPIRI MPOSHI
+                 ·  WARD: MUTETESHI
+                 ·  WARD: LUNCHU
+                 ·  WARD: LUNSEMFWA
+                 ·  WARD: CHANG'ONDO
+                 ·  WARD: KAKWELESA
+                 ·  WARD: MUBOFWE
+                 ·  WARD: KAMPUMBA
+         ▷  CONSTITUENCY: KAPIRI MPOSHI WEST    7 wards
+                 ·  WARD: NCHEMBWE
+                 ·  WARD: CHIBWELELO
+                 ·  WARD: KABWALE
+                 ·  WARD: IMANSA
+                 ·  WARD: LUKANGA
+                 ·  WARD: MPUNDE
+                 ·  WARD: MUNGA
+
+   ▶  DISTRICT: MKUSHI    2 constituencies  |  16 wards
+         ▷  CONSTITUENCY: MKUSHI NORTH    8 wards
+                 ·  WARD: CHITINA
+                 ·  WARD: NKUMBI
+                 ·  WARD: MUSOFU
+                 ·  WARD: MUNSAKAMBA
+                 ·  WARD: CHIBEFWE
+                 ·  WARD: UPPER LUNSENFWA
+                 ·  WARD: NKOLONGA
+                 ·  WARD: MUNSHIBEMBA
+         ▷  CONSTITUENCY: MKUSHI SOUTH    8 wards
+                 ·  WARD: CHALATA
+                 ·  WARD: KABENGEESHI
+                 ·  WARD: NSHINSO
+                 ·  WARD: KALWA
+                 ·  WARD: NKULUMASHIBA
+                 ·  WARD: CHIKANDA
+                 ·  WARD: MATUKU
+                 ·  WARD: TEMBWE
+
+   ▶  DISTRICT: MUMBWA    3 constituencies  |  21 wards
+         ▷  CONSTITUENCY: MUMBWA CENTRAL    6 wards
+                 ·  WARD: KALWANYEMBE
+                 ·  WARD: MPUSU
+                 ·  WARD: KAMILAMBO
+                 ·  WARD: MUMBA
+                 ·  WARD: MUPONA
+                 ·  WARD: MAKEBO
+         ▷  CONSTITUENCY: MUMBWA WEST    6 wards
+                 ·  WARD: NALUSANGA
+                 ·  WARD: LUTALE
+                 ·  WARD: CHIBOLYO
+                 ·  WARD: NAMBALA
+                 ·  WARD: SHIMBIZHI
+                 ·  WARD: NALUVWI
+         ▷  CONSTITUENCY: NANGOMA    9 wards
+                 ·  WARD: NAKASAKA
+                 ·  WARD: MATALA
+                 ·  WARD: NANGOMA
+                 ·  WARD: CHISALU
+                 ·  WARD: KEEZWA
+                 ·  WARD: CHOMA
+                 ·  WARD: NALUBANDA
+                 ·  WARD: SHICHANZU
+                 ·  WARD: MYOOYE
+
+   ▶  DISTRICT: SERENJE    3 constituencies  |  21 wards
+         ▷  CONSTITUENCY: LUKUSASHI    7 wards
+                 ·  WARD: CHISOMO
+                 ·  WARD: LUKUSASHI
+                 ·  WARD: SANCHA
+                 ·  WARD: CHIBALE
+                 ·  WARD: KABWE KUPELA
+                 ·  WARD: MASANINGA
+                 ·  WARD: MBASWA
+         ▷  CONSTITUENCY: NKUNDALILA    7 wards
+                 ·  WARD: MWESHE
+                 ·  WARD: KANONA
+                 ·  WARD: MAILO
+                 ·  WARD: LUSHIBASHI
+                 ·  WARD: SERENJE
+                 ·  WARD: KABANSA
+                 ·  WARD: KABAMBA
+         ▷  CONSTITUENCY: SERENJE    7 wards
+                 ·  WARD: MUCHINDA
+                 ·  WARD: MUSANGASHI
+                 ·  WARD: KASHISHI
+                 ·  WARD: LUPIYA
+                 ·  WARD: MILENJE
+                 ·  WARD: IBOLELO
+                 ·  WARD: CHISANGWA
+
+   ▶  DISTRICT: SHIBUYUNJI    2 constituencies  |  12 wards
+         ▷  CONSTITUENCY: MWEMBEZHI EAST    5 wards
+                 ·  WARD: MAKOMBWE
+                 ·  WARD: NAMPEYA
+                 ·  WARD: NAMPUNDWE
+                 ·  WARD: SALA
+                 ·  WARD: CHIKONKA
+         ▷  CONSTITUENCY: MWEMBEZHI WEST    7 wards
+                 ·  WARD: KAPYANGA WEST
+                 ·  WARD: KAPYANGA EAST
+                 ·  WARD: MUKULAIKWA
+                 ·  WARD: MUTOMBE
+                 ·  WARD: KALUNDU
+                 ·  WARD: CHABOTA
+                 ·  WARD: NAKAIBA
+
+───────────────────────────────────────────────────────────────────────────
+
+◆  PROVINCE: COPPERBELT PROVINCE    7 districts  |  19 constituencies  |  161 wards
+
+   ▶  DISTRICT: CHILILABOMBWE    2 constituencies  |  24 wards
+         ▷  CONSTITUENCY: CHILILABOMBWE    11 wards
+                 ·  WARD: ANOYA ZULU
+                 ·  WARD: KAWAMA
+                 ·  WARD: LUBANSA
+                 ·  WARD: CHITAMBI
+                 ·  WARD: KAKOSO
+                 ·  WARD: KAMENZA EAST
+                 ·  WARD: MUMBA
+                 ·  WARD: KAFUE
+                 ·  WARD: NAKATINDI
+                 ·  WARD: MUKUKA
+                 ·  WARD: YOTAM MULEYA
+         ▷  CONSTITUENCY: KONKOLA    13 wards
+                 ·  WARD: CHILIMINA
+                 ·  WARD: MIYANDA
+                 ·  WARD: SILWIZYA
+                 ·  WARD: JOSEPH MWILWA
+                 ·  WARD: KASUMBALESA
+                 ·  WARD: MVULA
+                 ·  WARD: CHITIMUKULU
+                 ·  WARD: ILUTE YETA
+                 ·  WARD: NGEBE
+                 ·  WARD: KAMIMA
+                 ·  WARD: HELEN KAUNDA
+                 ·  WARD: JAMES PHIRI
+                 ·  WARD: MATHEW NKOLOMA
+
+   ▶  DISTRICT: CHINGOLA    3 constituencies  |  29 wards
+         ▷  CONSTITUENCY: CHINGOLA CENTRAL    10 wards
+                 ·  WARD: CHIKOLA
+                 ·  WARD: CHINGOLA
+                 ·  WARD: KASOMPE
+                 ·  WARD: MUSENGA
+                 ·  WARD: MIMBULA
+                 ·  WARD: LULAMBA
+                 ·  WARD: KAMUCHANGA
+                 ·  WARD: CHABANYAMA
+                 ·  WARD: TWATASHA
+                 ·  WARD: GIBSON CHIMFWEMBE
+         ▷  CONSTITUENCY: CHINGOLA WEST    8 wards
+                 ·  WARD: MUTENDA
+                 ·  WARD: MUCHINSHI
+                 ·  WARD: IPAFU
+                 ·  WARD: KALILO
+                 ·  WARD: KABUNGO
+                 ·  WARD: CHIWEMPALA
+                 ·  WARD: MAITENEKE
+                 ·  WARD: CHITIMUKULU
+         ▷  CONSTITUENCY: NCHANGA    11 wards
+                 ·  WARD: KWACHA
+                 ·  WARD: NCHANGA
+                 ·  WARD: SEKELA
+                 ·  WARD: NSANSA
+                 ·  WARD: BUNTUNGWA
+                 ·  WARD: KABUNDI
+                 ·  WARD: KASALA
+                 ·  WARD: KABUTA
+                 ·  WARD: BUPALO
+                 ·  WARD: LUANO
+                 ·  WARD: KAPISHA
+
+   ▶  DISTRICT: KALULUSHI    2 constituencies  |  24 wards
+         ▷  CONSTITUENCY: CHAMBISHI    10 wards
+                 ·  WARD: MUSAKASHI
+                 ·  WARD: SITWE
+                 ·  WARD: CHAMBISHI
+                 ·  WARD: TWAITEKA
+                 ·  WARD: LUKOSHI
+                 ·  WARD: LULAMBA
+                 ·  WARD: MWAMBASHI
+                 ·  WARD: ICHIMPE
+                 ·  WARD: CHEMBE
+                 ·  WARD: CHATI
+         ▷  CONSTITUENCY: KALULUSHI    14 wards
+                 ·  WARD: KALANGA
+                 ·  WARD: LUBUTO
+                 ·  WARD: DONGWE
+                 ·  WARD: KALUNGWISHI
+                 ·  WARD: LUAPULA
+                 ·  WARD: KALENGWA
+                 ·  WARD: BUSEKO
+                 ·  WARD: KANKONSHI
+                 ·  WARD: CHIBULUMA
+                 ·  WARD: REMMY CHISUPA
+                 ·  WARD: NGWESHI
+                 ·  WARD: KAFUE
+                 ·  WARD: NSOKOLOKO
+                 ·  WARD: LUBANGA
+
+   ▶  DISTRICT: LUFWANYAMA    2 constituencies  |  20 wards
+         ▷  CONSTITUENCY: LUFWANYAMA EAST    10 wards
+                 ·  WARD: MITWE
+                 ·  WARD: KAFUBU
+                 ·  WARD: CHIBANGA
+                 ·  WARD: SOKONTWE
+                 ·  WARD: BULAYA
+                 ·  WARD: CHANTETE
+                 ·  WARD: MIBENGE
+                 ·  WARD: MUKUMBO
+                 ·  WARD: MWELUSHI
+                 ·  WARD: LWABUFUBO
+         ▷  CONSTITUENCY: LUFWANYAMA WEST    10 wards
+                 ·  WARD: KANSANTA
+                 ·  WARD: MILOPA
+                 ·  WARD: KANSOKA
+                 ·  WARD: CHINEMU
+                 ·  WARD: KATEMBULA
+                 ·  WARD: LUFWANYAMA
+                 ·  WARD: MPINDI
+                 ·  WARD: KABUNDYA
+                 ·  WARD: LUSWISHI
+                 ·  WARD: MUSHINGASHI
+
+   ▶  DISTRICT: MASAITI    3 constituencies  |  19 wards
+         ▷  CONSTITUENCY: KAFULAFUTA    6 wards
+                 ·  WARD: MAPALO
+                 ·  WARD: MWATISHI
+                 ·  WARD: MAJALIWA
+                 ·  WARD: CHONDWE
+                 ·  WARD: MUTABA
+                 ·  WARD: KATONTE
+         ▷  CONSTITUENCY: KALALANGABO    6 wards
+                 ·  WARD: ISHITWE
+                 ·  WARD: MIENGWE
+                 ·  WARD: MISHIKISHI
+                 ·  WARD: CHINONDO
+                 ·  WARD: KASHITU
+                 ·  WARD: LUANSOBE
+         ▷  CONSTITUENCY: MASAITI    7 wards
+                 ·  WARD: KAMIFUNGO
+                 ·  WARD: MIPUTU
+                 ·  WARD: CHILULU
+                 ·  WARD: SHIMIBANGA
+                 ·  WARD: KATUBA
+                 ·  WARD: LUMANO
+                 ·  WARD: MASANGANO
+
+   ▶  DISTRICT: MPONGWE    2 constituencies  |  15 wards
+         ▷  CONSTITUENCY: MPONGWE EAST    7 wards
+                 ·  WARD: KANYENDA
+                 ·  WARD: KASAMBA
+                 ·  WARD: IBENGA
+                 ·  WARD: CHISAPA
+                 ·  WARD: KALWEO
+                 ·  WARD: NTANDA
+                 ·  WARD: MIKATA
+         ▷  CONSTITUENCY: MPONGWE WEST    8 wards
+                 ·  WARD: LUSWISHI
+                 ·  WARD: KASONGA
+                 ·  WARD: MUNKUMPU
+                 ·  WARD: IPUMBU
+                 ·  WARD: KASHIBA
+                 ·  WARD: MPONGWE CENTRAL
+                 ·  WARD: NAMPAMBA
+                 ·  WARD: MUSOFU
+
+   ▶  DISTRICT: NDOLA    5 constituencies  |  30 wards
+         ▷  CONSTITUENCY: BWANA MKUBWA    6 wards
+                 ·  WARD: MUSHILI
+                 ·  WARD: LUPILI
+                 ·  WARD: TWASHUKA
+                 ·  WARD: ITAWA
+                 ·  WARD: MUNKULUNGWE
+                 ·  WARD: KAVU
+         ▷  CONSTITUENCY: CHIFUBU    6 wards
+                 ·  WARD: KAMBA
+                 ·  WARD: KAWAMA
+                 ·  WARD: KANYANJE
+                 ·  WARD: PAMODZI
+                 ·  WARD: FIBOBE
+                 ·  WARD: CHIFUBU
+         ▷  CONSTITUENCY: DAG HAMMERSKJOELD    3 wards
+                 ·  WARD: KANIKI
+                 ·  WARD: DAG HAMMERSKJOELD
+                 ·  WARD: TWAPIA
+         ▷  CONSTITUENCY: KABUSHI    10 wards
+                 ·  WARD: CHICHELE
+                 ·  WARD: KANTOLOMBA
+                 ·  WARD: LUBUTO
+                 ·  WARD: MUKUBA
+                 ·  WARD: KAFUBU
+                 ·  WARD: SKYWAYS
+                 ·  WARD: MASALA
+                 ·  WARD: KALOKO
+                 ·  WARD: KABUSHI
+                 ·  WARD: TOKA
+         ▷  CONSTITUENCY: NDOLA CENTRAL    5 wards
+                 ·  WARD: KANINI
+                 ·  WARD: KANSENSHI
+                 ·  WARD: NKWAZI
+                 ·  WARD: YENGWE
+                 ·  WARD: MAPALO
+
+───────────────────────────────────────────────────────────────────────────
+
+◆  PROVINCE: EASTERN PROVINCE    9 districts  |  20 constituencies  |  125 wards
+
+   ▶  DISTRICT: CHADIZA    2 constituencies  |  20 wards
+         ▷  CONSTITUENCY: CHADIZA EAST    10 wards
+                 ·  WARD: BWANUNKHA
+                 ·  WARD: KALUMA
+                 ·  WARD: KHUMBA
+                 ·  WARD: NGALA
+                 ·  WARD: MWANGAZI
+                 ·  WARD: KABVUMO
+                 ·  WARD: CHILENGA
+                 ·  WARD: CHAMANDALA
+                 ·  WARD: TAFERANSONI
+                 ·  WARD: AMBIDZI
+         ▷  CONSTITUENCY: CHADIZA WEST    10 wards
+                 ·  WARD: TIKONDANE
+                 ·  WARD: MANGWE
+                 ·  WARD: NSADZU
+                 ·  WARD: CHANJOWE
+                 ·  WARD: CHADIZA
+                 ·  WARD: KAPACHI
+                 ·  WARD: MANJE
+                 ·  WARD: KANDABWAKO
+                 ·  WARD: NAVILURI
+                 ·  WARD: KAMPINI
+
+   ▶  DISTRICT: CHAMA    3 constituencies  |  24 wards
+         ▷  CONSTITUENCY: CHAMA CENTRAL    7 wards
+                 ·  WARD: MWALALA
+                 ·  WARD: MANTHEPA
+                 ·  WARD: KALINKHU
+                 ·  WARD: KAOZI
+                 ·  WARD: MPHALAUSENGA
+                 ·  WARD: KAMPHEMBA
+                 ·  WARD: BAZIMU
+         ▷  CONSTITUENCY: CHAMA NORTH    8 wards
+                 ·  WARD: MUCHINGA
+                 ·  WARD: MAZONDE
+                 ·  WARD: NKHANKHA
+                 ·  WARD: LUANGWA
+                 ·  WARD: CHISUNGA
+                 ·  WARD: NDUNDA
+                 ·  WARD: MBAZI
+                 ·  WARD: CHIPALA
+         ▷  CONSTITUENCY: CHAMA SOUTH    9 wards
+                 ·  WARD: MABINGA
+                 ·  WARD: LUPAMAZI
+                 ·  WARD: CHIBUNGWE
+                 ·  WARD: CHILUBALUBA
+                 ·  WARD: LUMEZI
+                 ·  WARD: LUNZI
+                 ·  WARD: VILIMUKULU
+                 ·  WARD: CHILENJE
+                 ·  WARD: MAPAMBA
+
+   ▶  DISTRICT: CHASEFU    2 constituencies  |  10 wards
+         ▷  CONSTITUENCY: CHASEFU NORTH    5 wards
+                 ·  WARD: MANDA HILL
+                 ·  WARD: SUSA
+                 ·  WARD: MAGODI
+                 ·  WARD: KAJILIME
+                 ·  WARD: KAPILISANGA
+         ▷  CONSTITUENCY: CHASEFU SOUTH    5 wards
+                 ·  WARD: LUWEREZI
+                 ·  WARD: MEMBE
+                 ·  WARD: CHABOLI
+                 ·  WARD: NKHANGA
+                 ·  WARD: CHIZINGIZI
+
+   ▶  DISTRICT: CHIPANGALI    2 constituencies  |  8 wards
+         ▷  CONSTITUENCY: CHIPANGALI EAST    4 wards
+                 ·  WARD: CHIPANGALI
+                 ·  WARD: RUKUZYE
+                 ·  WARD: KASENGA
+                 ·  WARD: MSANDILE
+         ▷  CONSTITUENCY: CHIPANGALI WEST    4 wards
+                 ·  WARD: SISINJE
+                 ·  WARD: LUNKHUSWE
+                 ·  WARD: NTHOPE
+                 ·  WARD: MADZIATUBA
+
+   ▶  DISTRICT: CHIPATA    3 constituencies  |  11 wards
+         ▷  CONSTITUENCY: CHIPATA CENTRAL    2 wards
+                 ·  WARD: KANJALA
+                 ·  WARD: DILIKA
+         ▷  CONSTITUENCY: CHIPATA NORTH    3 wards
+                 ·  WARD: MASUPE
+                 ·  WARD: MSANGA
+                 ·  WARD: KAPATA
+         ▷  CONSTITUENCY: LUANGENI    6 wards
+                 ·  WARD: NSINGO
+                 ·  WARD: MWAMI
+                 ·  WARD: KHOVA
+                 ·  WARD: MAKANGILA
+                 ·  WARD: CHIKANDO
+                 ·  WARD: KAZIMULE
+
+   ▶  DISTRICT: LUMEZI    2 constituencies  |  11 wards
+         ▷  CONSTITUENCY: LUMEZI NORTH    6 wards
+                 ·  WARD: LUMIMBA
+                 ·  WARD: KAZEMBE
+                 ·  WARD: KAPANGALA
+                 ·  WARD: KAIKUMBE
+                 ·  WARD: WACHITANGACHI
+                 ·  WARD: CHAMTOWA
+         ▷  CONSTITUENCY: LUMEZI SOUTH    5 wards
+                 ·  WARD: CHIBANDE
+                 ·  WARD: LUKUSUZI
+                 ·  WARD: KACHAMA
+                 ·  WARD: KAMIMBA
+                 ·  WARD: DIWA
+
+   ▶  DISTRICT: LUSANGAZI    2 constituencies  |  11 wards
+         ▷  CONSTITUENCY: LUSANGAZI CENTRAL    6 wards
+                 ·  WARD: MAWANDA
+                 ·  WARD: CHIKOWA
+                 ·  WARD: LUSANGAZI
+                 ·  WARD: MUDONSA
+                 ·  WARD: CHISANGU
+                 ·  WARD: UKWIMI
+         ▷  CONSTITUENCY: MSANZALA    5 wards
+                 ·  WARD: CHINGOLO
+                 ·  WARD: MATEYO MZEKA
+                 ·  WARD: LUTWAZI
+                 ·  WARD: SINGOZI
+                 ·  WARD: NYAKAWISE
+
+   ▶  DISTRICT: MAMBWE    2 constituencies  |  15 wards
+         ▷  CONSTITUENCY: MALAMBO EAST    8 wards
+                 ·  WARD: JUMBE
+                 ·  WARD: CHIPAPA
+                 ·  WARD: CHISENGU
+                 ·  WARD: MPHOMWA
+                 ·  WARD: CHIKOWA
+                 ·  WARD: MSORO
+                 ·  WARD: NYAKATOKOLI
+                 ·  WARD: KASAMANDA
+         ▷  CONSTITUENCY: MALAMBO WEST    7 wards
+                 ·  WARD: NSEFU
+                 ·  WARD: MNKHANYA
+                 ·  WARD: NCHEKA
+                 ·  WARD: CHIPAKO
+                 ·  WARD: MALAMA
+                 ·  WARD: KAKUMBI
+                 ·  WARD: MDIMA
+
+   ▶  DISTRICT: NYIMBA    2 constituencies  |  15 wards
+         ▷  CONSTITUENCY: NYIMBA NORTH    7 wards
+                 ·  WARD: LUANGWA
+                 ·  WARD: CHINAMBI
+                 ·  WARD: KALIWE
+                 ·  WARD: CHINSIMBWE
+                 ·  WARD: KATIPA
+                 ·  WARD: MPHUNDWE
+                 ·  WARD: MTILIZI
+         ▷  CONSTITUENCY: NYIMBA SOUTH    8 wards
+                 ·  WARD: NYIMBA
+                 ·  WARD: MSIMA
+                 ·  WARD: CHIWEZA
+                 ·  WARD: MOMBE
+                 ·  WARD: CHAMILALA
+                 ·  WARD: VIZIMUMBA
+                 ·  WARD: NGOZI
+                 ·  WARD: LWEZI
+
+───────────────────────────────────────────────────────────────────────────
+
+◆  PROVINCE: LUAPULA PROVINCE    5 districts  |  12 constituencies  |  81 wards
+
+   ▶  DISTRICT: CHIENGE    2 constituencies  |  15 wards
+         ▷  CONSTITUENCY: CHIENGE    8 wards
+                 ·  WARD: LUNCHINDA
+                 ·  WARD: CHIBAMBA
+                 ·  WARD: CHIPUNGU
+                 ·  WARD: LUAU
+                 ·  WARD: CHITUNDA
+                 ·  WARD: LAMBWE CHOMBA
+                 ·  WARD: CHIENGE
+                 ·  WARD: KATETE
+         ▷  CONSTITUENCY: KALUNGWISHI    7 wards
+                 ·  WARD: IFUNA
+                 ·  WARD: CHIPAMBA
+                 ·  WARD: KALOBWA
+                 ·  WARD: CHITUTU
+                 ·  WARD: KALUNGWISHI
+                 ·  WARD: MUNWA
+                 ·  WARD: MUNUNGA
+
+   ▶  DISTRICT: CHIFUNABULI    2 constituencies  |  13 wards
+         ▷  CONSTITUENCY: CHIFUNABULI NORTH    6 wards
+                 ·  WARD: MASONDE
+                 ·  WARD: CHINKUTILA
+                 ·  WARD: KASANSA
+                 ·  WARD: KASABA
+                 ·  WARD: KAPAMBA
+                 ·  WARD: KAPESHI
+         ▷  CONSTITUENCY: CHIFUNABULI SOUTH    7 wards
+                 ·  WARD: MBABALA
+                 ·  WARD: CHISHI
+                 ·  WARD: KAFUMBO
+                 ·  WARD: LUBWE
+                 ·  WARD: CHIFUNABULI
+                 ·  WARD: KASONGOLE
+                 ·  WARD: MUBANSENSHI
+
+   ▶  DISTRICT: KAWAMBWA    3 constituencies  |  18 wards
+         ▷  CONSTITUENCY: KAWAMBWA    6 wards
+                 ·  WARD: IYANGA
+                 ·  WARD: NGÓNA
+                 ·  WARD: KAWAMBWA
+                 ·  WARD: NTUMBACHUSHI
+                 ·  WARD: SENGA
+                 ·  WARD: KALA
+         ▷  CONSTITUENCY: LUONGO    6 wards
+                 ·  WARD: FILENGE
+                 ·  WARD: MULUNDA
+                 ·  WARD: CHIBOTE
+                 ·  WARD: CHIKANDA
+                 ·  WARD: CHIMPILI
+                 ·  WARD: LUONGO
+         ▷  CONSTITUENCY: PAMBASHE    6 wards
+                 ·  WARD: LUSHIBA
+                 ·  WARD: FISAKA
+                 ·  WARD: LUENA
+                 ·  WARD: KABANSE
+                 ·  WARD: ILOMBE
+                 ·  WARD: PAMBASHE
+
+   ▶  DISTRICT: MANSA    3 constituencies  |  20 wards
+         ▷  CONSTITUENCY: BAHATI    7 wards
+                 ·  WARD: MUTUNA
+                 ·  WARD: KAMPEMBA
+                 ·  WARD: MISAKALALA
+                 ·  WARD: MANSA
+                 ·  WARD: MYULU
+                 ·  WARD: CHIPOKA
+                 ·  WARD: KATANGASHI
+         ▷  CONSTITUENCY: MANSA EAST    6 wards
+                 ·  WARD: MUSABA
+                 ·  WARD: LWINGISHI
+                 ·  WARD: CHANSUNSU
+                 ·  WARD: NAMWANDWE
+                 ·  WARD: CHILYAPA
+                 ·  WARD: MUCHINKA
+         ▷  CONSTITUENCY: MANSA WEST    7 wards
+                 ·  WARD: MUSHIPASHI
+                 ·  WARD: KAOLE
+                 ·  WARD: CHOFOSHI
+                 ·  WARD: MULENSHI
+                 ·  WARD: LUKANGABA
+                 ·  WARD: FIMPULU
+                 ·  WARD: CHIBELEKA
+
+   ▶  DISTRICT: NCHELENGE    2 constituencies  |  15 wards
+         ▷  CONSTITUENCY: MWERU    6 wards
+                 ·  WARD: KABUTA
+                 ·  WARD: MUNKOMBWE
+                 ·  WARD: MWATISHI
+                 ·  WARD: KASHIKISHI
+                 ·  WARD: NSEMBAISHE
+                 ·  WARD: KILWA
+         ▷  CONSTITUENCY: NCHELENGE    9 wards
+                 ·  WARD: CHILONGO
+                 ·  WARD: ISOKWE
+                 ·  WARD: NCHELENGE
+                 ·  WARD: KASAMBA
+                 ·  WARD: CHISENGA
+                 ·  WARD: MULWE
+                 ·  WARD: SHABO
+                 ·  WARD: MOFWE
+                 ·  WARD: KATOFYO
+
+───────────────────────────────────────────────────────────────────────────
+
+◆  PROVINCE: LUSAKA PROVINCE    4 districts  |  16 constituencies  |  89 wards
+
+   ▶  DISTRICT: CHILANGA    2 constituencies  |  12 wards
+         ▷  CONSTITUENCY: CHILANGA NORTH    6 wards
+                 ·  WARD: MWEMBESHI
+                 ·  WARD: CHINYANJA
+                 ·  WARD: MONDENGWA
+                 ·  WARD: NYEMBA
+                 ·  WARD: KASUPE
+                 ·  WARD: NAMALOMBWE
+         ▷  CONSTITUENCY: CHILANGA SOUTH    6 wards
+                 ·  WARD: NEW FARMS
+                 ·  WARD: CHILANGA
+                 ·  WARD: MOUNT MAKULU
+                 ·  WARD: CHILONGOLO
+                 ·  WARD: NAKACHENJE
+                 ·  WARD: KALUNDU
+
+   ▶  DISTRICT: CHONGWE    2 constituencies  |  21 wards
+         ▷  CONSTITUENCY: CHONGWE EAST    11 wards
+                 ·  WARD: KAPETE
+                 ·  WARD: MULENJE
+                 ·  WARD: CHALIMBANA
+                 ·  WARD: CHONGWE
+                 ·  WARD: MANYIKA
+                 ·  WARD: MWALUMINA
+                 ·  WARD: LWIMBA
+                 ·  WARD: KATOBA
+                 ·  WARD: NJOLWE
+                 ·  WARD: NAKATINDI
+                 ·  WARD: NCHUTE
+         ▷  CONSTITUENCY: CHONGWE WEST    10 wards
+                 ·  WARD: KASENGA
+                 ·  WARD: KASISI
+                 ·  WARD: CHINKULI
+                 ·  WARD: NTANDABALE
+                 ·  WARD: PALABANA
+                 ·  WARD: MADIDO
+                 ·  WARD: NGWERERE
+                 ·  WARD: KAPWAYAMBALE
+                 ·  WARD: KANAKANTAPA
+                 ·  WARD: CHAINDA
+
+   ▶  DISTRICT: KAFUE    2 constituencies  |  18 wards
+         ▷  CONSTITUENCY: KAFUE EAST    10 wards
+                 ·  WARD: KAFUE
+                 ·  WARD: LUKOLONGO
+                 ·  WARD: SHIMABALA
+                 ·  WARD: MALUNDU
+                 ·  WARD: CHISANKANE
+                 ·  WARD: CHIFWEMA
+                 ·  WARD: CHISAKILA
+                 ·  WARD: KAMBALE
+                 ·  WARD: CHITENDE
+                 ·  WARD: CHIYABA
+         ▷  CONSTITUENCY: KAFUE WEST    8 wards
+                 ·  WARD: MAGOBA
+                 ·  WARD: CHIKUPI
+                 ·  WARD: MUNGU
+                 ·  WARD: KABWEZA
+                 ·  WARD: KASENJE
+                 ·  WARD: SHIKOSWE
+                 ·  WARD: SHABUSALE
+                 ·  WARD: MATANDA
+
+   ▶  DISTRICT: LUSAKA    10 constituencies  |  38 wards
+         ▷  CONSTITUENCY: CHAWAMA    4 wards
+                 ·  WARD: NKOLOMA
+                 ·  WARD: CHAWAMA
+                 ·  WARD: JOHN HOWARD
+                 ·  WARD: LILAYI
+         ▷  CONSTITUENCY: KABWATA    5 wards
+                 ·  WARD: KAMWALA
+                 ·  WARD: KABWATA
+                 ·  WARD: LIBALA
+                 ·  WARD: CHILENJE
+                 ·  WARD: KAMULANGA
+         ▷  CONSTITUENCY: KANYAMA    3 wards
+                 ·  WARD: GARDEN PARK
+                 ·  WARD: CHINIKA
+                 ·  WARD: KANYAMA
+         ▷  CONSTITUENCY: LIMA    2 wards
+                 ·  WARD: LIMA
+                 ·  WARD: MWEMBESHI
+         ▷  CONSTITUENCY: LUSAKA CENTRAL    3 wards
+                 ·  WARD: INDEPENDENCE
+                 ·  WARD: LUBWA
+                 ·  WARD: KABULONGA
+         ▷  CONSTITUENCY: MAKENI    3 wards
+                 ·  WARD: HARRY MWAANGA NKUMBULA
+                 ·  WARD: MAKENI VILLA
+                 ·  WARD: MUNKOLO
+         ▷  CONSTITUENCY: MANDEVU    5 wards
+                 ·  WARD: CHAISA
+                 ·  WARD: JUSTINE KABWE
+                 ·  WARD: RAPHAEL CHOTA
+                 ·  WARD: MPULUNGU
+                 ·  WARD: KABANANA
+         ▷  CONSTITUENCY: MATERO    3 wards
+                 ·  WARD: MUCHINGA
+                 ·  WARD: KAPWEPWE
+                 ·  WARD: MATERO
+         ▷  CONSTITUENCY: MUNALI    5 wards
+                 ·  WARD: MUNALI
+                 ·  WARD: CHAKUNKULA
+                 ·  WARD: CHAINDA
+                 ·  WARD: KALIKILIKI
+                 ·  WARD: MTENDERE
+         ▷  CONSTITUENCY: ROMA    5 wards
+                 ·  WARD: SILWIZYA
+                 ·  WARD: ROMA
+                 ·  WARD: MULUNGUSHI
+                 ·  WARD: NGWERERE
+                 ·  WARD: KALINGALINGA
+
+───────────────────────────────────────────────────────────────────────────
+
+◆  PROVINCE: MUCHINGA PROVINCE    6 districts  |  12 constituencies  |  81 wards
+
+   ▶  DISTRICT: CHINSALI    2 constituencies  |  17 wards
+         ▷  CONSTITUENCY: CHILINDA    10 wards
+                 ·  WARD: ITAPA
+                 ·  WARD: CHUNGA
+                 ·  WARD: CHILUNDA
+                 ·  WARD: CHILINDA
+                 ·  WARD: MIKUNKU
+                 ·  WARD: MILEMBA
+                 ·  WARD: KAUNGA
+                 ·  WARD: MALALO
+                 ·  WARD: CHIPANGA
+                 ·  WARD: CHAMBESHI
+         ▷  CONSTITUENCY: CHINSALI CENTRAL    7 wards
+                 ·  WARD: LUBU
+                 ·  WARD: MUNWAKUBILI
+                 ·  WARD: ITUNTWE
+                 ·  WARD: NKAKULA
+                 ·  WARD: LUBWA
+                 ·  WARD: ICHINGA
+                 ·  WARD: CHINSALI
+
+   ▶  DISTRICT: ISOKA    2 constituencies  |  14 wards
+         ▷  CONSTITUENCY: ISOKA    6 wards
+                 ·  WARD: ITUKUTA
+                 ·  WARD: KASOKA
+                 ·  WARD: KAWENGA
+                 ·  WARD: KANTENSHYA
+                 ·  WARD: KAPILILONGA
+                 ·  WARD: KALUNGU
+         ▷  CONSTITUENCY: NKOMBWA    8 wards
+                 ·  WARD: MILONGO
+                 ·  WARD: CHINYONGA
+                 ·  WARD: SANSAMWENJE
+                 ·  WARD: MPUNGU
+                 ·  WARD: KANYALA
+                 ·  WARD: KABANDAMA
+                 ·  WARD: LUANGWA
+                 ·  WARD: NKOMBWA
+
+   ▶  DISTRICT: KANCHIBIYA    2 constituencies  |  10 wards
+         ▷  CONSTITUENCY: KANCHIBIYA    5 wards
+                 ·  WARD: CHAMBESHI
+                 ·  WARD: MANSHA
+                 ·  WARD: MUMBUBU
+                 ·  WARD: LUBALESHI
+                 ·  WARD: MBATI
+         ▷  CONSTITUENCY: LWITIKILA    5 wards
+                 ·  WARD: CHIBWA
+                 ·  WARD: CHEWE SHIMFWAMBA
+                 ·  WARD: CHINAMA
+                 ·  WARD: MUNIKASHI
+                 ·  WARD: LULINGILA
+
+   ▶  DISTRICT: MAFINGA    2 constituencies  |  13 wards
+         ▷  CONSTITUENCY: MAFINGA NORTH    8 wards
+                 ·  WARD: MAFINGA
+                 ·  WARD: MUSIPIZI
+                 ·  WARD: SENJE
+                 ·  WARD: NTONGA
+                 ·  WARD: THENDERE
+                 ·  WARD: MULULU
+                 ·  WARD: BEMBA
+                 ·  WARD: MUKUTU
+         ▷  CONSTITUENCY: MAFINGA SOUTH    5 wards
+                 ·  WARD: KAKOMA
+                 ·  WARD: MAHOBE
+                 ·  WARD: KALANGA
+                 ·  WARD: VUMBO
+                 ·  WARD: LUHOKA
+
+   ▶  DISTRICT: MPIKA    2 constituencies  |  12 wards
+         ▷  CONSTITUENCY: MPIKA NORTH    7 wards
+                 ·  WARD: CHIPEMBELE
+                 ·  WARD: MUTEKWE
+                 ·  WARD: KAPAMBA
+                 ·  WARD: LUBAMBALA
+                 ·  WARD: MUSAKANYA
+                 ·  WARD: LWITIKILA
+                 ·  WARD: MUTAMBA
+         ▷  CONSTITUENCY: MPIKA SOUTH    5 wards
+                 ·  WARD: CHIFUNGWE
+                 ·  WARD: MUCHINGA
+                 ·  WARD: NACHIKUFU
+                 ·  WARD: CHISHIBESONDE
+                 ·  WARD: MUKUNGWA
+
+   ▶  DISTRICT: NAKONDE    2 constituencies  |  15 wards
+         ▷  CONSTITUENCY: MWENZO    7 wards
+                 ·  WARD: MWANGA
+                 ·  WARD: MULALO
+                 ·  WARD: LUCHINDE
+                 ·  WARD: NG'UMBA
+                 ·  WARD: POPOMOZI
+                 ·  WARD: MUSYANI
+                 ·  WARD: IKUMBI
+         ▷  CONSTITUENCY: NAKONDE    8 wards
+                 ·  WARD: NAKONDE
+                 ·  WARD: ISUNDA
+                 ·  WARD: OLD FIFE
+                 ·  WARD: MUSELE
+                 ·  WARD: MPANDE
+                 ·  WARD: MUKULIKA
+                 ·  WARD: CHIWANZA
+                 ·  WARD: ILONDA
+
+───────────────────────────────────────────────────────────────────────────
+
+◆  PROVINCE: NORTHERN PROVINCE    6 districts  |  13 constituencies  |  90 wards
+
+   ▶  DISTRICT: KAPUTA    2 constituencies  |  17 wards
+         ▷  CONSTITUENCY: KAPUTA    10 wards
+                 ·  WARD: MUNKONGE
+                 ·  WARD: MWAWE
+                 ·  WARD: KAPULWA
+                 ·  WARD: KALEULU
+                 ·  WARD: LUBENDWA
+                 ·  WARD: MOWA
+                 ·  WARD: MIYONGA
+                 ·  WARD: CHITANDALA
+                 ·  WARD: CHOMA
+                 ·  WARD: CHIPILI
+         ▷  CONSTITUENCY: KUNDABWIKA    7 wards
+                 ·  WARD: NKONTA
+                 ·  WARD: KAYAMBA
+                 ·  WARD: CHIYILUNDA
+                 ·  WARD: CHISOKO
+                 ·  WARD: MOFWE
+                 ·  WARD: KALUNGWISHI
+                 ·  WARD: LUNTOMFWE
+
+   ▶  DISTRICT: KASAMA    3 constituencies  |  19 wards
+         ▷  CONSTITUENCY: KASAMA CENTRAL    6 wards
+                 ·  WARD: LUKUPA
+                 ·  WARD: JULIA CHIKAMONEKA
+                 ·  WARD: MULILANSOLO
+                 ·  WARD: CHIBA
+                 ·  WARD: LUALUO
+                 ·  WARD: MUKANGA
+         ▷  CONSTITUENCY: KASAMA NORTH    7 wards
+                 ·  WARD: LUKULU
+                 ·  WARD: KASENGA
+                 ·  WARD: BULULU
+                 ·  WARD: ITUNA
+                 ·  WARD: CHILUNGA
+                 ·  WARD: LUSENGA
+                 ·  WARD: KAPANDA
+         ▷  CONSTITUENCY: LUKASHYA    6 wards
+                 ·  WARD: BUSEKO
+                 ·  WARD: KUPUMAULA
+                 ·  WARD: KAPONGOLO
+                 ·  WARD: CHIBUNDU
+                 ·  WARD: CHUMBA
+                 ·  WARD: MUSOWA
+
+   ▶  DISTRICT: LUWINGU    2 constituencies  |  13 wards
+         ▷  CONSTITUENCY: LUBANSENSHI    6 wards
+                 ·  WARD: LUKUTU
+                 ·  WARD: CHIFWILE
+                 ·  WARD: ISANSA
+                 ·  WARD: MUSHITU-WAMBOO
+                 ·  WARD: LWATA
+                 ·  WARD: ISANGANO
+         ▷  CONSTITUENCY: LUWINGU CENTRAL    7 wards
+                 ·  WARD: MUSHISHE
+                 ·  WARD: MWELA WAMANGU
+                 ·  WARD: IPUSUKILO
+                 ·  WARD: KATOPOLA
+                 ·  WARD: NAMUKOLO
+                 ·  WARD: CHULUNGOMA
+                 ·  WARD: MASONDE
+
+   ▶  DISTRICT: MBALA    2 constituencies  |  9 wards
+         ▷  CONSTITUENCY: MBALA CENTRAL    4 wards
+                 ·  WARD: MWAMBEZI
+                 ·  WARD: KAZIMOLWA
+                 ·  WARD: MOTOMOTO
+                 ·  WARD: KALAMBO FALLS
+         ▷  CONSTITUENCY: SAISE    5 wards
+                 ·  WARD: INTALA
+                 ·  WARD: KAWIMBE
+                 ·  WARD: MWAMBA
+                 ·  WARD: LWANDI
+                 ·  WARD: NSUNZU
+
+   ▶  DISTRICT: MPULUNGU    2 constituencies  |  17 wards
+         ▷  CONSTITUENCY: MPULUNGU NORTH    8 wards
+                 ·  WARD: KAPEMBWA
+                 ·  WARD: CHIBULULA
+                 ·  WARD: MPULUNGU CENTRAL
+                 ·  WARD: TANGANYIKA
+                 ·  WARD: IYENDWE
+                 ·  WARD: ITIMBWE
+                 ·  WARD: MUMILA
+                 ·  WARD: CHITIMBWA
+         ▷  CONSTITUENCY: MPULUNGU SOUTH    9 wards
+                 ·  WARD: NAMUKALE
+                 ·  WARD: CHILUMBA
+                 ·  WARD: ISOKO
+                 ·  WARD: MANKONGA
+                 ·  WARD: MUSENGEZI
+                 ·  WARD: VYAMBA
+                 ·  WARD: CHISHA
+                 ·  WARD: LWAMBAZI
+                 ·  WARD: ISUNGA
+
+   ▶  DISTRICT: MUNGWI    2 constituencies  |  15 wards
+         ▷  CONSTITUENCY: MALOLE    8 wards
+                 ·  WARD: KALUNGU
+                 ·  WARD: IYAYA
+                 ·  WARD: FUBE
+                 ·  WARD: NGULULA
+                 ·  WARD: MUNGWI
+                 ·  WARD: MABULA
+                 ·  WARD: MFINSHE
+                 ·  WARD: CHAMBESHI
+         ▷  CONSTITUENCY: MPANDA    7 wards
+                 ·  WARD: FIBWE
+                 ·  WARD: KABISHA
+                 ·  WARD: LUCHEWE
+                 ·  WARD: LUBALA
+                 ·  WARD: MPANDA
+                 ·  WARD: CHAMFUBU
+                 ·  WARD: KATUMBA
+
+───────────────────────────────────────────────────────────────────────────
+
+◆  PROVINCE: NORTH WESTERN PROVINCE    7 districts  |  15 constituencies  |  120 wards
+
+   ▶  DISTRICT: KABOMPO    2 constituencies  |  17 wards
+         ▷  CONSTITUENCY: KABOMPO EAST    9 wards
+                 ·  WARD: KAYOMBO
+                 ·  WARD: CHIKONKWELO
+                 ·  WARD: LULI
+                 ·  WARD: KAMAFWAFWA
+                 ·  WARD: KABOMPO
+                 ·  WARD: LITOYA
+                 ·  WARD: CHIFUWE
+                 ·  WARD: KAMISOMBO
+                 ·  WARD: NKULWASHI
+         ▷  CONSTITUENCY: KABOMPO WEST    8 wards
+                 ·  WARD: KABULAMEMA
+                 ·  WARD: KAMISAMBA
+                 ·  WARD: MUMBEJI
+                 ·  WARD: MAVEVE
+                 ·  WARD: KALWILO
+                 ·  WARD: CHIKENGE
+                 ·  WARD: KATUVA
+                 ·  WARD: LUNYIWE
+
+   ▶  DISTRICT: KALUMBILA    2 constituencies  |  12 wards
+         ▷  CONSTITUENCY: KALUMBILA    6 wards
+                 ·  WARD: CHOVWE
+                 ·  WARD: MUSELE
+                 ·  WARD: KISASA
+                 ·  WARD: CHITUNG'U
+                 ·  WARD: MUKUMBI
+                 ·  WARD: MUMBEZHI
+         ▷  CONSTITUENCY: LUMWANA    6 wards
+                 ·  WARD: KIBANZA
+                 ·  WARD: MWAJIMAMBWE
+                 ·  WARD: WABITUWO
+                 ·  WARD: SHILENDA
+                 ·  WARD: MUMENA
+                 ·  WARD: MATEBO
+
+   ▶  DISTRICT: KASEMPA    2 constituencies  |  24 wards
+         ▷  CONSTITUENCY: KASEMPA    11 wards
+                 ·  WARD: KAMAKECHI
+                 ·  WARD: JIFUMPA
+                 ·  WARD: MUKUNASHI
+                 ·  WARD: KANONGO
+                 ·  WARD: KANTENDA
+                 ·  WARD: SHIBENDE
+                 ·  WARD: NKENYAUNA
+                 ·  WARD: KIKONKOMENE
+                 ·  WARD: NJENGA
+                 ·  WARD: KALOMBE
+                 ·  WARD: KAMUSONGOLWA
+         ▷  CONSTITUENCY: MUFWASHI    13 wards
+                 ·  WARD: KAMAKUKU
+                 ·  WARD: NSELAUKE
+                 ·  WARD: INGWE
+                 ·  WARD: KAIMBWE
+                 ·  WARD: KAMATETE
+                 ·  WARD: MUKEMA
+                 ·  WARD: MUKINDA
+                 ·  WARD: NYOKA
+                 ·  WARD: MAAKO
+                 ·  WARD: LUBOFU
+                 ·  WARD: KELONGWA
+                 ·  WARD: MPUNGU
+                 ·  WARD: DENGWE
+
+   ▶  DISTRICT: MUFUMBWE    2 constituencies  |  18 wards
+         ▷  CONSTITUENCY: DONGWE    7 wards
+                 ·  WARD: MUSONWEJI
+                 ·  WARD: KILALE
+                 ·  WARD: MUSHIMA
+                 ·  WARD: KAMINZEKENZEKE
+                 ·  WARD: LALAFUTA
+                 ·  WARD: SHIMPANDANGA
+                 ·  WARD: MILUJI
+         ▷  CONSTITUENCY: MUFUMBWE    11 wards
+                 ·  WARD: KASHIMA WEST
+                 ·  WARD: KASHIMA EAST
+                 ·  WARD: MATUSHI
+                 ·  WARD: KAMABUTA
+                 ·  WARD: KALAMBU
+                 ·  WARD: CHIZELA
+                 ·  WARD: SHUKWE
+                 ·  WARD: KIKONGE
+                 ·  WARD: KALENGWA
+                 ·  WARD: MUNYAMBALA
+                 ·  WARD: KABIPUPU
+
+   ▶  DISTRICT: MWINILUNGA    2 constituencies  |  21 wards
+         ▷  CONSTITUENCY: MWINILUNGA EAST    12 wards
+                 ·  WARD: MUNDWIJI
+                 ·  WARD: KAPUNDU
+                 ·  WARD: KANYAMA
+                 ·  WARD: KAKOMA
+                 ·  WARD: KASAMPULA
+                 ·  WARD: LUMWANA
+                 ·  WARD: CHISASA
+                 ·  WARD: MAKUYA
+                 ·  WARD: NTAMBU
+                 ·  WARD: SAILUNGA
+                 ·  WARD: SAMUTEBA
+                 ·  WARD: KANYIKOMBOSHI
+         ▷  CONSTITUENCY: MWINILUNGA WEST    9 wards
+                 ·  WARD: KANZENZI
+                 ·  WARD: CHIBWIKA
+                 ·  WARD: KAMAPANDA
+                 ·  WARD: KANONGESHA
+                 ·  WARD: KAWIKU
+                 ·  WARD: KABANDA
+                 ·  WARD: MULUMBI
+                 ·  WARD: KAMPEMBA
+                 ·  WARD: MUDANYAMA
+
+   ▶  DISTRICT: SOLWEZI    2 constituencies  |  12 wards
+         ▷  CONSTITUENCY: SOLWEZI CENTRAL    6 wards
+                 ·  WARD: KAPIJIMPANGA
+                 ·  WARD: SANDANG'OMBE
+                 ·  WARD: KYALALANKUBA
+                 ·  WARD: KYAWAMA
+                 ·  WARD: TUMVWANG'ANAI
+                 ·  WARD: KIMALE
+         ▷  CONSTITUENCY: SOLWEZI NORTH    6 wards
+                 ·  WARD: KIMASALA
+                 ·  WARD: KAMALAMBA
+                 ·  WARD: KAZHIBA
+                 ·  WARD: KIVUKU
+                 ·  WARD: KYAFUKUMA
+                 ·  WARD: KIFUBWA
+
+   ▶  DISTRICT: ZAMBEZI    3 constituencies  |  16 wards
+         ▷  CONSTITUENCY: ZAMBEZI CENTRAL    7 wards
+                 ·  WARD: CHITOKOLOKI
+                 ·  WARD: KASESI CHIVWEJI
+                 ·  WARD: ZAMBEZI
+                 ·  WARD: CHILENG’A CHIZENZI
+                 ·  WARD: MUKANDA NKUNDA
+                 ·  WARD: MAPACHI CHINYINGI
+                 ·  WARD: LIKUNGU
+         ▷  CONSTITUENCY: ZAMBEZI EAST    5 wards
+                 ·  WARD: NYAKULENG'A
+                 ·  WARD: LWITADI LWATEMBO
+                 ·  WARD: MPIDI KAKONG’A
+                 ·  WARD: DIPALATA
+                 ·  WARD: LUNKUNYI
+         ▷  CONSTITUENCY: ZAMBEZI WEST    4 wards
+                 ·  WARD: LIYOVU
+                 ·  WARD: MUYEMBE
+                 ·  WARD: MWANGE NYAWANDA
+                 ·  WARD: MATONDO NYACHIKAYI
+
+───────────────────────────────────────────────────────────────────────────
+
+◆  PROVINCE: SOUTHERN PROVINCE    9 districts  |  23 constituencies  |  176 wards
+
+   ▶  DISTRICT: CHOMA    3 constituencies  |  28 wards
+         ▷  CONSTITUENCY: CHOMA CENTRAL    9 wards
+                 ·  WARD: MUTANDALIKE
+                 ·  WARD: MUBULA
+                 ·  WARD: SIKALUNDU
+                 ·  WARD: STATELAND
+                 ·  WARD: KULUNDANA
+                 ·  WARD: SIMACHECHE
+                 ·  WARD: SIAMAMBO
+                 ·  WARD: MOOMBA
+                 ·  WARD: SIMAMVWA
+         ▷  CONSTITUENCY: CHOMA SOUTH    7 wards
+                 ·  WARD: NAMUSWA
+                 ·  WARD: MASUKU
+                 ·  WARD: SIASIKABOLE
+                 ·  WARD: SINGANI
+                 ·  WARD: NAKEEMPA
+                 ·  WARD: SIKALONGO
+                 ·  WARD: BATOKA
+         ▷  CONSTITUENCY: MBABALA    12 wards
+                 ·  WARD: NG'ONGA
+                 ·  WARD: KABIMBA
+                 ·  WARD: MUTANGA
+                 ·  WARD: MACHA
+                 ·  WARD: KABANZE-MAYOBO
+                 ·  WARD: SIMAUBI
+                 ·  WARD: CHILALANTAMBO
+                 ·  WARD: MAPANZA
+                 ·  WARD: KALUNDU
+                 ·  WARD: NCHEMBE
+                 ·  WARD: MANG’UNZA
+                 ·  WARD: MBABALA
+
+   ▶  DISTRICT: ITEZHI-TEZHI    2 constituencies  |  15 wards
+         ▷  CONSTITUENCY: ITEZHI-TEZHI EAST    8 wards
+                 ·  WARD: KAANZWA
+                 ·  WARD: MASEMU
+                 ·  WARD: BABIZHI
+                 ·  WARD: LUBANDA
+                 ·  WARD: BANAMWAZE
+                 ·  WARD: MAKUNKU
+                 ·  WARD: NYAMBO
+                 ·  WARD: KABULUNGWE
+         ▷  CONSTITUENCY: ITEZHI-TEZHI WEST    7 wards
+                 ·  WARD: ITEZHI-TEZHI
+                 ·  WARD: ITUMBI
+                 ·  WARD: BASANGA
+                 ·  WARD: LUUBWE
+                 ·  WARD: MBILA
+                 ·  WARD: SHAMBALA
+                 ·  WARD: LUCHENA
+
+   ▶  DISTRICT: KALOMO    3 constituencies  |  20 wards
+         ▷  CONSTITUENCY: DUNDUMWEZI    6 wards
+                 ·  WARD: KASUKWE
+                 ·  WARD: KATANDA
+                 ·  WARD: OMBA
+                 ·  WARD: MIKATA
+                 ·  WARD: CHIKANTA
+                 ·  WARD: CHAMUKA
+         ▷  CONSTITUENCY: KALOMO CENTRAL    8 wards
+                 ·  WARD: NALUJA
+                 ·  WARD: BBILILI
+                 ·  WARD: CHIFUSA
+                 ·  WARD: SIACHITEMA
+                 ·  WARD: KALONDA
+                 ·  WARD: CHOONGA
+                 ·  WARD: MWAATA
+                 ·  WARD: CHILESHA
+         ▷  CONSTITUENCY: KALOMO SOUTH    6 wards
+                 ·  WARD: MAYOBA
+                 ·  WARD: NAMWIANGA
+                 ·  WARD: SIPATUNYANA
+                 ·  WARD: CHAWILA
+                 ·  WARD: SIMAYAKWE
+                 ·  WARD: NACHIKUNGU
+
+   ▶  DISTRICT: KAZUNGULA    2 constituencies  |  16 wards
+         ▷  CONSTITUENCY: KAZUNGULA NORTH    8 wards
+                 ·  WARD: MOOMBA
+                 ·  WARD: CHOOMA
+                 ·  WARD: NGUBA
+                 ·  WARD: KAUWE
+                 ·  WARD: NYAWA
+                 ·  WARD: BOMBWE
+                 ·  WARD: NGWEZI
+                 ·  WARD: SIMANGO
+         ▷  CONSTITUENCY: KAZUNGULA SOUTH    8 wards
+                 ·  WARD: SIKAUNZWE
+                 ·  WARD: KAZUNGULA CENTRAL
+                 ·  WARD: MANDIA
+                 ·  WARD: SEKUTE
+                 ·  WARD: KANCHELE
+                 ·  WARD: MUSOKOTWANE
+                 ·  WARD: KATAPAZI
+                 ·  WARD: MUKUNI
+
+   ▶  DISTRICT: LIVINGSTONE    2 constituencies  |  20 wards
+         ▷  CONSTITUENCY: LIVINGSTONE CENTRAL    9 wards
+                 ·  WARD: FREEDOM
+                 ·  WARD: MUSI-OA-TUNYA
+                 ·  WARD: AKAPELWA
+                 ·  WARD: LIZUMA
+                 ·  WARD: DAMBWA CENTRAL
+                 ·  WARD: ZAMBEZI
+                 ·  WARD: NAKATINDI
+                 ·  WARD: SIMONGA
+                 ·  WARD: DR. MUBITANA
+         ▷  CONSTITUENCY: MARAMBA    11 wards
+                 ·  WARD: KASIYA
+                 ·  WARD: SIMATOBOLO
+                 ·  WARD: LIBUYU
+                 ·  WARD: KABILA
+                 ·  WARD: SHUNGU
+                 ·  WARD: NANSANZU
+                 ·  WARD: KARIBA
+                 ·  WARD: MARAMBA
+                 ·  WARD: MULUNGUSHI
+                 ·  WARD: MWALIBONENA
+                 ·  WARD: NAMATAMA
+
+   ▶  DISTRICT: MAZABUKA    3 constituencies  |  20 wards
+         ▷  CONSTITUENCY: MAGOYE EAST    7 wards
+                 ·  WARD: NKONKOLA
+                 ·  WARD: CHIVUNA
+                 ·  WARD: MBAYA
+                 ·  WARD: MUSUMA
+                 ·  WARD: MUNJILE
+                 ·  WARD: NGWEZI
+                 ·  WARD: CHIZOBO
+         ▷  CONSTITUENCY: MAGOYE WEST    6 wards
+                 ·  WARD: NACHIPOOMA
+                 ·  WARD: MWANACHINGWALA
+                 ·  WARD: MUNENGA
+                 ·  WARD: KALAMA
+                 ·  WARD: ITEBE
+                 ·  WARD: SIYOOWI
+         ▷  CONSTITUENCY: MAZABUKA CENTRAL    7 wards
+                 ·  WARD: MAZABUKA CENTRAL
+                 ·  WARD: BENNIE MWIINGA
+                 ·  WARD: KAONGA
+                 ·  WARD: NAKAMBALA
+                 ·  WARD: NEGA NEGA
+                 ·  WARD: LUBOMBO
+                 ·  WARD: MUGOTO
+
+   ▶  DISTRICT: MONZE    4 constituencies  |  25 wards
+         ▷  CONSTITUENCY: BWEENGWA    8 wards
+                 ·  WARD: MALUNDU
+                 ·  WARD: HAMUSONDE
+                 ·  WARD: KAILA
+                 ·  WARD: KEEMBA
+                 ·  WARD: CHOONGO EAST
+                 ·  WARD: CHOONGO WEST
+                 ·  WARD: BWEENGWA
+                 ·  WARD: HAMANGABA
+         ▷  CONSTITUENCY: MONZE CENTRAL    6 wards
+                 ·  WARD: HAMAMVWA
+                 ·  WARD: KATIMBA
+                 ·  WARD: BBOMBO
+                 ·  WARD: HATONTOLA
+                 ·  WARD: HUFWA-HAMAPANDE
+                 ·  WARD: MONZE URBAN
+         ▷  CONSTITUENCY: MONZE EAST    6 wards
+                 ·  WARD: MAYABA
+                 ·  WARD: CHISEKESE
+                 ·  WARD: UFWENUKA
+                 ·  WARD: SINGONYA
+                 ·  WARD: CHIPEMBELE
+                 ·  WARD: MANUNGU
+         ▷  CONSTITUENCY: MOOMBA    5 wards
+                 ·  WARD: MWANZA WEST
+                 ·  WARD: MWANZA CENTRAL
+                 ·  WARD: MWANZA EAST
+                 ·  WARD: CHONA
+                 ·  WARD: MOOMBA
+
+   ▶  DISTRICT: NAMWALA    2 constituencies  |  16 wards
+         ▷  CONSTITUENCY: NAMWALA EAST    8 wards
+                 ·  WARD: MAALA
+                 ·  WARD: NAMUSONDE
+                 ·  WARD: KABULAMWANDA
+                 ·  WARD: KANTENGWA
+                 ·  WARD: MANDONDO
+                 ·  WARD: MBEZA
+                 ·  WARD: NAKAMBOMA
+                 ·  WARD: CHITONGO
+         ▷  CONSTITUENCY: NAMWALA WEST    8 wards
+                 ·  WARD: MOOBOLA
+                 ·  WARD: NAMAKUBE
+                 ·  WARD: ITAPA
+                 ·  WARD: ICHILA
+                 ·  WARD: NGABO
+                 ·  WARD: NAMWALA CENTRAL
+                 ·  WARD: BAAMBWE
+                 ·  WARD: NDEMA
+
+   ▶  DISTRICT: SINAZONGWE    2 constituencies  |  16 wards
+         ▷  CONSTITUENCY: KARIBA    9 wards
+                 ·  WARD: MAAMBA
+                 ·  WARD: MUCHEKWA
+                 ·  WARD: MWEEMBA
+                 ·  WARD: MUUKA
+                 ·  WARD: TEKELO
+                 ·  WARD: MWEENDA
+                 ·  WARD: SIAMEJA
+                 ·  WARD: NAMAZAMBWE
+                 ·  WARD: MABINGA
+         ▷  CONSTITUENCY: SINAZONGWE    7 wards
+                 ·  WARD: CHIYABI
+                 ·  WARD: MALIMA
+                 ·  WARD: SINENGE
+                 ·  WARD: NANG'OMBE
+                 ·  WARD: NKANDABBWE
+                 ·  WARD: SINAZONGWE
+                 ·  WARD: MWEEZYA
+
+───────────────────────────────────────────────────────────────────────────
+
+◆  PROVINCE: WESTERN PROVINCE    7 districts  |  16 constituencies  |  116 wards
+
+   ▶  DISTRICT: KALABO    3 constituencies  |  24 wards
+         ▷  CONSTITUENCY: KALABO CENTRAL    7 wards
+                 ·  WARD: MUCHATANGA
+                 ·  WARD: LUANGINGA
+                 ·  WARD: MAPUNGU
+                 ·  WARD: BULEYA
+                 ·  WARD: LUTWI
+                 ·  WARD: LIUMBA
+                 ·  WARD: YUKA
+         ▷  CONSTITUENCY: KALABO SOUTH    7 wards
+                 ·  WARD: NDOKA
+                 ·  WARD: LUKONA
+                 ·  WARD: NAMULILO
+                 ·  WARD: NG'UMA
+                 ·  WARD: MITWI
+                 ·  WARD: KANDAMBO
+                 ·  WARD: CHILELE
+         ▷  CONSTITUENCY: LIUWA    10 wards
+                 ·  WARD: SALUNDA
+                 ·  WARD: LUOLA
+                 ·  WARD: SILUWE
+                 ·  WARD: LIKULUNDUNDU
+                 ·  WARD: UPANGOMA
+                 ·  WARD: KUULI
+                 ·  WARD: MISHULUNDU
+                 ·  WARD: SISHEKANU
+                 ·  WARD: LIBONDA
+                 ·  WARD: NG'UNYAMA
+
+   ▶  DISTRICT: LUAMPA    2 constituencies  |  12 wards
+         ▷  CONSTITUENCY: LUAMPA EAST    5 wards
+                 ·  WARD: NAMANDO
+                 ·  WARD: KAHUMBU
+                 ·  WARD: LUAMPA
+                 ·  WARD: NYAMBI
+                 ·  WARD: INKUNIKILA
+         ▷  CONSTITUENCY: LUAMPA WEST    7 wards
+                 ·  WARD: LUBUBA
+                 ·  WARD: LUI
+                 ·  WARD: MBANYUTU
+                 ·  WARD: NKENGA
+                 ·  WARD: MWANAWASA
+                 ·  WARD: MULWA
+                 ·  WARD: NAKAYEMBE
+
+   ▶  DISTRICT: LUKULU    2 constituencies  |  17 wards
+         ▷  CONSTITUENCY: LUKULU NORTH    7 wards
+                 ·  WARD: SIMAKUMBA
+                 ·  WARD: KAMILENDE
+                 ·  WARD: KALUWAWA
+                 ·  WARD: DONGWE
+                 ·  WARD: LUANCHUMA
+                 ·  WARD: NAMAYULA
+                 ·  WARD: MWANDI
+         ▷  CONSTITUENCY: LUKULU SOUTH    10 wards
+                 ·  WARD: KASHAMBA
+                 ·  WARD: MWITO
+                 ·  WARD: SHIZIZE
+                 ·  WARD: KANG'OTI
+                 ·  WARD: NGIMBU
+                 ·  WARD: KAWAYA
+                 ·  WARD: LUKAU
+                 ·  WARD: MBANGA
+                 ·  WARD: LYAMBAI
+                 ·  WARD: LIKAPAI
+
+   ▶  DISTRICT: MONGU    3 constituencies  |  27 wards
+         ▷  CONSTITUENCY: MONGU CENTRAL    12 wards
+                 ·  WARD: MULAMBWA
+                 ·  WARD: KATONGO
+                 ·  WARD: NAMASHO
+                 ·  WARD: KAMA
+                 ·  WARD: LUMBO
+                 ·  WARD: LEALUI LOWER
+                 ·  WARD: MABUMBU
+                 ·  WARD: LEALUI UPPER
+                 ·  WARD: KANYONYO
+                 ·  WARD: LEWANIKA
+                 ·  WARD: IMWIKO
+                 ·  WARD: KAMBULE
+         ▷  CONSTITUENCY: MONGU EAST    8 wards
+                 ·  WARD: YETA
+                 ·  WARD: NAMUSHEKENDE
+                 ·  WARD: ILUTE
+                 ·  WARD: KAANDE
+                 ·  WARD: NAKATO
+                 ·  WARD: LITAWA
+                 ·  WARD: NAKANYAA
+                 ·  WARD: MBEKISE
+         ▷  CONSTITUENCY: NALIKWANDA    7 wards
+                 ·  WARD: LOOMA
+                 ·  WARD: NALWEI
+                 ·  WARD: SIYOWE
+                 ·  WARD: LUKALANYA
+                 ·  WARD: IMALYO
+                 ·  WARD: MUTONDO
+                 ·  WARD: NAMENGO
+
+   ▶  DISTRICT: SENANGA    2 constituencies  |  14 wards
+         ▷  CONSTITUENCY: SENANGA NORTH    7 wards
+                 ·  WARD: LUMBE NANYEZU
+                 ·  WARD: MATA
+                 ·  WARD: NAMUKOKOBA
+                 ·  WARD: IMATONGO
+                 ·  WARD: LIPUWE
+                 ·  WARD: MWANAMBUYU
+                 ·  WARD: LIANGATI
+         ▷  CONSTITUENCY: SENANGA SOUTH    7 wards
+                 ·  WARD: MUWESWA
+                 ·  WARD: SIBUKALI
+                 ·  WARD: LUMBE
+                 ·  WARD: SILWIZI
+                 ·  WARD: NALUYWA
+                 ·  WARD: WANYAU
+                 ·  WARD: IMATANDA
+
+   ▶  DISTRICT: SESHEKE    2 constituencies  |  10 wards
+         ▷  CONSTITUENCY: SESHEKE EAST    5 wards
+                 ·  WARD: NANGOMBE
+                 ·  WARD: LUAMPUNGU
+                 ·  WARD: LUSU
+                 ·  WARD: MAONDO
+                 ·  WARD: NAKATINDI
+         ▷  CONSTITUENCY: SESHEKE WEST    5 wards
+                 ·  WARD: MULIMAMBANGO
+                 ·  WARD: KATIMA MULILO
+                 ·  WARD: KALOBELELWA
+                 ·  WARD: SILUMBU
+                 ·  WARD: IMUSHO
+
+   ▶  DISTRICT: SHANGOMBO    2 constituencies  |  12 wards
+         ▷  CONSTITUENCY: SHANGOMBO NORTH    6 wards
+                 ·  WARD: MAMBOLOMOKA
+                 ·  WARD: MULANGU
+                 ·  WARD: KEYANA
+                 ·  WARD: NAMONO
+                 ·  WARD: NALITENGEYA
+                 ·  WARD: MULONGA
+         ▷  CONSTITUENCY: SHANGOMBO SOUTH    6 wards
+                 ·  WARD: SIPUMA
+                 ·  WARD: LILONDO
+                 ·  WARD: SIMU
+                 ·  WARD: BESHE
+                 ·  WARD: STATE RANCH
+                 ·  WARD: KAUNGA MASHI
+
+───────────────────────────────────────────────────────────────────────────
+
+===========================================================================
+ZAMBIA TOTAL: 10 Provinces  |  68 Districts  |  165 Constituencies  |  1181 Wards

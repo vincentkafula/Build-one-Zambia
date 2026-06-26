@@ -1,0 +1,263 @@
+EASTERN PROVINCE — VOTER REGISTER HIERARCHY
+Province 3  |  15 Districts  |  20 Constituencies
+=================================================================
+
+▶  DISTRICT: CHADIZA    44,777 voters    1 constituency    20 wards
+      ▷  CONSTITUENCY: CHADIZA    44,777 voters    20 wards
+              ·  WARD: TIKONDANE    1,832
+              ·  WARD: MANGWE    2,499
+              ·  WARD: NSADZU    2,605
+              ·  WARD: CHANJOWE    2,912
+              ·  WARD: CHADIZA    3,806
+              ·  WARD: KAPACHI    1,987
+              ·  WARD: MANJE    2,212
+              ·  WARD: BWANUNKHA    1,443
+              ·  WARD: KALUMA    1,513
+              ·  WARD: KHUMBA    1,388
+              ·  WARD: NGALA    1,514
+              ·  WARD: MWANGAZI    1,379
+              ·  WARD: KABVUMO    1,540
+              ·  WARD: KANDABWAKO    1,819
+              ·  WARD: CHILENGA    2,507
+              ·  WARD: NAVILURI    3,198
+              ·  WARD: CHAMANDALA    2,063
+              ·  WARD: KAMPINI    3,114
+              ·  WARD: TAFERANSONI    2,262
+              ·  WARD: AMBIDZI    3,184
+
+▶  DISTRICT: CHIPATA    125,176 voters    2 constituency    11 wards
+      ▷  CONSTITUENCY: CHIPATA CENTRAL    84,289 voters    5 wards
+              ·  WARD: KANJALA    15,909
+              ·  WARD: MASUPE    5,778
+              ·  WARD: MSANGA    11,548
+              ·  WARD: KAPATA    23,895
+              ·  WARD: DILIKA    27,159
+      ▷  CONSTITUENCY: LUANGENI    40,887 voters    6 wards
+              ·  WARD: NSINGO    11,512
+              ·  WARD: MWAMI    3,662
+              ·  WARD: KHOVA    10,196
+              ·  WARD: MAKANGILA    4,723
+              ·  WARD: CHIKANDO    7,030
+              ·  WARD: KAZIMULE    3,764
+
+▶  DISTRICT: KATETE    80,548 voters    2 constituency    22 wards
+      ▷  CONSTITUENCY: MILANZI    33,537 voters    12 wards
+              ·  WARD: KAZAKALOBA    1,787
+              ·  WARD: KAMPHAMBE    1,786
+              ·  WARD: KATIULA    3,293
+              ·  WARD: KAZALA    3,018
+              ·  WARD: YOWOYANI    1,625
+              ·  WARD: KAFUMBWE    4,953
+              ·  WARD: MILANZI    1,664
+              ·  WARD: KAPOCHE    2,322
+              ·  WARD: CHINDWALE    1,826
+              ·  WARD: KAPANGULULA    4,601
+              ·  WARD: KASAMBANDOLA    2,333
+              ·  WARD: DOLE    4,329
+      ▷  CONSTITUENCY: MKAIKA    47,011 voters    10 wards
+              ·  WARD: VULAMKOKO    4,934
+              ·  WARD: KADULA    5,455
+              ·  WARD: CHAVUKA    4,485
+              ·  WARD: CHIMTENDE    4,795
+              ·  WARD: LUKWETA    2,369
+              ·  WARD: CHILONGAMABWE    2,155
+              ·  WARD: MKAIKA    4,053
+              ·  WARD: KAMIZA    2,020
+              ·  WARD: MATUNGA    2,649
+              ·  WARD: MPHANGWE    14,096
+
+▶  DISTRICT: LUNDAZI    68,783 voters    1 constituency    10 wards
+      ▷  CONSTITUENCY: LUNDAZI    68,783 voters    10 wards
+              ·  WARD: VUU    3,015
+              ·  WARD: MPHAMBA    6,962
+              ·  WARD: MNYAMAZI    16,715
+              ·  WARD: MSUZI    4,253
+              ·  WARD: NDONDA    6,760
+              ·  WARD: CHILOLA    7,418
+              ·  WARD: CHIMALIRO    5,862
+              ·  WARD: LUNEVWA    8,212
+              ·  WARD: MKOMBA    3,125
+              ·  WARD: NTHITIMILA    6,461
+
+▶  DISTRICT: MAMBWE    45,133 voters    1 constituency    15 wards
+      ▷  CONSTITUENCY: MALAMBO    45,133 voters    15 wards
+              ·  WARD: NSEFU    4,028
+              ·  WARD: MNKHANYA    6,666
+              ·  WARD: NCHEKA    1,847
+              ·  WARD: CHIPAKO    1,619
+              ·  WARD: MALAMA    519
+              ·  WARD: KAKUMBI    7,364
+              ·  WARD: JUMBE    3,378
+              ·  WARD: CHIPAPA    3,131
+              ·  WARD: CHISENGU    1,693
+              ·  WARD: MPHOMWA    1,718
+              ·  WARD: CHIKOWA    2,610
+              ·  WARD: MSORO    1,884
+              ·  WARD: NYAKATOKOLI    1,433
+              ·  WARD: KASAMANDA    3,066
+              ·  WARD: MDIMA    4,177
+
+▶  DISTRICT: NYIMBA    53,271 voters    1 constituency    15 wards
+      ▷  CONSTITUENCY: NYIMBA    53,271 voters    15 wards
+              ·  WARD: LUANGWA    1,334
+              ·  WARD: CHINAMBI    4,506
+              ·  WARD: NYIMBA    10,965
+              ·  WARD: KALIWE    4,544
+              ·  WARD: MSIMA    2,198
+              ·  WARD: CHIWEZA    3,346
+              ·  WARD: MOMBE    2,416
+              ·  WARD: CHAMILALA    2,122
+              ·  WARD: CHINSIMBWE    1,470
+              ·  WARD: KATIPA    2,128
+              ·  WARD: MPHUNDWE    3,080
+              ·  WARD: VIZIMUMBA    3,570
+              ·  WARD: NGOZI    4,524
+              ·  WARD: LWEZI    2,138
+              ·  WARD: MTILIZI    4,930
+
+▶  DISTRICT: PETAUKE    100,604 voters    2 constituency    13 wards
+      ▷  CONSTITUENCY: KAUMBWE    30,503 voters    5 wards
+              ·  WARD: LUSINDE    7,677
+              ·  WARD: KAUMBWE    7,578
+              ·  WARD: MANJAZI    5,675
+              ·  WARD: KANYANGA    3,831
+              ·  WARD: MANYANE    5,742
+      ▷  CONSTITUENCY: PETAUKE    70,101 voters    8 wards
+              ·  WARD: NSIMBO    3,916
+              ·  WARD: NYIKA    22,945
+              ·  WARD: CHILIMANYAMA    8,872
+              ·  WARD: KOVYANE    7,469
+              ·  WARD: MBALA    7,570
+              ·  WARD: MSUMBAZI    5,490
+              ·  WARD: MINGA    5,178
+              ·  WARD: ONGOLWE    8,661
+
+▶  DISTRICT: SINDA    78,035 voters    2 constituency    19 wards
+      ▷  CONSTITUENCY: KAPOCHE    44,692 voters    11 wards
+              ·  WARD: LUANDAZI    2,576
+              ·  WARD: CHAMAKUWI    1,780
+              ·  WARD: NCHINGILIZYA    3,216
+              ·  WARD: KAMWAZA    5,132
+              ·  WARD: KAMWAZA    5,645
+              ·  WARD: SIWVA    3,474
+              ·  WARD: KAPOCHE    4,255
+              ·  WARD: MWANGAILA    3,722
+              ·  WARD: NCHEMBWE    3,482
+              ·  WARD: MATAMBAZI    6,133
+              ·  WARD: KAPUNGWE    5,277
+      ▷  CONSTITUENCY: SINDA    33,343 voters    8 wards
+              ·  WARD: NYAMASONKHO    4,416
+              ·  WARD: CHILONGOZI    3,041
+              ·  WARD: CHILONGOZI    3,867
+              ·  WARD: CHITAWE    2,566
+              ·  WARD: MNYAMANZI    4,478
+              ·  WARD: KASANGAZI    4,989
+              ·  WARD: SINDA    5,963
+              ·  WARD: CHIWUYU    4,023
+
+▶  DISTRICT: VUBWI    27,933 voters    1 constituency    9 wards
+      ▷  CONSTITUENCY: VUBWI    27,933 voters    9 wards
+              ·  WARD: MBOZI    3,434
+              ·  WARD: VUBWI    4,067
+              ·  WARD: MBANDE    1,760
+              ·  WARD: MATEMBA    2,236
+              ·  WARD: CHISIYA    3,450
+              ·  WARD: CHIMPHANJE    2,520
+              ·  WARD: MLAWE    3,829
+              ·  WARD: ZOZWE    4,067
+              ·  WARD: SINDEMISALE    2,570
+
+▶  DISTRICT: CHASEFU    58,846 voters    1 constituency    10 wards
+      ▷  CONSTITUENCY: CHASEFU    58,846 voters    10 wards
+              ·  WARD: MANDA HILL    4,477
+              ·  WARD: SUSA    6,757
+              ·  WARD: MAGODI    8,519
+              ·  WARD: KAJILIME    4,696
+              ·  WARD: LUWEREZI    8,101
+              ·  WARD: KAPILISANGA    6,933
+              ·  WARD: MEMBE    4,182
+              ·  WARD: CHABOLI    7,632
+              ·  WARD: NKHANGA    4,348
+              ·  WARD: CHIZINGIZI    3,201
+
+▶  DISTRICT: CHIPANGALI    70,181 voters    1 constituency    8 wards
+      ▷  CONSTITUENCY: CHIPANGALI    70,181 voters    8 wards
+              ·  WARD: SISINJE    9,031
+              ·  WARD: LUNKHUSWE    3,870
+              ·  WARD: NTHOPE    7,250
+              ·  WARD: MADZIATUBA    2,446
+              ·  WARD: CHIPANGALI    9,423
+              ·  WARD: RUKUZYE    18,949
+              ·  WARD: KASENGA    7,177
+              ·  WARD: MSANDILE    12,035
+
+▶  DISTRICT: KASENENGWA    52,896 voters    1 constituency    8 wards
+      ▷  CONSTITUENCY: KASENENGWA    52,896 voters    8 wards
+              ·  WARD: KWENJE    6,782
+              ·  WARD: MPUNZA    4,296
+              ·  WARD: NGONGWE    8,136
+              ·  WARD: CHINGAZI    6,632
+              ·  WARD: MAKUNGWA    7,338
+              ·  WARD: MBOZA    6,354
+              ·  WARD: MKOWE    4,165
+              ·  WARD: CHIPARAMBA    9,193
+
+▶  DISTRICT: LUMEZI    53,438 voters    1 constituency    11 wards
+      ▷  CONSTITUENCY: LUMEZI    53,438 voters    11 wards
+              ·  WARD: CHIBANDE    2,495
+              ·  WARD: LUKUSUZI    3,298
+              ·  WARD: LUMIMBA    3,634
+              ·  WARD: KAZEMBE    2,439
+              ·  WARD: KAPANGALA    2,830
+              ·  WARD: KAIKUMBE    4,956
+              ·  WARD: WACHITANGACHI    6,475
+              ·  WARD: CHAMTOWA    6,820
+              ·  WARD: KACHAMA    3,541
+              ·  WARD: KAMIMBA    6,752
+              ·  WARD: DIWA    10,198
+
+▶  DISTRICT: LUSANGAZI    41,502 voters    1 constituency    11 wards
+      ▷  CONSTITUENCY: MSANZALA    41,502 voters    11 wards
+              ·  WARD: CHINGOLO    2,901
+              ·  WARD: MATEYO MZEKA    4,466
+              ·  WARD: LUTWAZI    3,094
+              ·  WARD: SINGOZI    4,417
+              ·  WARD: NYAKAWISE    7,162
+              ·  WARD: MAWANDA    4,105
+              ·  WARD: CHIKOWA    2,436
+              ·  WARD: LUSANGAZI    2,639
+              ·  WARD: MUDONSA    3,916
+              ·  WARD: CHISANGU    2,794
+              ·  WARD: UKWIMI    3,572
+
+▶  DISTRICT: CHAMA    53,104 voters    2 constituency    24 wards
+      ▷  CONSTITUENCY: CHAMA NORTH    30,955 voters    13 wards
+              ·  WARD: MUCHINGA    2,051
+              ·  WARD: MAZONDE    789
+              ·  WARD: NKHANKHA    2,480
+              ·  WARD: LUANGWA    1,403
+              ·  WARD: CHISUNGA    1,490
+              ·  WARD: MWALALA    2,771
+              ·  WARD: NDUNDA    1,132
+              ·  WARD: MBAZI    2,806
+              ·  WARD: MANTHEPA    861
+              ·  WARD: KALINKHU    3,166
+              ·  WARD: KAOZI    2,415
+              ·  WARD: MPHALAUSENGA    3,450
+              ·  WARD: KAMPHEMBA    6,141
+      ▷  CONSTITUENCY: CHAMA SOUTH    22,149 voters    11 wards
+              ·  WARD: BAZIMU    1,685
+              ·  WARD: MABINGA    2,847
+              ·  WARD: LUPAMAZI    1,142
+              ·  WARD: CHIBUNGWE    1,294
+              ·  WARD: CHILUBALUBA    1,182
+              ·  WARD: LUMEZI    2,434
+              ·  WARD: LUNZI    3,407
+              ·  WARD: CHIPALA    989
+              ·  WARD: VILIMUKULU    2,606
+              ·  WARD: CHILENJE    2,811
+              ·  WARD: MAPAMBA    1,752
+
+=================================================================
+EASTERN PROVINCE TOTAL: 954,227 voters
+15 Districts  |  20 Constituencies  |  206 Wards

@@ -1,0 +1,208 @@
+NORTH-WESTERN PROVINCE — VOTER REGISTER HIERARCHY
+Province 8  |  11 Districts  |  12 Constituencies  |  167 Wards
+======================================================================
+
+▶  DISTRICT: CHAVUMA    20,589 voters    1 constituency    15 wards
+      ▷  CONSTITUENCY: CHAVUMA    20,589 voters    15 wards
+              ·  WARD: NGUVU MUKUKU    475
+              ·  WARD: NYATANDA    623
+              ·  WARD: NYAMBINGILA    806
+              ·  WARD: CHAMBI MANDALO    1,172
+              ·  WARD: SANJONGO MAVILI    872
+              ·  WARD: CHAVUMA CENTRAL    4,296
+              ·  WARD: SEWE MUNGOLE    1,168
+              ·  WARD: CHIYEKE    3,222
+              ·  WARD: KAKHOMA    659
+              ·  WARD: LINGELENGENDA CHINWANDUMBA    1,151
+              ·  WARD: KALOMBO KAMISAMBA    2,326
+              ·  WARD: CHIVOMBO MBALANGO    671
+              ·  WARD: LINGUNDU KAYINDA    1,202
+              ·  WARD: LUKOLWE MUSUNGA    868
+              ·  WARD: KAMBUYA MUKELANGOMBE    1,078
+
+▶  DISTRICT: IKELENGE    18,442 voters    1 constituency    10 wards
+      ▷  CONSTITUENCY: IKELENG'I    18,442 voters    10 wards
+              ·  WARD: MWININYILAMBA    1,062
+              ·  WARD: KAFWEKU    705
+              ·  WARD: MWILOMBI    1,808
+              ·  WARD: JIMBE    2,025
+              ·  WARD: CHANACHAMUHING'A    1,646
+              ·  WARD: NYAKASEYA    1,833
+              ·  WARD: SAKEJI    2,416
+              ·  WARD: IKELENG'I    4,671
+              ·  WARD: MUKANG'ALA    758
+              ·  WARD: LWAKELA    1,518
+
+▶  DISTRICT: KABOMPO    25,958 voters    1 constituency    17 wards
+      ▷  CONSTITUENCY: KABOMPO    25,958 voters    17 wards
+              ·  WARD: KAYOMBO    1,285
+              ·  WARD: CHIKONKWELO    653
+              ·  WARD: LULI    1,497
+              ·  WARD: KAMAFWAFWA    2,418
+              ·  WARD: KABOMPO    6,598
+              ·  WARD: LITOYA    271
+              ·  WARD: CHIFUWE    1,142
+              ·  WARD: KAMISOMBO    1,273
+              ·  WARD: NKULWASHI    794
+              ·  WARD: KABULAMEMA    1,568
+              ·  WARD: KAMISAMBA    1,482
+              ·  WARD: MUMBEJI    2,507
+              ·  WARD: MAVEVE    834
+              ·  WARD: KALWILO    534
+              ·  WARD: CHIKENGE    1,142
+              ·  WARD: KATUVA    728
+              ·  WARD: LUNYIWE    1,232
+
+▶  DISTRICT: KASEMPA    35,358 voters    1 constituency    24 wards
+      ▷  CONSTITUENCY: KASEMPA    35,358 voters    24 wards
+              ·  WARD: KAMAKUKU    855
+              ·  WARD: NSELAUKE    2,344
+              ·  WARD: INGWE    1,104
+              ·  WARD: KAIMBWE    1,336
+              ·  WARD: KAMATETE    1,655
+              ·  WARD: MUKEMA    567
+              ·  WARD: MUKINDA    992
+              ·  WARD: NYOKA    1,268
+              ·  WARD: MAAKO    518
+              ·  WARD: LUBOFU    1,103
+              ·  WARD: KELONGWA    1,002
+              ·  WARD: KAMAKECHI    1,155
+              ·  WARD: JIFUMPA    590
+              ·  WARD: MUKUNASHI    1,588
+              ·  WARD: KANONGO    900
+              ·  WARD: MPUNGU    751
+              ·  WARD: KANTENDA    1,333
+              ·  WARD: SHIBENDE    1,056
+              ·  WARD: NKENYAUNA    2,137
+              ·  WARD: KIKONKOMENE    3,365
+              ·  WARD: NJENGA    1,181
+              ·  WARD: KALOMBE    2,620
+              ·  WARD: DENGWE    1,298
+              ·  WARD: KAMUSONGOLWA    4,640
+
+▶  DISTRICT: MANYINGA    25,034 voters    1 constituency    14 wards
+      ▷  CONSTITUENCY: MANYINGA    25,034 voters    14 wards
+              ·  WARD: CHITEVE    1,019
+              ·  WARD: LOLOMA    2,786
+              ·  WARD: SIKUFELE    1,454
+              ·  WARD: KAULA    2,331
+              ·  WARD: KAWANDA    1,285
+              ·  WARD: KASAMBA    2,470
+              ·  WARD: CHONGO    2,926
+              ·  WARD: CHIFUWE NORTH    2,129
+              ·  WARD: MANYINGA    2,411
+              ·  WARD: MUKOSHO    1,251
+              ·  WARD: KACHIKENGE    1,087
+              ·  WARD: DIHAMBA    1,109
+              ·  WARD: LUNSONG'WA    1,104
+              ·  WARD: KASHINAKAJI    1,672
+
+▶  DISTRICT: MUFUMBWE    32,057 voters    1 constituency    18 wards
+      ▷  CONSTITUENCY: MUFUMBWE    32,057 voters    18 wards
+              ·  WARD: KASHIMA WEST    1,680
+              ·  WARD: KASHIMA EAST    2,512
+              ·  WARD: MATUSHI    3,028
+              ·  WARD: KAMABUTA    2,805
+              ·  WARD: KALAMBU    6,407
+              ·  WARD: CHIZELA    2,245
+              ·  WARD: SHUKWE    1,428
+              ·  WARD: KIKONGE    941
+              ·  WARD: KALENGWA    812
+              ·  WARD: MUNYAMBALA    1,352
+              ·  WARD: KABIPUPU    986
+              ·  WARD: MUSONWEJI    357
+              ·  WARD: KILALE    941
+              ·  WARD: MUSHIMA    1,122
+              ·  WARD: KAMINZEKENZEKE    1,905
+              ·  WARD: LALAFUTA    626
+              ·  WARD: SHIMPANDANGA    1,416
+              ·  WARD: MILUJI    1,494
+
+▶  DISTRICT: MWINILUNGA    48,181 voters    1 constituency    21 wards
+      ▷  CONSTITUENCY: MWINILUNGA    48,181 voters    21 wards
+              ·  WARD: KANZENZI    1,850
+              ·  WARD: CHIBWIKA    1,434
+              ·  WARD: KAMAPANDA    1,785
+              ·  WARD: KANONGESHA    2,916
+              ·  WARD: KAWIKU    1,841
+              ·  WARD: KABANDA    3,523
+              ·  WARD: MULUMBI    5,203
+              ·  WARD: KAMPEMBA    1,626
+              ·  WARD: MUDANYAMA    3,948
+              ·  WARD: MUNDWIJI    3,829
+              ·  WARD: KAPUNDU    1,311
+              ·  WARD: KANYAMA    2,007
+              ·  WARD: KAKOMA    2,318
+              ·  WARD: KASAMPULA    1,121
+              ·  WARD: LUMWANA    2,068
+              ·  WARD: CHISASA    1,598
+              ·  WARD: MAKUYA    1,632
+              ·  WARD: NTAMBU    1,929
+              ·  WARD: SAILUNGA    1,585
+              ·  WARD: SAMUTEBA    2,118
+              ·  WARD: KANYIKOMBOSHI    2,539
+
+▶  DISTRICT: SOLWEZI    80,725 voters    1 constituency    12 wards
+      ▷  CONSTITUENCY: SOLWEZI CENTRAL    80,725 voters    12 wards
+              ·  WARD: KIMASALA    16,111
+              ·  WARD: KAMALAMBA    7,539
+              ·  WARD: KAPIJIMPANGA    3,471
+              ·  WARD: SANDANG'OMBE    1,880
+              ·  WARD: KYALALANKUBA    10,641
+              ·  WARD: KYAWAMA    11,528
+              ·  WARD: TUMVWANG'ANAI    12,799
+              ·  WARD: KAZHIBA    2,602
+              ·  WARD: KIVUKU    1,299
+              ·  WARD: KYAFUKUMA    2,741
+              ·  WARD: KIMALE    7,715
+              ·  WARD: KIFUBWA    2,399
+
+▶  DISTRICT: ZAMBEZI    37,939 voters    2 constituencies    16 wards
+      ▷  CONSTITUENCY: ZAMBEZI EAST    26,291 voters    10 wards
+              ·  WARD: NYAKULENG'A    2,647
+              ·  WARD: LWITADI LWATEMBO    1,633
+              ·  WARD: LWITADI LWATEMBO    3,481
+              ·  WARD: CHITOKOLOKI    2,146
+              ·  WARD: KASESI CHIVWEJI    3,064
+              ·  WARD: ZAMBEZI    3,875
+              ·  WARD: ZAMBEZI    2,795
+              ·  WARD: MUKANDA NKUNDA    2,045
+              ·  WARD: DIPALATA    2,820
+              ·  WARD: LUNKUNYI    1,785
+      ▷  CONSTITUENCY: ZAMBEZI WEST    11,648 voters    6 wards
+              ·  WARD: MAPACHI CHINYINGI    3,224
+              ·  WARD: LIKUNGU    1,599
+              ·  WARD: LIYOVU    2,160
+              ·  WARD: MUYEMBE    1,583
+              ·  WARD: MWANGE NYAWANDA    1,603
+              ·  WARD: MATONDO NYACHIKAYI    1,479
+
+▶  DISTRICT: KALUMBILA    47,797 voters    1 constituency    12 wards
+      ▷  CONSTITUENCY: SOLWEZI WEST    47,797 voters    12 wards
+              ·  WARD: KIBANZA    2,894
+              ·  WARD: MWAJIMAMBWE    5,705
+              ·  WARD: WABITUWO    3,538
+              ·  WARD: SHILENDA    7,296
+              ·  WARD: MUMENA    3,201
+              ·  WARD: MATEBO    2,753
+              ·  WARD: CHOVWE    2,099
+              ·  WARD: MUSELE    2,665
+              ·  WARD: KISASA    7,483
+              ·  WARD: CHITUNG'U    3,001
+              ·  WARD: MUKUMBI    2,905
+              ·  WARD: MUMBEZHI    4,257
+
+▶  DISTRICT: MUSHINDAMO    19,992 voters    1 constituency    8 wards
+      ▷  CONSTITUENCY: SOLWEZI EAST    19,992 voters    8 wards
+              ·  WARD: KILUMBA    1,584
+              ·  WARD: MULONGA    3,015
+              ·  WARD: MUSAKA    2,777
+              ·  WARD: KIKOLA    1,059
+              ·  WARD: KANGWENA    2,430
+              ·  WARD: KALILELE    5,139
+              ·  WARD: MAPUNGA    2,697
+              ·  WARD: MUJIMANZOVU    1,291
+
+======================================================================
+NORTH-WESTERN PROVINCE TOTAL: 392,072 voters
+11 Districts  |  12 Constituencies  |  167 Wards

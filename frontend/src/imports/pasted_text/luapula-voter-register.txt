@@ -1,0 +1,215 @@
+LUAPULA PROVINCE — VOTER REGISTER HIERARCHY
+Province 4  |  12 Districts  |  15 Constituencies  |  169 Wards
+======================================================================
+
+▶  DISTRICT: CHEMBE    18,594 voters    1 constituency    8 wards
+      ▷  CONSTITUENCY: CHEMBE    18,594 voters    8 wards
+              ·  WARD: KUNDAMFUMU    2,505
+              ·  WARD: LUKOLA    1,588
+              ·  WARD: KASOMALWELA    1,198
+              ·  WARD: MUSHINGWA    1,833
+              ·  WARD: LUAPULA    6,700
+              ·  WARD: LUWO    1,832
+              ·  WARD: KAPWEPWE    2,081
+              ·  WARD: MUMFULA    857
+
+▶  DISTRICT: CHIENGE    64,829 voters    1 constituency    15 wards
+      ▷  CONSTITUENCY: CHIENGE    64,829 voters    15 wards
+              ·  WARD: LUNCHINDA    3,597
+              ·  WARD: CHIBAMBA    6,945
+              ·  WARD: CHIPUNGU    6,802
+              ·  WARD: LUAU    3,788
+              ·  WARD: CHITUNDA    1,860
+              ·  WARD: LAMBWE CHOMBA    6,292
+              ·  WARD: CHIENGE    3,943
+              ·  WARD: KATETE    7,167
+              ·  WARD: IFUNA    2,589
+              ·  WARD: CHIPAMBA    2,473
+              ·  WARD: KALOBWA    3,756
+              ·  WARD: CHITUTU    4,002
+              ·  WARD: KALUNGWISHI    4,209
+              ·  WARD: MUNWA    2,432
+              ·  WARD: MUNUNGA    4,974
+
+▶  DISTRICT: CHIPILI    19,724 voters    1 constituency    12 wards
+      ▷  CONSTITUENCY: CHIPILI    19,724 voters    12 wards
+              ·  WARD: MAKABE    1,101
+              ·  WARD: NSENGA    1,063
+              ·  WARD: MWESHI    1,863
+              ·  WARD: MUMBWE    1,844
+              ·  WARD: KABUTA    1,789
+              ·  WARD: LUFUBU    1,748
+              ·  WARD: CHIBALASHI    2,277
+              ·  WARD: KANSHIMBA    1,592
+              ·  WARD: NALUPEMBE    2,481
+              ·  WARD: NKONGE    1,876
+              ·  WARD: MUSUFYA    1,202
+              ·  WARD: CHULU LUONGO    888
+
+▶  DISTRICT: KAWAMBWA    48,811 voters    2 constituencies    18 wards
+      ▷  CONSTITUENCY: KAWAMBWA    27,863 voters    9 wards
+              ·  WARD: IYANGA    2,091
+              ·  WARD: LUSHIBA    1,460
+              ·  WARD: FISAKA    2,830
+              ·  WARD: FISAKA    7,763
+              ·  WARD: KAWAMBWA    4,963
+              ·  WARD: NTUMBACHUSHI    1,152
+              ·  WARD: SENGA    2,574
+              ·  WARD: KALA    1,452
+              ·  WARD: LUENA    3,578
+      ▷  CONSTITUENCY: PAMBASHE    20,948 voters    9 wards
+              ·  WARD: KABANSE    2,350
+              ·  WARD: ILOMBE    3,817
+              ·  WARD: PAMBASHE    2,439
+              ·  WARD: FILENGE    2,703
+              ·  WARD: MULUNDA    2,756
+              ·  WARD: CHIBOTE    3,165
+              ·  WARD: CHIKANDA    832
+              ·  WARD: CHIMPILI    1,512
+              ·  WARD: LUONGO    1,374
+
+▶  DISTRICT: LUNGA    17,351 voters    1 constituency    10 wards
+      ▷  CONSTITUENCY: LUAPULA    17,351 voters    10 wards
+              ·  WARD: MWESHI    1,235
+              ·  WARD: LUNGA    4,682
+              ·  WARD: ITALA    1,192
+              ·  WARD: MASHIBA    1,949
+              ·  WARD: LUBALE    664
+              ·  WARD: NSALUSHI    3,145
+              ·  WARD: CHUMBWE    750
+              ·  WARD: SHINGA    1,567
+              ·  WARD: NCHETA    1,519
+              ·  WARD: NKUTILA    648
+
+▶  DISTRICT: MANSA    123,417 voters    2 constituencies    20 wards
+      ▷  CONSTITUENCY: BAHATI    49,017 voters    10 wards
+              ·  WARD: MUTUNA    3,203
+              ·  WARD: KAMPEMBA    1,811
+              ·  WARD: MUSHIPASHI    2,248
+              ·  WARD: KAOLE    7,289
+              ·  WARD: CHOFOSHI    2,036
+              ·  WARD: MISAKALALA    5,414
+              ·  WARD: MANSA    13,485
+              ·  WARD: MYULU    3,677
+              ·  WARD: CHIPOKA    3,159
+              ·  WARD: KATANGASHI    6,695
+      ▷  CONSTITUENCY: MANSA CENTRAL    74,400 voters    10 wards
+              ·  WARD: MUSABA    7,664
+              ·  WARD: LWINGISHI    5,097
+              ·  WARD: CHANSUNSU    6,491
+              ·  WARD: NAMWANDWE    6,577
+              ·  WARD: CHILYAPA    17,568
+              ·  WARD: MUCHINKA    9,678
+              ·  WARD: MULENSHI    8,320
+              ·  WARD: LUKANGABA    4,297
+              ·  WARD: FIMPULU    2,989
+              ·  WARD: CHIBELEKA    5,719
+
+▶  DISTRICT: MILENGE    22,190 voters    1 constituency    15 wards
+      ▷  CONSTITUENCY: MILENGE    22,190 voters    15 wards
+              ·  WARD: MATONTOLA    1,801
+              ·  WARD: LWELA    1,536
+              ·  WARD: FISHIKWA    840
+              ·  WARD: MULUMBI    1,309
+              ·  WARD: FIBALALA    1,534
+              ·  WARD: LUSUMBWE    1,820
+              ·  WARD: NSAKA    474
+              ·  WARD: MILAMBO    1,993
+              ·  WARD: NSUNGA    987
+              ·  WARD: CHIPUNDU    813
+              ·  WARD: SOKONTWE    1,648
+              ·  WARD: MIKULA    3,525
+              ·  WARD: KATENA    1,490
+              ·  WARD: KAPALALA    1,402
+              ·  WARD: MUMBOTUTA    1,018
+
+▶  DISTRICT: MWANSABOMBWE    27,763 voters    1 constituency    12 wards
+      ▷  CONSTITUENCY: MWANSABOMBWE    27,763 voters    12 wards
+              ·  WARD: KAYO    2,722
+              ·  WARD: MBERESHI    1,789
+              ·  WARD: KABALENGE    1,163
+              ·  WARD: KAKOSE    772
+              ·  WARD: KAZEMBE    3,133
+              ·  WARD: CHIPITA    3,215
+              ·  WARD: MWANSABOMBWE    3,495
+              ·  WARD: PEMBE    1,741
+              ·  WARD: LUFUBU    2,335
+              ·  WARD: MULELE    1,971
+              ·  WARD: SALANGA    3,159
+              ·  WARD: MUNUNSHI    2,268
+
+▶  DISTRICT: MWENSE    54,969 voters    2 constituencies    21 wards
+      ▷  CONSTITUENCY: MAMBILIMA    23,047 voters    10 wards
+              ·  WARD: MICHELO    701
+              ·  WARD: MPASA    1,809
+              ·  WARD: CHIBEMBE    1,646
+              ·  WARD: MUSONDA    2,715
+              ·  WARD: LUNDASHI    1,807
+              ·  WARD: MAMBILIMA    3,739
+              ·  WARD: MUNWA    2,734
+              ·  WARD: NSOMFI    3,624
+              ·  WARD: CHANSHA    1,585
+              ·  WARD: KALANGA    2,687
+      ▷  CONSTITUENCY: MWENSE    31,922 voters    11 wards
+              ·  WARD: MWENSE    2,438
+              ·  WARD: KASENGU    2,138
+              ·  WARD: KATITI    2,561
+              ·  WARD: CHACHACHA    2,985
+              ·  WARD: KAPELA    4,555
+              ·  WARD: PEBEKABESA    2,652
+              ·  WARD: LUCHE    4,267
+              ·  WARD: KAPAMBA    1,838
+              ·  WARD: CHIWASHA    2,669
+              ·  WARD: NKANGA    2,888
+              ·  WARD: KAOMBE    2,931
+
+▶  DISTRICT: NCHELENGE    72,786 voters    1 constituency    15 wards
+      ▷  CONSTITUENCY: NCHELENGE    72,786 voters    15 wards
+              ·  WARD: KABUTA    10,493
+              ·  WARD: MUNKOMBWE    944
+              ·  WARD: MWATISHI    6,935
+              ·  WARD: CHILONGO    2,303
+              ·  WARD: KASHIKISHI    14,721
+              ·  WARD: NSEMBAISHE    2,551
+              ·  WARD: KILWA    2,743
+              ·  WARD: ISOKWE    1,923
+              ·  WARD: NCHELENGE    9,241
+              ·  WARD: KASAMBA    3,585
+              ·  WARD: CHISENGA    2,663
+              ·  WARD: MULWE    4,613
+              ·  WARD: SHABO    3,433
+              ·  WARD: MOFWE    4,720
+              ·  WARD: KATOFYO    1,918
+
+▶  DISTRICT: SAMFYA    57,861 voters    1 constituency    10 wards
+      ▷  CONSTITUENCY: BANGWEULU    57,861 voters    10 wards
+              ·  WARD: LUMAMYA    5,219
+              ·  WARD: KAPILIBILA    3,757
+              ·  WARD: LUFWISHI    1,684
+              ·  WARD: MUSABA    3,256
+              ·  WARD: ISAMBA    4,432
+              ·  WARD: KAPATA    9,196
+              ·  WARD: KATANSHYA    7,248
+              ·  WARD: MANO    7,939
+              ·  WARD: LUPILI    9,183
+              ·  WARD: CHIMANA    5,947
+
+▶  DISTRICT: CHIFUNABULI    41,510 voters    1 constituency    13 wards
+      ▷  CONSTITUENCY: CHIFUNABULI    41,510 voters    13 wards
+              ·  WARD: MBABALA    1,737
+              ·  WARD: CHISHI    2,444
+              ·  WARD: KAFUMBO    3,210
+              ·  WARD: LUBWE    4,518
+              ·  WARD: CHIFUNABULI    3,822
+              ·  WARD: KASONGOLE    2,781
+              ·  WARD: MUBANSENSHI    2,356
+              ·  WARD: MASONDE    2,985
+              ·  WARD: CHINKUTILA    5,861
+              ·  WARD: KASANSA    3,205
+              ·  WARD: KASABA    3,587
+              ·  WARD: KAPAMBA    2,351
+              ·  WARD: KAPESHI    2,653
+
+======================================================================
+LUAPULA PROVINCE TOTAL: 569,805 voters
+12 Districts  |  15 Constituencies  |  169 Wards

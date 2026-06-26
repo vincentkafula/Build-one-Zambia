@@ -1,0 +1,215 @@
+Updated JSON with Districts (ready for coding)
+JSON{
+  "provinces": [
+    {
+      "name": "Central",
+      "districts": [
+        {
+          "district": "Chibombo",
+          "constituencies": ["Katuba", "Chibombo"]
+        },
+        {
+          "district": "Kabwe",
+          "constituencies": ["Bwacha", "Kabwe Central"]
+        },
+        {
+          "district": "Kapiri Mposhi",
+          "constituencies": ["Kapiri Mposhi", "Kapiri Mposhi West"]
+        },
+        {
+          "district": "Mumbwa",
+          "constituencies": ["Mumbwa", "Nangoma", "Mwembeshi"]
+        },
+        {
+          "district": "Mkushi",
+          "constituencies": ["Mkushi North", "Mkushi South"]
+        },
+        {
+          "district": "Serenje",
+          "constituencies": ["Serenje", "Chitambo"]
+        },
+        {
+          "district": "Chisamba",
+          "constituencies": ["Chisamba"]
+        },
+        {
+          "district": "Shibuyunji",
+          "constituencies": ["Mwembeshi West", "Nkundalila"]
+        }
+      ]
+    },
+    {
+      "name": "Copperbelt",
+      "districts": [
+        {
+          "district": "Chililabombwe",
+          "constituencies": ["Chililabombwe"]
+        },
+        {
+          "district": "Chingola",
+          "constituencies": ["Chingola", "Nchanga", "Chingola West"]
+        },
+        {
+          "district": "Kalulushi",
+          "constituencies": ["Kalulushi"]
+        },
+        {
+          "district": "Kitwe",
+          "constituencies": ["Kwacha", "Nkana", "Wusakile", "Kamfinsa"]
+        },
+        {
+          "district": "Luanshya",
+          "constituencies": ["Luanshya", "Roan"]
+        },
+        {
+          "district": "Mufulira",
+          "constituencies": ["Mufulira", "Kankoyo", "Kantanshi"]
+        },
+        {
+          "district": "Ndola",
+          "constituencies": ["Ndola Central", "Bwana Mkubwa", "Chifubu"]
+        },
+        {
+          "district": "Masaiti",
+          "constituencies": ["Kafulafuta", "Masaiti"]
+        }
+      ]
+    },
+    {
+      "name": "Eastern",
+      "districts": [
+        {
+          "district": "Chipata",
+          "constituencies": ["Chipata Central", "Luangeni", "Chipata North"]
+        },
+        {
+          "district": "Petauke",
+          "constituencies": ["Petauke Central"]
+        },
+        {
+          "district": "Katete",
+          "constituencies": ["Milanzi", "Mkaika"]
+        },
+        {
+          "district": "Lundazi",
+          "constituencies": ["Lundazi", "Chasefu"]
+        }
+      ]
+    },
+    {
+      "name": "Luapula",
+      "districts": [
+        {
+          "district": "Mansa",
+          "constituencies": ["Mansa Central", "Bahati"]
+        },
+        {
+          "district": "Kawambwa",
+          "constituencies": ["Kawambwa", "Pambashe"]
+        },
+        {
+          "district": "Nchelenge",
+          "constituencies": ["Nchelenge"]
+        }
+      ]
+    },
+    {
+      "name": "Lusaka",
+      "districts": [
+        {
+          "district": "Lusaka",
+          "constituencies": ["Lusaka Central", "Kabwata", "Kanyama", "Matero", "Mandevu", "Munali", "Chawama", "Lima", "Makeni", "Roma"]
+        },
+        {
+          "district": "Chilanga",
+          "constituencies": ["Chilanga", "Chilanga North"]
+        },
+        {
+          "district": "Chongwe",
+          "constituencies": ["Chongwe", "Chongwe West"]
+        },
+        {
+          "district": "Kafue",
+          "constituencies": ["Kafue", "Kafue East"]
+        }
+      ]
+    },
+    {
+      "name": "Muchinga",
+      "districts": [
+        {
+          "district": "Chinsali",
+          "constituencies": ["Chinsali"]
+        },
+        {
+          "district": "Mpika",
+          "constituencies": ["Mpika Central"]
+        },
+        {
+          "district": "Nakonde",
+          "constituencies": ["Nakonde"]
+        }
+      ]
+    },
+    {
+      "name": "Northern",
+      "districts": [
+        {
+          "district": "Kasama",
+          "constituencies": ["Kasama Central", "Lukashya"]
+        },
+        {
+          "district": "Mungwi",
+          "constituencies": ["Malole"]
+        }
+      ]
+    },
+    {
+      "name": "North-Western",
+      "districts": [
+        {
+          "district": "Solwezi",
+          "constituencies": ["Solwezi Central", "Solwezi East", "Solwezi West"]
+        },
+        {
+          "district": "Mwinilunga",
+          "constituencies": ["Mwinilunga"]
+        }
+      ]
+    },
+    {
+      "name": "Southern",
+      "districts": [
+        {
+          "district": "Choma",
+          "constituencies": ["Choma"]
+        },
+        {
+          "district": "Mazabuka",
+          "constituencies": ["Mazabuka Central"]
+        },
+        {
+          "district": "Livingstone",
+          "constituencies": ["Livingstone"]
+        }
+      ]
+    },
+    {
+      "name": "Western",
+      "districts": [
+        {
+          "district": "Mongu",
+          "constituencies": ["Mongu Central"]
+        },
+        {
+          "district": "Kalabo",
+          "constituencies": ["Kalabo Central"]
+        },
+        {
+          "district": "Senanga",
+          "constituencies": ["Senanga"]
+        }
+      ]
+    }
+  ]
+}

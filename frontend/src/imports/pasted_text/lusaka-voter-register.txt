@@ -1,0 +1,149 @@
+LUSAKA PROVINCE — VOTER REGISTER HIERARCHY
+Province 5  |  6 Districts  |  12 Constituencies  |  118 Wards
+======================================================================
+
+▶  DISTRICT: CHILANGA    72,643 voters    1 constituency    12 wards
+      ▷  CONSTITUENCY: CHILANGA    72,643 voters    12 wards
+              ·  WARD: MWEMBESHI    5,621
+              ·  WARD: CHINYANJA    2,947
+              ·  WARD: MONDENGWA    2,953
+              ·  WARD: NYEMBA    8,939
+              ·  WARD: KASUPE    4,473
+              ·  WARD: NAMALOMBWE    11,314
+              ·  WARD: NEW FARMS    3,226
+              ·  WARD: CHILANGA    11,592
+              ·  WARD: MOUNT MAKULU    5,472
+              ·  WARD: CHILONGOLO    4,354
+              ·  WARD: NAKACHENJE    3,772
+              ·  WARD: KALUNDU    7,980
+
+▶  DISTRICT: CHONGWE    95,874 voters    1 constituency    21 wards
+      ▷  CONSTITUENCY: CHONGWE    95,874 voters    21 wards
+              ·  WARD: KASENGA    2,406
+              ·  WARD: KASISI    2,679
+              ·  WARD: CHINKULI    3,747
+              ·  WARD: NTANDABALE    9,267
+              ·  WARD: PALABANA    6,438
+              ·  WARD: MADIDO    14,547
+              ·  WARD: NGWERERE    2,612
+              ·  WARD: KAPWAYAMBALE    4,407
+              ·  WARD: KANAKANTAPA    2,946
+              ·  WARD: KAPETE    3,264
+              ·  WARD: MULENJE    1,344
+              ·  WARD: CHALIMBANA    4,058
+              ·  WARD: CHONGWE    17,185
+              ·  WARD: CHAINDA    4,220
+              ·  WARD: MANYIKA    2,998
+              ·  WARD: MWALUMINA    1,565
+              ·  WARD: LWIMBA    3,465
+              ·  WARD: KATOBA    3,815
+              ·  WARD: NJOLWE    1,635
+              ·  WARD: NAKATINDI    1,718
+              ·  WARD: NCHUTE    1,558
+
+▶  DISTRICT: KAFUE    78,811 voters    1 constituency    18 wards
+      ▷  CONSTITUENCY: KAFUE    78,811 voters    18 wards
+              ·  WARD: MAGOBA    4,143
+              ·  WARD: CHIKUPI    1,760
+              ·  WARD: MUNGU    2,577
+              ·  WARD: KABWEZA    2,189
+              ·  WARD: KASENJE    6,483
+              ·  WARD: SHIKOSWE    7,651
+              ·  WARD: SHABUSALE    13,312
+              ·  WARD: MATANDA    8,938
+              ·  WARD: KAFUE    10,163
+              ·  WARD: LUKOLONGO    1,437
+              ·  WARD: SHIMABALA    2,043
+              ·  WARD: MALUNDU    2,692
+              ·  WARD: CHISANKANE    8,660
+              ·  WARD: CHIFWEMA    1,714
+              ·  WARD: CHISAKILA    698
+              ·  WARD: KAMBALE    1,600
+              ·  WARD: CHITENDE    1,155
+              ·  WARD: CHIYABA    1,596
+
+▶  DISTRICT: LUANGWA    14,289 voters    1 constituency    17 wards
+      ▷  CONSTITUENCY: FEIRA    14,289 voters    17 wards
+              ·  WARD: MANKHOKWE    1,055
+              ·  WARD: KALULUZI    595
+              ·  WARD: MWALILIA    1,017
+              ·  WARD: CHIKOMA    1,085
+              ·  WARD: LUNYA    800
+              ·  WARD: KATONDWE    994
+              ·  WARD: MBURUMA    908
+              ·  WARD: KAUNGA    603
+              ·  WARD: CHIRIWE    596
+              ·  WARD: KAPOCHE    549
+              ·  WARD: MPHUKA    479
+              ·  WARD: PHWAZI    816
+              ·  WARD: MANDOMBE    771
+              ·  WARD: DZALO    2,091
+              ·  WARD: KAVUULA    1,120
+              ·  WARD: M'KALIVA    471
+              ·  WARD: KABOWO    339
+
+▶  DISTRICT: LUSAKA    931,962 voters    7 constituencies    38 wards
+      ▷  CONSTITUENCY: CHAWAMA    93,124 voters    4 wards
+              ·  WARD: NKOLOMA    33,903
+              ·  WARD: CHAWAMA    41,607
+              ·  WARD: JOHN HOWARD    11,873
+              ·  WARD: LILAYI    5,741
+      ▷  CONSTITUENCY: KABWATA    109,367 voters    5 wards
+              ·  WARD: KAMWALA    22,151
+              ·  WARD: KABWATA    15,726
+              ·  WARD: LIBALA    18,408
+              ·  WARD: CHILENJE    31,295
+              ·  WARD: KAMULANGA    21,787
+      ▷  CONSTITUENCY: KANYAMA    178,424 voters    6 wards
+              ·  WARD: GARDEN PARK    25,932
+              ·  WARD: CHINIKA    24,441
+              ·  WARD: HARRY MWAANGA NKUMBULA    38,417
+              ·  WARD: KANYAMA    51,907
+              ·  WARD: MAKENI VILLA    17,466
+              ·  WARD: MUNKOLO    20,261
+      ▷  CONSTITUENCY: LUSAKA CENTRAL    93,973 voters    4 wards
+              ·  WARD: SILWIZYA    10,221
+              ·  WARD: INDEPENDENCE    26,433
+              ·  WARD: LUBWA    23,276
+              ·  WARD: KABULONGA    34,043
+      ▷  CONSTITUENCY: MANDEVU    163,011 voters    8 wards
+              ·  WARD: ROMA    31,027
+              ·  WARD: MULUNGUSHI    5,376
+              ·  WARD: NGWERERE    22,025
+              ·  WARD: CHAISA    13,819
+              ·  WARD: JUSTINE KABWE    20,121
+              ·  WARD: RAPHAEL CHOTA    26,017
+              ·  WARD: MPULUNGU    22,917
+              ·  WARD: KABANANA    21,709
+      ▷  CONSTITUENCY: MATERO    142,141 voters    5 wards
+              ·  WARD: MUCHINGA    32,767
+              ·  WARD: KAPWEPWE    18,943
+              ·  WARD: LIMA    22,936
+              ·  WARD: MWEMBESHI    38,028
+              ·  WARD: MATERO    29,467
+      ▷  CONSTITUENCY: MUNALI    151,922 voters    6 wards
+              ·  WARD: KALINGALINGA    24,104
+              ·  WARD: MUNALI    26,993
+              ·  WARD: CHAKUNKULA    23,203
+              ·  WARD: CHAINDA    18,033
+              ·  WARD: KALIKILIKI    25,580
+              ·  WARD: MTENDERE    34,009
+
+▶  DISTRICT: RUFUNSA    25,356 voters    1 constituency    12 wards
+      ▷  CONSTITUENCY: RUFUNSA    25,356 voters    12 wards
+              ·  WARD: KABUYU    1,023
+              ·  WARD: BUNDABUNDA    4,028
+              ·  WARD: NYAMANONGO    1,790
+              ·  WARD: MWACHILELE    1,002
+              ·  WARD: CHAMULIMBA    1,772
+              ·  WARD: NYANGWENA    2,441
+              ·  WARD: KANKUMBA    3,000
+              ·  WARD: MULAMBA    1,997
+              ·  WARD: RUFUNSA    3,296
+              ·  WARD: SHIKABETA    774
+              ·  WARD: MANKHANDA    1,876
+              ·  WARD: CHINTIMBWI    2,357
+
+======================================================================
+LUSAKA PROVINCE TOTAL: 1,218,935 voters
+6 Districts  |  12 Constituencies  |  118 Wards

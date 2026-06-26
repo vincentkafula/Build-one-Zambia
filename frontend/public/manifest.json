@@ -1,0 +1,50 @@
+{
+  "name": "Build One Zambia — Election Results Portal",
+  "short_name": "BOZ Elections",
+  "description": "Real-time 2026 Zambian General Election results — Presidential, Parliamentary, Mayoral and Councillor positions",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020817",
+  "theme_color": "#198754",
+  "orientation": "portrait-primary",
+  "lang": "en-ZM",
+  "categories": ["news", "government", "politics"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Presidential Results",
+      "short_name": "Presidential",
+      "description": "View presidential election results",
+      "url": "/presidential",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Parliamentary Results",
+      "short_name": "Parliament",
+      "description": "View National Assembly results",
+      "url": "/parliament",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Data Entry",
+      "short_name": "Entry",
+      "description": "Submit polling station results",
+      "url": "/data-entry",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
