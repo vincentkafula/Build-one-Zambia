@@ -60,8 +60,8 @@ export default defineConfig(({ mode }) => ({
         },
         // Cache-friendly asset naming
         assetFileNames: 'assets/[name]-[hash][extname]',
-        chunkFileNames: 'js/[name]-[hash].js',
-        entryFileNames: 'js/[name]-[hash].js',
+        chunkFileNames: 'js/[name]-[hash]-v2.js',
+        entryFileNames: 'js/[name]-[hash]-v2.js',
       },
     },
   },
