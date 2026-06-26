@@ -49,7 +49,9 @@ app.use(cors({
       origin.startsWith('http://localhost') ||
       origin.startsWith('http://127.0.0.1') ||
       origin.includes('vercel.app') ||
-      origin.includes('netlify.app')
+      origin.includes('netlify.app') ||
+      origin.includes('railway.app') ||
+      origin.includes('up.railway.app')
     ) {
       cb(null, true);
     } else {
