@@ -72,8 +72,29 @@ app.use(rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, legacyHea
 // ─── Static uploads ──────────────────────────────────────────────────────────
 // Leader images and other public uploads are served here
 
-const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
-fs.mkdirSync(path.join(UPLOADS_DIR, 'leaders'), { recursive: true });
+const IS_RAILWAY = !!process.env.RAILWAY_ENVIRONMENT || !!process.env.RAILWAY_PROJECT_ID;
+const UPLOADS_DIR = IS_RAILWAY
+  ? '/tmp/boz-uploads'
+  : path.join(__dirname, '..', 'uploads');
+
+// On Railway, copy bundled leader images to /tmp on startup
+if (IS_RAILWAY) {
+  const srcLeaders = path.join(__dirname, '..', 'uploads', 'leaders');
+  const dstLeaders = path.join(UPLOADS_DIR, 'leaders');
+  fs.mkdirSync(dstLeaders, { recursive: true });
+  try {
+    const files = fs.readdirSync(srcLeaders);
+    for (const f of files) {
+      const dst = path.join(dstLeaders, f);
+      if (!fs.existsSync(dst)) fs.copyFileSync(path.join(srcLeaders, f), dst);
+    }
+    console.log(`   🖼   Copied ${files.length} leader images to ${dstLeaders}`);
+  } catch (e) {
+    console.warn('   ⚠  Could not copy leader images:', e.message);
+  }
+} else {
+  fs.mkdirSync(path.join(UPLOADS_DIR, 'leaders'), { recursive: true });
+}
 app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));
 
 // ─── Health ──────────────────────────────────────────────────────────────────
@@ -648,7 +669,7 @@ app.use((err, req, res, _next) => {
 
 // ─── Start ───────────────────────────────────────────────────────────────────
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🇿🇲  Build One Zambia Backend`);
   console.log(`   ✅  Server running on http://localhost:${PORT}`);
   console.log(`   📁  Database: ./data/kv.json`);

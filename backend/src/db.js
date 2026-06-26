@@ -1,7 +1,7 @@
 /**
  * Database layer — simple JSON file store
- * Pure Node.js, no native dependencies, works everywhere.
- * Data is stored in ./data/kv.json
+ * Uses /tmp on Railway (ephemeral) or ./data locally.
+ * Data is in-memory; persisted to disk as a best-effort cache.
  */
 
 import fs from 'fs';
@@ -9,20 +9,21 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.join(__dirname, '..', 'data');
+
+// Railway has a read-only filesystem except /tmp.
+// Use DATA_DIR env var to override, else /tmp on Railway, ./data locally.
+const IS_RAILWAY = !!process.env.RAILWAY_ENVIRONMENT || !!process.env.RAILWAY_PROJECT_ID;
+const DATA_DIR = process.env.DATA_DIR || (IS_RAILWAY ? '/tmp/boz-data' : path.join(__dirname, '..', 'data'));
 const DB_PATH  = path.join(DATA_DIR, 'kv.json');
 
-fs.mkdirSync(DATA_DIR, { recursive: true });
+try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch {}
 
-// Load the in-memory store on startup
 let store = {};
-if (fs.existsSync(DB_PATH)) {
-  try {
+try {
+  if (fs.existsSync(DB_PATH)) {
     store = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
-  } catch {
-    store = {};
   }
-}
+} catch { store = {}; }
 
 let flushTimer = null;
 
@@ -30,48 +31,37 @@ function scheduleFlush() {
   if (flushTimer) return;
   flushTimer = setTimeout(() => {
     flushTimer = null;
-    try {
-      fs.writeFileSync(DB_PATH, JSON.stringify(store), 'utf8');
-    } catch (e) {
+    try { fs.writeFileSync(DB_PATH, JSON.stringify(store), 'utf8'); } catch (e) {
       console.error('[db] flush error:', e.message);
     }
-  }, 200); // debounce: write at most every 200ms
+  }, 200);
 }
 
 export const kv = {
   get(key) {
     const v = store[key];
-    if (v === undefined) return null;
-    return v;
+    return v === undefined ? null : v;
   },
-
   set(key, value) {
     store[key] = value;
     scheduleFlush();
   },
-
   del(key) {
     delete store[key];
     scheduleFlush();
   },
-
   getByPrefix(prefix) {
-    return Object.keys(store)
-      .filter(k => k.startsWith(prefix))
-      .map(k => store[k]);
+    return Object.keys(store).filter(k => k.startsWith(prefix)).map(k => store[k]);
   },
-
   getKeysByPrefix(prefix) {
     return Object.keys(store).filter(k => k.startsWith(prefix));
   },
-
   mset(pairs) {
     for (const [k, v] of pairs) store[k] = v;
     scheduleFlush();
   },
 };
 
-// Flush on process exit
 process.on('exit', () => {
   if (flushTimer) {
     clearTimeout(flushTimer);
