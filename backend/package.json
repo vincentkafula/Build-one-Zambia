@@ -1,6 +1,6 @@
 {
   "name": "boz-backend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Build One Zambia Portal - Node.js Backend",
   "type": "module",
   "main": "src/index.js",

@@ -84,28 +84,24 @@ app.get(`${BASE}/health`, (req, res) => {
   res.json({ name: 'Build One Zambia API', status: 'ok', server: 'node-express', version: '1.0.0', timestamp: new Date().toISOString() });
 });
 
-// ─── Shared rate-limit key extractor (real user IP, not proxy IP) ────────────
+// ─── Rate limiting ───────────────────────────────────────────────────────────
+// Shared key extractor — uses real user IP from proxy headers
 const realIpKey = (req) =>
   req.headers['x-real-ip'] ||
   (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
   req.ip ||
   'unknown';
 
-// ─── Shared rate-limit handler (returns JSON, not plain text) ────────────────
-const rateLimitHandler = (req, res) => {
-  res.status(429).json({
-    error: 'Too many requests',
-    message: 'Rate limit exceeded. Please slow down and try again shortly.',
-    retryAfter: Math.ceil(res.getHeader('Retry-After') || 60),
-  });
+// Always respond with JSON on rate limit — never plain text
+const rateLimitHandler = (_req, res) => {
+  res.status(429).json({ error: 'Too many requests — please try again in a moment.' });
 };
 
-// Global rate limit — 2000 req/min per real user IP.
-// Dashboard pages make many parallel calls; this keeps headroom for heavy users
-// while still protecting against abuse.
+// Very permissive global limit — protects only against bots/scripts
+// Dashboard pages make 10-20 parallel requests; 5000/min gives full headroom
 app.use(rateLimit({
   windowMs: 60_000,
-  max: 2000,
+  max: 5000,
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: realIpKey,
@@ -146,7 +142,7 @@ app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));
 app.post(`${BASE}/auth/login`,
   rateLimit({
     windowMs: 15 * 60_000,
-    max: 30,
+    max: 50,
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: realIpKey,
