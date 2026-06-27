@@ -127,7 +127,8 @@ app.get('/__debug/backend', async (req, res) => {
     return res.json({ configured: false, hint: 'Set BACKEND_URL in Railway frontend service variables.' });
   }
   try {
-    const r = await fetch(`${BACKEND}/make-server-8fca9621/health`, { signal: AbortSignal.timeout(5000) });
+    // Use a lightweight API endpoint instead of /health which gets edge-rate-limited
+    const r = await fetch(`${BACKEND}/make-server-8fca9621/news/posts?limit=1`, { signal: AbortSignal.timeout(8000) });
     const ct = r.headers.get('content-type') || '';
     const text = await r.text();
     let backendResponse;
