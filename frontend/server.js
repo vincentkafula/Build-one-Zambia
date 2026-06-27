@@ -53,26 +53,29 @@ app.use(['/make-server-8fca9621', '/uploads'], async (req, res) => {
   }
 });
 
-// ── Static assets ─────────────────────────────────────────────────────────────
+// ── Static assets (immutable, cached) ──────────────────────────────────────────
 app.use('/assets', express.static(path.join(__dirname, 'dist/assets'), { maxAge: '1y', immutable: true }));
 app.use('/js',     express.static(path.join(__dirname, 'dist/js'),     { maxAge: '1y', immutable: true }));
 
-// ── SPA — inject API_URL into index.html ──────────────────────────────────────
-// This catch-all must come BEFORE any generic static middleware
+// ── SPA catch-all: inject API_URL and serve index.html ────────────────────────
+// This MUST come after specific routes but BEFORE any generic static middleware
 app.get('*', (req, res) => {
+  console.log(`[spa] Serving index.html for ${req.method} ${req.path}`);
+  
   const indexPath = path.join(__dirname, 'dist', 'index.html');
   let html = fs.readFileSync(indexPath, 'utf8');
 
-  // Inject window.__API_URL__ before </head>
-  // Empty string → resolveApiOrigin() falls to window.location.origin
-  // → all API calls hit /make-server-8fca9621/* on this server → proxy above
+  // Inject window.__API_URL__ so React app knows where backend is
   const injection = `<script>window.__API_URL__='';</script>`;
   
   if (html.includes('</head>')) {
     html = html.replace('</head>', `${injection}\n</head>`);
-  } else {
-    // Fallback: inject before </html> if </head> not found
+    console.log(`[spa] Injected API_URL before </head>`);
+  } else if (html.includes('</html>')) {
     html = html.replace('</html>', `${injection}\n</html>`);
+    console.log(`[spa] Injected API_URL before </html>`);
+  } else {
+    console.warn(`[spa] WARNING: Could not find </head> or </html> in index.html`);
   }
 
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
