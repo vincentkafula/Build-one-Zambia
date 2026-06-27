@@ -83,6 +83,19 @@ app.get(`${BASE}/health`, (req, res) => {
   res.json({ name: 'Build One Zambia API', status: 'ok', server: 'node-express', version: '1.0.0', timestamp: new Date().toISOString() });
 });
 
+// Simple top-level ping — no path prefix, works from browser immediately
+app.get('/ping', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'boz-backend',
+    port: PORT,
+    railwayService: process.env.RAILWAY_SERVICE_NAME || '(local)',
+    railwayEnv: process.env.RAILWAY_ENVIRONMENT || 'local',
+    publicDomain: process.env.RAILWAY_PUBLIC_DOMAIN || '(not set)',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Rate limiting removed — Railway provides DDoS protection at the edge
 
 // ─── Static uploads ──────────────────────────────────────────────────────────

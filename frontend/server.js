@@ -26,7 +26,9 @@ if (!BACKEND) {
 }
 
 console.log(`\n🇿🇲  Build One Zambia — Frontend Server`);
-console.log(`   🔗  Backend URL: ${BACKEND || '(NOT SET — API calls will fail)'}`);
+console.log(`   🔗  Backend URL:    ${BACKEND || '(NOT SET — API calls will fail)'}`);
+console.log(`   🌐  Public domain:  ${process.env.RAILWAY_PUBLIC_DOMAIN || '(local)'}`);
+console.log(`   🚂  Service name:   ${process.env.RAILWAY_SERVICE_NAME || '(local)'}`);
 console.log(`   📁  Serving dist from: ${DIST}`);
 
 // ─── Helper: proxy a request to the backend ──────────────────────────────────
@@ -85,15 +87,17 @@ async function proxyToBackend(req, res, targetPath) {
     const buffer = Buffer.from(await response.arrayBuffer());
     res.end(buffer);
   } catch (err) {
-    console.error(`[proxy] ${req.method} ${url} → ERROR:`, err.message);
+    console.error(`[proxy] ${req.method} ${url} → ERROR: ${err.name}: ${err.message}`);
     if (err.name === 'TimeoutError') {
-      res.status(504).json({ error: 'Backend request timed out', url });
+      res.status(504).json({ error: 'Backend request timed out', url, hint: 'Backend may be overloaded or BACKEND_URL points to wrong host.' });
     } else {
       res.status(502).json({
-        error: 'Backend unavailable',
+        error: 'Backend unreachable',
         details: err.message,
-        backendUrl: BACKEND,
-        hint: 'Verify the backend service is running in Railway and BACKEND_URL is correct.',
+        errorType: err.name,
+        triedUrl: url,
+        backendUrlEnv: BACKEND,
+        hint: 'Check: (1) IS_BACKEND=true on backend service, (2) both services in same Railway project, (3) BACKEND_URL uses correct private networking URL shown in backend logs.',
       });
     }
   }
@@ -149,13 +153,18 @@ app.get('/__debug/backend', async (req, res) => {
 
 // Shows what port this frontend is on — helpful when Railway shows it
 app.get('/__debug/env', (req, res) => {
+  const serviceName = process.env.RAILWAY_SERVICE_NAME || '(unknown)';
   res.json({
     PORT,
     BACKEND_URL: BACKEND || '(NOT SET)',
     backendConfigured: !!BACKEND,
     nodeEnv: process.env.NODE_ENV || 'production',
-    railwayService: process.env.RAILWAY_SERVICE_NAME || '(unknown)',
+    railwayService: serviceName,
     railwayEnv: process.env.RAILWAY_ENVIRONMENT || '(unknown)',
+    publicDomain: process.env.RAILWAY_PUBLIC_DOMAIN || '(unknown)',
+    hint: !BACKEND
+      ? 'Set BACKEND_URL in Railway frontend service variables. Check backend service logs for the private networking URL.'
+      : 'BACKEND_URL is set. If API calls fail, visit /__debug/backend to test connectivity.',
   });
 });
 
