@@ -8,25 +8,32 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Resolve the backend API URL using this priority order:
-//   1. VITE_API_URL          — manually set Railway Variable (most explicit, public URL)
-//   2. API_URL               — alternative manual Variable name
-//   3. BACKEND_PRIVATE_DOMAIN — Railway private network (fastest, free internal traffic)
-//      Copy the value of RAILWAY_PRIVATE_DOMAIN from the backend service Variables tab
-//      into a new Variable on the frontend service called BACKEND_PRIVATE_DOMAIN.
-//      e.g.  BACKEND_PRIVATE_DOMAIN = backend.railway.internal
-//   4. Empty string          — frontend falls back to same-origin or localhost
+//   1. VITE_API_URL           — explicit public URL (e.g. https://xxx.up.railway.app)
+//   2. API_URL                — alternative name for the same
+//   3. BACKEND_PRIVATE_DOMAIN + BACKEND_PORT
+//      - BACKEND_PRIVATE_DOMAIN: copy RAILWAY_PRIVATE_DOMAIN from the backend service
+//        e.g. build-one-zambia.railway.internal
+//      - BACKEND_PORT: copy RAILWAY_TCP_PROXY_PORT (or PORT) from the backend service
+//        On Railway private network, use the internal PORT (default 3001 if not set)
+//   4. Empty — frontend falls back to same-origin or localhost
 function resolveBackendUrl() {
-  if (process.env.VITE_API_URL)          return process.env.VITE_API_URL;
-  if (process.env.API_URL)               return process.env.API_URL;
+  if (process.env.VITE_API_URL) return process.env.VITE_API_URL;
+  if (process.env.API_URL)      return process.env.API_URL;
+
   if (process.env.BACKEND_PRIVATE_DOMAIN) {
-    return `http://${process.env.BACKEND_PRIVATE_DOMAIN}:3001`;
+    // On the private network, services talk to each other on their internal PORT.
+    // Railway sets PORT on each service — the backend defaults to 3001.
+    // Set BACKEND_PORT in frontend Variables to match what the backend actually uses.
+    const port = process.env.BACKEND_PORT || '3001';
+    return `http://${process.env.BACKEND_PRIVATE_DOMAIN}:${port}`;
   }
+
   return '';
 }
 
 const API_URL = resolveBackendUrl();
 
-// Serve static assets with aggressive caching (hashed filenames)
+// Serve static assets with long-lived cache (filenames are content-hashed by Vite)
 app.use('/assets', express.static(path.join(__dirname, 'dist/assets'), {
   maxAge: '1y',
   immutable: true,
@@ -36,15 +43,14 @@ app.use('/js', express.static(path.join(__dirname, 'dist/js'), {
   immutable: true,
 }));
 
-// Serve other static files (public folder, etc.)
+// All other static files (no caching — index.html must stay fresh)
 app.use(express.static(path.join(__dirname, 'dist'), { index: false }));
 
-// SPA fallback — inject runtime config into index.html
+// SPA catch-all — inject the runtime API URL into index.html before serving
 app.get('*', (req, res) => {
   const indexPath = path.join(__dirname, 'dist', 'index.html');
   let html = fs.readFileSync(indexPath, 'utf8');
 
-  // Inject runtime API URL so the app works without a rebuild
   if (API_URL) {
     const injection = `<script>window.__API_URL__=${JSON.stringify(API_URL)};</script>`;
     html = html.replace('</head>', `${injection}\n</head>`);
@@ -60,6 +66,6 @@ app.listen(PORT, '0.0.0.0', () => {
   if (API_URL) {
     console.log(`  Backend API: ${API_URL}`);
   } else {
-    console.log(`  ⚠  No backend URL configured — set VITE_API_URL or BACKEND_PRIVATE_DOMAIN in Railway Variables`);
+    console.log(`  ⚠  No backend URL set — add BACKEND_PRIVATE_DOMAIN to frontend Variables`);
   }
 });

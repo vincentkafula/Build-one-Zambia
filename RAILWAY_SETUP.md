@@ -1,89 +1,55 @@
-# Railway Deployment Setup Guide
+# Railway Deployment — Variable Setup
 
-## Overview
+## Backend service Variables
 
-You have two Railway services:
-- **Backend** — Node.js/Express API (port 3001)
-- **Frontend** — Vite/React app served by Express (port auto-assigned by Railway)
+Add these in your backend Railway service → Variables tab:
 
-The frontend needs to know where the backend lives. Railway provides a
-`RAILWAY_PRIVATE_DOMAIN` variable automatically for every service — this is
-the internal DNS name that other services in the same project can use to talk
-to each other over the private network (free, fast, no public internet hop).
+| Variable         | Value                              |
+|------------------|------------------------------------|
+| `JWT_SECRET`     | Any long random string             |
+| `ADMIN_USERNAME` | `superadmin`                       |
+| `ADMIN_PASSWORD` | A strong password                  |
+| `NODE_ENV`       | `production`                       |
 
----
+Railway auto-provides the rest (`RAILWAY_PRIVATE_DOMAIN`, `PORT`, etc.).
 
-## Step 1 — Backend service Variables
-
-Go to your **Backend** Railway service → **Variables** tab.
-
-Add these (the RAILWAY_* ones are already there, auto-provided by Railway):
-
-| Variable          | Value                                     |
-|-------------------|-------------------------------------------|
-| `JWT_SECRET`      | Any long random string (keep it secret)   |
-| `ADMIN_USERNAME`  | `superadmin`                              |
-| `ADMIN_PASSWORD`  | A strong password                         |
-| `NODE_ENV`        | `production`                              |
-
-You will also see `RAILWAY_PRIVATE_DOMAIN` already populated — copy its value,
-you'll need it in the next step.
+Also note down the value of **`RAILWAY_PRIVATE_DOMAIN`** — you'll need it below.
+And note down the value of **`PORT`** — Railway assigns this automatically.
 
 ---
 
-## Step 2 — Frontend service Variables
+## Frontend service Variables
 
-Go to your **Frontend** Railway service → **Variables** tab.
+Add these in your frontend Railway service → Variables tab:
 
-Add this one variable (use the private domain you copied from the backend):
+| Variable                  | Value                                                    |
+|---------------------------|----------------------------------------------------------|
+| `BACKEND_PRIVATE_DOMAIN`  | *(backend's `RAILWAY_PRIVATE_DOMAIN` value)*             |
+| `BACKEND_PORT`            | *(backend's `PORT` value, e.g. `3001` or Railway's port)*|
+| `NODE_ENV`                | `production`                                             |
 
-| Variable                  | Value                                           |
-|---------------------------|-------------------------------------------------|
-| `BACKEND_PRIVATE_DOMAIN`  | *(paste the backend's RAILWAY_PRIVATE_DOMAIN)*  |
+**Example:**
+```
+BACKEND_PRIVATE_DOMAIN = build-one-zambia.railway.internal
+BACKEND_PORT           = 3001
+```
 
-Example: if the backend's `RAILWAY_PRIVATE_DOMAIN` is `backend.railway.internal`,
-set `BACKEND_PRIVATE_DOMAIN=backend.railway.internal`.
-
-This uses Railway's **private network** — the fastest and free way to connect
-services in the same project. No public URL needed.
-
-### Alternative: use the public backend URL instead
-
-If you prefer (or if the private network isn't working), you can set:
-
-| Variable        | Value                                                  |
-|-----------------|--------------------------------------------------------|
-| `VITE_API_URL`  | `https://your-backend-service.up.railway.app`          |
-
-This works too, but goes over the public internet. The private domain is better.
+This connects via Railway's **private network** — faster and free.
 
 ---
 
-## Step 3 — Redeploy
+## After setting Variables
 
-After adding Variables, **redeploy both services** (Deployments → Redeploy).
-
----
-
-## Verify it's working
-
-1. **Backend health check:**
-   Visit `https://your-backend.up.railway.app/make-server-8fca9621/health`
+1. Redeploy both services (Deployments → Redeploy)
+2. Check backend health: `https://your-backend.up.railway.app/make-server-8fca9621/health`
    → Should return `{"status":"ok",...}`
-
-2. **Frontend:**
-   Visit your frontend URL — should load the portal, not a blank page.
-
-3. **Browser DevTools → Console:**
-   No `Failed to fetch` or `localhost:3001` errors.
+3. Visit the frontend URL — should no longer be blank
 
 ---
 
 ## Variable priority (how the frontend finds the backend)
 
-The frontend `server.js` tries these in order:
-1. `VITE_API_URL` — explicit public URL you set manually
-2. `API_URL` — alternative name for the same thing  
-3. `BACKEND_PRIVATE_DOMAIN` — Railway private network (recommended)
-4. Falls back to same-origin (only if frontend & backend share a domain)
+```
+VITE_API_URL  →  API_URL  →  BACKEND_PRIVATE_DOMAIN:BACKEND_PORT  →  localhost:3001
+```
 
