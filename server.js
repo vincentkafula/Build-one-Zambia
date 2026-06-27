@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 const DIST = path.join(__dirname, 'dist');
 
 // 1. API proxy - forward /make-server-8fca9621/* to backend
-const BACKEND = process.env.BACKEND_URL || 'http://localhost:3001';
+const BACKEND = process.env.BACKEND_URL || 'https://build-one-zambia-production.up.railway.app';
 app.use('/make-server-8fca9621', async (req, res) => {
   const url = `${BACKEND}/make-server-8fca9621${req.originalUrl.replace('/make-server-8fca9621','')}`;
   try {
