@@ -57,17 +57,26 @@ app.use(['/make-server-8fca9621', '/uploads'], async (req, res) => {
 app.use('/assets', express.static(path.join(__dirname, 'dist/assets'), { maxAge: '1y', immutable: true }));
 app.use('/js',     express.static(path.join(__dirname, 'dist/js'),     { maxAge: '1y', immutable: true }));
 
-// ── SPA — inject empty __API_URL__ so browser uses same-origin proxy ──────────
-// This must come BEFORE the generic static middleware so it intercepts all requests
+// ── SPA — inject API_URL into index.html ──────────────────────────────────────
+// This catch-all must come BEFORE any generic static middleware
 app.get('*', (req, res) => {
   const indexPath = path.join(__dirname, 'dist', 'index.html');
   let html = fs.readFileSync(indexPath, 'utf8');
 
+  // Inject window.__API_URL__ before </head>
   // Empty string → resolveApiOrigin() falls to window.location.origin
   // → all API calls hit /make-server-8fca9621/* on this server → proxy above
-  html = html.replace('</head>', `<script>window.__API_URL__='';</script>\n</head>`);
+  const injection = `<script>window.__API_URL__='';</script>`;
+  
+  if (html.includes('</head>')) {
+    html = html.replace('</head>', `${injection}\n</head>`);
+  } else {
+    // Fallback: inject before </html> if </head> not found
+    html = html.replace('</html>', `${injection}\n</html>`);
+  }
 
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(html);
 });
 
