@@ -12,7 +12,8 @@ import {
 
 const A    = '#16a34a';
 const NAVY = '#1e2d4a';
-const BASE = `https://${(window as unknown as { __SUPABASE_PROJECT_ID__?: string }).__SUPABASE_PROJECT_ID__ || 'jpysoquanfnphgvwdzbf'}.supabase.co/functions/v1/make-server-8fca9621/make-server-8fca9621`;
+import { apiBaseUrl } from '../../../utils/supabase/info';
+const BASE = apiBaseUrl;
 
 type TabKey = 'member' | 'cooperative' | 'internship' | 'agent';
 

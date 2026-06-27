@@ -3,9 +3,9 @@
  * Provides type-safe methods to interact with the backend API
  */
 
-import { projectId, publicAnonKey } from '/utils/supabase/info';
+import { apiBaseUrl } from '/utils/supabase/info';
 
-const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-8fca9621`;
+const API_BASE_URL = apiBaseUrl;
 
 // ============================================================================
 // TYPES

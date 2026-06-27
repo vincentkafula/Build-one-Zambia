@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { Calendar, MapPin, Clock, ArrowRight, Users, ChevronRight } from 'lucide-react';
-import { projectId } from '../../../../utils/supabase/info';
+import { apiBaseUrl } from '../../../../utils/supabase/info';
 
-const BACKEND = `https://${projectId}.supabase.co/functions/v1/make-server-8fca9621/make-server-8fca9621`;
+const BACKEND = apiBaseUrl;
 
 interface BackendEvent {
   id: string; title: string; date: string; time: string;

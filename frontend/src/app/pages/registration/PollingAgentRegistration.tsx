@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { provinces } from '../../data/mockData';
 import { agentApi, getToken } from '../../lib/api';
-import { projectId } from '../../../../utils/supabase/info';
+import { apiBaseUrl } from '../../../../utils/supabase/info';
 import { sendFirebaseOTP, verifyFirebaseOTP, type ConfirmationResult as FirebaseConfirmation } from '../../lib/firebase';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -15,7 +15,7 @@ import { sendFirebaseOTP, verifyFirebaseOTP, type ConfirmationResult as Firebase
 const GREEN  = '#007A30';
 const RED    = '#dc2626';
 const DARK   = '#0d1f14';
-const BACKEND = `https://${projectId}.supabase.co/functions/v1/make-server-8fca9621/make-server-8fca9621`;
+const BACKEND = apiBaseUrl;
 
 const STEPS = [
   { num: 1, label: 'Phone Verification',  icon: Phone },

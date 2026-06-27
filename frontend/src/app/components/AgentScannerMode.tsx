@@ -11,9 +11,9 @@ import {
   Zap, RefreshCw, Send, BarChart3, Activity, Clock, Shield,
   Loader2, ChevronDown, ChevronUp, Radio
 } from 'lucide-react';
-import { projectId } from '../../../utils/supabase/info';
+import { apiBaseUrl } from '../../../utils/supabase/info';
 
-const BASE = `https://${projectId}.supabase.co/functions/v1/make-server-8fca9621/make-server-8fca9621`;
+const BASE = apiBaseUrl;
 const POLL_MS = 3000; // 3-second live poll
 
 // ─── Types ────────────────────────────────────────────────────────────────────

@@ -1,3 +1,4 @@
+import { apiBaseUrl } from '/utils/supabase/info';
 /**
  * Backend Deployment Test & Verification Script
  * Run this to verify the backend is deployed and working correctly
@@ -31,7 +32,7 @@ export async function testBackendDeployment(): Promise<{
   const healthStart = Date.now();
   try {
     const response = await fetch(
-      `https://jpysoquanfnphgvwdzbf.supabase.co/functions/v1/make-server-8fca9621/health`
+      `${apiBaseUrl}/health`
     );
     const data = await response.json();
     const responseTime = Date.now() - healthStart;
@@ -231,7 +232,7 @@ export async function testBackendDeployment(): Promise<{
 export async function quickHealthCheck(): Promise<boolean> {
   try {
     const response = await fetch(
-      `https://jpysoquanfnphgvwdzbf.supabase.co/functions/v1/make-server-8fca9621/health`
+      `${apiBaseUrl}/health`
     );
     const data = await response.json();
     return response.ok && data.status === 'ok';

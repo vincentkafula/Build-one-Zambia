@@ -4,9 +4,9 @@ import {
   Clock, MapPin, User, Vote, Filter, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { dataEntryApi, getToken } from '../lib/api';
-import { projectId } from '../../../utils/supabase/info';
+import { apiBaseUrl } from '../../../utils/supabase/info';
 
-const BASE = `https://${projectId}.supabase.co/functions/v1/make-server-8fca9621/make-server-8fca9621`;
+const BASE = apiBaseUrl;
 
 async function apiFetch<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };

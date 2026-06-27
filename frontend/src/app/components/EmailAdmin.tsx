@@ -1,9 +1,10 @@
+import { apiBaseUrl } from '../../utils/supabase/info';
 import { useState, useEffect } from 'react';
 import { Mail, CheckCircle2, XCircle, Send, Loader2, RefreshCw, Key, AtSign, User, Globe, AlertTriangle } from 'lucide-react';
 
 const BASE = (() => {
   const id = (window as unknown as Record<string, string>).__SUPABASE_PROJECT_ID__ || 'jpysoquanfnphgvwdzbf';
-  return `https://${id}.supabase.co/functions/v1/make-server-8fca9621/make-server-8fca9621`;
+  return apiBaseUrl;
 })();
 
 function getToken() { return sessionStorage.getItem('boz_session_token') || ''; }

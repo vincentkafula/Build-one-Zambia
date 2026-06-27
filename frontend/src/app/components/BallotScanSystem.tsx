@@ -12,9 +12,9 @@ import {
   Database, FileLock, Terminal, AlertOctagon
 } from 'lucide-react';
 import { getToken } from '../lib/api';
-import { projectId } from '../../../utils/supabase/info';
+import { apiBaseUrl } from '../../../utils/supabase/info';
 
-const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-8fca9621/make-server-8fca9621`;
+const API_BASE = apiBaseUrl;
 
 async function apiFetch<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };

@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { Upload, FileText, Trash2, CheckCircle, AlertCircle, Users, Search, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { voterApi, getToken } from '../lib/api';
-import { projectId } from '../../../utils/supabase/info';
+import { apiBaseUrl } from '../../../utils/supabase/info';
 
-const BACKEND_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-8fca9621/make-server-8fca9621`;
+const BACKEND_BASE = apiBaseUrl;
 
 export interface VoterRecord {
   fullName: string;
