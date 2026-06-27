@@ -101,7 +101,12 @@ if (IS_RAILWAY) {
 }
 app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));
 
-// ─── Health ──────────────────────────────────────────────────────────────────
+// ─── Root & Health ───────────────────────────────────────────────────────────
+
+// Root route — returns 200 so Railway healthcheck on GET / doesn't 404
+app.get('/', (req, res) => {
+  res.json({ name: 'Build One Zambia API', status: 'ok', version: '1.0.0' });
+});
 
 app.get(`${BASE}/health`, (req, res) => {
   res.json({ status: 'ok', server: 'node-express', version: '1.0.0', timestamp: new Date().toISOString() });
