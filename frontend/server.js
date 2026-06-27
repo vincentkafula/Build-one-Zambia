@@ -121,15 +121,18 @@ app.get('/health', (req, res) => {
   });
 });
 
-// ─── 4. Debug endpoint (remove in final prod if desired) ─────────────────────
+// ─── 4. Debug endpoint ────────────────────────────────────────────────────────
 app.get('/__debug/backend', async (req, res) => {
   if (!BACKEND) {
     return res.json({ configured: false, hint: 'Set BACKEND_URL in Railway frontend service variables.' });
   }
   try {
     const r = await fetch(`${BACKEND}/make-server-8fca9621/health`, { signal: AbortSignal.timeout(5000) });
-    const data = await r.json();
-    res.json({ configured: true, backendUrl: BACKEND, backendStatus: r.status, backendResponse: data });
+    const ct = r.headers.get('content-type') || '';
+    const text = await r.text();
+    let backendResponse;
+    try { backendResponse = JSON.parse(text); } catch { backendResponse = text; }
+    res.json({ configured: true, backendUrl: BACKEND, backendStatus: r.status, backendResponse });
   } catch (err) {
     res.status(502).json({ configured: true, backendUrl: BACKEND, error: err.message });
   }
