@@ -5,7 +5,6 @@ import {
   ChevronDown, ChevronUp, Copy, ExternalLink,
 } from 'lucide-react';
 import { getToken } from '../lib/api';
-import { projectId } from '../../../utils/supabase/info';
 
 const BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
 
@@ -363,22 +362,17 @@ Authorization: Bearer <your-token>
         })}
       </div>
 
-      {/* Deployment command */}
+      {/* Deployment info */}
       <div className="bg-card border border-border rounded-xl p-5">
         <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-          <Server className="w-4 h-4 text-primary" /> Deploy the Backend (one-time)
+          <Server className="w-4 h-4 text-primary" /> Backend Status
         </h3>
-        <CodeBlock code={`# Install Supabase CLI (if not already installed)
-npm install -g supabase
+        <p className="text-sm text-muted-foreground mb-2">The backend is deployed on Railway and runs automatically. No manual deployment needed.</p>
+        <CodeBlock code={`# Check backend health
+curl ${BASE}/health
 
-# Link to this project
-supabase link --project-ref ${projectId}
-
-# Deploy the edge function
-supabase functions deploy server
-
-# Trigger auto-bootstrap
-curl ${BASE}/health`} />
+# Backend URL
+${BASE.replace('/make-server-8fca9621', '')}`} />
       </div>
     </div>
   );
