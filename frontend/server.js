@@ -127,6 +127,18 @@ app.get('/__debug/backend', async (req, res) => {
     'http://backend.railway.internal:8080',
     'http://Backend.railway.internal:3001',
     'http://Backend.railway.internal:8080',
+    'http://web.railway.internal:3001',
+    'http://web.railway.internal:8080',
+    'http://api.railway.internal:3001',
+    'http://api.railway.internal:8080',
+    'http://server.railway.internal:3001',
+    'http://server.railway.internal:8080',
+    'http://build-one-zambia.railway.internal:3001',
+    'http://build-one-zambia.railway.internal:8080',
+    'http://build-one-zambia-production.railway.internal:3001',
+    'http://build-one-zambia-production.railway.internal:8080',
+    'http://boz.railway.internal:3001',
+    'http://boz.railway.internal:8080',
   ];
 
   const probe = async (url) => {
