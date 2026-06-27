@@ -4,6 +4,19 @@ import { Upload, FileText, Trash2, CheckCircle, AlertCircle, Users, Search, Eye,
 import { voterApi, getToken } from '../lib/api';
 import { projectId } from '../../../utils/supabase/info';
 
+// Safe fetch wrapper — handles non-JSON responses (e.g. rate limit plain text)
+async function safeFetch(url: string, options?: RequestInit) {
+  const res = await fetch(url, options);
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    const text = await res.text();
+    if (res.status === 429) throw new Error('Rate limit exceeded — please wait a moment and try again.');
+    if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
+    return { ok: res.ok, status: res.status, json: async () => ({}) };
+  }
+  return res;
+}
+
 const BACKEND_BASE = API_BASE;
 
 export interface VoterRecord {
@@ -126,7 +139,7 @@ export function VoterRollUpload() {
       const form = new FormData();
       form.append('file', file);
       const token = getToken();
-      const res = await fetch(`${BACKEND_BASE}/voter-roll/upload`, {
+      const res = await safeFetch(`${BACKEND_BASE}/voter-roll/upload`, {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: form,

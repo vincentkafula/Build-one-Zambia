@@ -11,6 +11,19 @@ import { agentApi, getToken } from '../../lib/api';
 import { projectId } from '../../../../utils/supabase/info';
 import { sendFirebaseOTP, verifyFirebaseOTP, type ConfirmationResult as FirebaseConfirmation } from '../../lib/firebase';
 
+// Safe fetch wrapper — handles non-JSON responses (e.g. rate limit plain text)
+async function safeFetch(url: string, options?: RequestInit) {
+  const res = await fetch(url, options);
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    const text = await res.text();
+    if (res.status === 429) throw new Error('Rate limit exceeded — please wait a moment and try again.');
+    if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
+    return { ok: res.ok, status: res.status, json: async () => ({}) };
+  }
+  return res;
+}
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const GREEN  = '#007A30';
@@ -251,7 +264,7 @@ export default function PollingAgentRegistration() {
   // Load capacity on mount
   useEffect(() => {
     setCapacityLoading(true);
-    fetch(`${BACKEND}/registrations/agent/capacity`)
+    safeFetch(`${BACKEND}/registrations/agent/capacity`)
       .then(r => r.json())
       .then(data => { if (data.capacity) setCapacity(data.capacity); })
       .catch(() => {
@@ -447,7 +460,7 @@ export default function PollingAgentRegistration() {
       };
 
       try {
-        const res = await fetch(`${BACKEND}/registrations/agent`, {
+        const res = await safeFetch(`${BACKEND}/registrations/agent`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),

@@ -1,5 +1,18 @@
 import { API_BASE } from '@/app/lib/apiBase';
 import { useState, useEffect, useCallback } from 'react';
+
+// Safe fetch wrapper — handles non-JSON responses (e.g. rate limit plain text)
+async function safeFetch(url: string, options?: RequestInit) {
+  const res = await fetch(url, options);
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    const text = await res.text();
+    if (res.status === 429) throw new Error('Rate limit exceeded — please wait a moment and try again.');
+    if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
+    return { ok: res.ok, status: res.status, json: async () => ({}) };
+  }
+  return res;
+}
 import {
   CheckCircle, XCircle, Clock, ChevronDown, ChevronUp, RefreshCw,
   Copy, Eye, EyeOff, User, Users, GraduationCap, ShieldCheck,
@@ -120,7 +133,7 @@ function SelfieViewer({ regId, type, hasSelfie }: { regId: string; type: TabKey;
     setError('');
     try {
       const token = sessionStorage.getItem('boz_session_token');
-      const res = await fetch(`${BASE}/registrations/${type}/${regId}/selfie`, {
+      const res = await safeFetch(`${BASE}/registrations/${type}/${regId}/selfie`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('Not found');

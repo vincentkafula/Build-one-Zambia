@@ -2,6 +2,19 @@ import { API_BASE } from '@/app/lib/apiBase';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { User, Building2, Building, GraduationCap, ClipboardList, BarChart2, ArrowRight, Lock, Eye, EyeOff, Zap, ChevronLeft, Shield } from 'lucide-react';
+
+// Safe fetch wrapper — handles non-JSON responses (e.g. rate limit plain text)
+async function safeFetch(url: string, options?: RequestInit) {
+  const res = await fetch(url, options);
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    const text = await res.text();
+    if (res.status === 429) throw new Error('Rate limit exceeded — please wait a moment and try again.');
+    if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
+    return { ok: res.ok, status: res.status, json: async () => ({}) };
+  }
+  return res;
+}
 // Inline API base resolver — relative path in prod so proxy always works
 function getApiBaseUrl(): string {
   if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
@@ -101,7 +114,7 @@ export default function DashboardLogin() {
         // ── Try real backend authentication ──
         let backendSuccess = false;
         try {
-          const res = await fetch(`${getApiBaseUrl()}/auth/login`, {
+          const res = await safeFetch(`${getApiBaseUrl()}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),

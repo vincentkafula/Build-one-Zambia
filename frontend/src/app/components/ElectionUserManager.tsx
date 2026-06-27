@@ -14,11 +14,24 @@ import { provinces } from '../data/mockData';
 import { getToken } from '../lib/api';
 import { projectId } from '../../../utils/supabase/info';
 
+// Safe fetch wrapper — handles non-JSON responses (e.g. rate limit plain text)
+async function safeFetch(url: string, options?: RequestInit) {
+  const res = await fetch(url, options);
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    const text = await res.text();
+    if (res.status === 429) throw new Error('Rate limit exceeded — please wait a moment and try again.');
+    if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
+    return { ok: res.ok, status: res.status, json: async () => ({}) };
+  }
+  return res;
+}
+
 const BASE = API_BASE;
 
 async function api<T>(method: string, path: string, body?: unknown): Promise<T> {
   const token = getToken();
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await safeFetch(`${BASE}${path}`, {
     method,
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: body !== undefined ? JSON.stringify(body) : undefined,

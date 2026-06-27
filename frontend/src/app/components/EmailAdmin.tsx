@@ -2,6 +2,19 @@ import { API_BASE } from '@/app/lib/apiBase';
 import { useState, useEffect } from 'react';
 import { Mail, CheckCircle2, XCircle, Send, Loader2, RefreshCw, Key, AtSign, User, Globe, AlertTriangle } from 'lucide-react';
 
+// Safe fetch wrapper — handles non-JSON responses (e.g. rate limit plain text)
+async function safeFetch(url: string, options?: RequestInit) {
+  const res = await fetch(url, options);
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    const text = await res.text();
+    if (res.status === 429) throw new Error('Rate limit exceeded — please wait a moment and try again.');
+    if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
+    return { ok: res.ok, status: res.status, json: async () => ({}) };
+  }
+  return res;
+}
+
 const BASE = (() => {
   const id = (window as unknown as Record<string, string>).__SUPABASE_PROJECT_ID__ || 'jpysoquanfnphgvwdzbf';
   return API_BASE;
@@ -10,12 +23,12 @@ const BASE = (() => {
 function getToken() { return sessionStorage.getItem('boz_session_token') || ''; }
 
 async function apiGet(path: string) {
-  const res = await fetch(`${BASE}${path}`, { headers: { Authorization: `Bearer ${getToken()}` } });
+  const res = await safeFetch(`${BASE}${path}`, { headers: { Authorization: `Bearer ${getToken()}` } });
   return res.json();
 }
 
 async function apiPost(path: string, body: unknown) {
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await safeFetch(`${BASE}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
     body: JSON.stringify(body),

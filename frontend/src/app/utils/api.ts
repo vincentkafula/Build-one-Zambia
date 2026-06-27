@@ -186,6 +186,12 @@ class APIClient {
     });
 
     if (!response.ok) {
+      const ct = response.headers.get('content-type') || '';
+      if (!ct.includes('application/json')) {
+        const text = await response.text();
+        if (response.status === 429) throw new Error('Rate limit exceeded — please wait a moment and try again.');
+        throw new Error(text || `HTTP ${response.status}`);
+      }
       const error = await response.json().catch(() => ({ error: 'Unknown error' }));
       throw new Error(error.error || error.details || `HTTP ${response.status}`);
     }

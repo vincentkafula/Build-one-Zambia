@@ -14,6 +14,19 @@ import {
 } from 'lucide-react';
 import { projectId } from '../../../utils/supabase/info';
 
+// Safe fetch wrapper — handles non-JSON responses (e.g. rate limit plain text)
+async function safeFetch(url: string, options?: RequestInit) {
+  const res = await fetch(url, options);
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    const text = await res.text();
+    if (res.status === 429) throw new Error('Rate limit exceeded — please wait a moment and try again.');
+    if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
+    return { ok: res.ok, status: res.status, json: async () => ({}) };
+  }
+  return res;
+}
+
 const BASE = API_BASE;
 const POLL_MS = 3000; // 3-second live poll
 
@@ -60,20 +73,20 @@ interface ConnectResponse {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function fetchLive(sessionId: string): Promise<LiveSession> {
-  const res = await fetch(`${BASE}/ballot-scan/agent/sessions/${sessionId}/live`);
+  const res = await safeFetch(`${BASE}/ballot-scan/agent/sessions/${sessionId}/live`);
   if (!res.ok) throw new Error('Failed to fetch live data');
   return res.json();
 }
 
 async function connectSession(stationId: string, electionType: string): Promise<ConnectResponse> {
   const qs = `stationId=${encodeURIComponent(stationId)}&electionType=${encodeURIComponent(electionType)}`;
-  const res = await fetch(`${BASE}/ballot-scan/agent/session?${qs}`);
+  const res = await safeFetch(`${BASE}/ballot-scan/agent/session?${qs}`);
   if (!res.ok) throw new Error('Failed to connect');
   return res.json();
 }
 
 async function autoSubmit(sessionId: string, agentName: string): Promise<{ success: boolean; submission?: { id: string } }> {
-  const res = await fetch(`${BASE}/ballot-scan/agent/sessions/${sessionId}/auto-submit`, {
+  const res = await safeFetch(`${BASE}/ballot-scan/agent/sessions/${sessionId}/auto-submit`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ agentName }),
