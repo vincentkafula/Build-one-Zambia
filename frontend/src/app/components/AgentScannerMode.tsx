@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { projectId } from '../../../utils/supabase/info';
 
-const BASE = `https://${projectId}.supabase.co/functions/v1/make-server-8fca9621/make-server-8fca9621`;
+const BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
 const POLL_MS = 3000; // 3-second live poll
 
 // ─── Types ────────────────────────────────────────────────────────────────────

@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { Calendar, MapPin, Clock, ArrowRight, Users, ChevronRight } from 'lucide-react';
 import { projectId } from '../../../../utils/supabase/info';
 
-const BACKEND = `https://${projectId}.supabase.co/functions/v1/make-server-8fca9621/make-server-8fca9621`;
+const BACKEND = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
 
 interface BackendEvent {
   id: string; title: string; date: string; time: string;

@@ -3,7 +3,7 @@ import { Upload, FileText, Trash2, CheckCircle, AlertCircle, Users, Search, Eye,
 import { voterApi, getToken } from '../lib/api';
 import { projectId } from '../../../utils/supabase/info';
 
-const BACKEND_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-8fca9621/make-server-8fca9621`;
+const BACKEND_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
 
 export interface VoterRecord {
   fullName: string;

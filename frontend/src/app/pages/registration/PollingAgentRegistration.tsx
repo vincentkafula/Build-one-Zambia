@@ -15,7 +15,7 @@ import { sendFirebaseOTP, verifyFirebaseOTP, type ConfirmationResult as Firebase
 const GREEN  = '#007A30';
 const RED    = '#dc2626';
 const DARK   = '#0d1f14';
-const BACKEND = `https://${projectId}.supabase.co/functions/v1/make-server-8fca9621/make-server-8fca9621`;
+const BACKEND = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
 
 const STEPS = [
   { num: 1, label: 'Phone Verification',  icon: Phone },

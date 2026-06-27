@@ -31,7 +31,7 @@ export async function testBackendDeployment(): Promise<{
   const healthStart = Date.now();
   try {
     const response = await fetch(
-      `https://jpysoquanfnphgvwdzbf.supabase.co/functions/v1/make-server-8fca9621/health`
+      `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621/health`
     );
     const data = await response.json();
     const responseTime = Date.now() - healthStart;
@@ -231,7 +231,7 @@ export async function testBackendDeployment(): Promise<{
 export async function quickHealthCheck(): Promise<boolean> {
   try {
     const response = await fetch(
-      `https://jpysoquanfnphgvwdzbf.supabase.co/functions/v1/make-server-8fca9621/health`
+      `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621/health`
     );
     const data = await response.json();
     return response.ok && data.status === 'ok';

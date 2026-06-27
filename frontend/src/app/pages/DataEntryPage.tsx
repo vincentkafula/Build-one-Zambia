@@ -6,7 +6,7 @@ import { dataEntryApi, DocumentPayload, getToken } from '../lib/api';
 import { useOfflineQueue } from '../hooks/useOfflineQueue';
 import { projectId } from '../../../utils/supabase/info';
 
-const BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-8fca9621/make-server-8fca9621`;
+const BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
 
 type ElectionType = 'presidential' | 'parliament' | 'mayoral' | 'councillor' | '';
 

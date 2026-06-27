@@ -3,7 +3,7 @@ import { Mail, CheckCircle2, XCircle, Send, Loader2, RefreshCw, Key, AtSign, Use
 
 const BASE = (() => {
   const id = (window as unknown as Record<string, string>).__SUPABASE_PROJECT_ID__ || 'jpysoquanfnphgvwdzbf';
-  return `https://${id}.supabase.co/functions/v1/make-server-8fca9621/make-server-8fca9621`;
+  return `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
 })();
 
 function getToken() { return sessionStorage.getItem('boz_session_token') || ''; }

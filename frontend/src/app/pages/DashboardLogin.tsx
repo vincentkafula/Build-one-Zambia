@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { User, Building2, Building, GraduationCap, ClipboardList, BarChart2, ArrowRight, Lock, Eye, EyeOff, Zap, ChevronLeft, Shield } from 'lucide-react';
 import { projectId } from '../../../utils/supabase/info';
 
-const AUTH_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-8fca9621/make-server-8fca9621`;
+const AUTH_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
 
 // Election roles that use real backend auth
 const ELECTION_DASHBOARD_IDS = ['agent', 'manager'];

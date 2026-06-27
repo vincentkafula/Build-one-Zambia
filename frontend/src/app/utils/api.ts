@@ -5,7 +5,7 @@
 
 import { projectId, publicAnonKey } from '/utils/supabase/info';
 
-const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-8fca9621`;
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3001') + '/make-server-8fca9621';
 
 // ============================================================================
 // TYPES
