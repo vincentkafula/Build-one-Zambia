@@ -16,8 +16,10 @@ export interface UseElectionResultsReturn {
   result: LevelResult | null;
   liveResults: LiveCandidateResult[];
   loading: boolean;
-  /** true when backend is unreachable and we should fall back to mockData */
+  /** true only when backend is genuinely unreachable (network/auth error) */
   usingMockData: boolean;
+  /** true when the backend responded successfully (even if zero results yet) */
+  backendConnected: boolean;
   totalRegistered: number;
   totalVotes: number;
   validVotes: number;
@@ -44,6 +46,7 @@ export function useElectionResults(
   const [candidateMap, setCandidateMap] = useState<Map<string, Candidate>>(new Map());
   const [loading, setLoading] = useState(true);
   const [usingMockData, setUsingMockData] = useState(false);
+  const [backendConnected, setBackendConnected] = useState(false);
 
   const isNational = !levelId || levelType === 'national';
 
@@ -51,6 +54,7 @@ export function useElectionResults(
     let cancelled = false;
     setLoading(true);
     setUsingMockData(false);
+    setBackendConnected(false);
     setResult(null);
 
     const run = async () => {
@@ -65,8 +69,12 @@ export function useElectionResults(
         setResult(resData.result);
         setCandidateMap(new Map(candsData.candidates.map((c: BackendCandidate) => [c.id, toCandidate(c)])));
         setUsingMockData(false);
+        setBackendConnected(true);
       } catch {
-        if (!cancelled) setUsingMockData(true);
+        if (!cancelled) {
+          setUsingMockData(true);
+          setBackendConnected(false);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -97,6 +105,7 @@ export function useElectionResults(
     liveResults,
     loading,
     usingMockData,
+    backendConnected,
     totalRegistered: result?.registeredVoters ?? 0,
     totalVotes: result?.totalVotesCast ?? 0,
     validVotes: result?.validVotes ?? 0,

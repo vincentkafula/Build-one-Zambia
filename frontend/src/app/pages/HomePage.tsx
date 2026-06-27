@@ -117,15 +117,18 @@ export function HomePage() {
 
   // Decide which data to show
   const mock = getMockStats();
-  const usingLive = !live.usingMockData && live.liveResults.length > 0;
+  const usingLive = live.backendConnected;
+  const hasResults = live.liveResults.length > 0;
 
-  const displayResults = usingLive ? live.liveResults : mock.candidateResults;
+  const displayResults = usingLive && hasResults ? live.liveResults : mock.candidateResults;
   const totalRegistered  = usingLive ? live.totalRegistered  : mock.totalRegistered;
   const totalVotes       = usingLive ? live.totalVotes       : mock.totalVotes;
   const totalRejected    = usingLive ? live.rejectedBallots  : mock.totalRejected;
   const turnout          = usingLive ? live.turnoutPercent   : mock.turnout;
-  const stationsLabel    = usingLive
+  const stationsLabel    = usingLive && hasResults
     ? `${live.stationsReporting.toLocaleString()} stations reporting`
+    : usingLive
+    ? 'Connected — awaiting first results'
     : `${mock.stationsReporting.toLocaleString()} polling stations`;
   const totalValidVotes  = displayResults.reduce((s, r) => s + r.votes, 0);
 
@@ -151,12 +154,14 @@ export function HomePage() {
           <div className="mb-4 flex flex-col items-center gap-2">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#198754] to-[#146644] text-white rounded-full text-sm font-semibold shadow-lg">
               <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-              {live.loading ? 'Connecting to live feed…' : usingLive ? 'Live Results Updating' : 'Showing Preview Data'}
+              {live.loading ? 'Connecting to live feed…' : usingLive ? (hasResults ? 'Live Results Updating' : 'Connected — No Results Yet') : 'Showing Preview Data'}
             </div>
             {!live.loading && (
               <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${usingLive ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
                 {usingLive ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-                {usingLive ? `Live · ${live.stationsReporting} stations reporting` : 'Preview mode — connect backend for live data'}
+                {usingLive
+                  ? (hasResults ? `Live · ${live.stationsReporting} stations reporting` : 'Live · Awaiting results')
+                  : 'Preview mode — backend unreachable'}
               </div>
             )}
           </div>
