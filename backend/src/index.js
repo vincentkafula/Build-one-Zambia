@@ -42,7 +42,10 @@ app.use(cors({
     const allowed = [
       'https://bozplans.org',
       'https://www.bozplans.org',
-    ];
+      // Allow any URL set via env var (e.g. Railway custom domain for frontend)
+      ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+      ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(s => s.trim()) : []),
+    ].filter(Boolean);
     if (
       !origin ||
       allowed.includes(origin) ||
@@ -55,6 +58,7 @@ app.use(cors({
     ) {
       cb(null, true);
     } else {
+      console.warn(`[CORS] Blocked origin: ${origin}`);
       cb(null, false);
     }
   },

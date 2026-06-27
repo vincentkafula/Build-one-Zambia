@@ -2,7 +2,10 @@
 nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["npm install --production"]
+cmds = ["npm install --omit=dev"]
 
 [start]
 cmd = "node src/index.js"
+
+[variables]
+NODE_ENV = "production"

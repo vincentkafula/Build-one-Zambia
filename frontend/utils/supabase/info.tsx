@@ -1,24 +1,23 @@
 /**
- * Legacy compatibility shim.
- * Components that still import `projectId` use it to build the BASE URL.
- * We now redirect all calls to the Node.js backend instead.
+ * Legacy compatibility shim — kept to prevent import errors in old components.
+ * Uses the same runtime API URL resolution as src/app/lib/api.ts.
  */
 
-// The Node.js backend base (no trailing slash, no /make-server suffix)
-const API_ORIGIN = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
+function resolveApiOrigin(): string {
+  if ((import.meta as any).env?.VITE_API_URL) return (import.meta as any).env.VITE_API_URL;
+  if (typeof window !== 'undefined' && (window as any).__API_URL__) {
+    return (window as any).__API_URL__;
+  }
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return window.location.origin;
+  }
+  return 'http://localhost:3001';
+}
 
-/**
- * projectId is kept for backward compatibility.
- * Components using it to build Supabase URLs will now get the Node.js URL.
- */
-export const projectId = API_ORIGIN.replace(/^https?:\/\//, '').replace(/\/$/, '');
+export const apiBaseUrl = `${resolveApiOrigin()}/make-server-8fca9621`;
 
-/**
- * No longer needed — kept to prevent import errors.
- */
+/** @deprecated kept for backward compatibility */
+export const projectId = resolveApiOrigin().replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+/** @deprecated no longer needed */
 export const publicAnonKey = '';
-
-/**
- * Direct base URL for the API (use this in new code).
- */
-export const apiBaseUrl = `${API_ORIGIN}/make-server-8fca9621`;

@@ -4,9 +4,25 @@
  * Set VITE_API_URL in your .env to override (e.g. your production domain).
  */
 
-// Development default: http://localhost:3001
-// Production: set VITE_API_URL=https://api.yourdomain.com in .env
-const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// API URL resolution — works at both build-time and runtime:
+// 1. VITE_API_URL env var (set in Railway Variables for the frontend service)
+// 2. Runtime window.__API_URL__ injected by server.js (fallback, no rebuild needed)
+// 3. Same-origin /make-server-8fca9621 (works when frontend and backend are on the same domain)
+function resolveApiOrigin(): string {
+  // Build-time env var (baked by Vite)
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  // Runtime injection from server.js (no rebuild needed)
+  if (typeof window !== 'undefined' && (window as any).__API_URL__) {
+    return (window as any).__API_URL__;
+  }
+  // Same-origin fallback (only works if frontend+backend share a domain)
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return window.location.origin;
+  }
+  return 'http://localhost:3001';
+}
+
+const API_ORIGIN = resolveApiOrigin();
 const BASE = `${API_ORIGIN}/make-server-8fca9621`;
 
 const SESSION_KEY = 'boz_session_token';
