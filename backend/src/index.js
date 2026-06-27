@@ -48,6 +48,7 @@ app.use(cors({
     const allowed = [
       'https://bozplans.org',
       'https://www.bozplans.org',
+      'https://glorious-sparkle-production-b0a3.up.railway.app',
       ...EXTRA_ORIGINS,
     ];
     if (
