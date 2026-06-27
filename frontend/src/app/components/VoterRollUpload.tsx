@@ -1,9 +1,10 @@
+import { API_BASE } from '@/app/lib/apiBase';
 import { useState, useRef, useEffect } from 'react';
 import { Upload, FileText, Trash2, CheckCircle, AlertCircle, Users, Search, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { voterApi, getToken } from '../lib/api';
 import { projectId } from '../../../utils/supabase/info';
 
-const BACKEND_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
+const BACKEND_BASE = API_BASE;
 
 export interface VoterRecord {
   fullName: string;

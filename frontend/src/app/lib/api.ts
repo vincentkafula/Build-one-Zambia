@@ -1,15 +1,12 @@
 /**
  * BOZ Backend API Client
  * Points to the Node.js / Express backend.
- * Set VITE_API_URL in your .env to override (e.g. your production domain).
+ * All requests go through the Express proxy in server.js → BACKEND_URL.
  */
 
-// Always use relative path — the Express proxy in server.js forwards to the backend.
-// NEVER use VITE_API_URL here: if baked in at build time it bypasses the proxy
-// and causes CORS errors when frontend and backend are on different domains.
-const BASE = (typeof window !== 'undefined' && window.location.hostname === 'localhost')
-  ? 'http://localhost:3001/make-server-8fca9621'
-  : '/make-server-8fca9621';
+import { API_BASE } from '@/app/lib/apiBase';
+
+const BASE = API_BASE;
 
 const SESSION_KEY = 'boz_session_token';
 

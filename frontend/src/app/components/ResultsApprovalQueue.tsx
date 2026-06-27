@@ -1,3 +1,4 @@
+import { API_BASE } from '@/app/lib/apiBase';
 import { useState, useEffect, useCallback } from 'react';
 import {
   CheckCircle2, XCircle, Eye, RefreshCw, AlertCircle, Loader2,
@@ -6,7 +7,7 @@ import {
 import { dataEntryApi, getToken } from '../lib/api';
 import { projectId } from '../../../utils/supabase/info';
 
-const BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
+const BASE = API_BASE;
 
 async function apiFetch<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };

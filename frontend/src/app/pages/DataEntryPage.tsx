@@ -1,3 +1,4 @@
+import { API_BASE } from '@/app/lib/apiBase';
 import { useState, useEffect } from 'react';
 import { provinces, presidentialCandidates, Candidate } from '../data/mockData';
 import { candidatePhotos } from '../data/candidatePhotos';
@@ -6,7 +7,7 @@ import { dataEntryApi, DocumentPayload, getToken } from '../lib/api';
 import { useOfflineQueue } from '../hooks/useOfflineQueue';
 import { projectId } from '../../../utils/supabase/info';
 
-const BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
+const BASE_URL = API_BASE;
 
 type ElectionType = 'presidential' | 'parliament' | 'mayoral' | 'councillor' | '';
 

@@ -1,3 +1,4 @@
+import { API_BASE } from '@/app/lib/apiBase';
 import { useState, useEffect, useCallback } from 'react';
 import {
   CheckCircle, XCircle, Clock, ChevronDown, ChevronUp, RefreshCw,
@@ -12,7 +13,7 @@ import {
 
 const A    = '#16a34a';
 const NAVY = '#1e2d4a';
-const BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
+const BASE = API_BASE;
 
 type TabKey = 'member' | 'cooperative' | 'internship' | 'agent';
 

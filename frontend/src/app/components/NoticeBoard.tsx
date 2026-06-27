@@ -1,3 +1,4 @@
+import { API_BASE } from '@/app/lib/apiBase';
 /**
  * NoticeBoard — inter-level correction request and notice system.
  * Managers send notices/correction requests to agents or lower managers.
@@ -11,7 +12,7 @@ import {
 import { getToken } from '../lib/api';
 import { projectId } from '../../../utils/supabase/info';
 
-const BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
+const BASE = API_BASE;
 
 async function api<T>(method: string, path: string, body?: unknown): Promise<T> {
   const token = getToken();

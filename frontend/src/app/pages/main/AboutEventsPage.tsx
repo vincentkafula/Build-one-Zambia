@@ -1,9 +1,10 @@
+import { API_BASE } from '@/app/lib/apiBase';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { Calendar, MapPin, Clock, ArrowRight, Users, ChevronRight } from 'lucide-react';
 import { projectId } from '../../../../utils/supabase/info';
 
-const BACKEND = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
+const BACKEND = API_BASE;
 
 interface BackendEvent {
   id: string; title: string; date: string; time: string;

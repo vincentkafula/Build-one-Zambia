@@ -1,3 +1,4 @@
+import { API_BASE } from '@/app/lib/apiBase';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { User, Building2, Building, GraduationCap, ClipboardList, BarChart2, ArrowRight, Lock, Eye, EyeOff, Zap, ChevronLeft, Shield } from 'lucide-react';
@@ -6,7 +7,7 @@ function getApiBaseUrl(): string {
   if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
     return '/make-server-8fca9621';
   }
-  return 'http://localhost:3001/make-server-8fca9621';
+  return API_BASE;
 }
 
 // Election roles that use real backend auth

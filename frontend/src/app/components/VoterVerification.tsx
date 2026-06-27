@@ -6,7 +6,7 @@ import {
   UserCheck, Clock, RefreshCw, ShieldCheck, Users, Vote
 } from 'lucide-react';
 
-const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
+import { API_BASE } from '@/app/lib/apiBase';
 
 async function apiFetch<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };

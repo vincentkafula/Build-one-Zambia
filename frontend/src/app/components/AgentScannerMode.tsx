@@ -1,3 +1,4 @@
+import { API_BASE } from '@/app/lib/apiBase';
 /**
  * AgentScannerMode
  * Polling agent ballot scanner integration panel.
@@ -13,7 +14,7 @@ import {
 } from 'lucide-react';
 import { projectId } from '../../../utils/supabase/info';
 
-const BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
+const BASE = API_BASE;
 const POLL_MS = 3000; // 3-second live poll
 
 // ─── Types ────────────────────────────────────────────────────────────────────

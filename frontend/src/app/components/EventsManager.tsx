@@ -1,3 +1,4 @@
+import { API_BASE } from '@/app/lib/apiBase';
 import { useState, useEffect, useCallback } from 'react';
 import {
   Calendar, Plus, Edit2, Trash2, RefreshCw, Loader2,
@@ -6,7 +7,7 @@ import {
 import { getToken } from '../lib/api';
 import { projectId } from '../../../utils/supabase/info';
 
-const BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
+const BASE = API_BASE;
 
 async function apiFetch<T>(method: string, path: string, body?: unknown): Promise<T> {
   const token = getToken();

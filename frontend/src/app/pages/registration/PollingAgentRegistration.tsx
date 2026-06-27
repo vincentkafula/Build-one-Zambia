@@ -1,3 +1,4 @@
+import { API_BASE } from '@/app/lib/apiBase';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import {
@@ -15,7 +16,7 @@ import { sendFirebaseOTP, verifyFirebaseOTP, type ConfirmationResult as Firebase
 const GREEN  = '#007A30';
 const RED    = '#dc2626';
 const DARK   = '#0d1f14';
-const BACKEND = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/make-server-8fca9621`;
+const BACKEND = API_BASE;
 
 const STEPS = [
   { num: 1, label: 'Phone Verification',  icon: Phone },

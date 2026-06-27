@@ -84,10 +84,27 @@ app.get(`${BASE}/health`, (req, res) => {
   res.json({ name: 'Build One Zambia API', status: 'ok', server: 'node-express', version: '1.0.0', timestamp: new Date().toISOString() });
 });
 
-// Global rate limit — the frontend proxy forwards X-Forwarded-For so the
-// limiter sees real user IPs, not just the frontend server's IP.
-// 1000 req/min per IP is generous for legitimate use.
-app.use(rateLimit({ windowMs: 60_000, max: 1000, standardHeaders: true, legacyHeaders: false }));
+// Global rate limit — uses real user IP from X-Forwarded-For header
+// (the frontend proxy sets this correctly so we rate-limit users, not the proxy server)
+app.use(rateLimit({
+  windowMs: 60_000,
+  max: 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Use the real client IP forwarded by the proxy, not Railway's internal IP
+  keyGenerator: (req) => {
+    return (
+      req.headers['x-real-ip'] ||
+      (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
+      req.ip ||
+      'unknown'
+    );
+  },
+  skip: (req) => {
+    // Never rate-limit health checks or internal Railway pings
+    return req.path === `${BASE}/health` || req.path === '/health';
+  },
+}));
 
 // ─── Static uploads ──────────────────────────────────────────────────────────
 // Leader images and other public uploads are served here
@@ -120,7 +137,18 @@ app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
 app.post(`${BASE}/auth/login`,
-  rateLimit({ windowMs: 15 * 60_000, max: 20, standardHeaders: true, legacyHeaders: false }),
+  rateLimit({
+    windowMs: 15 * 60_000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => (
+      req.headers['x-real-ip'] ||
+      (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
+      req.ip ||
+      'unknown'
+    ),
+  }),
   async (req, res) => {
     try {
       const { username, password } = req.body;
