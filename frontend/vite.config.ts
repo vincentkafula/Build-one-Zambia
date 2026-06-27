@@ -43,9 +43,7 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        // Split large vendor chunks for better caching
         // Let Vite handle chunking automatically to avoid circular deps
-        },
         // Cache-friendly asset naming
         assetFileNames: 'assets/[name]-[hash][extname]',
         chunkFileNames: 'js/[name]-[hash]-v2.js',
