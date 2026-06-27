@@ -14,15 +14,17 @@ const DIST = path.join(__dirname, 'dist');
 //   https://build-one-zambia-backend.up.railway.app
 // Railway internal networking can use:
 //   http://<backend-service-name>.railway.internal:<PORT>
-const BACKEND = process.env.BACKEND_URL;
+// Fallback to known public backend URL if BACKEND_URL env var is not set.
+// For best performance, set BACKEND_URL to the private networking URL:
+//   http://<backend-service-name>.railway.internal:<PORT>
+const BACKEND =
+  process.env.BACKEND_URL ||
+  'https://build-one-zambia-production.up.railway.app';
 
-if (!BACKEND) {
-  console.error('\n\x1b[31m╔══════════════════════════════════════════════════════════╗');
-  console.error('║  FATAL: BACKEND_URL environment variable is not set!     ║');
-  console.error('║  Set it in Railway → Frontend service → Variables tab    ║');
-  console.error('║  Value: https://<your-backend>.up.railway.app            ║');
-  console.error('╚══════════════════════════════════════════════════════════╝\x1b[0m\n');
-  // Don't crash — still serve the frontend, but API calls will 502
+if (!process.env.BACKEND_URL) {
+  console.warn('\n\x1b[33m⚠  BACKEND_URL not set — using public URL fallback:');
+  console.warn(`   ${BACKEND}`);
+  console.warn('   Set BACKEND_URL to the private networking URL for better performance.\x1b[0m\n');
 }
 
 console.log(`\n🇿🇲  Build One Zambia — Frontend Server`);
@@ -33,14 +35,6 @@ console.log(`   📁  Serving dist from: ${DIST}`);
 
 // ─── Helper: proxy a request to the backend ──────────────────────────────────
 async function proxyToBackend(req, res, targetPath) {
-  if (!BACKEND) {
-    return res.status(503).json({
-      error: 'Backend not configured',
-      details: 'BACKEND_URL environment variable is not set on the frontend service.',
-      hint: 'Go to Railway → Frontend service → Variables → Add BACKEND_URL=https://your-backend.up.railway.app',
-    });
-  }
-
   const url = `${BACKEND}${targetPath}`;
   try {
     // Strip hop-by-hop headers, forward the rest
@@ -127,26 +121,19 @@ app.get('/health', (req, res) => {
 
 // ─── 4. Debug endpoints ───────────────────────────────────────────────────────
 app.get('/__debug/backend', async (req, res) => {
-  if (!BACKEND) {
-    return res.json({
-      configured: false,
-      hint: 'Set BACKEND_URL in Railway frontend service variables.',
-      example: 'http://<backend-service-name>.railway.internal:<PORT>',
-    });
-  }
   try {
     const r = await fetch(`${BACKEND}/make-server-8fca9621/health`, { signal: AbortSignal.timeout(8000) });
-    const ct = r.headers.get('content-type') || '';
     const text = await r.text();
     let backendResponse;
     try { backendResponse = JSON.parse(text); } catch { backendResponse = text; }
-    res.json({ configured: true, backendUrl: BACKEND, backendStatus: r.status, backendResponse });
+    res.json({ configured: true, usingEnvVar: !!process.env.BACKEND_URL, backendUrl: BACKEND, backendStatus: r.status, backendResponse });
   } catch (err) {
     res.status(502).json({
       configured: true,
+      usingEnvVar: !!process.env.BACKEND_URL,
       backendUrl: BACKEND,
       error: err.message,
-      hint: 'Check that BACKEND_URL uses the correct private networking URL and PORT.',
+      hint: 'Backend unreachable. Check backend service logs in Railway — is it running? Does /ping respond?',
     });
   }
 });
