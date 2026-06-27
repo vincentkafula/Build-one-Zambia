@@ -2,39 +2,41 @@ import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { createServer } from 'http';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ── Resolve backend URL ───────────────────────────────────────────────────────
-// Priority: VITE_API_URL → API_URL → same-host internal → localhost:3001
+// ── Resolve backend URL (server-side only — used by the proxy) ────────────────
+// Priority: VITE_API_URL → API_URL → BACKEND_PRIVATE_DOMAIN → localhost:3001
 function resolveBackendUrl() {
-  if (process.env.VITE_API_URL) return process.env.VITE_API_URL;
-  if (process.env.API_URL)      return process.env.API_URL;
+  if (process.env.VITE_API_URL)          return process.env.VITE_API_URL;
+  if (process.env.API_URL)               return process.env.API_URL;
   if (process.env.BACKEND_PRIVATE_DOMAIN) {
-    const port = process.env.BACKEND_PORT || '8080';
+    const port = process.env.BACKEND_PORT || '3001';
     return `http://${process.env.BACKEND_PRIVATE_DOMAIN}:${port}`;
   }
-  // Default: backend running on the same host (monorepo mode)
   const backendPort = process.env.BACKEND_PORT || '3001';
   return `http://localhost:${backendPort}`;
 }
 
-const API_URL = resolveBackendUrl();
+const BACKEND_URL = resolveBackendUrl();
+
+// What the browser should call — always the same origin as the frontend,
+// because the proxy below forwards /make-server-8fca9621/* to the backend.
+// This means window.__API_URL__ is intentionally left empty so api.ts
+// falls through to the same-origin /make-server-8fca9621 path.
+const BROWSER_API_URL = ''; // same-origin: browser hits the proxy on this server
 
 // ── API Proxy ─────────────────────────────────────────────────────────────────
-// Forward /make-server-8fca9621/* and /uploads/* to the backend
+// Forward /make-server-8fca9621/* and /uploads/* to the backend process
 app.use(['/make-server-8fca9621', '/uploads'], async (req, res) => {
-  const target = `${API_URL}${req.url.startsWith('/make-server') ? '' : ''}`;
-  const url = `${API_URL}${req.originalUrl}`;
+  const url = `${BACKEND_URL}${req.originalUrl}`;
 
   try {
     const headers = { ...req.headers };
     delete headers['host'];
 
-    // Read body for non-GET requests
     let body = undefined;
     if (!['GET', 'HEAD'].includes(req.method)) {
       body = await new Promise((resolve, reject) => {
@@ -46,9 +48,9 @@ app.use(['/make-server-8fca9621', '/uploads'], async (req, res) => {
     }
 
     const fetchRes = await fetch(url, {
-      method: req.method,
+      method:  req.method,
       headers,
-      body: body && body.length > 0 ? body : undefined,
+      body:    body && body.length > 0 ? body : undefined,
     });
 
     res.status(fetchRes.status);
@@ -58,15 +60,14 @@ app.use(['/make-server-8fca9621', '/uploads'], async (req, res) => {
       }
     });
 
-    const buf = await fetchRes.arrayBuffer();
-    res.end(Buffer.from(buf));
+    res.end(Buffer.from(await fetchRes.arrayBuffer()));
   } catch (err) {
-    console.error('[Proxy] Error:', err.message);
+    console.error('[Proxy] Error forwarding to backend:', err.message);
     res.status(502).json({ error: 'Backend unavailable', detail: err.message });
   }
 });
 
-// ── Static assets ─────────────────────────────────────────────────────────────
+// ── Static assets (long cache — Vite content-hashes filenames) ───────────────
 app.use('/assets', express.static(path.join(__dirname, 'dist/assets'), {
   maxAge: '1y', immutable: true,
 }));
@@ -76,13 +77,14 @@ app.use('/js', express.static(path.join(__dirname, 'dist/js'), {
 app.use(express.static(path.join(__dirname, 'dist'), { index: false }));
 
 // ── SPA catch-all ─────────────────────────────────────────────────────────────
-// Inject the backend URL so the React app can find it at runtime
 app.get('*', (req, res) => {
   const indexPath = path.join(__dirname, 'dist', 'index.html');
   let html = fs.readFileSync(indexPath, 'utf8');
 
-  // Always inject the real backend URL so the SPA knows where to call
-  const injection = `<script>window.__API_URL__=${JSON.stringify(API_URL)};</script>`;
+  // Inject an empty string so api.ts uses the same-origin proxy path.
+  // The frontend lib/api.ts resolveApiOrigin() will see window.__API_URL__ === ''
+  // and fall through to window.location.origin, which routes through this proxy.
+  const injection = `<script>window.__API_URL__='';</script>`;
   html = html.replace('</head>', `${injection}\n</head>`);
 
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -90,8 +92,8 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\nBuild One Zambia — Frontend`);
-  console.log(`  Serving on port  : ${PORT}`);
-  console.log(`  Backend API at   : ${API_URL}`);
-  console.log(`  Proxy active for : /make-server-8fca9621/* and /uploads/*`);
+  console.log(`\n🇿🇲  Build One Zambia — Frontend Server`);
+  console.log(`   Public port  : ${PORT}`);
+  console.log(`   Proxying to  : ${BACKEND_URL}`);
+  console.log(`   Routes proxied: /make-server-8fca9621/*, /uploads/*`);
 });
