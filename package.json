@@ -1,10 +1,13 @@
 {
   "name": "boz-monorepo",
   "private": true,
+  "type": "module",
   "scripts": {
-    "install": "cd backend && npm install",
-    "start": "cd backend && node src/index.js",
-    "build": "echo 'no build step'"
+    "start": "node server.js",
+    "build": "cd frontend && npm install && npm run build"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
   },
   "engines": {
     "node": ">=20.0.0"
