@@ -2,10 +2,19 @@
 nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["cd frontend && npm install"]
+cmds = [
+  "npm install",
+  "cd backend && npm install",
+  "cd frontend && npm install"
+]
 
 [phases.build]
-cmds = ["cd frontend && npm run build && cp -r dist ../dist && cp server.js ../server.js"]
+# VITE_API_URL must be empty so it is NOT baked into the JS bundle.
+# The frontend Express server proxies /make-server-8fca9621/* to BACKEND_URL.
+# Set BACKEND_URL in Railway Variables to your backend service's internal URL.
+cmds = [
+  "cd frontend && VITE_API_URL='' npm run build"
+]
 
 [start]
-cmd = "node server.js"
+cmd = "node start.js"

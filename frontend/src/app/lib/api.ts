@@ -4,18 +4,12 @@
  * Set VITE_API_URL in your .env to override (e.g. your production domain).
  */
 
-// Resolve API base — relative path in production so proxy always works
-function resolveApiBase(): string {
-  if (import.meta.env.VITE_API_URL) return `${import.meta.env.VITE_API_URL}/make-server-8fca9621`;
-  if (typeof window !== 'undefined' && (window as any).__API_URL__) {
-    return `${(window as any).__API_URL__}/make-server-8fca9621`;
-  }
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-    return '/make-server-8fca9621'; // relative — hits the proxy on same server
-  }
-  return 'http://localhost:3001/make-server-8fca9621';
-}
-const BASE = resolveApiBase();
+// Always use relative path — the Express proxy in server.js forwards to the backend.
+// NEVER use VITE_API_URL here: if baked in at build time it bypasses the proxy
+// and causes CORS errors when frontend and backend are on different domains.
+const BASE = (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+  ? 'http://localhost:3001/make-server-8fca9621'
+  : '/make-server-8fca9621';
 
 const SESSION_KEY = 'boz_session_token';
 
