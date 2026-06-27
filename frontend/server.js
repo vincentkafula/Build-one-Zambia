@@ -14,6 +14,9 @@ app.use('/make-server-8fca9621', async (req, res) => {
   const url = `${BACKEND}/make-server-8fca9621${req.originalUrl.replace('/make-server-8fca9621','')}`;
   try {
     const headers = { ...req.headers, host: undefined };
+    // Forward real client IP so backend rate-limits per user, not per proxy server
+    headers['x-forwarded-for'] = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    headers['x-real-ip'] = req.headers['x-real-ip'] || req.socket.remoteAddress;
     const body = ['GET','HEAD'].includes(req.method) ? undefined : await new Promise((resolve, reject) => {
       const chunks = [];
       req.on('data', c => chunks.push(c));

@@ -67,8 +67,11 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Global rate limit
-app.use(rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, legacyHeaders: false }));
+// Trust Railway's proxy so rate limiter sees real client IPs (not the frontend server IP)
+app.set('trust proxy', 1);
+
+// Global rate limit — generous limit; real-IP tracking prevents false positives
+app.use(rateLimit({ windowMs: 60_000, max: 500, standardHeaders: true, legacyHeaders: false }));
 
 // ─── Static uploads ──────────────────────────────────────────────────────────
 // Leader images and other public uploads are served here
@@ -107,7 +110,7 @@ app.get(`${BASE}/health`, (req, res) => {
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
 app.post(`${BASE}/auth/login`,
-  rateLimit({ windowMs: 15 * 60_000, max: 10, standardHeaders: true, legacyHeaders: false }),
+  rateLimit({ windowMs: 15 * 60_000, max: 20, standardHeaders: true, legacyHeaders: false }),
   async (req, res) => {
     try {
       const { username, password } = req.body;
