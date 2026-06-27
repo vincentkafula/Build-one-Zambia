@@ -121,22 +121,42 @@ app.get('/health', (req, res) => {
   });
 });
 
-// ─── 4. Debug endpoint ────────────────────────────────────────────────────────
+// ─── 4. Debug endpoints ───────────────────────────────────────────────────────
 app.get('/__debug/backend', async (req, res) => {
   if (!BACKEND) {
-    return res.json({ configured: false, hint: 'Set BACKEND_URL in Railway frontend service variables.' });
+    return res.json({
+      configured: false,
+      hint: 'Set BACKEND_URL in Railway frontend service variables.',
+      example: 'http://<backend-service-name>.railway.internal:<PORT>',
+    });
   }
   try {
-    // Use a lightweight API endpoint instead of /health which gets edge-rate-limited
-    const r = await fetch(`${BACKEND}/make-server-8fca9621/news/posts?limit=1`, { signal: AbortSignal.timeout(8000) });
+    const r = await fetch(`${BACKEND}/make-server-8fca9621/health`, { signal: AbortSignal.timeout(8000) });
     const ct = r.headers.get('content-type') || '';
     const text = await r.text();
     let backendResponse;
     try { backendResponse = JSON.parse(text); } catch { backendResponse = text; }
     res.json({ configured: true, backendUrl: BACKEND, backendStatus: r.status, backendResponse });
   } catch (err) {
-    res.status(502).json({ configured: true, backendUrl: BACKEND, error: err.message });
+    res.status(502).json({
+      configured: true,
+      backendUrl: BACKEND,
+      error: err.message,
+      hint: 'Check that BACKEND_URL uses the correct private networking URL and PORT.',
+    });
   }
+});
+
+// Shows what port this frontend is on — helpful when Railway shows it
+app.get('/__debug/env', (req, res) => {
+  res.json({
+    PORT,
+    BACKEND_URL: BACKEND || '(NOT SET)',
+    backendConfigured: !!BACKEND,
+    nodeEnv: process.env.NODE_ENV || 'production',
+    railwayService: process.env.RAILWAY_SERVICE_NAME || '(unknown)',
+    railwayEnv: process.env.RAILWAY_ENVIRONMENT || '(unknown)',
+  });
 });
 
 // ─── 5. SPA: inject config + serve index.html ────────────────────────────────

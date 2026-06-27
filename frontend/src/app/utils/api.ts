@@ -3,7 +3,9 @@
  * Provides type-safe methods to interact with the backend API
  */
 
-import { projectId, publicAnonKey } from '/utils/supabase/info';
+// Legacy supabase shim — values are empty strings (kept for compatibility)
+const projectId = '';
+const publicAnonKey = '';
 
 import { API_BASE } from '@/app/lib/apiBase';
 const API_BASE_URL = API_BASE;

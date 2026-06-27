@@ -4,8 +4,14 @@ nixPkgs = ["nodejs_20"]
 [phases.install]
 cmds = [
   "npm install",
-  "cd backend && npm install",
-  "if [ \"$IS_BACKEND\" != \"true\" ]; then cd frontend && npm install && VITE_API_URL='' npm run build; fi"
+  "cd backend && npm install --production",
+  "if [ \"$IS_BACKEND\" != \"true\" ]; then cd frontend && npm install --production=false; fi"
+]
+
+[phases.build]
+cmds = [
+  "if [ \"$IS_BACKEND\" != \"true\" ]; then cd frontend && VITE_API_URL='' npm run build; fi",
+  "echo 'Build complete'"
 ]
 
 [start]

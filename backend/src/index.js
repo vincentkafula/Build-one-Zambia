@@ -697,10 +697,22 @@ app.use((err, req, res, _next) => {
 // ─── Start ───────────────────────────────────────────────────────────────────
 
 app.listen(PORT, '0.0.0.0', () => {
+  const railwayService = process.env.RAILWAY_SERVICE_NAME || '(unknown-service)';
+  const railwayEnv    = process.env.RAILWAY_ENVIRONMENT  || 'local';
+  const internalHost  = `${railwayService}.railway.internal`;
+
   console.log(`\n🇿🇲  Build One Zambia Backend`);
-  console.log(`   ✅  Server running on http://localhost:${PORT}`);
-  console.log(`   📁  Database: ./data/kv.json`);
-  console.log(`   🖼   Uploads:  ./uploads/`);
+  console.log(`   ✅  Server running on http://0.0.0.0:${PORT}`);
+  console.log(`   🚂  Railway service : ${railwayService}`);
+  console.log(`   🌍  Environment     : ${railwayEnv}`);
+  console.log(`   🔌  PORT (Railway)  : ${PORT}`);
+  console.log(`   🔗  Private net URL : http://${internalHost}:${PORT}`);
+  console.log(`   ──────────────────────────────────────────────`);
+  console.log(`   👉  Set BACKEND_URL in the frontend service to:`);
+  console.log(`       http://${internalHost}:${PORT}`);
+  console.log(`   ──────────────────────────────────────────────`);
+  console.log(`   📁  Database: ${IS_RAILWAY ? '/tmp/boz-data' : './data'}/kv.json`);
+  console.log(`   🖼   Uploads:  ${UPLOADS_DIR}`);
   console.log(`   🔑  Admin:    username=${process.env.ADMIN_USERNAME || 'superadmin'}\n`);
 });
 
