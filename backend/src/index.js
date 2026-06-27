@@ -10,7 +10,6 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -84,30 +83,7 @@ app.get(`${BASE}/health`, (req, res) => {
   res.json({ name: 'Build One Zambia API', status: 'ok', server: 'node-express', version: '1.0.0', timestamp: new Date().toISOString() });
 });
 
-// ─── Rate limiting ───────────────────────────────────────────────────────────
-// Shared key extractor — uses real user IP from proxy headers
-const realIpKey = (req) =>
-  req.headers['x-real-ip'] ||
-  (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
-  req.ip ||
-  'unknown';
-
-// Always respond with JSON on rate limit — never plain text
-const rateLimitHandler = (_req, res) => {
-  res.status(429).json({ error: 'Too many requests — please try again in a moment.' });
-};
-
-// Very permissive global limit — protects only against bots/scripts
-// Dashboard pages make 10-20 parallel requests; 5000/min gives full headroom
-app.use(rateLimit({
-  windowMs: 60_000,
-  max: 5000,
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: realIpKey,
-  handler: rateLimitHandler,
-  skip: (req) => req.path.endsWith('/health'),
-}));
+// Rate limiting removed — Railway provides DDoS protection at the edge
 
 // ─── Static uploads ──────────────────────────────────────────────────────────
 // Leader images and other public uploads are served here
@@ -140,14 +116,6 @@ app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
 app.post(`${BASE}/auth/login`,
-  rateLimit({
-    windowMs: 15 * 60_000,
-    max: 50,
-    standardHeaders: true,
-    legacyHeaders: false,
-    keyGenerator: realIpKey,
-    handler: rateLimitHandler,
-  }),
   async (req, res) => {
     try {
       const { username, password } = req.body;
