@@ -38,11 +38,18 @@ app.use(helmet({
   contentSecurityPolicy: false, // frontend handles CSP
 }));
 
+// Additional allowed origins from environment (comma-separated)
+const EXTRA_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
 app.use(cors({
   origin: (origin, cb) => {
     const allowed = [
       'https://bozplans.org',
       'https://www.bozplans.org',
+      ...EXTRA_ORIGINS,
     ];
     if (
       !origin ||
@@ -52,10 +59,12 @@ app.use(cors({
       origin.includes('vercel.app') ||
       origin.includes('netlify.app') ||
       origin.includes('railway.app') ||
-      origin.includes('up.railway.app')
+      origin.includes('up.railway.app') ||
+      origin.includes('railway.internal')
     ) {
       cb(null, true);
     } else {
+      console.warn(`[CORS] Blocked origin: ${origin}`);
       cb(null, false);
     }
   },
