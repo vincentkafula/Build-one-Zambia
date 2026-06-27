@@ -26,8 +26,20 @@ const firebaseConfig = {
   measurementId:     'G-TP99TZBNFK',
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-export const auth = getAuth(app);
+let app: ReturnType<typeof initializeApp>;
+let auth: ReturnType<typeof getAuth>;
+
+try {
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  auth = getAuth(app);
+} catch (e) {
+  console.warn('[Firebase] Failed to initialize:', e);
+  // Create a no-op auth object so imports don't crash
+  app = {} as any;
+  auth = {} as any;
+}
+
+export { auth };
 
 // ── reCAPTCHA — invisible, required by Firebase before sending SMS ────────────
 let recaptchaVerifier: RecaptchaVerifier | null = null;

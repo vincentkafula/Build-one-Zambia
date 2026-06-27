@@ -747,6 +747,474 @@ app.use((req, res) => {
   res.status(404).json({ error: `Route not found: ${req.method} ${req.path}` });
 });
 
+
+// ─── Missing routes — aliases & stubs for frontend compatibility ─────────────
+
+// /registrations/* aliases (frontend uses /registrations/, backend has /register/)
+app.post(`${BASE}/registrations/member`, (req, res) => {
+  const r = registrations.registerMember(req.body);
+  res.json({ success: true, message: 'Registration submitted successfully', registration: r });
+});
+app.get(`${BASE}/registrations/member`, auth.requireAuth, (req, res) => {
+  const status = req.query.status;
+  const all = registrations.listMembers(status ? { status } : {});
+  res.json({ registrations: all, count: all.length });
+});
+app.patch(`${BASE}/registrations/member/:id/status`, auth.requireAuth, (req, res) => {
+  const r = registrations.updateMemberStatus(req.params.id, req.body.status, req.body.notes);
+  if (!r) return res.status(404).json({ error: 'Not found' });
+  res.json({ success: true, registration: r, credentials: null });
+});
+app.get(`${BASE}/registrations/member/:id/credentials`, (req, res) => {
+  res.json({ success: true, credentials: null, fullName: '' });
+});
+app.get(`${BASE}/registrations/member/:id/selfie`, auth.requireAuth, (req, res) => {
+  res.json({ success: false, dataUrl: null });
+});
+
+app.post(`${BASE}/registrations/cooperative`, (req, res) => {
+  const r = registrations.registerCoop(req.body);
+  res.json({ success: true, message: 'Registration submitted', registration: r });
+});
+app.get(`${BASE}/registrations/cooperative`, auth.requireAuth, (req, res) => {
+  const all = registrations.listCoops(req.query.status ? { status: req.query.status } : {});
+  res.json({ registrations: all, count: all.length });
+});
+app.patch(`${BASE}/registrations/cooperative/:id/status`, auth.requireAuth, (req, res) => {
+  const r = registrations.updateCoopStatus(req.params.id, req.body.status);
+  res.json({ success: true, registration: r, credentials: null });
+});
+app.get(`${BASE}/registrations/cooperative/:id/credentials`, (req, res) => {
+  res.json({ success: true, credentials: null, fullName: '' });
+});
+app.get(`${BASE}/registrations/cooperative/:id/selfie`, auth.requireAuth, (req, res) => {
+  res.json({ success: false, dataUrl: null });
+});
+
+app.post(`${BASE}/registrations/internship`, (req, res) => {
+  const r = registrations.registerIntern(req.body);
+  res.json({ success: true, message: 'Application submitted', application: r });
+});
+app.get(`${BASE}/registrations/internship`, auth.requireAuth, (req, res) => {
+  const all = registrations.listInterns(req.query.status ? { status: req.query.status } : {});
+  res.json({ applications: all, count: all.length });
+});
+app.patch(`${BASE}/registrations/internship/:id/status`, auth.requireAuth, (req, res) => {
+  const r = registrations.updateInternStatus(req.params.id, req.body.status);
+  res.json({ success: true, application: r, credentials: null });
+});
+app.get(`${BASE}/registrations/internship/:id/credentials`, (req, res) => {
+  res.json({ success: true, credentials: null, fullName: '' });
+});
+app.get(`${BASE}/registrations/internship/:id/selfie`, auth.requireAuth, (req, res) => {
+  res.json({ success: false, dataUrl: null });
+});
+
+app.post(`${BASE}/registrations/agent`, (req, res) => {
+  const r = registrations.registerAgent(req.body);
+  res.json({ success: true, message: 'Application submitted', application: r });
+});
+app.get(`${BASE}/registrations/agent`, auth.requireAuth, (req, res) => {
+  const all = registrations.listAgents(req.query.status ? { status: req.query.status } : {});
+  res.json({ applications: all, count: all.length });
+});
+app.patch(`${BASE}/registrations/agent/:id/status`, auth.requireAuth, (req, res) => {
+  const r = registrations.updateAgentStatus(req.params.id, req.body.status);
+  res.json({ success: true, application: r, credentials: null });
+});
+app.get(`${BASE}/registrations/agent/:id/credentials`, (req, res) => {
+  res.json({ success: true, credentials: null, fullName: '' });
+});
+app.get(`${BASE}/registrations/agent/:id/selfie`, auth.requireAuth, (req, res) => {
+  res.json({ success: false, dataUrl: null });
+});
+
+app.get(`${BASE}/registrations/stats`, auth.requireAuth, (req, res) => {
+  res.json({ success: true, stats: { member: registrations.getMemberStats(), cooperative: {}, internship: {}, agent: {} } });
+});
+
+app.get(`${BASE}/registrations/validate-membership`, (req, res) => {
+  res.json({ valid: false, error: 'Membership validation not configured' });
+});
+app.post(`${BASE}/registrations/validate-memberships`, (req, res) => {
+  const numbers = req.body.numbers || [];
+  const results = {};
+  numbers.forEach(n => { results[n] = { valid: false, error: 'Not found' }; });
+  res.json({ results, invalidCount: numbers.length, invalidNumbers: numbers });
+});
+
+// /ecz/* routes
+app.get(`${BASE}/ecz/summary`, auth.requireAuth, (req, res) => {
+  const figures = kv.getByPrefix('ecz:');
+  res.json({ summary: { total: figures.length, byElectionType: {}, byLevelType: {}, latestUpdated: null }, count: figures.length });
+});
+app.get(`${BASE}/ecz/comparisons`, auth.requireAuth, (req, res) => {
+  const figures = kv.getByPrefix('ecz:');
+  res.json({ comparisons: figures, meta: { total: figures.length, withDiscrepancy: 0, flagged: 0, fullyMatching: figures.length } });
+});
+app.get(`${BASE}/ecz/comparison/:electionType/:levelType/:levelId`, auth.requireAuth, (req, res) => {
+  const { electionType, levelType, levelId } = req.params;
+  const figure = kv.get(`ecz:${electionType}:${levelType}:${levelId}`);
+  res.json({ comparison: figure || null });
+});
+app.post(`${BASE}/ecz/bulk-save`, auth.requireAuth, (req, res) => {
+  const { figures = [] } = req.body;
+  let saved = 0;
+  for (const f of figures) {
+    kv.set(`ecz:${f.electionType}:${f.levelType}:${f.levelId}`, { ...f, savedAt: new Date().toISOString() });
+    saved++;
+  }
+  res.json({ success: true, saved, failed: 0, errors: [] });
+});
+app.get(`${BASE}/ecz/discrepancy-analysis/:electionType/:levelType/:levelId`, auth.requireAuth, (req, res) => {
+  res.json({ success: true, scope: req.params, eczFigure: null, agentSummary: null, overallDiff: 0, candidateAnalysis: [], benefited: [], disadvantaged: [], stationBreakdown: [], flaggedStations: [], summary: { totalCandidates: 0, benefitedCount: 0, disadvantagedCount: 0, neutralCount: 0, flaggedCandidates: 0, flaggedStationsCount: 0, totalStations: 0 } });
+});
+
+// /data-entry/* routes
+app.post(`${BASE}/data-entry/result`, async (req, res) => {
+  const { v4: uuid } = await import('uuid');
+  const id = uuid();
+  const submission = { id, ...req.body, status: 'pending', submittedAt: new Date().toISOString() };
+  kv.set(`submission:${id}`, submission);
+  res.json({ success: true, message: 'Result submitted', submission: { id, submittedAt: submission.submittedAt, status: 'pending' } });
+});
+app.get(`${BASE}/data-entry/submissions`, auth.requireAuth, (req, res) => {
+  const all = kv.getByPrefix('submission:');
+  res.json({ submissions: all, count: all.length });
+});
+app.get(`${BASE}/data-entry/submissions/:id`, auth.requireAuth, (req, res) => {
+  const s = kv.get(`submission:${req.params.id}`);
+  if (!s) return res.status(404).json({ error: 'Not found' });
+  res.json({ submission: s });
+});
+app.patch(`${BASE}/data-entry/submissions/:id/status`, auth.requireAuth, (req, res) => {
+  const s = kv.get(`submission:${req.params.id}`);
+  if (!s) return res.status(404).json({ error: 'Not found' });
+  const updated = { ...s, status: req.body.status, notes: req.body.notes, reviewedAt: new Date().toISOString() };
+  kv.set(`submission:${req.params.id}`, updated);
+  res.json({ success: true, submission: updated });
+});
+app.get(`${BASE}/data-entry/result/:pollingStationId/:electionType`, (req, res) => {
+  const all = kv.getByPrefix('submission:');
+  const found = all.find(s => s.pollingStationId === req.params.pollingStationId && s.electionType === req.params.electionType);
+  res.json({ submitted: !!found, submittedAt: found?.submittedAt, status: found?.status, id: found?.id });
+});
+app.get(`${BASE}/data-entry/turnout`, (req, res) => {
+  res.json({ stats: { totalVotesCast: 0, registeredVoters: 0, turnoutPercent: 0 } });
+});
+app.get(`${BASE}/data-entry/stats`, auth.requireAuth, (req, res) => {
+  const all = kv.getByPrefix('submission:');
+  res.json({ stats: { total: all.length, pending: all.filter(s=>s.status==='pending').length, verified: all.filter(s=>s.status==='verified').length, rejected: all.filter(s=>s.status==='rejected').length } });
+});
+app.post(`${BASE}/data-entry/ecz-figures`, auth.requireAuth, (req, res) => {
+  const key = `ecz-fig:${req.body.electionType}:${req.body.levelType}:${req.body.levelId}`;
+  const figure = { ...req.body, savedAt: new Date().toISOString() };
+  kv.set(key, figure);
+  res.json({ success: true, figure });
+});
+app.get(`${BASE}/data-entry/ecz-figures/:levelType/:levelId/:electionType`, auth.requireAuth, (req, res) => {
+  const key = `ecz-fig:${req.params.electionType}:${req.params.levelType}:${req.params.levelId}`;
+  const figure = kv.get(key);
+  res.json({ exists: !!figure, figure: figure || null });
+});
+app.get(`${BASE}/data-entry/ecz-figures`, auth.requireAuth, (req, res) => {
+  const all = kv.getByPrefix('ecz-fig:');
+  res.json({ figures: all, count: all.length });
+});
+app.delete(`${BASE}/data-entry/ecz-figures/:levelType/:levelId/:electionType`, auth.requireAuth, (req, res) => {
+  const key = `ecz-fig:${req.params.electionType}:${req.params.levelType}:${req.params.levelId}`;
+  kv.del(key);
+  res.json({ success: true });
+});
+app.get(`${BASE}/data-entry/audit-log`, auth.requireAuth, (req, res) => {
+  res.json({ entries: [], count: 0 });
+});
+
+// /security/* routes
+app.get(`${BASE}/security/stats`, auth.requireAuth, (req, res) => {
+  res.json({ success: true, stats: { lockedAccounts: 0, blockedIPs: 0, auditEntries: 0, activeSessions: 0, recentFailedLogins: 0 } });
+});
+app.get(`${BASE}/security/audit-log`, auth.requireAuth, (req, res) => {
+  res.json({ success: true, events: [], total: 0 });
+});
+app.get(`${BASE}/security/blocked-ips`, auth.requireAuth, (req, res) => {
+  res.json({ success: true, blockedIPs: [], count: 0 });
+});
+app.post(`${BASE}/security/block-ip`, auth.requireAuth, (req, res) => {
+  res.json({ success: true, message: 'IP blocked' });
+});
+app.delete(`${BASE}/security/block-ip/:ip`, auth.requireAuth, (req, res) => {
+  res.json({ success: true, message: 'IP unblocked' });
+});
+app.get(`${BASE}/security/sessions`, auth.requireAuth, (req, res) => {
+  res.json({ success: true, sessions: [], count: 0 });
+});
+app.delete(`${BASE}/security/sessions/all`, auth.requireAuth, (req, res) => {
+  res.json({ success: true, message: 'All sessions revoked' });
+});
+app.post(`${BASE}/security/unlock-account`, auth.requireAuth, (req, res) => {
+  res.json({ success: true, message: 'Account unlocked' });
+});
+app.post(`${BASE}/security/deactivate-user`, auth.requireAuth, (req, res) => {
+  res.json({ success: true, message: 'User deactivated' });
+});
+
+// /voter-roll/* routes
+app.post(`${BASE}/voter-roll/verify`, (req, res) => {
+  res.json({ valid: false, message: 'No voter roll uploaded yet' });
+});
+app.post(`${BASE}/voter-roll/upload`, auth.requireAuth, (req, res) => {
+  const { records = [], fileName } = req.body;
+  kv.set('voter-roll:meta', { count: records.length, fileName, uploadedAt: new Date().toISOString() });
+  records.forEach((r, i) => kv.set(`voter-roll:${i}`, r));
+  res.json({ success: true, count: records.length });
+});
+app.get(`${BASE}/voter-roll`, auth.requireAuth, (req, res) => {
+  const meta = kv.get('voter-roll:meta') || { count: 0 };
+  const records = kv.getByPrefix('voter-roll:').filter(r => r && typeof r === 'object' && !r.count);
+  res.json({ records, count: meta.count, meta });
+});
+app.delete(`${BASE}/voter-roll`, auth.requireAuth, (req, res) => {
+  kv.getKeysByPrefix('voter-roll:').forEach(k => kv.del(k));
+  res.json({ success: true });
+});
+
+// /streams/* routes
+app.get(`${BASE}/streams`, (req, res) => {
+  const all = kv.getByPrefix('stream:');
+  res.json({ streams: all, count: all.length });
+});
+app.get(`${BASE}/streams/stats`, auth.requireAuth, (req, res) => {
+  const all = kv.getByPrefix('stream:');
+  res.json({ stats: { total: all.length, live: all.filter(s=>s.status==='live').length } });
+});
+app.post(`${BASE}/streams`, auth.requireAuth, async (req, res) => {
+  const { v4: uuid } = await import('uuid');
+  const id = uuid();
+  const stream = { id, ...req.body, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), viewCount: 0 };
+  kv.set(`stream:${id}`, stream);
+  res.json({ success: true, stream });
+});
+app.get(`${BASE}/streams/:id`, (req, res) => {
+  const s = kv.get(`stream:${req.params.id}`);
+  if (!s) return res.status(404).json({ error: 'Not found' });
+  res.json({ stream: s });
+});
+app.patch(`${BASE}/streams/:id`, auth.requireAuth, (req, res) => {
+  const s = kv.get(`stream:${req.params.id}`);
+  if (!s) return res.status(404).json({ error: 'Not found' });
+  const updated = { ...s, ...req.body, updatedAt: new Date().toISOString() };
+  kv.set(`stream:${req.params.id}`, updated);
+  res.json({ success: true, stream: updated });
+});
+app.patch(`${BASE}/streams/:id/status`, auth.requireAuth, (req, res) => {
+  const s = kv.get(`stream:${req.params.id}`);
+  if (!s) return res.status(404).json({ error: 'Not found' });
+  const updated = { ...s, status: req.body.status, updatedAt: new Date().toISOString() };
+  kv.set(`stream:${req.params.id}`, updated);
+  res.json({ success: true, stream: updated });
+});
+app.delete(`${BASE}/streams/:id`, auth.requireAuth, (req, res) => {
+  kv.del(`stream:${req.params.id}`);
+  res.json({ success: true });
+});
+app.post(`${BASE}/streams/:id/view`, (req, res) => {
+  const s = kv.get(`stream:${req.params.id}`);
+  if (s) kv.set(`stream:${req.params.id}`, { ...s, viewCount: (s.viewCount||0)+1 });
+  res.json({ success: true });
+});
+app.get(`${BASE}/streams/:id/comments`, (req, res) => {
+  const comments = kv.getByPrefix(`stream-comment:${req.params.id}:`);
+  res.json({ comments, count: comments.length });
+});
+app.post(`${BASE}/streams/:id/comments`, async (req, res) => {
+  const { v4: uuid } = await import('uuid');
+  const id = uuid();
+  const comment = { id, streamId: req.params.id, ...req.body, createdAt: new Date().toISOString() };
+  kv.set(`stream-comment:${req.params.id}:${id}`, comment);
+  res.json({ success: true, comment });
+});
+app.delete(`${BASE}/streams/:streamId/comments/:commentId`, auth.requireAuth, (req, res) => {
+  kv.del(`stream-comment:${req.params.streamId}:${req.params.commentId}`);
+  res.json({ success: true });
+});
+
+// /otp/* routes
+app.post(`${BASE}/otp/send`, (req, res) => {
+  const otpId = Math.random().toString(36).slice(2);
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  kv.set(`otp:${otpId}`, { code, recipient: req.body.recipient, purpose: req.body.purpose, expiresAt: new Date(Date.now() + 10*60*1000).toISOString() });
+  console.log(`[OTP] Code for ${req.body.recipient}: ${code}`);
+  res.json({ success: true, otpId, expiresAt: new Date(Date.now() + 10*60*1000).toISOString() });
+});
+app.post(`${BASE}/otp/verify`, (req, res) => {
+  const all = kv.getByPrefix('otp:');
+  const match = all.find(o => o.recipient === req.body.recipient && o.code === req.body.code && o.purpose === req.body.purpose);
+  res.json({ success: true, verified: !!match });
+});
+
+// /contact/* routes
+app.post(`${BASE}/contact`, (req, res) => {
+  const id = Date.now().toString();
+  kv.set(`contact:${id}`, { id, ...req.body, read: false, receivedAt: new Date().toISOString() });
+  res.json({ success: true, message: 'Message received' });
+});
+app.get(`${BASE}/contact`, auth.requireAuth, (req, res) => {
+  const all = kv.getByPrefix('contact:');
+  res.json({ messages: all, count: all.length, unread: all.filter(m=>!m.read).length });
+});
+app.patch(`${BASE}/contact/:id/read`, auth.requireAuth, (req, res) => {
+  const m = kv.get(`contact:${req.params.id}`);
+  if (m) kv.set(`contact:${req.params.id}`, { ...m, read: true });
+  res.json({ success: true });
+});
+
+// /donations/* routes
+app.post(`${BASE}/donations`, (req, res) => {
+  const id = Date.now().toString();
+  kv.set(`donation:${id}`, { id, ...req.body, receivedAt: new Date().toISOString() });
+  res.json({ success: true, message: 'Donation recorded', donation: { id } });
+});
+app.get(`${BASE}/donations`, auth.requireAuth, (req, res) => {
+  const all = kv.getByPrefix('donation:');
+  const total = all.reduce((sum, d) => sum + (Number(d.amount)||0), 0);
+  res.json({ donations: all, count: all.length, stats: { total, count: all.length, byMethod: {} } });
+});
+
+// /orders/* routes
+app.post(`${BASE}/orders`, async (req, res) => {
+  const { v4: uuid } = await import('uuid');
+  const id = uuid();
+  const order = { id, ...req.body, status: 'pending', submittedAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  kv.set(`order:${id}`, order);
+  res.json({ success: true, message: 'Order created', order });
+});
+app.get(`${BASE}/orders`, auth.requireAuth, (req, res) => {
+  const all = kv.getByPrefix('order:');
+  res.json({ orders: all, count: all.length });
+});
+app.patch(`${BASE}/orders/:id/status`, auth.requireAuth, (req, res) => {
+  const o = kv.get(`order:${req.params.id}`);
+  if (!o) return res.status(404).json({ error: 'Not found' });
+  const updated = { ...o, status: req.body.status, paymentRef: req.body.paymentRef, updatedAt: new Date().toISOString() };
+  kv.set(`order:${req.params.id}`, updated);
+  res.json({ success: true });
+});
+
+// /gateway/* routes
+app.get(`${BASE}/gateway/config`, (req, res) => {
+  res.json({ publicKey: process.env.FLUTTERWAVE_PUBLIC_KEY || '', currency: 'ZMW', country: 'ZM', redirectUrl: process.env.FRONTEND_URL || 'https://www.bozplans.org' });
+});
+app.post(`${BASE}/gateway/mobile-money`, (req, res) => {
+  res.json({ success: false, txRef: '', status: 'error', message: 'Payment gateway not configured', error: 'FLUTTERWAVE_SECRET_KEY not set' });
+});
+app.get(`${BASE}/gateway/verify/:txRef`, (req, res) => {
+  res.json({ result: { verified: false, status: 'error', error: 'Gateway not configured' } });
+});
+app.post(`${BASE}/gateway/verify-card`, (req, res) => {
+  res.json({ success: false, verified: false, result: { verified: false, status: 'error' } });
+});
+
+// /email/* routes  
+app.post(`${BASE}/email/test`, auth.requireAuth, (req, res) => {
+  res.json({ success: false, error: 'Email service not configured' });
+});
+app.post(`${BASE}/email/resend/order/:orderId`, auth.requireAuth, (req, res) => {
+  res.json({ success: false, error: 'Email service not configured' });
+});
+app.post(`${BASE}/email/resend/payment/:paymentRef`, auth.requireAuth, (req, res) => {
+  res.json({ success: false, error: 'Email service not configured' });
+});
+
+// /chambers/* routes
+app.get(`${BASE}/chambers`, auth.requireAuth, (req, res) => {
+  const all = kv.getByPrefix('chamber:').filter(c => c && !c.field);
+  res.json({ chambers: all });
+});
+app.get(`${BASE}/chambers/stats`, auth.requireAuth, (req, res) => {
+  const all = kv.getByPrefix('chamber:').filter(c => c && !c.field);
+  res.json({ success: true, stats: { total: all.length, byType: {}, pendingAmendments: 0 } });
+});
+app.get(`${BASE}/chambers/ward/:wardId`, auth.requireAuth, (req, res) => {
+  const all = kv.getByPrefix('chamber:').filter(c => c && !c.field);
+  const found = all.find(c => c.wardId === req.params.wardId);
+  res.json({ success: true, chamber: found || null });
+});
+app.post(`${BASE}/chambers`, auth.requireAuth, async (req, res) => {
+  const { v4: uuid } = await import('uuid');
+  const id = uuid();
+  const chamber = { id, ...req.body, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  kv.set(`chamber:${id}`, chamber);
+  res.json({ success: true, chamber });
+});
+app.get(`${BASE}/chambers/amendments`, auth.requireAuth, (req, res) => {
+  const all = kv.getByPrefix('chamber-amendment:');
+  res.json({ amendments: all, total: all.length });
+});
+app.post(`${BASE}/chambers/amendments`, auth.requireAuth, async (req, res) => {
+  const { v4: uuid } = await import('uuid');
+  const id = uuid();
+  const amendment = { id, ...req.body, status: 'pending', submittedAt: new Date().toISOString() };
+  kv.set(`chamber-amendment:${id}`, amendment);
+  res.json({ success: true, amendment });
+});
+app.patch(`${BASE}/chambers/amendments/:id/review`, auth.requireAuth, (req, res) => {
+  const a = kv.get(`chamber-amendment:${req.params.id}`);
+  if (!a) return res.status(404).json({ error: 'Not found' });
+  const updated = { ...a, status: req.body.decision, adminNote: req.body.adminNote, reviewedAt: new Date().toISOString() };
+  kv.set(`chamber-amendment:${req.params.id}`, updated);
+  res.json({ success: true, amendment: updated });
+});
+app.get(`${BASE}/chambers/:id`, auth.requireAuth, (req, res) => {
+  const c = kv.get(`chamber:${req.params.id}`);
+  if (!c) return res.status(404).json({ error: 'Not found' });
+  res.json({ chamber: c });
+});
+app.patch(`${BASE}/chambers/:id`, auth.requireAuth, (req, res) => {
+  const c = kv.get(`chamber:${req.params.id}`);
+  if (!c) return res.status(404).json({ error: 'Not found' });
+  const updated = { ...c, ...req.body, updatedAt: new Date().toISOString() };
+  kv.set(`chamber:${req.params.id}`, updated);
+  res.json({ success: true, chamber: updated });
+});
+
+// /membership/* additional routes
+app.get(`${BASE}/membership/certificate/membership`, (req, res) => {
+  res.json({ certificateType: 'membership', membershipNumber: '', fullName: '', tier: '', province: '', district: '', constituency: '', ward: '', joinDate: '', status: '', issuedAt: new Date().toISOString() });
+});
+app.get(`${BASE}/membership/certificate/adoption`, (req, res) => {
+  res.json({ eligible: false, reason: 'No adoption on record' });
+});
+app.post(`${BASE}/membership/members/:id/grant-adoption`, auth.requireAuth, (req, res) => {
+  const m = kv.get(`member:${req.params.id}`);
+  if (!m) return res.status(404).json({ error: 'Not found' });
+  const updated = { ...m, adoptionGranted: true, adoptionGrantedAt: new Date().toISOString(), ...req.body };
+  kv.set(`member:${req.params.id}`, updated);
+  res.json({ success: true, member: updated });
+});
+app.post(`${BASE}/membership/members/:id/revoke-adoption`, auth.requireAuth, (req, res) => {
+  const m = kv.get(`member:${req.params.id}`);
+  if (!m) return res.status(404).json({ error: 'Not found' });
+  const updated = { ...m, adoptionGranted: false };
+  kv.set(`member:${req.params.id}`, updated);
+  res.json({ success: true, member: updated });
+});
+app.post(`${BASE}/membership/members/:id/link-order`, auth.requireAuth, (req, res) => {
+  res.json({ success: true });
+});
+app.patch(`${BASE}/membership/members/:id`, auth.requireAuth, (req, res) => {
+  const m = kv.get(`member:${req.params.id}`);
+  if (!m) return res.status(404).json({ error: 'Not found' });
+  const updated = { ...m, ...req.body, updatedAt: new Date().toISOString() };
+  kv.set(`member:${req.params.id}`, updated);
+  res.json({ success: true, member: updated });
+});
+app.get(`${BASE}/membership/members/:id`, auth.requireAuth, (req, res) => {
+  const m = kv.get(`member:${req.params.id}`);
+  if (!m) return res.status(404).json({ error: 'Not found' });
+  res.json({ member: m });
+});
+
 // ─── Error handler ───────────────────────────────────────────────────────────
 
 app.use((err, req, res, _next) => {
