@@ -84,26 +84,33 @@ app.get(`${BASE}/health`, (req, res) => {
   res.json({ name: 'Build One Zambia API', status: 'ok', server: 'node-express', version: '1.0.0', timestamp: new Date().toISOString() });
 });
 
-// Global rate limit — uses real user IP from X-Forwarded-For header
-// (the frontend proxy sets this correctly so we rate-limit users, not the proxy server)
+// ─── Shared rate-limit key extractor (real user IP, not proxy IP) ────────────
+const realIpKey = (req) =>
+  req.headers['x-real-ip'] ||
+  (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
+  req.ip ||
+  'unknown';
+
+// ─── Shared rate-limit handler (returns JSON, not plain text) ────────────────
+const rateLimitHandler = (req, res) => {
+  res.status(429).json({
+    error: 'Too many requests',
+    message: 'Rate limit exceeded. Please slow down and try again shortly.',
+    retryAfter: Math.ceil(res.getHeader('Retry-After') || 60),
+  });
+};
+
+// Global rate limit — 2000 req/min per real user IP.
+// Dashboard pages make many parallel calls; this keeps headroom for heavy users
+// while still protecting against abuse.
 app.use(rateLimit({
   windowMs: 60_000,
-  max: 1000,
+  max: 2000,
   standardHeaders: true,
   legacyHeaders: false,
-  // Use the real client IP forwarded by the proxy, not Railway's internal IP
-  keyGenerator: (req) => {
-    return (
-      req.headers['x-real-ip'] ||
-      (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
-      req.ip ||
-      'unknown'
-    );
-  },
-  skip: (req) => {
-    // Never rate-limit health checks or internal Railway pings
-    return req.path === `${BASE}/health` || req.path === '/health';
-  },
+  keyGenerator: realIpKey,
+  handler: rateLimitHandler,
+  skip: (req) => req.path.endsWith('/health'),
 }));
 
 // ─── Static uploads ──────────────────────────────────────────────────────────
@@ -139,15 +146,11 @@ app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));
 app.post(`${BASE}/auth/login`,
   rateLimit({
     windowMs: 15 * 60_000,
-    max: 20,
+    max: 30,
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => (
-      req.headers['x-real-ip'] ||
-      (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
-      req.ip ||
-      'unknown'
-    ),
+    keyGenerator: realIpKey,
+    handler: rateLimitHandler,
   }),
   async (req, res) => {
     try {

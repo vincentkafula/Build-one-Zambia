@@ -33,8 +33,21 @@ async function request<T>(method: string, path: string, body?: unknown, auth = f
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || data.details || `HTTP ${res.status}`);
+
+  // Safely parse response — backend may return plain text on rate limit or gateway errors
+  let data: Record<string, unknown>;
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    data = await res.json();
+  } else {
+    const text = await res.text();
+    if (res.status === 429) {
+      throw new Error('Rate limit exceeded — too many requests. Please wait a moment and try again.');
+    }
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+
+  if (!res.ok) throw new Error((data.error as string) || (data.details as string) || `HTTP ${res.status}`);
   return data as T;
 }
 
