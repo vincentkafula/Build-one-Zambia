@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { User, Building2, Building, GraduationCap, ClipboardList, BarChart2, ArrowRight, Lock, Eye, EyeOff, Zap, ChevronLeft, Shield } from 'lucide-react';
-import { getApiBaseUrl } from '../../../utils/supabase/info';
-
-// AUTH_BASE replaced by getApiBaseUrl() called inline
+// Inline API base resolver — relative path in prod so proxy always works
+function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return '/make-server-8fca9621';
+  }
+  return 'http://localhost:3001/make-server-8fca9621';
+}
 
 // Election roles that use real backend auth
 const ELECTION_DASHBOARD_IDS = ['agent', 'manager'];
