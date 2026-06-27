@@ -9,8 +9,11 @@ cmds = [
 ]
 
 [phases.build]
+# Unset VITE_API_URL during build so it isn't baked in.
+# The frontend server.js injects window.__API_URL__ at runtime instead,
+# which means the same build works on any domain (bozplans.org, railway.app, etc.)
 cmds = [
-  "cd frontend && npm run build"
+  "cd frontend && VITE_API_URL='' npm run build"
 ]
 
 [start]
