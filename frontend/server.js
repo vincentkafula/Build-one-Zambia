@@ -7,9 +7,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Backend is always on localhost:BACKEND_PORT (set by start.js)
-const BACKEND_PORT = process.env.BACKEND_PORT || '3001';
-const BACKEND_URL  = process.env.API_URL || `http://localhost:${BACKEND_PORT}`;
+// Backend URL — Railway production backend, overrideable via API_URL env var
+const BACKEND_URL = process.env.API_URL || 'https://build-one-zambia-production.up.railway.app';
 
 console.log(`[frontend] PORT        = ${PORT}`);
 console.log(`[frontend] BACKEND_URL = ${BACKEND_URL}`);
