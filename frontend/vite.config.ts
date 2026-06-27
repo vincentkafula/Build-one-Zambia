@@ -52,8 +52,15 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('@mui') || id.includes('@emotion')) return 'mui';
             // Radix UI primitives
             if (id.includes('@radix-ui')) return 'radix';
-            // React core
-            if (id.includes('react-dom') || id.includes('react-router')) return 'react';
+            // React core — MUST include 'react' itself, react-dom, and react-router
+            // all in the SAME chunk to avoid the "Cannot set properties of undefined
+            // (setting 'Children')" error caused by split React instances
+            if (
+              id.includes('/react/') ||
+              id.includes('/react-dom/') ||
+              id.includes('/react-router/') ||
+              id.includes('/scheduler/')
+            ) return 'react';
             // Everything else vendor
             return 'vendor';
           }
