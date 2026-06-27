@@ -368,17 +368,14 @@ Authorization: Bearer <your-token>
         <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
           <Server className="w-4 h-4 text-primary" /> Deploy the Backend (one-time)
         </h3>
-        <CodeBlock code={`# Install Supabase CLI (if not already installed)
-npm install -g supabase
+        <CodeBlock code={`# Backend is already deployed on Railway
+# Health check:
+curl ${BASE}/health
 
-# Link to this project
-supabase link --project-ref ${projectId}
-
-# Deploy the edge function
-supabase functions deploy server
-
-# Trigger auto-bootstrap
-curl ${BASE}/health`} />
+# Admin login:
+curl -X POST ${BASE}/auth/login \\
+  -H 'Content-Type: application/json' \\
+  -d '{"username":"bozadmin","password":"BOZ@Zambia2026!"}'`} />
       </div>
     </div>
   );
