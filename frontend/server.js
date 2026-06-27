@@ -121,21 +121,45 @@ app.get('/health', (req, res) => {
 
 // ─── 4. Debug endpoints ───────────────────────────────────────────────────────
 app.get('/__debug/backend', async (req, res) => {
-  try {
-    const r = await fetch(`${BACKEND}/make-server-8fca9621/health`, { signal: AbortSignal.timeout(8000) });
-    const text = await r.text();
-    let backendResponse;
-    try { backendResponse = JSON.parse(text); } catch { backendResponse = text; }
-    res.json({ configured: true, usingEnvVar: !!process.env.BACKEND_URL, backendUrl: BACKEND, backendStatus: r.status, backendResponse });
-  } catch (err) {
-    res.status(502).json({
-      configured: true,
-      usingEnvVar: !!process.env.BACKEND_URL,
-      backendUrl: BACKEND,
-      error: err.message,
-      hint: 'Backend unreachable. Check backend service logs in Railway — is it running? Does /ping respond?',
-    });
-  }
+  // Also probe common private networking hostnames automatically
+  const privateGuesses = [
+    'http://backend.railway.internal:3001',
+    'http://backend.railway.internal:8080',
+    'http://Backend.railway.internal:3001',
+    'http://Backend.railway.internal:8080',
+  ];
+
+  const probe = async (url) => {
+    try {
+      const r = await fetch(`${url}/make-server-8fca9621/health`, { signal: AbortSignal.timeout(4000) });
+      const text = await r.text();
+      let body; try { body = JSON.parse(text); } catch { body = text; }
+      return { url, status: r.status, body };
+    } catch (e) {
+      return { url, error: e.message };
+    }
+  };
+
+  const [main, ...privates] = await Promise.all([
+    probe(BACKEND),
+    ...privateGuesses.map(probe),
+  ]);
+
+  const workingPrivate = privates.find(p => p.status === 200);
+
+  res.json({
+    configured: true,
+    usingEnvVar: !!process.env.BACKEND_URL,
+    currentBackendUrl: BACKEND,
+    currentStatus: main.status,
+    currentResponse: main.body || main.error,
+    privateNetworkProbes: privates,
+    recommendation: workingPrivate
+      ? `✅ Private networking works! Set BACKEND_URL = ${workingPrivate.url} in frontend Railway variables.`
+      : main.status === 200
+      ? '✅ Backend reachable via public URL.'
+      : '❌ Backend unreachable on all probed URLs. Check backend service is running with IS_BACKEND=true.',
+  });
 });
 
 // Shows what port this frontend is on — helpful when Railway shows it
