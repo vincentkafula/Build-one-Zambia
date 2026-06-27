@@ -44,20 +44,7 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         // Split large vendor chunks for better caching
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            // Recharts in its own chunk (large)
-            if (id.includes('recharts') || id.includes('d3-')) return 'charts';
-            // MUI in its own chunk
-            if (id.includes('@mui') || id.includes('@emotion')) return 'mui';
-            // Radix UI primitives
-            if (id.includes('@radix-ui')) return 'radix';
-            // React core
-            if (id.includes('react-dom') || id.includes('react-router')) return 'react';
-            // Everything else vendor
-            return 'vendor';
-          }
-        },
+        // Let Vite handle chunking automatically to avoid circular deps
         // Cache-friendly asset naming
         assetFileNames: 'assets/[name]-[hash][extname]',
         chunkFileNames: 'js/[name]-[hash]-v2.js',
