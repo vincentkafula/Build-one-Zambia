@@ -96,7 +96,7 @@ export default function DashboardLogin() {
         // ── Try real backend authentication ──
         let backendSuccess = false;
         try {
-          const res = await fetch(`${AUTH_BASE}/auth/login`, {
+          const res = await fetch(`${getApiBaseUrl()}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),

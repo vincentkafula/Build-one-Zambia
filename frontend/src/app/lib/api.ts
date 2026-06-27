@@ -4,10 +4,18 @@
  * Set VITE_API_URL in your .env to override (e.g. your production domain).
  */
 
-// Development default: http://localhost:3001
-// Production: set VITE_API_URL=https://api.yourdomain.com in .env
-const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-const BASE = `${API_ORIGIN}/make-server-8fca9621`;
+// Resolve API base — relative path in production so proxy always works
+function resolveApiBase(): string {
+  if (import.meta.env.VITE_API_URL) return `${import.meta.env.VITE_API_URL}/make-server-8fca9621`;
+  if (typeof window !== 'undefined' && (window as any).__API_URL__) {
+    return `${(window as any).__API_URL__}/make-server-8fca9621`;
+  }
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return '/make-server-8fca9621'; // relative — hits the proxy on same server
+  }
+  return 'http://localhost:3001/make-server-8fca9621';
+}
+const BASE = resolveApiBase();
 
 const SESSION_KEY = 'boz_session_token';
 
