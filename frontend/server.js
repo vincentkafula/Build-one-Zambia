@@ -6,52 +6,101 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DIST = path.join(__dirname, 'dist');
 
-// 1. API proxy - forward /make-server-8fca9621/* to backend
-const BACKEND = process.env.BACKEND_URL || 'http://localhost:3001';
-app.use('/make-server-8fca9621', async (req, res) => {
-  const url = `${BACKEND}/make-server-8fca9621${req.originalUrl.replace('/make-server-8fca9621','')}`;
+// Backend runs in the same container on BACKEND_PORT (set by start.js)
+const BACKEND_URL = process.env.API_URL || `http://localhost:${process.env.BACKEND_PORT || '3001'}`;
+
+console.log(`[frontend] PORT        = ${PORT}`);
+console.log(`[frontend] BACKEND_URL = ${BACKEND_URL}`);
+
+// ── API Proxy ─────────────────────────────────────────────────────────────────
+// Browser calls same-origin /make-server-8fca9621/* → this proxy → backend
+app.use(['/make-server-8fca9621', '/uploads'], async (req, res) => {
+  const url = `${BACKEND_URL}${req.originalUrl}`;
+
   try {
-    const headers = { ...req.headers, host: undefined };
-    const body = ['GET','HEAD'].includes(req.method) ? undefined : await new Promise((resolve, reject) => {
-      const chunks = [];
-      req.on('data', c => chunks.push(c));
-      req.on('end', () => resolve(Buffer.concat(chunks)));
-      req.on('error', reject);
+    const headers = { ...req.headers };
+    delete headers['host'];
+    delete headers['connection'];
+
+    let body = undefined;
+    if (!['GET', 'HEAD'].includes(req.method)) {
+      body = await new Promise((resolve, reject) => {
+        const chunks = [];
+        req.on('data', c => chunks.push(c));
+        req.on('end', () => resolve(Buffer.concat(chunks)));
+        req.on('error', reject);
+      });
+    }
+
+    const fetchRes = await fetch(url, {
+      method:  req.method,
+      headers,
+      body:    body?.length ? body : undefined,
     });
-    const r = await fetch(url, { method: req.method, headers, body: body?.length ? body : undefined });
-    res.status(r.status);
-    r.headers.forEach((v, k) => { if (!['transfer-encoding','connection'].includes(k)) res.setHeader(k, v); });
-    res.end(Buffer.from(await r.arrayBuffer()));
-  } catch(e) {
-    res.status(502).json({ error: 'Backend unavailable' });
+
+    res.status(fetchRes.status);
+    for (const [key, val] of fetchRes.headers.entries()) {
+      if (!['transfer-encoding', 'connection', 'keep-alive'].includes(key.toLowerCase())) {
+        res.setHeader(key, val);
+      }
+    }
+    res.end(Buffer.from(await fetchRes.arrayBuffer()));
+
+  } catch (err) {
+    console.error(`[proxy] FAILED ${req.method} ${url} —`, err.message);
+    res.status(502).json({ error: 'Backend unavailable', detail: err.message });
   }
 });
 
-// 2. Intercept ALL html requests BEFORE static files - inject API URL
+// ── HTML Injection Middleware ──────────────────────────────────────────────────
+// Intercept HTML requests and inject window.__API_URL__ BEFORE serving static files
 app.use((req, res, next) => {
+  // Only intercept root and .html requests
   if (req.path === '/' || req.path.endsWith('.html')) {
-    const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.send(html.replace('</head>', `<script>window.__API_URL__='';</script>\n</head>`));
-  } else {
-    next();
+    console.log(`[spa] Intercepting HTML request: ${req.method} ${req.path}`);
+    
+    const indexPath = path.join(__dirname, 'dist', 'index.html');
+    try {
+      let html = fs.readFileSync(indexPath, 'utf8');
+
+      // Inject window.__API_URL__ so React app knows where backend is
+      const injection = `<script>window.__API_URL__='';</script>`;
+      
+      if (html.includes('</head>')) {
+        html = html.replace('</head>', `${injection}\n</head>`);
+        console.log(`[spa] ✅ Injected API_URL before </head>`);
+      } else if (html.includes('</html>')) {
+        html = html.replace('</html>', `${injection}\n</html>`);
+        console.log(`[spa] ✅ Injected API_URL before </html>`);
+      } else {
+        console.warn(`[spa] ⚠️  Could not find </head> or </html> in index.html`);
+      }
+
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.send(html);
+    } catch (err) {
+      console.error(`[spa] ❌ Error reading/injecting index.html:`, err.message);
+      return res.status(500).send('Error loading page');
+    }
   }
+  
+  // Not an HTML request, continue to next middleware
+  next();
 });
 
-// 3. Static files (JS, CSS, assets)
-app.use(express.static(DIST, { maxAge: '1y', immutable: true }));
-
-// 4. SPA fallback for all other routes
-app.get('*', (req, res) => {
-  const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.send(html.replace('</head>', `<script>window.__API_URL__='';</script>\n</head>`));
-});
+// ── Static Files ───────────────────────────────────────────────────────────────
+// Serve all static files (assets, js, images, etc.)
+// This runs AFTER HTML injection middleware, so HTML is already handled
+app.use(express.static(path.join(__dirname, 'dist'), {
+  maxAge: '1y',
+  immutable: false,  // index.html should not be cached
+  index: false,      // Don't auto-serve index.html (we handle it above)
+}));
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Frontend running on port ${PORT}`);
+  console.log(`[frontend] Listening on port ${PORT}`);
+  console.log(`[frontend] Proxying API → ${BACKEND_URL}`);
 });
+
