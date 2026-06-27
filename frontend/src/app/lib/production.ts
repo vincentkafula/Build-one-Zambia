@@ -159,13 +159,13 @@ function injectCSP(): void {
   meta.httpEquiv = 'Content-Security-Policy';
   meta.content = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.google.com https://apis.google.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://www.google.com https://apis.google.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com data:",
     "img-src 'self' data: blob: https:",
-    "connect-src 'self' https://*.supabase.co https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.resend.com https://images.unsplash.com",
+    "connect-src 'self' https://*.railway.app https://*.up.railway.app https://bozplans.org https://www.bozplans.org https://images.unsplash.com",
     "worker-src 'self' blob:",
-    "frame-src https://www.google.com https://build-one-zambia.firebaseapp.com",
+    "frame-src 'self' https://www.google.com https://build-one-zambia.firebaseapp.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -199,10 +199,10 @@ function setupSessionGuard(): void {
 // ── Main bootstrap ─────────────────────────────────────────────────────────
 
 export function bootstrapProduction(): void {
-  setupSEO();
-  setupGlobalErrorHandling();
-  setupPerformanceObserver();
-  injectCSP();
-  setupSessionGuard();
-  registerServiceWorker();
+  try { setupSEO(); } catch {}
+  try { setupGlobalErrorHandling(); } catch {}
+  try { setupPerformanceObserver(); } catch {}
+  try { injectCSP(); } catch {}
+  try { setupSessionGuard(); } catch {}
+  try { registerServiceWorker(); } catch {}
 }
