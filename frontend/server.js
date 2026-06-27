@@ -57,9 +57,9 @@ app.use(['/make-server-8fca9621', '/uploads'], async (req, res) => {
 // ── Static assets ─────────────────────────────────────────────────────────────
 app.use('/assets', express.static(path.join(__dirname, 'dist/assets'), { maxAge: '1y', immutable: true }));
 app.use('/js',     express.static(path.join(__dirname, 'dist/js'),     { maxAge: '1y', immutable: true }));
-app.use(express.static(path.join(__dirname, 'dist'), { index: false }));
 
 // ── SPA — inject empty __API_URL__ so browser uses same-origin proxy ──────────
+// This must come BEFORE the generic static middleware so it intercepts all requests
 app.get('*', (req, res) => {
   const indexPath = path.join(__dirname, 'dist', 'index.html');
   let html = fs.readFileSync(indexPath, 'utf8');
@@ -76,3 +76,4 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`[frontend] Listening on port ${PORT}`);
   console.log(`[frontend] Proxying API → ${BACKEND_URL}`);
 });
+
