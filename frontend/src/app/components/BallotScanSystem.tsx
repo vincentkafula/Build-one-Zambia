@@ -1,4 +1,3 @@
-import { API_BASE } from '@/app/lib/apiBase';
 /**
  * Poll-Place Ballot Scanning & Tabulation System
  * Admin-only. Inspired by ES&S DS300 precinct-count optical scanner workflow.
@@ -27,7 +26,6 @@ async function safeFetch(url: string, options?: RequestInit) {
   return res;
 }
 
-const API_BASE = API_BASE;
 
 async function apiFetch<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };

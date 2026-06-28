@@ -2,7 +2,7 @@ import { useState, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router';
 import {
   LayoutDashboard, BarChart2, MapPin, UserCircle, Lock, ShieldCheck,
-  Edit2, Save, TrendingUp, Users, CheckCircle, Clock, ExternalLink, Radio, FileText, Activity, Scale, ShoppingBag, Newspaper, Crown, Building2, Mail, Award, Vote, ScanLine, Server, Shield, Calendar
+  Edit2, Save, TrendingUp, Users, CheckCircle, Clock, ExternalLink, Radio, FileText, Activity, Scale, ShoppingBag, Newspaper, Crown, Building2, Mail, Award, Vote, ScanLine, Server, Shield, Calendar, User, Upload
 } from 'lucide-react';
 import { DashboardShell, DashCard, StatCard } from '../../components/DashboardShell';
 import { provinces } from '../../data/mockData';
