@@ -43,11 +43,40 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        // Let Vite handle chunking automatically to avoid circular deps
-        // Cache-friendly asset naming
         assetFileNames: 'assets/[name]-[hash][extname]',
         chunkFileNames: 'js/[name]-[hash]-v2.js',
         entryFileNames: 'js/[name]-[hash]-v2.js',
+        manualChunks(id) {
+          // Vendor chunks
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router')) {
+            return 'vendor-react';
+          }
+          if (id.includes('node_modules/recharts') || id.includes('node_modules/d3')) {
+            return 'vendor-charts';
+          }
+          if (id.includes('node_modules/@mui') || id.includes('node_modules/@emotion')) {
+            return 'vendor-mui';
+          }
+          if (id.includes('node_modules/lucide-react')) {
+            return 'vendor-icons';
+          }
+          if (id.includes('node_modules/firebase')) {
+            return 'vendor-firebase';
+          }
+          if (id.includes('node_modules')) {
+            return 'vendor-misc';
+          }
+          // Split heavy dashboard components into their own chunks
+          if (id.includes('ManagerDashboard')) {
+            return 'page-manager';
+          }
+          if (id.includes('AgentDashboard')) {
+            return 'page-agent';
+          }
+          if (id.includes('DataEntryPage') || id.includes('ECZEntryPage')) {
+            return 'page-ecz';
+          }
+        },
       },
     },
   },
