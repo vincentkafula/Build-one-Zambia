@@ -2,10 +2,10 @@
 nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["npm install --production"]
+cmds = ["npm install"]
 
 [phases.build]
-cmds = ["echo 'Backend ready — no build step needed'"]
+cmds = []
 
 [start]
 cmd = "node src/index.js"
