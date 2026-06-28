@@ -144,3 +144,31 @@ export async function changePassword(username, newPassword) {
   kv.set(`password:${username}`, hash);
   kv.set(`user:${username}`, { ...user, passwordChangedAt: new Date().toISOString() });
 }
+
+export async function updateUser(id, updates) {
+  const index = kv.get('users:index') || [];
+  const username = index.find(u => kv.get(`user:${u}`)?.id === id);
+  if (!username) throw new Error('User not found');
+  const existing = kv.get(`user:${username}`);
+  const updated = { ...existing, ...updates, id: existing.id, username: existing.username, updatedAt: new Date().toISOString() };
+  kv.set(`user:${username}`, updated);
+  return updated;
+}
+
+export async function resetPassword(id, newPassword) {
+  const index = kv.get('users:index') || [];
+  const username = index.find(u => kv.get(`user:${u}`)?.id === id);
+  if (!username) throw new Error('User not found');
+  const hash = await hashPassword(newPassword);
+  kv.set(`password:${username}`, hash);
+  kv.set(`user:${username}`, { ...kv.get(`user:${username}`), passwordChangedAt: new Date().toISOString() });
+}
+
+export function deleteUser(id) {
+  const index = kv.get('users:index') || [];
+  const username = index.find(u => kv.get(`user:${u}`)?.id === id);
+  if (!username) throw new Error('User not found');
+  kv.del(`user:${username}`);
+  kv.del(`password:${username}`);
+  kv.set('users:index', index.filter(u => u !== username));
+}

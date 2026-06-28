@@ -909,6 +909,49 @@ app.get(`${BASE}/election-users/stats`,
 );
 
 
+app.get(`${BASE}/election-users/:id`,
+  auth.requireAuth, auth.requireRole('super_admin', 'admin', 'national_manager'),
+  (req, res) => {
+    const user = auth.listUsers().find(u => u.id === req.params.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ user });
+  }
+);
+
+app.patch(`${BASE}/election-users/:id`,
+  auth.requireAuth, auth.requireRole('super_admin', 'admin'),
+  async (req, res) => {
+    try {
+      const user = await auth.updateUser(req.params.id, req.body);
+      res.json({ user });
+    } catch (err) { res.status(400).json({ error: err.message }); }
+  }
+);
+
+app.post(`${BASE}/election-users/:id/reset-password`,
+  auth.requireAuth, auth.requireRole('super_admin', 'admin'),
+  async (req, res) => {
+    try {
+      const { password } = req.body;
+      if (!password) return res.status(400).json({ error: 'Password required' });
+      await auth.resetPassword(req.params.id, password);
+      res.json({ success: true });
+    } catch (err) { res.status(400).json({ error: err.message }); }
+  }
+);
+
+app.delete(`${BASE}/election-users/:id`,
+  auth.requireAuth, auth.requireRole('super_admin', 'admin'),
+  (req, res) => {
+    try {
+      auth.deleteUser(req.params.id);
+      res.json({ success: true });
+    } catch (err) { res.status(400).json({ error: err.message }); }
+  }
+);
+
+
+
 // ─── Results Engine ───────────────────────────────────────────────────────────
 
 app.get(`${BASE}/results/dashboard`, (req, res) => res.json({ summary: results.getDashboard() }));
