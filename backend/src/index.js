@@ -1065,6 +1065,125 @@ app.get(`${BASE}/voter-roll`, auth.requireAuth, (req, res) => {
   res.json({ meta: null });
 });
 
+// ─── Data Entry ───────────────────────────────────────────────────────────────
+
+const dataEntryStore = {
+  submissions: kv.get('data-entry:submissions') || [],
+  eczFigures:  kv.get('data-entry:ecz-figures') || [],
+  auditLog:    kv.get('data-entry:audit-log') || [],
+};
+
+function saveDataEntry() {
+  kv.set('data-entry:submissions', dataEntryStore.submissions);
+  kv.set('data-entry:ecz-figures', dataEntryStore.eczFigures);
+  kv.set('data-entry:audit-log',   dataEntryStore.auditLog);
+}
+
+// Submit result
+app.post(`${BASE}/data-entry/result`, async (req, res) => {
+  try {
+    const { pollingStationId, electionType, candidates, totalVotesCast, totalRejectedBallots, totalVoterTurnout, agentId, agentName, notes } = req.body;
+    if (!pollingStationId || !electionType) return res.status(400).json({ error: 'pollingStationId and electionType required' });
+    const id = `sub-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const submission = { id, pollingStationId, electionType, candidates: candidates || [], totalVotesCast, totalRejectedBallots, totalVoterTurnout, agentId, agentName, notes, status: 'pending', submittedAt: new Date().toISOString() };
+    dataEntryStore.submissions.push(submission);
+    saveDataEntry();
+    res.json({ success: true, message: 'Result submitted successfully', submission: { id, submittedAt: submission.submittedAt, status: 'pending' } });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Get turnout
+app.get(`${BASE}/data-entry/turnout`, (req, res) => {
+  res.json({ stats: { totalStations: 0, reportingStations: dataEntryStore.submissions.length, totalVotesCast: 0 } });
+});
+
+// Check if result submitted for a station
+app.get(`${BASE}/data-entry/result/:pollingStationId/:electionType`, (req, res) => {
+  const sub = dataEntryStore.submissions.find(s =>
+    s.pollingStationId === decodeURIComponent(req.params.pollingStationId) &&
+    s.electionType === req.params.electionType
+  );
+  res.json({ submitted: !!sub, submittedAt: sub?.submittedAt, status: sub?.status, id: sub?.id });
+});
+
+// List submissions (admin)
+app.get(`${BASE}/data-entry/submissions`, auth.requireAuth, (req, res) => {
+  let subs = [...dataEntryStore.submissions];
+  if (req.query.status)        subs = subs.filter(s => s.status === req.query.status);
+  if (req.query.electionType)  subs = subs.filter(s => s.electionType === req.query.electionType);
+  if (req.query.pollingStationId) subs = subs.filter(s => s.pollingStationId === req.query.pollingStationId);
+  res.json({ submissions: subs, count: subs.length });
+});
+
+// Get single submission
+app.get(`${BASE}/data-entry/submissions/:id`, auth.requireAuth, (req, res) => {
+  const sub = dataEntryStore.submissions.find(s => s.id === req.params.id);
+  if (!sub) return res.status(404).json({ error: 'Submission not found' });
+  res.json({ submission: sub });
+});
+
+// Update submission status (approve/reject)
+app.patch(`${BASE}/data-entry/submissions/:id/status`, auth.requireAuth, (req, res) => {
+  const idx = dataEntryStore.submissions.findIndex(s => s.id === req.params.id);
+  if (idx < 0) return res.status(404).json({ error: 'Submission not found' });
+  dataEntryStore.submissions[idx] = { ...dataEntryStore.submissions[idx], status: req.body.status, notes: req.body.notes, reviewedAt: new Date().toISOString(), reviewedBy: req.user?.username };
+  saveDataEntry();
+  res.json({ success: true, submission: dataEntryStore.submissions[idx] });
+});
+
+// Stats
+app.get(`${BASE}/data-entry/stats`, auth.requireAuth, (req, res) => {
+  const subs = dataEntryStore.submissions;
+  res.json({ stats: { total: subs.length, pending: subs.filter(s => s.status === 'pending').length, approved: subs.filter(s => s.status === 'approved').length, rejected: subs.filter(s => s.status === 'rejected').length } });
+});
+
+// Save ECZ figures
+app.post(`${BASE}/data-entry/ecz-figures`, auth.requireAuth, (req, res) => {
+  const { levelType, levelId, electionType, candidates, totalVotes, source, notes } = req.body;
+  if (!levelType || !levelId || !electionType) return res.status(400).json({ error: 'levelType, levelId, electionType required' });
+  const existing = dataEntryStore.eczFigures.findIndex(f => f.levelType === levelType && f.levelId === levelId && f.electionType === electionType);
+  const figure = { levelType, levelId, electionType, candidates: candidates || [], totalVotes, source, notes, savedAt: new Date().toISOString(), savedBy: req.user?.username };
+  if (existing >= 0) dataEntryStore.eczFigures[existing] = figure;
+  else dataEntryStore.eczFigures.push(figure);
+  saveDataEntry();
+  res.json({ success: true, figure });
+});
+
+// Get ECZ figure
+app.get(`${BASE}/data-entry/ecz-figures/:levelType/:levelId/:electionType`, auth.requireAuth, (req, res) => {
+  const figure = dataEntryStore.eczFigures.find(f =>
+    f.levelType === req.params.levelType &&
+    f.levelId === decodeURIComponent(req.params.levelId) &&
+    f.electionType === req.params.electionType
+  );
+  res.json({ exists: !!figure, figure: figure || null });
+});
+
+// List ECZ figures
+app.get(`${BASE}/data-entry/ecz-figures`, auth.requireAuth, (req, res) => {
+  let figs = [...dataEntryStore.eczFigures];
+  if (req.query.electionType) figs = figs.filter(f => f.electionType === req.query.electionType);
+  if (req.query.levelType) figs = figs.filter(f => f.levelType === req.query.levelType);
+  res.json({ figures: figs, count: figs.length });
+});
+
+// Delete ECZ figure
+app.delete(`${BASE}/data-entry/ecz-figures/:levelType/:levelId/:electionType`, auth.requireAuth, (req, res) => {
+  const before = dataEntryStore.eczFigures.length;
+  dataEntryStore.eczFigures = dataEntryStore.eczFigures.filter(f =>
+    !(f.levelType === req.params.levelType && f.levelId === decodeURIComponent(req.params.levelId) && f.electionType === req.params.electionType)
+  );
+  saveDataEntry();
+  res.json({ success: dataEntryStore.eczFigures.length < before });
+});
+
+// Audit log
+app.get(`${BASE}/data-entry/audit-log`, auth.requireAuth, (req, res) => {
+  const limit = parseInt(req.query.limit || '50', 10);
+  res.json({ entries: dataEntryStore.auditLog.slice(-limit), count: dataEntryStore.auditLog.length });
+});
+
+
 // ─── 404 catch-all ───────────────────────────────────────────────────────────
 
 app.use((req, res) => {
