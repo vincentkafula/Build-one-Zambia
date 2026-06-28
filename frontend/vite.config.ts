@@ -3,7 +3,6 @@ import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 
-
 function figmaAssetResolver() {
   return {
     name: 'figma-asset-resolver',
@@ -32,14 +31,13 @@ export default defineConfig(({ mode }) => ({
 
   assetsInclude: ['**/*.svg', '**/*.csv'],
 
-  // Production build optimizations
   build: {
     target: 'es2020',
     sourcemap: mode === 'development',
     minify: 'esbuild',
     cssMinify: true,
     reportCompressedSize: false,
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 1500,
     rollupOptions: {
       treeshake: {
         preset: 'safest',
@@ -48,11 +46,25 @@ export default defineConfig(({ mode }) => ({
         assetFileNames: 'assets/[name]-[hash][extname]',
         chunkFileNames: 'js/[name]-[hash]-v2.js',
         entryFileNames: 'js/[name]-[hash]-v2.js',
+        // Keep recharts + ALL its d3 dependencies together in one chunk.
+        // This prevents "Cannot access X before initialization" caused by
+        // recharts' internal circular references being split across chunks.
+        manualChunks(id) {
+          if (
+            id.includes('node_modules/recharts') ||
+            id.includes('node_modules/d3-') ||
+            id.includes('node_modules/d3/') ||
+            id.includes('node_modules/internmap') ||
+            id.includes('node_modules/robust-predicates') ||
+            id.includes('node_modules/victory-vendor')
+          ) {
+            return 'vendor-recharts';
+          }
+        },
       },
     },
   },
 
-  // Dependency pre-bundling optimizations
   optimizeDeps: {
     include: [
       'react',
@@ -67,12 +79,10 @@ export default defineConfig(({ mode }) => ({
     exclude: ['@vitejs/plugin-react'],
   },
 
-  // Server settings (dev)
   server: {
     port: 3000,
     strictPort: false,
     hmr: { overlay: true },
-    // Proxy API calls to the Node.js backend in development
     proxy: {
       '/make-server-8fca9621': {
         target: 'http://localhost:3001',
@@ -85,7 +95,6 @@ export default defineConfig(({ mode }) => ({
     },
   },
 
-  // Preview settings (production preview)
   preview: {
     port: 4173,
     strictPort: false,
@@ -99,7 +108,6 @@ export default defineConfig(({ mode }) => ({
     },
   },
 
-  // Environment variable definitions available everywhere
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? '1.0.0'),
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
