@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 import { getToken } from '../lib/api';
-import { projectId } from '../../../utils/supabase/info';
 import {
   Search, CheckCircle2, XCircle, AlertTriangle, MapPin,
   UserCheck, Clock, RefreshCw, ShieldCheck, Users, Vote

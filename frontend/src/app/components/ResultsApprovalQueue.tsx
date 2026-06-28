@@ -5,7 +5,6 @@ import {
   Clock, MapPin, User, Vote, Filter, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { dataEntryApi, getToken } from '../lib/api';
-import { projectId } from '../../../utils/supabase/info';
 
 // Safe fetch wrapper — handles non-JSON responses (e.g. rate limit plain text)
 async function safeFetch(url: string, options?: RequestInit) {

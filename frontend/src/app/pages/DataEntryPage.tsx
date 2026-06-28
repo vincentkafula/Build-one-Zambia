@@ -5,7 +5,6 @@ import { candidatePhotos } from '../data/candidatePhotos';
 import { Save, CheckCircle2, AlertCircle, Upload, X, FileText, Loader2, WifiOff, CloudUpload } from 'lucide-react';
 import { dataEntryApi, DocumentPayload, getToken } from '../lib/api';
 import { useOfflineQueue } from '../hooks/useOfflineQueue';
-import { projectId } from '../../../utils/supabase/info';
 
 const BASE_URL = API_BASE;
 

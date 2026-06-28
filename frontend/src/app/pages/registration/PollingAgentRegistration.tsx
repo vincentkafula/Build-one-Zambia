@@ -8,7 +8,6 @@ import {
 } from 'lucide-react';
 import { provinces } from '../../data/mockData';
 import { agentApi, getToken } from '../../lib/api';
-import { projectId } from '../../../../utils/supabase/info';
 import { sendFirebaseOTP, verifyFirebaseOTP, type ConfirmationResult as FirebaseConfirmation } from '../../lib/firebase';
 
 // Safe fetch wrapper — handles non-JSON responses (e.g. rate limit plain text)

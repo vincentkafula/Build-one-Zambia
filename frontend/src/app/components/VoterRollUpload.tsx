@@ -2,7 +2,6 @@ import { API_BASE } from '@/app/lib/apiBase';
 import { useState, useRef, useEffect } from 'react';
 import { Upload, FileText, Trash2, CheckCircle, AlertCircle, Users, Search, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { voterApi, getToken } from '../lib/api';
-import { projectId } from '../../../utils/supabase/info';
 
 // Safe fetch wrapper — handles non-JSON responses (e.g. rate limit plain text)
 async function safeFetch(url: string, options?: RequestInit) {

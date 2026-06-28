@@ -294,9 +294,9 @@ export function SystemSetupDashboard() {
                   {step.id === 'database' && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground mb-1">Run in Supabase SQL Editor:</p>
-                      <CodeBlock code={`-- Paste contents of supabase/migrations/001_initial_setup.sql
--- Found in your project root. Run it once in:
--- dashboard.supabase.com → Project → SQL Editor`} />
+                      <CodeBlock code={`# No database setup needed.
+# The backend uses a JSON file database on Railway.
+# It initialises automatically on first start.`} />
                     </div>
                   )}
 
@@ -315,27 +315,16 @@ Authorization: Bearer <your-token>
                   {step.id === 'email' && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground mb-1">Set via Supabase CLI:</p>
-                      <CodeBlock code={`supabase secrets set \\
-  RESEND_API_KEY=re_xxxxxxxxxxxx \\
-  EMAIL_FROM_ADDRESS=no-reply@bozplans.org \\
-  EMAIL_FROM_NAME="Build One Zambia" \\
-  ADMIN_EMAIL=admin@bozplans.org \\
-  SITE_URL=https://bozplans.org`} />
+                      <p className="text-xs text-muted-foreground">Set these in Railway → backend service → Variables tab.</p>
                     </div>
                   )}
 
                   {step.id === 'sms' && (
                     <div className="space-y-3">
                       <p className="text-xs font-semibold text-muted-foreground">Primary — Twilio:</p>
-                      <CodeBlock code={`supabase secrets set \\
-  TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \\
-  TWILIO_AUTH_TOKEN=your_auth_token \\
-  TWILIO_FROM_NUMBER=+12015551234`} />
+                      <p className="text-xs text-muted-foreground">Set these in Railway → backend service → Variables tab.</p>
                       <p className="text-xs font-semibold text-muted-foreground">Optional fallback — Africa's Talking (if Twilio fails):</p>
-                      <CodeBlock code={`supabase secrets set \\
-  AFRICAS_TALKING_API_KEY=your_production_key \\
-  AFRICAS_TALKING_USERNAME=your_production_username \\
-  AFRICAS_TALKING_SHORTCODE=BOZPLANS`} />
+                      <p className="text-xs text-muted-foreground">Set these in Railway → backend service → Variables tab.</p>
                       <p className="text-xs text-muted-foreground">Twilio sends first. If it fails, Africa's Talking activates automatically. Only Twilio is required.</p>
                       <a
                         href="https://africastalking.com"
@@ -359,10 +348,7 @@ Authorization: Bearer <your-token>
                   {step.id === 'payments' && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground mb-1">Set via Supabase CLI:</p>
-                      <CodeBlock code={`supabase secrets set \\
-  FLUTTERWAVE_SECRET_KEY=FLWSECK-xxxxxxxxxxxx \\
-  FLUTTERWAVE_PUBLIC_KEY=FLWPUBK-xxxxxxxxxxxx \\
-  FLUTTERWAVE_WEBHOOK_HASH=a_long_random_secret_string`} />
+                      <p className="text-xs text-muted-foreground">Set these in Railway → backend service → Variables tab.</p>
                       <p className="text-xs text-muted-foreground mt-2">
                         Webhook URL to register in Flutterwave dashboard:{' '}
                         <code className="bg-muted px-1 rounded text-xs">{BASE}/gateway/webhook</code>

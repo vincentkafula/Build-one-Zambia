@@ -2,7 +2,6 @@ import { API_BASE } from '@/app/lib/apiBase';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { Calendar, MapPin, Clock, ArrowRight, Users, ChevronRight } from 'lucide-react';
-import { projectId } from '../../../../utils/supabase/info';
 
 const BACKEND = API_BASE;
 

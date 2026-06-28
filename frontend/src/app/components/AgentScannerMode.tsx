@@ -12,7 +12,6 @@ import {
   Zap, RefreshCw, Send, BarChart3, Activity, Clock, Shield,
   Loader2, ChevronDown, ChevronUp, Radio
 } from 'lucide-react';
-import { projectId } from '../../../utils/supabase/info';
 
 // Safe fetch wrapper — handles non-JSON responses (e.g. rate limit plain text)
 async function safeFetch(url: string, options?: RequestInit) {

@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { provinces } from '../data/mockData';
 import { getToken } from '../lib/api';
-import { projectId } from '../../../utils/supabase/info';
 
 // Safe fetch wrapper — handles non-JSON responses (e.g. rate limit plain text)
 async function safeFetch(url: string, options?: RequestInit) {
