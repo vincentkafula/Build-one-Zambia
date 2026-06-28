@@ -48,10 +48,10 @@ export class ErrorBoundary extends React.Component<Props, State> {
             <p className="text-gray-400 mb-6">
               An unexpected error occurred. The error has been logged and our team has been notified.
             </p>
-            {import.meta.env.DEV && this.state.error && (
+            {this.state.error && (
               <pre className="text-left bg-gray-900 border border-gray-800 rounded-xl p-4 text-red-300 text-xs overflow-auto mb-6 max-h-48">
                 {this.state.error.message}
-                {this.state.errorInfo?.componentStack}
+                {import.meta.env.DEV && this.state.errorInfo?.componentStack}
               </pre>
             )}
             <div className="flex gap-3 justify-center">

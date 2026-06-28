@@ -932,9 +932,14 @@ app.post(`${BASE}/election-users/:id/reset-password`,
   auth.requireAuth, auth.requireRole('super_admin', 'admin'),
   async (req, res) => {
     try {
-      const { password } = req.body;
-      if (!password) return res.status(400).json({ error: 'Password required' });
-      await auth.resetPassword(req.params.id, password);
+      const { password, newPassword } = req.body;
+      const pw = password || newPassword;
+      if (!pw) return res.status(400).json({ error: 'Password required' });
+      // Support both id (UUID) and username
+      const users = auth.listUsers();
+      const user = users.find(u => u.id === req.params.id || u.username === req.params.id);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      await auth.resetPassword(user.id, pw);
       res.json({ success: true });
     } catch (err) { res.status(400).json({ error: err.message }); }
   }
@@ -944,9 +949,34 @@ app.delete(`${BASE}/election-users/:id`,
   auth.requireAuth, auth.requireRole('super_admin', 'admin'),
   (req, res) => {
     try {
-      auth.deleteUser(req.params.id);
+      // Support both id (UUID) and username
+      const users = auth.listUsers();
+      const user = users.find(u => u.id === req.params.id || u.username === req.params.id);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      auth.deleteUser(user.id);
       res.json({ success: true });
     } catch (err) { res.status(400).json({ error: err.message }); }
+  }
+);
+
+// ── Bulk create election users ───────────────────────────────────────────────
+app.post(`${BASE}/election-users/bulk`,
+  auth.requireAuth, auth.requireRole('super_admin', 'admin'),
+  async (req, res) => {
+    const { users = [] } = req.body;
+    let created = 0, skipped = 0;
+    const errors = [];
+    for (const u of users) {
+      try {
+        const { password, ...userData } = u;
+        await auth.registerUser(userData, password || 'TempPass@123');
+        created++;
+      } catch (e) {
+        if (e.message.includes('already exists')) skipped++;
+        else errors.push(`${u.username}: ${e.message}`);
+      }
+    }
+    res.json({ created, skipped, errors });
   }
 );
 

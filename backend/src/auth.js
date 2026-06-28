@@ -106,12 +106,16 @@ export async function loginUser(username, password) {
 }
 
 export async function registerUser(userData, password) {
+  if (!userData.username) throw new Error('Username is required');
+  if (!userData.role) throw new Error('Role is required');
+
   const existing = kv.get(`user:${userData.username}`);
   if (existing) throw new Error('Username already exists');
 
   const now = new Date().toISOString();
   const user = {
     ...userData,
+    id: crypto.randomUUID(),
     createdAt: now,
     active: true,
   };
@@ -164,9 +168,13 @@ export async function resetPassword(id, newPassword) {
   kv.set(`user:${username}`, { ...kv.get(`user:${username}`), passwordChangedAt: new Date().toISOString() });
 }
 
-export function deleteUser(id) {
+export function deleteUser(idOrUsername) {
   const index = kv.get('users:index') || [];
-  const username = index.find(u => kv.get(`user:${u}`)?.id === id);
+  // Support both UUID id and username
+  const username = index.find(u => {
+    const user = kv.get(`user:${u}`);
+    return user?.id === idOrUsername || u === idOrUsername;
+  });
   if (!username) throw new Error('User not found');
   kv.del(`user:${username}`);
   kv.del(`password:${username}`);
