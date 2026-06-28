@@ -695,6 +695,72 @@ app.get(`${BASE}/results/live-feed`, (req, res) => res.json({ feed: results.getL
 app.get(`${BASE}/results/compare/:electionType/:levelType/:levelId`, auth.requireAuth, (req, res) => res.json({ comparison: { electionType: req.params.electionType, levelType: req.params.levelType, levelId: req.params.levelId, boz: results.getLevel(req.params.electionType, req.params.levelType, decodeURIComponent(req.params.levelId)), ecz: null, agreementPercent: 100, flagged: false } }));
 app.post(`${BASE}/results/cache/invalidate`, auth.requireAuth, (req, res) => res.json({ success: true }));
 
+// ─── ECZ Comparisons ─────────────────────────────────────────────────────────
+// In-memory store for ECZ figures entered by managers
+const eczStore = { figures: [] };
+
+app.get(`${BASE}/ecz/summary`, auth.requireAuth, (req, res) => {
+  const figures = eczStore.figures;
+  const byElectionType = {};
+  const byLevelType = {};
+  let latestUpdated = null;
+  figures.forEach(f => {
+    byElectionType[f.electionType] = (byElectionType[f.electionType] || 0) + 1;
+    byLevelType[f.levelType] = (byLevelType[f.levelType] || 0) + 1;
+    if (!latestUpdated || f.updatedAt > latestUpdated) latestUpdated = f.updatedAt;
+  });
+  res.json({ summary: { total: figures.length, byElectionType, byLevelType, latestUpdated }, count: figures.length });
+});
+
+app.get(`${BASE}/ecz/comparisons`, auth.requireAuth, (req, res) => {
+  let figures = [...eczStore.figures];
+  if (req.query.electionType) figures = figures.filter(f => f.electionType === req.query.electionType);
+  if (req.query.levelType)    figures = figures.filter(f => f.levelType === req.query.levelType);
+  if (req.query.flaggedOnly === 'true') figures = figures.filter(f => f.isFlagged);
+  const meta = {
+    total: figures.length,
+    withDiscrepancy: figures.filter(f => f.hasDiscrepancy).length,
+    flagged: figures.filter(f => f.isFlagged).length,
+    fullyMatching: figures.filter(f => !f.hasDiscrepancy).length,
+  };
+  res.json({ comparisons: figures, meta });
+});
+
+app.get(`${BASE}/ecz/comparison/:electionType/:levelType/:levelId`, auth.requireAuth, (req, res) => {
+  const fig = eczStore.figures.find(f =>
+    f.electionType === req.params.electionType &&
+    f.levelType === req.params.levelType &&
+    f.levelId === decodeURIComponent(req.params.levelId)
+  );
+  if (!fig) return res.status(404).json({ error: 'No ECZ comparison found for this level' });
+  res.json({ comparison: fig });
+});
+
+app.post(`${BASE}/ecz/bulk-save`, auth.requireAuth, (req, res) => {
+  const figures = req.body.figures || [];
+  let saved = 0, failed = 0;
+  const errors = [];
+  figures.forEach(f => {
+    try {
+      const now = new Date().toISOString();
+      const existing = eczStore.figures.findIndex(e => e.electionType === f.electionType && e.levelType === f.levelType && e.levelId === f.levelId);
+      const entry = { ...f, id: f.id || `ecz-${Date.now()}-${Math.random().toString(36).slice(2)}`, savedAt: f.savedAt || now, updatedAt: now, enteredBy: req.user.username };
+      if (existing >= 0) { eczStore.figures[existing] = entry; } else { eczStore.figures.push(entry); }
+      saved++;
+    } catch (e) { failed++; errors.push(e.message); }
+  });
+  res.json({ success: true, saved, failed, errors });
+});
+
+app.get(`${BASE}/ecz/discrepancy-analysis/:electionType/:levelType/:levelId`, auth.requireAuth, (req, res) => {
+  res.json({ electionType: req.params.electionType, levelType: req.params.levelType, levelId: decodeURIComponent(req.params.levelId), candidates: [], summary: { totalDiff: 0, hasDiscrepancy: false } });
+});
+
+// ─── Voter Roll ───────────────────────────────────────────────────────────────
+app.get(`${BASE}/voter-roll`, auth.requireAuth, (req, res) => {
+  res.json({ meta: null });
+});
+
 // ─── 404 catch-all ───────────────────────────────────────────────────────────
 
 app.use((req, res) => {
