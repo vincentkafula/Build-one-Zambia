@@ -1,35 +1,45 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router';
 import {
   LayoutDashboard, BarChart2, MapPin, UserCircle, Lock, ShieldCheck,
   Edit2, Save, TrendingUp, Users, CheckCircle, Clock, ExternalLink, Radio, FileText, Activity, Scale, ShoppingBag, Newspaper, Crown, Building2, Mail, Award, Vote, ScanLine, Server, Shield, Calendar
 } from 'lucide-react';
 import { DashboardShell, DashCard, StatCard } from '../../components/DashboardShell';
-import { ECZEntryPage } from '../ECZEntryPage';
 import { provinces } from '../../data/mockData';
-import { LiveStreamAdmin } from '../../components/LiveStreamAdmin';
-import { DocumentLibraryAdmin } from '../../components/DocumentLibraryAdmin';
-import { LiveResultsPanel } from '../../components/LiveResultsPanel';
-import { CandidateManager } from '../../components/CandidateManager';
-import { ECZComparisonDashboard } from '../../components/ECZComparisonDashboard';
-import { ShopManager } from '../../components/ShopManager';
-import { NewsManager } from '../../components/NewsManager';
-import { LeadershipManager } from '../../components/LeadershipManager';
-import { MembershipAdmin } from '../../components/MembershipAdmin';
-import { ChamberAmendmentsAdmin } from '../../components/ChamberAmendmentsAdmin';
-import { RegistrationApprovalAdmin } from '../../components/RegistrationApprovalAdmin';
-import { SecurityDashboard } from '../../components/SecurityDashboard';
-import { PressStatementsAdmin } from '../../components/PressStatementsAdmin';
-import { EmailAdmin } from '../../components/EmailAdmin';
-import { AdoptionCertAdmin } from '../../components/AdoptionCertAdmin';
-import { BallotScanSystem } from '../../components/BallotScanSystem';
-import { VoterVerification } from '../../components/VoterVerification';
-import { ResultsApprovalQueue } from '../../components/ResultsApprovalQueue';
-import { SystemSetupDashboard } from '../../components/SystemSetupDashboard';
-import { VoterRollUpload } from '../../components/VoterRollUpload';
-import { ElectionUserManager } from '../../components/ElectionUserManager';
-import { NoticeBoard } from '../../components/NoticeBoard';
-import { EventsManager } from '../../components/EventsManager';
+
+// Lazy-load all heavy components to avoid circular dependency at build time
+const ECZEntryPage            = lazy(() => import('../ECZEntryPage').then(m => ({ default: m.ECZEntryPage })));
+const LiveStreamAdmin         = lazy(() => import('../../components/LiveStreamAdmin').then(m => ({ default: m.LiveStreamAdmin })));
+const DocumentLibraryAdmin    = lazy(() => import('../../components/DocumentLibraryAdmin').then(m => ({ default: m.DocumentLibraryAdmin })));
+const LiveResultsPanel        = lazy(() => import('../../components/LiveResultsPanel').then(m => ({ default: m.LiveResultsPanel })));
+const CandidateManager        = lazy(() => import('../../components/CandidateManager').then(m => ({ default: m.CandidateManager })));
+const ECZComparisonDashboard  = lazy(() => import('../../components/ECZComparisonDashboard').then(m => ({ default: m.ECZComparisonDashboard })));
+const ShopManager             = lazy(() => import('../../components/ShopManager').then(m => ({ default: m.ShopManager })));
+const NewsManager             = lazy(() => import('../../components/NewsManager').then(m => ({ default: m.NewsManager })));
+const LeadershipManager       = lazy(() => import('../../components/LeadershipManager').then(m => ({ default: m.LeadershipManager })));
+const MembershipAdmin         = lazy(() => import('../../components/MembershipAdmin').then(m => ({ default: m.MembershipAdmin })));
+const ChamberAmendmentsAdmin  = lazy(() => import('../../components/ChamberAmendmentsAdmin').then(m => ({ default: m.ChamberAmendmentsAdmin })));
+const RegistrationApprovalAdmin = lazy(() => import('../../components/RegistrationApprovalAdmin').then(m => ({ default: m.RegistrationApprovalAdmin })));
+const SecurityDashboard       = lazy(() => import('../../components/SecurityDashboard').then(m => ({ default: m.SecurityDashboard })));
+const PressStatementsAdmin    = lazy(() => import('../../components/PressStatementsAdmin').then(m => ({ default: m.PressStatementsAdmin })));
+const EmailAdmin              = lazy(() => import('../../components/EmailAdmin').then(m => ({ default: m.EmailAdmin })));
+const AdoptionCertAdmin       = lazy(() => import('../../components/AdoptionCertAdmin').then(m => ({ default: m.AdoptionCertAdmin })));
+const BallotScanSystem        = lazy(() => import('../../components/BallotScanSystem').then(m => ({ default: m.BallotScanSystem })));
+const VoterVerification       = lazy(() => import('../../components/VoterVerification').then(m => ({ default: m.VoterVerification })));
+const ResultsApprovalQueue    = lazy(() => import('../../components/ResultsApprovalQueue').then(m => ({ default: m.ResultsApprovalQueue })));
+const SystemSetupDashboard    = lazy(() => import('../../components/SystemSetupDashboard').then(m => ({ default: m.SystemSetupDashboard })));
+const VoterRollUpload         = lazy(() => import('../../components/VoterRollUpload').then(m => ({ default: m.VoterRollUpload })));
+const ElectionUserManager     = lazy(() => import('../../components/ElectionUserManager').then(m => ({ default: m.ElectionUserManager })));
+const NoticeBoard             = lazy(() => import('../../components/NoticeBoard').then(m => ({ default: m.NoticeBoard })));
+const EventsManager           = lazy(() => import('../../components/EventsManager').then(m => ({ default: m.EventsManager })));
+
+function SectionLoader() {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+    </div>
+  );
+}
 
 const A = '#0ea5e9';
 const NAVY = '#1e2d4a';
@@ -95,69 +105,6 @@ const NAV: { group: string; items: { key: SectionKey; label: string; icon: React
   },
 ];
 
-const PROVINCE_REGISTERED: Record<string, number> = {
-  'Central': 820079,
-  'Copperbelt': 1296446,
-  'Eastern': 1129444,
-  'Luapula': 694681,
-  'Lusaka': 1430889,
-  'Muchinga': 435536,
-  'Northern': 722403,
-  'North-Western': 524195,
-  'Southern': 1103275,
-  'Western': 629352,
-};
-
-// Computed from actual ECZ data in mockData.ts (13,529 polling stations)
-function computeProvinceStats() {
-  return provinces.map(prov => {
-    let regVoters = 0;
-    let psCount = 0;
-    let wardCount = 0;
-    let consCount = 0;
-    prov.districts.forEach(d => {
-      d.constituencies.forEach(c => {
-        consCount++;
-        c.wards.forEach(w => {
-          wardCount++;
-          w.pollingStations.forEach(ps => {
-            psCount++;
-            regVoters += ps.registeredVoters;
-          });
-        });
-      });
-    });
-    return {
-      id: prov.id,
-      name: prov.name,
-      districts: prov.districts.length,
-      constituencies: consCount,
-      wards: wardCount,
-      pollingStations: psCount,
-      registeredVoters: regVoters,
-    };
-  });
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const colors: Record<string, string> = { Final: '#10b981', Partial: '#f59e0b', Counting: A };
-  const c = colors[status] || 'rgba(255,255,255,0.4)';
-  return (
-    <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: `${c}18`, color: c, border: `1px solid ${c}30`, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
-      {status}
-    </span>
-  );
-}
-
-function Field({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em' }}>{label}</p>
-      <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem' }}>{value}</p>
-    </div>
-  );
-}
-
 const PROVINCES_TURNOUT = [
   { name: 'Central',        registered: 820079 },
   { name: 'Copperbelt',     registered: 1296446 },
@@ -182,6 +129,25 @@ function turnoutLabel(pct: number) {
   if (pct >= 50) return 'Moderate';
   if (pct > 0)   return 'Low';
   return 'No Data';
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const colors: Record<string, string> = { Final: '#10b981', Partial: '#f59e0b', Counting: A };
+  const c = colors[status] || 'rgba(255,255,255,0.4)';
+  return (
+    <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: `${c}18`, color: c, border: `1px solid ${c}30`, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
+      {status}
+    </span>
+  );
+}
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em' }}>{label}</p>
+      <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem' }}>{value}</p>
+    </div>
+  );
 }
 
 function VoterTurnoutSection() {
@@ -209,8 +175,6 @@ function VoterTurnoutSection() {
           {editMode ? <><Save size={13} /> SAVE</> : <><Edit2 size={13} /> EDIT VOTES</>}
         </button>
       </div>
-
-      {/* Overall summary */}
       <div className="grid grid-cols-3 gap-4 mb-6 mt-4">
         {[
           { label: 'Total Registered', value: totalRegistered.toLocaleString(), color: '#0ea5e9' },
@@ -223,12 +187,10 @@ function VoterTurnoutSection() {
           </div>
         ))}
       </div>
-
-      {/* Province rows */}
       <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="grid grid-cols-12 px-5 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           {['Province', 'Votes Cast / Registered', 'Turnout %', 'Status'].map(h => (
-            <p key={h} className={`text-xs col-span-3`} style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.1em' }}>{h}</p>
+            <p key={h} className="text-xs col-span-3" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.1em' }}>{h}</p>
           ))}
         </div>
         {PROVINCES_TURNOUT.map((p, idx) => {
@@ -238,51 +200,31 @@ function VoterTurnoutSection() {
           const isLast = idx === PROVINCES_TURNOUT.length - 1;
           return (
             <div key={p.name} className="grid grid-cols-12 items-center px-5 py-4" style={{ borderBottom: isLast ? 'none' : '1px solid rgba(255,255,255,0.04)' }}>
-              {/* Province name */}
               <div className="col-span-3">
                 <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.88rem' }}>{p.name}</p>
               </div>
-
-              {/* Bar + numbers */}
               <div className="col-span-3 pr-4">
                 {editMode ? (
                   <input
-                    type="number"
-                    min={0}
-                    max={p.registered}
-                    value={cast}
+                    type="number" min={0} max={p.registered} value={cast}
                     onChange={e => setVotesCast(prev => ({ ...prev, [p.name]: Math.min(p.registered, Math.max(0, Number(e.target.value))) }))}
                     className="w-full px-3 py-1.5 rounded-lg text-sm"
                     style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', outline: 'none' }}
                   />
                 ) : (
                   <div>
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.75rem' }}>
-                        {cast.toLocaleString()} / {p.registered.toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }}>
-                      <div
-                        className="h-1.5 rounded-full transition-all duration-700"
-                        style={{ width: `${pct}%`, background: color, boxShadow: `0 0 6px ${color}60` }}
-                      />
+                    <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.75rem' }}>{cast.toLocaleString()} / {p.registered.toLocaleString()}</p>
+                    <div className="h-1.5 rounded-full overflow-hidden mt-1.5" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }}>
+                      <div className="h-1.5 rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: color, boxShadow: `0 0 6px ${color}60` }} />
                     </div>
                   </div>
                 )}
               </div>
-
-              {/* Percentage */}
               <div className="col-span-3">
                 <p style={{ color, fontFamily: 'Oswald, sans-serif', fontSize: '1.1rem', letterSpacing: '0.04em' }}>{pct.toFixed(1)}%</p>
               </div>
-
-              {/* Status badge */}
               <div className="col-span-3">
-                <span
-                  className="text-xs px-2.5 py-0.5 rounded-full"
-                  style={{ backgroundColor: `${color}18`, color, border: `1px solid ${color}30`, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}
-                >
+                <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ backgroundColor: `${color}18`, color, border: `1px solid ${color}30`, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
                   {turnoutLabel(pct)}
                 </span>
               </div>
@@ -290,26 +232,10 @@ function VoterTurnoutSection() {
           );
         })}
       </div>
-
-      {/* Legend */}
-      <div className="flex items-center gap-6 mt-4 px-1">
-        {[
-          { color: '#10b981', label: '≥70% High' },
-          { color: '#f59e0b', label: '50–69% Moderate' },
-          { color: '#ef4444', label: '<50% Low' },
-        ].map(l => (
-          <div key={l.label} className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full" style={{ background: l.color }} />
-            <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.72rem', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>{l.label}</p>
-          </div>
-        ))}
-        <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.68rem', marginLeft: 'auto' }}>ADMIN ONLY · Not visible to the public</p>
-      </div>
     </div>
   );
 }
 
-// Role display config
 const ROLE_LABELS: Record<string, string> = {
   super_admin:          'Super National Manager',
   national_manager:     'National Manager',
@@ -330,12 +256,27 @@ const ROLE_COLORS: Record<string, string> = {
   admin:                '#6b7280',
 };
 
+function computeProvinceStats() {
+  return provinces.map(prov => {
+    let regVoters = 0, psCount = 0, wardCount = 0, consCount = 0;
+    prov.districts.forEach(d => {
+      d.constituencies.forEach(c => {
+        consCount++;
+        c.wards.forEach(w => {
+          wardCount++;
+          w.pollingStations.forEach(ps => { psCount++; regVoters += ps.registeredVoters; });
+        });
+      });
+    });
+    return { id: prov.id, name: prov.name, districts: prov.districts.length, constituencies: consCount, wards: wardCount, pollingStations: psCount, registeredVoters: regVoters };
+  });
+}
+
 export default function ManagerDashboard() {
   const navigate = useNavigate();
   const [active, setActive] = useState<SectionKey>('overview');
   const [editing, setEditing] = useState(false);
 
-  // Load logged-in election user from session
   const electionUser = (() => {
     try { return JSON.parse(sessionStorage.getItem('boz_election_user') ?? 'null'); } catch { return null; }
   })();
@@ -351,23 +292,18 @@ export default function ManagerDashboard() {
     staffId: electionUser?.username ?? 'MGR-2026-001',
   });
 
-  function navigate_(key: SectionKey) {
-    setActive(key);
-  }
-
   const provinceStats = useMemo(() => computeProvinceStats(), []);
   const totalRegistered = provinceStats.reduce((s, p) => s + p.registeredVoters, 0);
-  const totalPS = provinceStats.reduce((s, p) => s + p.pollingStations, 0);
-  const totalWards = provinceStats.reduce((s, p) => s + p.wards, 0);
-  const totalConst = provinceStats.reduce((s, p) => s + p.constituencies, 0);
-  const totalDistricts = provinceStats.reduce((s, p) => s + p.districts, 0);
+  const totalPS         = provinceStats.reduce((s, p) => s + p.pollingStations, 0);
+  const totalWards      = provinceStats.reduce((s, p) => s + p.wards, 0);
+  const totalConst      = provinceStats.reduce((s, p) => s + p.constituencies, 0);
+  const totalDistricts  = provinceStats.reduce((s, p) => s + p.districts, 0);
 
   function renderSection() {
     switch (active) {
       case 'overview':
         return (
           <div>
-            {/* Role context banner */}
             {electionUser && (
               <div className="mb-5 rounded-xl border px-4 py-3 flex items-center gap-3 flex-wrap"
                 style={{ borderColor: `${ROLE_COLORS[electionUser.role] ?? '#6b7280'}40`, backgroundColor: `${ROLE_COLORS[electionUser.role] ?? '#6b7280'}10` }}>
@@ -383,8 +319,8 @@ export default function ManagerDashboard() {
                 </div>
                 <div className="ml-auto flex gap-2 flex-wrap">
                   {['results-approval', 'notice-board'].map(key => (
-                    <button key={key} onClick={() => navigate_(key as SectionKey)}
-                      className="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
+                    <button key={key} onClick={() => setActive(key as SectionKey)}
+                      className="text-xs px-3 py-1.5 rounded-lg font-medium"
                       style={{ backgroundColor: `${ROLE_COLORS[electionUser.role] ?? '#6b7280'}30`, color: ROLE_COLORS[electionUser.role] ?? '#6b7280' }}>
                       {key === 'results-approval' ? 'Approval Queue' : 'Notice Board'}
                     </button>
@@ -420,8 +356,65 @@ export default function ManagerDashboard() {
           </div>
         );
 
-      case 'ecz-figures':
-        return <ECZEntryPage />;
+      case 'ecz-figures':        return <Suspense fallback={<SectionLoader />}><ECZEntryPage /></Suspense>;
+      case 'candidates':         return <Suspense fallback={<SectionLoader />}><CandidateManager /></Suspense>;
+      case 'ecz-comparison':     return <Suspense fallback={<SectionLoader />}><ECZComparisonDashboard /></Suspense>;
+      case 'results-approval':   return <Suspense fallback={<SectionLoader />}><ResultsApprovalQueue /></Suspense>;
+      case 'system-setup':       return <Suspense fallback={<SectionLoader />}><SystemSetupDashboard /></Suspense>;
+      case 'voter-roll-upload':  return <Suspense fallback={<SectionLoader />}><VoterRollUpload /></Suspense>;
+      case 'election-users':     return <Suspense fallback={<SectionLoader />}><ElectionUserManager /></Suspense>;
+      case 'notice-board':       return <Suspense fallback={<SectionLoader />}><NoticeBoard /></Suspense>;
+      case 'shop':               return <Suspense fallback={<SectionLoader />}><ShopManager /></Suspense>;
+      case 'news':               return <Suspense fallback={<SectionLoader />}><NewsManager /></Suspense>;
+      case 'leadership':         return <Suspense fallback={<SectionLoader />}><LeadershipManager /></Suspense>;
+      case 'membership-admin':   return <Suspense fallback={<SectionLoader />}><MembershipAdmin /></Suspense>;
+      case 'registrations':      return <Suspense fallback={<SectionLoader />}><RegistrationApprovalAdmin /></Suspense>;
+      case 'press-statements':   return <Suspense fallback={<SectionLoader />}><PressStatementsAdmin /></Suspense>;
+      case 'email':              return <Suspense fallback={<SectionLoader />}><EmailAdmin /></Suspense>;
+      case 'adoption-certs':     return <Suspense fallback={<SectionLoader />}><AdoptionCertAdmin /></Suspense>;
+      case 'ballot-scan':        return <Suspense fallback={<SectionLoader />}><BallotScanSystem /></Suspense>;
+      case 'chamber-amendments': return <Suspense fallback={<SectionLoader />}><ChamberAmendmentsAdmin /></Suspense>;
+      case 'security-centre':    return <Suspense fallback={<SectionLoader />}><SecurityDashboard /></Suspense>;
+      case 'live-streams':       return <Suspense fallback={<SectionLoader />}><LiveStreamAdmin /></Suspense>;
+      case 'documents':          return <Suspense fallback={<SectionLoader />}><DocumentLibraryAdmin /></Suspense>;
+      case 'events':             return <Suspense fallback={<SectionLoader />}><EventsManager /></Suspense>;
+
+      case 'voter-verify':
+        return (
+          <Suspense fallback={<SectionLoader />}>
+            <VoterVerification
+              pollingStationId="ps-mapanza-01"
+              pollingStationName="National Oversight — All Stations"
+              agentName={`${manager.firstName} ${manager.lastName}`}
+              accentColor={A}
+            />
+          </Suspense>
+        );
+
+      case 'voter-turnout':
+        return <VoterTurnoutSection />;
+
+      case 'live-results':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-bold" style={{ color: 'rgba(255,255,255,0.9)' }}>Live Results Engine</h2>
+              <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Auto-calculated aggregations from all polling station submissions. Refreshes every 30 seconds.</p>
+            </div>
+            <div className="grid grid-cols-1 gap-8">
+              {(['presidential', 'parliament', 'mayoral', 'councillor'] as const).map(et => (
+                <div key={et} className="rounded-2xl p-6" style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <h3 className="text-base font-semibold capitalize mb-4 pb-3" style={{ color: 'rgba(255,255,255,0.7)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                    {et === 'parliament' ? 'Parliamentary' : et.charAt(0).toUpperCase() + et.slice(1)} Election
+                  </h3>
+                  <Suspense fallback={<SectionLoader />}>
+                    <LiveResultsPanel electionType={et} autoRefreshSeconds={30} showLeaderboard showCoverage showTrend={false} showFeed={et === 'presidential'} compact />
+                  </Suspense>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
 
       case 'results-by-province':
         return (
@@ -478,11 +471,12 @@ export default function ManagerDashboard() {
                 { label: 'Audit Log', desc: 'View full audit trail of all system actions.', icon: <Clock size={18} />, color: '#f59e0b' },
                 { label: 'Sync & Database', desc: 'Monitor offline sync queue and data integrity.', icon: <TrendingUp size={18} />, color: A },
               ].map(card => (
-                <div key={card.label} className="flex items-start gap-4 p-5 rounded-2xl cursor-pointer transition-all" style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(255,255,255,0.07)' }}
+                <div key={card.label} className="flex items-start gap-4 p-5 rounded-2xl cursor-pointer transition-all"
+                  style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(255,255,255,0.07)' }}
                   onMouseEnter={e => (e.currentTarget as HTMLElement).style.border = `1px solid ${card.color}30`}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.border = '1px solid rgba(255,255,255,0.07)'}
-                >
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${card.color}20`, border: `1px solid ${card.color}30`, color: card.color }}>
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.border = '1px solid rgba(255,255,255,0.07)'}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: `${card.color}20`, border: `1px solid ${card.color}30`, color: card.color }}>
                     {card.icon}
                   </div>
                   <div>
@@ -497,7 +491,8 @@ export default function ManagerDashboard() {
                 <p style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.04em' }}>Open Full Admin Dashboard</p>
                 <p className="mt-1" style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.75rem' }}>Complete admin interface with charts, user management and sync monitoring.</p>
               </div>
-              <a href="/admin" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm shrink-0 ml-4" style={{ background: A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
+              <a href="/admin" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm shrink-0 ml-4"
+                style={{ background: A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
                 <ExternalLink size={14} /> OPEN ADMIN
               </a>
             </div>
@@ -509,7 +504,8 @@ export default function ManagerDashboard() {
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#fff' }}>Personal Details</h2>
-              <button onClick={() => setEditing(!editing)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm" style={{ background: A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
+              <button onClick={() => setEditing(!editing)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm"
+                style={{ background: A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
                 {editing ? <><Save size={14} /> SAVE</> : <><Edit2 size={14} /> EDIT</>}
               </button>
             </div>
@@ -524,7 +520,9 @@ export default function ManagerDashboard() {
                   return editing ? (
                     <div key={k}>
                       <label className="block text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.1em' }}>{labels[k]}</label>
-                      <input className="w-full px-3 py-2.5 rounded-xl text-sm" value={manager[k]} onChange={e => setManager(p => ({ ...p, [k]: e.target.value }))} style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: `1px solid ${A}40`, color: '#fff', outline: 'none' }} />
+                      <input className="w-full px-3 py-2.5 rounded-xl text-sm" value={manager[k]}
+                        onChange={e => setManager(p => ({ ...p, [k]: e.target.value }))}
+                        style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: `1px solid ${A}40`, color: '#fff', outline: 'none' }} />
                     </div>
                   ) : (
                     <Field key={k} label={labels[k]} value={manager[k]} />
@@ -544,7 +542,8 @@ export default function ManagerDashboard() {
                 {['Current Password', 'New Password', 'Confirm New Password'].map(label => (
                   <div key={label}>
                     <label className="text-xs mb-1 block" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.1em' }}>{label.toUpperCase()}</label>
-                    <input type="password" className="w-full px-3 py-2.5 rounded-xl text-sm" placeholder="••••••••" style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', outline: 'none' }} />
+                    <input type="password" className="w-full px-3 py-2.5 rounded-xl text-sm" placeholder="••••••••"
+                      style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', outline: 'none' }} />
                   </div>
                 ))}
                 <button className="px-5 py-2.5 rounded-xl text-sm" style={{ background: A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>UPDATE PASSWORD</button>
@@ -552,108 +551,6 @@ export default function ManagerDashboard() {
             </DashCard>
           </div>
         );
-
-      case 'candidates':
-        return <CandidateManager />;
-
-      case 'ecz-comparison':
-        return <ECZComparisonDashboard />;
-
-      case 'results-approval':
-        return <ResultsApprovalQueue />;
-
-      case 'system-setup':
-        return <SystemSetupDashboard />;
-
-      case 'voter-roll-upload':
-        return <VoterRollUpload />;
-
-      case 'election-users':
-        return <ElectionUserManager />;
-
-      case 'notice-board':
-        return <NoticeBoard />;
-
-      case 'shop':
-        return <ShopManager />;
-
-      case 'news':
-        return <NewsManager />;
-
-      case 'leadership':
-        return <LeadershipManager />;
-
-      case 'membership-admin':
-        return <MembershipAdmin />;
-
-      case 'registrations':
-        return <RegistrationApprovalAdmin />;
-
-      case 'press-statements':
-        return <PressStatementsAdmin />;
-
-      case 'email':
-        return <EmailAdmin />;
-
-      case 'adoption-certs':
-        return <AdoptionCertAdmin />;
-
-      case 'ballot-scan':
-        return <BallotScanSystem />;
-
-      case 'voter-verify':
-        return (
-          <VoterVerification
-            pollingStationId="ps-mapanza-01"
-            pollingStationName="National Oversight — All Stations"
-            agentName={`${manager.firstName} ${manager.lastName}`}
-            accentColor={A}
-          />
-        );
-
-      case 'voter-turnout':
-        return <VoterTurnoutSection />;
-
-      case 'chamber-amendments':
-        return <ChamberAmendmentsAdmin />;
-
-      case 'security-centre':
-        return <SecurityDashboard />;
-
-      case 'live-results':
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-bold" style={{color:"rgba(255,255,255,0.9)"}}>Live Results Engine</h2>
-              <p className="text-sm mt-1" style={{color:"rgba(255,255,255,0.4)"}}>Auto-calculated aggregations from all polling station submissions. Refreshes every 30 seconds.</p>
-            </div>
-            <div className="grid grid-cols-1 gap-8">
-              {(['presidential', 'parliament', 'mayoral', 'councillor'] as const).map(et => (
-                <div key={et} className="rounded-2xl p-6" style={{backgroundColor:"#0f1f33",border:"1px solid rgba(255,255,255,0.07)"}}>
-                  <h3 className="text-base font-semibold capitalize mb-4 pb-3" style={{color:"rgba(255,255,255,0.7)",borderBottom:"1px solid rgba(255,255,255,0.07)"}}>{et === 'parliament' ? 'Parliamentary' : et.charAt(0).toUpperCase() + et.slice(1)} Election</h3>
-                  <LiveResultsPanel
-                    electionType={et}
-                    autoRefreshSeconds={30}
-                    showLeaderboard={true}
-                    showCoverage={true}
-                    showTrend={false}
-                    showFeed={et === 'presidential'}
-                    compact={true}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'events':
-        return <EventsManager />;
-
-      case 'live-streams':
-        return <LiveStreamAdmin />;
-
-      case 'documents':
-        return <DocumentLibraryAdmin />;
 
       default:
         return null;
@@ -668,7 +565,7 @@ export default function ManagerDashboard() {
       user={{ name: `${manager.firstName} ${manager.lastName}`, role: manager.role, id: manager.staffId }}
       navGroups={NAV}
       activeSection={active}
-      onNavigate={(key) => navigate_(key as SectionKey)}
+      onNavigate={(key) => setActive(key as SectionKey)}
       notifications={2}
     >
       {renderSection()}

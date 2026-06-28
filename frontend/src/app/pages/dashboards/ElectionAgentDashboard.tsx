@@ -1,13 +1,22 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router';
 import {
   LayoutDashboard, ClipboardList, UserCircle, Lock, MapPin,
   Edit2, Save, CheckCircle, AlertCircle, ScanLine, PenLine, ShieldCheck
 } from 'lucide-react';
-import { DataEntryPage } from '../DataEntryPage';
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
-import { AgentScannerMode } from '../../components/AgentScannerMode';
-import { VoterVerification } from '../../components/VoterVerification';
+
+const DataEntryPage    = lazy(() => import('../DataEntryPage').then(m => ({ default: m.DataEntryPage })));
+const AgentScannerMode = lazy(() => import('../../components/AgentScannerMode').then(m => ({ default: m.AgentScannerMode })));
+const VoterVerification = lazy(() => import('../../components/VoterVerification').then(m => ({ default: m.VoterVerification })));
+
+function SectionLoader() {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+    </div>
+  );
+}
 
 const A = '#dc2626';
 const NAVY = '#1e2d4a';
@@ -97,12 +106,14 @@ export default function ElectionAgentDashboard() {
     switch (active) {
       case 'voter-verify':
         return (
-          <VoterVerification
-            pollingStationId={agent.pollingStationId}
-            pollingStationName={agent.pollingStationName}
-            agentName={`${agent.firstName} ${agent.lastName}`}
-            accentColor={A}
-          />
+          <Suspense fallback={<SectionLoader />}>
+            <VoterVerification
+              pollingStationId={agent.pollingStationId}
+              pollingStationName={agent.pollingStationName}
+              agentName={`${agent.firstName} ${agent.lastName}`}
+              accentColor={A}
+            />
+          </Suspense>
         );
 
       case 'overview':
@@ -231,14 +242,18 @@ export default function ElectionAgentDashboard() {
             </div>
 
             {entryMode === 'manual' ? (
-              <DataEntryPage />
+              <Suspense fallback={<SectionLoader />}>
+                <DataEntryPage />
+              </Suspense>
             ) : (
-              <AgentScannerMode
-                stationId={agent.pollingStationId}
-                stationName={agent.pollingStationName}
-                agentName={`${agent.firstName} ${agent.lastName}`}
-                defaultElectionType="parliamentary"
-              />
+              <Suspense fallback={<SectionLoader />}>
+                <AgentScannerMode
+                  stationId={agent.pollingStationId}
+                  stationName={agent.pollingStationName}
+                  agentName={`${agent.firstName} ${agent.lastName}`}
+                  defaultElectionType="parliamentary"
+                />
+              </Suspense>
             )}
           </div>
         );
