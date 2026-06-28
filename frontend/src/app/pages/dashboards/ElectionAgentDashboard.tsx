@@ -27,8 +27,18 @@ const NAVY = '#0f1f33';
 
 // ── Role-based section access ─────────────────────────────────────────────────
 const ROLE_CONFIG: Record<string, { label: string; color: string; sections: string[] }> = {
+  agent: {
+    label: 'Polling Agent',
+    color: RED,
+    sections: ['overview', 'voter-verify', 'enter-results', 'submitted', 'live-streams', 'personal-details', 'security'],
+  },
   election_agent: {
     label: 'Election Agent',
+    color: RED,
+    sections: ['overview', 'voter-verify', 'enter-results', 'submitted', 'live-streams', 'personal-details', 'security'],
+  },
+  polling_agent: {
+    label: 'Polling Agent',
     color: RED,
     sections: ['overview', 'voter-verify', 'enter-results', 'submitted', 'live-streams', 'personal-details', 'security'],
   },

@@ -25,8 +25,8 @@ function getApiBaseUrl(): string {
 
 // Election roles that use real backend auth
 const ELECTION_DASHBOARD_IDS = ['agent', 'manager'];
-const AGENT_ROLES = ['agent'];
-const MANAGER_ROLES = ['super_admin','national_manager','provincial_manager','district_manager','constituency_manager','ward_manager','admin'];
+const AGENT_ROLES = ['agent', 'election_agent', 'polling_agent'];
+const MANAGER_ROLES = ['super_admin','national_manager','provincial_manager','district_manager','constituency_manager','ward_manager','admin','national_manager','manager'];
 
 const DASHBOARD_TYPES = [
   {
