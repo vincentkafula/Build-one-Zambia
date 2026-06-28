@@ -23,6 +23,8 @@ import * as press from './press.js';
 import * as elections from './elections.js';
 import * as docs from './documents.js';
 import * as results from './results.js';
+import * as shop from './shop.js';
+import * as streams from './streams.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -408,6 +410,235 @@ app.delete(`${BASE}/candidates/:id`,
   auth.requireAuth, auth.requireRole('admin', 'super_admin'),
   (req, res) => {
     candidates.deleteCandidate(req.params.id);
+    res.json({ success: true });
+  }
+);
+
+// ─── Shop: Products ──────────────────────────────────────────────────────────
+
+app.get(`${BASE}/shop/products`, (req, res) => {
+  const { category, search, featured, includeInactive } = req.query;
+  const products = shop.listProducts({
+    category,
+    search,
+    featured: featured === 'true',
+    includeInactive: includeInactive === 'true',
+  });
+  res.json({ products, count: products.length });
+});
+
+app.get(`${BASE}/shop/products/:id`, (req, res) => {
+  const p = shop.getProduct(req.params.id);
+  if (!p) return res.status(404).json({ error: 'Not found' });
+  res.json({ product: p });
+});
+
+app.get(`${BASE}/shop/products/:id/image`, (req, res) => {
+  const img = shop.getProductImage(req.params.id);
+  if (!img) return res.status(404).json({ error: 'No image' });
+  const [meta, b64] = img.split(',');
+  const mime = meta.replace('data:', '').replace(';base64', '');
+  res.setHeader('Content-Type', mime);
+  res.send(Buffer.from(b64, 'base64'));
+});
+
+app.post(`${BASE}/shop/products`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    try {
+      const product = shop.createProduct(req.body);
+      res.json({ success: true, product });
+    } catch (err) { res.status(400).json({ error: err.message }); }
+  }
+);
+
+app.patch(`${BASE}/shop/products/:id`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    const p = shop.updateProduct(req.params.id, req.body);
+    if (!p) return res.status(404).json({ error: 'Not found' });
+    res.json({ success: true, product: p });
+  }
+);
+
+app.patch(`${BASE}/shop/products/:id/image`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    const p = shop.updateProduct(req.params.id, { imageDataUrl: req.body.imageDataUrl });
+    if (!p) return res.status(404).json({ error: 'Not found' });
+    res.json({ success: true, product: p });
+  }
+);
+
+app.delete(`${BASE}/shop/products/:id`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    shop.deleteProduct(req.params.id);
+    res.json({ success: true });
+  }
+);
+
+app.post(`${BASE}/shop/products/:id/restore`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    const p = shop.restoreProduct(req.params.id);
+    if (!p) return res.status(404).json({ error: 'Not found' });
+    res.json({ success: true, product: p });
+  }
+);
+
+app.post(`${BASE}/shop/products/seed`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    const result = shop.seedProducts();
+    res.json({ success: true, ...result });
+  }
+);
+
+// ─── Shop: Payments ──────────────────────────────────────────────────────────
+
+app.post(`${BASE}/shop/payments/initiate`, (req, res) => {
+  try {
+    const payment = shop.initiatePayment(req.body);
+    res.json({ success: true, payment });
+  } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+app.get(`${BASE}/shop/payments/:ref`, (req, res) => {
+  const p = shop.getPayment(req.params.ref);
+  if (!p) return res.status(404).json({ error: 'Not found' });
+  res.json({ payment: p });
+});
+
+app.post(`${BASE}/shop/payments/:ref/confirm`, (req, res) => {
+  const p = shop.confirmPayment(req.params.ref, req.body.gatewayRef);
+  if (!p) return res.status(404).json({ error: 'Not found' });
+  res.json({ success: true, payment: p });
+});
+
+app.post(`${BASE}/shop/payments/:ref/fail`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    const p = shop.failPayment(req.params.ref, req.body.reason);
+    if (!p) return res.status(404).json({ error: 'Not found' });
+    res.json({ success: true, payment: p });
+  }
+);
+
+app.get(`${BASE}/shop/payments`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    const payments = shop.listPayments({ status: req.query.status, method: req.query.method });
+    res.json({ payments, count: payments.length });
+  }
+);
+
+// ─── Shop: Stats ─────────────────────────────────────────────────────────────
+
+app.get(`${BASE}/shop/stats`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => res.json(shop.getStats())
+);
+
+// ─── Orders ──────────────────────────────────────────────────────────────────
+
+app.post(`${BASE}/orders`, (req, res) => {
+  try {
+    const order = shop.createOrder(req.body);
+    res.json({ success: true, message: 'Order received', order });
+  } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+app.get(`${BASE}/orders`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    const orders = shop.listOrders({ status: req.query.status });
+    res.json({ orders, count: orders.length });
+  }
+);
+
+app.patch(`${BASE}/orders/:id/status`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    const o = shop.updateOrderStatus(req.params.id, req.body.status, req.body.paymentRef);
+    if (!o) return res.status(404).json({ error: 'Not found' });
+    res.json({ success: true, order: o });
+  }
+);
+
+// ─── Live Streams ────────────────────────────────────────────────────────────
+
+app.get(`${BASE}/streams`, (req, res) => {
+  const list = streams.listStreams({ status: req.query.status, category: req.query.category });
+  res.json({ streams: list, count: list.length });
+});
+
+app.get(`${BASE}/streams/stats`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => res.json(streams.getStats())
+);
+
+app.get(`${BASE}/streams/:id`, (req, res) => {
+  const s = streams.getStream(req.params.id);
+  if (!s) return res.status(404).json({ error: 'Not found' });
+  res.json({ stream: s });
+});
+
+app.post(`${BASE}/streams`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    try {
+      const s = streams.createStream(req.body);
+      res.json({ success: true, stream: s });
+    } catch (err) { res.status(400).json({ error: err.message }); }
+  }
+);
+
+app.patch(`${BASE}/streams/:id`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    const s = streams.updateStream(req.params.id, req.body);
+    if (!s) return res.status(404).json({ error: 'Not found' });
+    res.json({ success: true, stream: s });
+  }
+);
+
+app.patch(`${BASE}/streams/:id/status`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    const s = streams.setStreamStatus(req.params.id, req.body.status);
+    if (!s) return res.status(404).json({ error: 'Not found' });
+    res.json({ success: true, stream: s });
+  }
+);
+
+app.delete(`${BASE}/streams/:id`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    streams.deleteStream(req.params.id);
+    res.json({ success: true });
+  }
+);
+
+app.post(`${BASE}/streams/:id/view`, (req, res) => {
+  streams.recordView(req.params.id);
+  res.json({ success: true });
+});
+
+app.get(`${BASE}/streams/:id/comments`, (req, res) => {
+  const comments = streams.listComments(req.params.id);
+  res.json({ comments, count: comments.length });
+});
+
+app.post(`${BASE}/streams/:id/comments`, (req, res) => {
+  const comment = streams.postComment(req.params.id, req.body.name, req.body.message);
+  res.json({ success: true, comment });
+});
+
+app.delete(`${BASE}/streams/:streamId/comments/:commentId`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    streams.deleteComment(req.params.streamId, req.params.commentId);
     res.json({ success: true });
   }
 );
