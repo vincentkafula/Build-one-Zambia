@@ -46,9 +46,21 @@ export default defineConfig(({ mode }) => ({
         assetFileNames: 'assets/[name]-[hash][extname]',
         chunkFileNames: 'js/[name]-[hash]-v2.js',
         entryFileNames: 'js/[name]-[hash]-v2.js',
-        // Keep recharts + ALL its d3 dependencies together in one chunk.
-        // This prevents "Cannot access X before initialization" caused by
-        // recharts' internal circular references being split across chunks.
+        // Keep recharts + ALL its d3 dependencies, AND every lazy-loaded
+        // admin/dashboard component, together in ONE chunk.
+        //
+        // Why: Vite/Rollup's automatic code-splitting can place a component
+        // that doesn't even import recharts (e.g. BallotScanSystem) into a
+        // chunk that ends up with a circular load-order dependency on the
+        // recharts vendor chunk, because some sibling lazy component in the
+        // same dashboard shares an internal module with both. The result is
+        // a "Cannot access X before initialization" TDZ crash at runtime
+        // that only appears in production builds, not dev.
+        //
+        // The reliable fix is to remove the chunk boundary between these
+        // modules entirely — intra-chunk circular references are handled
+        // correctly by Rollup via hoisting + live bindings; only CROSS-chunk
+        // circular dependencies break with this error.
         manualChunks(id) {
           if (
             id.includes('node_modules/recharts') ||
@@ -56,9 +68,11 @@ export default defineConfig(({ mode }) => ({
             id.includes('node_modules/d3/') ||
             id.includes('node_modules/internmap') ||
             id.includes('node_modules/robust-predicates') ||
-            id.includes('node_modules/victory-vendor')
+            id.includes('node_modules/victory-vendor') ||
+            id.includes('/app/components/') ||
+            id.includes('/app/pages/dashboards/')
           ) {
-            return 'vendor-recharts';
+            return 'admin-bundle';
           }
         },
       },
