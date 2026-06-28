@@ -526,9 +526,9 @@ export function ElectionUserManager() {
           {stats && (
             <div className="grid grid-cols-3 gap-3">
               {[
-                { label: 'Total Users', value: stats.total, color: '#7c3aed' },
-                { label: 'Active', value: stats.active, color: '#16a34a' },
-                { label: 'Inactive', value: stats.inactive, color: '#dc2626' },
+                { label: 'Total Users', value: stats.total ?? 0, color: '#7c3aed' },
+                { label: 'Active', value: stats.active ?? 0, color: '#16a34a' },
+                { label: 'Inactive', value: (stats.total ?? 0) - (stats.active ?? 0), color: '#dc2626' },
               ].map(({ label, value, color }) => (
                 <div key={label} className="bg-card border border-border rounded-xl p-4 text-center">
                   <p className="text-3xl font-bold" style={{ color }}>{value.toLocaleString()}</p>

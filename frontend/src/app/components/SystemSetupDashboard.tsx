@@ -98,7 +98,7 @@ export function SystemSetupDashboard() {
       ]);
 
       if (health.status === 'fulfilled') setHealthData(health.value.bootstrap);
-      if (candStats.status === 'fulfilled') setCandCount(candStats.value.stats.total);
+      if (candStats.status === 'fulfilled') setCandCount(candStats.value?.stats?.total ?? 0);
       if (vrMeta.status === 'fulfilled') setVoterRollInfo(vrMeta.value.meta);
     } finally {
       setLoading(false);
@@ -160,7 +160,7 @@ export function SystemSetupDashboard() {
       description: 'Upload the official ECZ voter roll CSV so agents can verify voters at polling stations.',
       status: voterRollInfo ? 'ok' : loading ? 'loading' : 'warning',
       detail: voterRollInfo
-        ? `${voterRollInfo.totalRecords.toLocaleString()} voter records loaded (uploaded ${voterRollInfo.uploadedAt.slice(0, 10)}).`
+        ? `${voterRollInfo?.totalRecords?.toLocaleString() ?? '0'} voter records loaded (uploaded ${voterRollInfo?.uploadedAt?.slice(0, 10) ?? ''}).`
         : 'No voter roll uploaded. Use the Voter Roll Upload section in this admin panel.',
     },
     {
