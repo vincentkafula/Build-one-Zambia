@@ -25,6 +25,7 @@ import * as docs from './documents.js';
 import * as results from './results.js';
 import * as shop from './shop.js';
 import * as streams from './streams.js';
+import { kv } from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3001', 10);
