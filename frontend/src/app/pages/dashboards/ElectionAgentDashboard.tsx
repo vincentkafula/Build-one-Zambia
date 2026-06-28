@@ -173,13 +173,13 @@ export function ElectionAgentDashboard() {
         );
 
       case 'voter-verify':
-        return <Suspense fallback={<SectionLoader />}><VoterVerification /></Suspense>;
+        return <Suspense fallback={<SectionLoader />}><VoterVerification pollingStationId={agent.ward} pollingStationName={agent.ward} agentName={agent.firstName} accentColor={roleConf.color} /></Suspense>;
 
       case 'enter-results':
         return <Suspense fallback={<SectionLoader />}><DataEntryPage /></Suspense>;
 
       case 'ballot-scan':
-        return <Suspense fallback={<SectionLoader />}><AgentScannerMode /></Suspense>;
+        return <Suspense fallback={<SectionLoader />}><AgentScannerMode stationId={agent.ward} stationName={agent.ward} agentName={agent.firstName} /></Suspense>;
 
       case 'results-approval':
         return <Suspense fallback={<SectionLoader />}><ResultsApprovalQueue /></Suspense>;
