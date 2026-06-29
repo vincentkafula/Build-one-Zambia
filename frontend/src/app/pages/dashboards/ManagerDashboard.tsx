@@ -5,6 +5,7 @@ import {
   Edit2, Save, TrendingUp, Users, CheckCircle, Clock, ExternalLink, Radio, FileText, Activity, Scale, ShoppingBag, Newspaper, Crown, Building2, Mail, Award, Vote, ScanLine, Server, Shield, Calendar, User, Upload
 } from 'lucide-react';
 import { DashboardShell, DashCard, StatCard } from '../../components/DashboardShell';
+import { SuperAdminGate } from '../../components/SuperAdminGate';
 import { provinces } from '../../data/mockData';
 
 // Lazy-load all heavy components to avoid circular dependency at build time
@@ -459,47 +460,51 @@ export default function ManagerDashboard() {
 
       case 'admin':
         return (
-          <div>
-            <div className="mb-6">
-              <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#fff' }}>Backend Access — Management Hub</h2>
-              <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.82rem', marginTop: 4 }}>Authorised access only — manage all content, users, candidates, and system settings</p>
+          <SuperAdminGate>
+            <div>
+              <div className="mb-6">
+                <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#fff' }}>Admin Panel — Management Hub</h2>
+                <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.82rem', marginTop: 4 }}>Manage all content, users, candidates, and system settings</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {[
+                  { key: 'system-setup',      label: 'System Setup',         desc: 'Configure backend, check service health.',                          icon: <Server size={18} />,      color: '#6366f1' },
+                  { key: 'election-users',    label: 'Election Users',        desc: 'Create & manage all 7 tiers of election staff.',                    icon: <Users size={18} />,       color: '#0ea5e9' },
+                  { key: 'candidates',        label: 'Candidates',            desc: 'Add, edit & remove presidential, MP, mayoral & councillor candidates.', icon: <Shield size={18} />, color: '#f59e0b' },
+                  { key: 'leadership',        label: 'Party Leadership',      desc: 'Add or remove party leaders and officials.',                        icon: <Crown size={18} />,       color: '#a855f7' },
+                  { key: 'news',              label: 'News & Posts',          desc: 'Publish, edit and remove news articles.',                           icon: <Newspaper size={18} />,   color: '#10b981' },
+                  { key: 'shop',              label: 'Shop Manager',          desc: 'Add, edit and remove products in the BOZ shop.',                    icon: <ShoppingBag size={18} />, color: '#ec4899' },
+                  { key: 'documents',         label: 'Documents & Letters',   desc: 'Upload official letters and documents.',                            icon: <FileText size={18} />,    color: '#f97316' },
+                  { key: 'press-statements',  label: 'Press Statements',      desc: 'Upload and manage press releases.',                                 icon: <Newspaper size={18} />,   color: '#06b6d4' },
+                  { key: 'live-streams',      label: 'Live Streaming',        desc: 'Go live and manage stream sessions.',                               icon: <Radio size={18} />,       color: A },
+                  { key: 'events',            label: 'Events Manager',        desc: 'Create and manage party events.',                                   icon: <Calendar size={18} />,    color: '#84cc16' },
+                  { key: 'membership-admin',  label: 'Membership',            desc: 'View and manage party members.',                                    icon: <Users size={18} />,       color: '#8b5cf6' },
+                  { key: 'registrations',     label: 'Registrations',         desc: 'Approve or reject member registrations.',                           icon: <CheckCircle size={18} />, color: '#22c55e' },
+                  { key: 'results-approval',  label: 'Results Approval',      desc: 'Verify and approve polling station results.',                       icon: <CheckCircle size={18} />, color: '#f59e0b' },
+                  { key: 'voter-roll-upload', label: 'Voter Roll Upload',     desc: 'Upload the official ECZ voter roll CSV.',                           icon: <FileText size={18} />,    color: '#0891b2' },
+                  { key: 'email',             label: 'Email Settings',        desc: 'Configure Resend email service.',                                   icon: <Mail size={18} />,        color: '#64748b' },
+                  { key: 'security-centre',   label: 'Security Centre',       desc: 'Monitor system security and access logs.',                          icon: <ShieldCheck size={18} />, color: '#dc2626' },
+                  { key: 'adoption-certs',    label: 'Adoption Certificates', desc: 'Issue and manage adoption certificates.',                           icon: <Award size={18} />,       color: '#14b8a6' },
+                  { key: 'chamber-amendments',label: 'Chamber Amendments',    desc: 'Manage chamber amendment submissions.',                             icon: <Building2 size={18} />,   color: '#f43f5e' },
+                ].map(card => (
+                  <button key={card.key} onClick={() => setActive(card.key as SectionKey)}
+                    className="flex items-start gap-3 p-4 rounded-2xl text-left w-full transition-all hover:scale-[1.02]"
+                    style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(255,255,255,0.07)' }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.border = `1px solid ${card.color}40`}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.border = '1px solid rgba(255,255,255,0.07)'}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
+                      style={{ background: `${card.color}20`, border: `1px solid ${card.color}30`, color: card.color }}>
+                      {card.icon}
+                    </div>
+                    <div>
+                      <p style={{ color: '#fff', fontSize: '0.88rem', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.04em' }}>{card.label}</p>
+                      <p className="mt-1" style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.73rem', lineHeight: 1.4 }}>{card.desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {[
-                { key: 'system-setup',    label: 'System Setup',        desc: 'Configure backend, check service health.',     icon: <Server size={18} />,      color: '#6366f1' },
-                { key: 'election-users',  label: 'Election Users',       desc: 'Create & manage all 7 tiers of election staff.', icon: <Users size={18} />,      color: '#0ea5e9' },
-                { key: 'candidates',      label: 'Candidates',           desc: 'Add, edit & remove presidential, MP, mayoral & councillor candidates.', icon: <User size={18} />, color: '#f59e0b' },
-                { key: 'leadership',      label: 'Party Leadership',     desc: 'Add or remove party leaders and officials.',   icon: <Crown size={18} />,       color: '#a855f7' },
-                { key: 'news',            label: 'News & Posts',         desc: 'Publish, edit and remove news articles.',      icon: <Newspaper size={18} />,   color: '#10b981' },
-                { key: 'shop',            label: 'Shop Manager',         desc: 'Add, edit and remove products in the BOZ shop.',icon: <ShoppingBag size={18} />, color: '#ec4899' },
-                { key: 'documents',       label: 'Documents & Letters',  desc: 'Upload official letters and documents.',       icon: <FileText size={18} />,    color: '#f97316' },
-                { key: 'press-statements',label: 'Press Statements',     desc: 'Upload and manage press releases.',            icon: <Newspaper size={18} />,   color: '#06b6d4' },
-                { key: 'live-streams',    label: 'Live Streaming',       desc: 'Go live and manage stream sessions.',          icon: <Radio size={18} />,       color: A },
-                { key: 'events',          label: 'Events Manager',       desc: 'Create and manage party events.',              icon: <Calendar size={18} />,    color: '#84cc16' },
-                { key: 'membership-admin',label: 'Membership',           desc: 'View and manage party members.',               icon: <Users size={18} />,       color: '#8b5cf6' },
-                { key: 'registrations',   label: 'Registrations',        desc: 'Approve or reject member registrations.',      icon: <CheckCircle size={18} />, color: '#22c55e' },
-                { key: 'results-approval',label: 'Results Approval',     desc: 'Verify and approve polling station results.',  icon: <CheckCircle size={18} />, color: '#f59e0b' },
-                { key: 'voter-roll-upload',label: 'Voter Roll Upload',   desc: 'Upload the official ECZ voter roll CSV.',      icon: <Upload size={18} />,      color: '#0891b2' },
-                { key: 'email',           label: 'Email Settings',       desc: 'Configure Resend email service.',              icon: <Mail size={18} />,        color: '#64748b' },
-                { key: 'security-centre', label: 'Security Centre',      desc: 'Monitor system security and access logs.',     icon: <ShieldCheck size={18} />, color: '#dc2626' },
-              ].map(card => (
-                <button key={card.key} onClick={() => setActive(card.key as SectionKey)}
-                  className="flex items-start gap-3 p-4 rounded-2xl text-left w-full transition-all hover:scale-[1.02]"
-                  style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(255,255,255,0.07)' }}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.border = `1px solid ${card.color}40`}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.border = '1px solid rgba(255,255,255,0.07)'}>
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
-                    style={{ background: `${card.color}20`, border: `1px solid ${card.color}30`, color: card.color }}>
-                    {card.icon}
-                  </div>
-                  <div>
-                    <p style={{ color: '#fff', fontSize: '0.88rem', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.04em' }}>{card.label}</p>
-                    <p className="mt-1" style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.73rem', lineHeight: 1.4 }}>{card.desc}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+          </SuperAdminGate>
         );
 
       case 'personal-details':
