@@ -307,4 +307,3 @@ export function SuperAdminGate({ children }: Props) {
 }
 
 export default SuperAdminGate;
-export { SuperAdminGate as default };
