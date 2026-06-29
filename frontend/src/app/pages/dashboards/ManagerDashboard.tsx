@@ -285,7 +285,7 @@ export default function ManagerDashboard() {
   const [manager, setManager] = useState({
     firstName: electionUser?.name?.split(' ')[0] ?? 'Dr. Grace',
     lastName: electionUser?.name?.split(' ').slice(1).join(' ') ?? 'Mulenga',
-    role: ROLE_LABELS[electionUser?.role] ?? 'National Results Manager',
+    role: ROLE_LABELS[electionUser?.role] ?? 'National Management',
     phone: electionUser?.phone ?? '+260 977 500 600',
     email: electionUser?.email ?? 'g.mulenga@manager.boz.zm',
     province: electionUser?.scopeName ?? 'National',
@@ -568,7 +568,7 @@ export default function ManagerDashboard() {
   return (
     <DashboardShell
       accentColor={A}
-      title="Results Manager"
+      title="Management"
       subtitle="BOZ NATIONAL DASHBOARD"
       user={{ name: `${manager.firstName} ${manager.lastName}`, role: manager.role, id: manager.staffId }}
       navGroups={NAV}

@@ -33,7 +33,7 @@ const ROLE_CONFIG: Record<string, { label: string; color: string; sections: stri
     sections: ['overview', 'voter-verify', 'enter-results', 'submitted', 'live-streams', 'personal-details', 'security'],
   },
   election_agent: {
-    label: 'Election Agent',
+    label: 'Election',
     color: RED,
     sections: ['overview', 'voter-verify', 'enter-results', 'submitted', 'live-streams', 'personal-details', 'security'],
   },

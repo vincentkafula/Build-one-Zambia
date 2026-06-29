@@ -63,7 +63,7 @@ const DASHBOARD_TYPES = [
   },
   {
     id: 'agent',
-    title: 'Election Agent',
+    title: 'Election',
     description: 'Submit and track polling station results',
     icon: ClipboardList,
     color: '#ef4444',
@@ -71,7 +71,7 @@ const DASHBOARD_TYPES = [
   },
   {
     id: 'manager',
-    title: 'Results Manager',
+    title: 'Management',
     description: 'National ECZ figures, province results & admin',
     icon: BarChart2,
     color: '#0ea5e9',

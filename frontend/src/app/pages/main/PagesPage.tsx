@@ -194,12 +194,12 @@ const SITE_SECTIONS = [
     color: '#7c3aed',
     pages: [
       {
-        icon: ClipboardList, title: 'Election Agent Dashboard', path: '/dashboard-login',
+        icon: ClipboardList, title: 'Election Dashboard', path: '/dashboard-login',
         desc: 'Secure portal for accredited BOZ polling agents — submit verified results, verify voter cards, and receive notices from ward supervisors. Password required.',
         sub: [],
       },
       {
-        icon: Shield, title: 'Results Manager Dashboard', path: '/dashboard-login',
+        icon: Shield, title: 'Management Dashboard', path: '/dashboard-login',
         desc: 'Multi-tier management dashboard for ward, constituency, district, provincial, and national managers — approve results, compare ECZ figures, send notices. Password required.',
         sub: [],
       },
