@@ -1240,3 +1240,7 @@ export default app;
 
 // cache-bust: 20260627-225912
 // Sun Jun 28 16:54:37 UTC 2026
+// force-redeploy: 20260630 — Route not found: POST /data-entry/result reported in prod,
+// confirms Railway backend service is running a stale build predating commit 8be9b71
+// (kv import fix) and 86249ec/1cb1d33 (data-entry routes). This comment forces a new
+// commit SHA so Railway's GitHub webhook has a fresh push event to deploy from.
