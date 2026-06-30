@@ -142,7 +142,23 @@ app.post(`${BASE}/auth/login`,
       if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
       const token = auth.createToken(user.username, user.role);
-      res.json({ token, user: { username: user.username, role: user.role, name: user.name } });
+      // Return the full user record (minus any sensitive fields) so the frontend
+      // can auto-detect role + assigned scope (province/district/constituency/
+      // ward/polling station) exactly as granted by the super admin in the
+      // Election Users manager — no manual role/area picking needed at login.
+      const { id, username: uname, role, name, email, phone,
+              scopeId, scopeName, scopeType,
+              pollingStationId, pollingStationName,
+              active, createdAt, lastLogin } = user;
+      res.json({
+        token,
+        user: {
+          id, username: uname, role, name, email, phone,
+          scopeId, scopeName, scopeType,
+          pollingStationId, pollingStationName,
+          active, createdAt, lastLogin,
+        },
+      });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
