@@ -2,7 +2,7 @@ import { API_BASE } from '@/app/lib/apiBase';
 import { useState, useEffect, useCallback } from 'react';
 import {
   Calendar, Plus, Edit2, Trash2, RefreshCw, Loader2,
-  AlertCircle, CheckCircle2, X, ChevronDown,
+  AlertCircle, CheckCircle2, X, ChevronDown, ImagePlus, Image as ImageIcon,
 } from 'lucide-react';
 import { getToken } from '../lib/api';
 
@@ -38,22 +38,50 @@ interface BOZEvent {
   venue: string; province: string; type: string; description: string;
   capacity?: number; status: 'upcoming' | 'past' | 'cancelled';
   featured: boolean; createdAt: string; updatedAt: string; createdBy: string;
+  hasPhoto?: boolean;
 }
+
+function eventPhotoUrl(id: string) { return `${BASE}/events/${id}/photo`; }
 
 const EVENT_TYPES = ['Conference','Rally','Forum','Summit','Symposium','Launch','Election Day','Meeting','Training','Other'];
 const STATUS_OPTS = ['upcoming','past','cancelled'] as const;
 const STATUS_COLORS: Record<string,string> = { upcoming:'bg-green-100 text-green-800', past:'bg-gray-100 text-gray-700', cancelled:'bg-red-100 text-red-700' };
 const INP = 'w-full px-3 py-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary';
 
-const EMPTY = { title:'', date:'', time:'', venue:'', province:'Lusaka Province', type:'Conference', description:'', capacity:undefined as number|undefined, status:'upcoming' as const, featured:false };
+const EMPTY = { title:'', date:'', time:'', venue:'', province:'Lusaka Province', type:'Conference', description:'', capacity:undefined as number|undefined, status:'upcoming' as const, featured:false, imageDataUrl: undefined as string|undefined };
 type FormData = typeof EMPTY;
 
-function EventForm({ initial, onSave, onCancel, saving }: { initial: FormData; onSave: (d: FormData) => Promise<void>; onCancel: () => void; saving: boolean }) {
+function EventForm({ initial, existingPhotoUrl, onSave, onCancel, saving }: { initial: FormData; existingPhotoUrl?: string; onSave: (d: FormData) => Promise<void>; onCancel: () => void; saving: boolean }) {
   const [form, setForm] = useState(initial);
+  const [preview, setPreview] = useState<string | undefined>(existingPhotoUrl);
   const set = (k: keyof FormData, v: unknown) => setForm(p => ({ ...p, [k]: v }));
+
+  function handleImagePick(file: File | null) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      set('imageDataUrl', dataUrl);
+      setPreview(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  }
+
   return (
     <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="sm:col-span-2">
+          <label className="block text-xs font-semibold text-muted-foreground mb-1">EVENT COVER PHOTO</label>
+          <div className="flex items-center gap-4">
+            <div className="w-28 h-20 rounded-lg overflow-hidden bg-muted flex items-center justify-center shrink-0 border border-border">
+              {preview ? <img src={preview} alt="" className="w-full h-full object-cover" /> : <ImageIcon className="w-6 h-6 text-muted-foreground/40" />}
+            </div>
+            <label className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg text-sm cursor-pointer hover:bg-muted transition-colors">
+              <ImagePlus className="w-4 h-4" /> {preview ? 'Change Photo' : 'Upload Photo'}
+              <input type="file" accept="image/*" className="hidden" onChange={e => handleImagePick(e.target.files?.[0] ?? null)} />
+            </label>
+          </div>
+        </div>
         <div className="sm:col-span-2">
           <label className="block text-xs font-semibold text-muted-foreground mb-1">EVENT TITLE *</label>
           <input required value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Copperbelt Grand Rally" className={INP} />
@@ -228,12 +256,16 @@ export function EventsManager() {
             <div key={ev.id}>
               {editingEvent?.id === ev.id ? (
                 <EventForm
-                  initial={{ title:ev.title, date:ev.date, time:ev.time, venue:ev.venue, province:ev.province, type:ev.type, description:ev.description, capacity:ev.capacity, status:ev.status, featured:ev.featured }}
+                  initial={{ title:ev.title, date:ev.date, time:ev.time, venue:ev.venue, province:ev.province, type:ev.type, description:ev.description, capacity:ev.capacity, status:ev.status, featured:ev.featured, imageDataUrl: undefined }}
+                  existingPhotoUrl={ev.hasPhoto ? eventPhotoUrl(ev.id) : undefined}
                   onSave={handleUpdate} onCancel={() => setEditingEvent(null)} saving={saving}
                 />
               ) : (
                 <div className="rounded-xl border border-border overflow-hidden hover:border-primary/30 transition-colors">
                   <div className="flex items-start gap-4 px-4 py-4">
+                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex items-center justify-center shrink-0 border border-border">
+                      {ev.hasPhoto ? <img src={eventPhotoUrl(ev.id)} alt="" className="w-full h-full object-cover" /> : <ImageIcon className="w-5 h-5 text-muted-foreground/30" />}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[ev.status] ?? ''}`}>{ev.status}</span>

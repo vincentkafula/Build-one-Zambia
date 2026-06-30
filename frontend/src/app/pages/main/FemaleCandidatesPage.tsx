@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Heart, Users, Leaf, ArrowRight, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router';
+import { candidatesApi, type BackendCandidate } from '../../lib/api';
 import chilesheKapwepwePhoto from '../../../imports/Chileshe.png';
 import mwituaMushibwePhoto from '../../../imports/image-26.png';
 import margaretMwanakatwePhoto from '../../../imports/image-27.png';
@@ -213,9 +214,36 @@ const ACTION_CARDS = [
   { icon: Leaf,  title: 'Join Volunteer',  desc: 'Join our team of volunteers and help make a positive impact in your community today.', path: '/contact' },
 ];
 
+function LiveCandidatePhoto({ id, name }: { id: string; name: string }) {
+  const [imgError, setImgError] = useState(false);
+  return (
+    <div className="w-full aspect-[4/5] overflow-hidden bg-gray-100">
+      {!imgError ? (
+        <img
+          src={candidatesApi.photoUrl(id)}
+          alt={name}
+          onError={() => setImgError(true)}
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center" style={{ color: '#d1d5db' }}>
+          <Users className="w-12 h-12" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function FemaleCandidatesPage() {
   const [featuredIdx, setFeaturedIdx] = useState(0);
   const [animating, setAnimating]     = useState(false);
+  const [liveCandidates, setLiveCandidates] = useState<BackendCandidate[]>([]);
+
+  useEffect(() => {
+    candidatesApi.list({ gender: 'female', active: true })
+      .then(res => setLiveCandidates(res.candidates))
+      .catch(() => setLiveCandidates([]));
+  }, []);
 
   const go = (next: number) => {
     if (animating) return;
@@ -427,6 +455,37 @@ export function FemaleCandidatesPage() {
           </div>
         </div>
       </section>
+
+      {/* Live candidates from Admin Panel */}
+      {liveCandidates.length > 0 && (
+        <section className="py-20 px-4" style={{ backgroundColor: '#fafafa' }}>
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-14">
+              <p className="text-xs tracking-widest mb-3" style={{ color: O, fontFamily: 'Oswald, sans-serif' }}>ADDITIONAL CANDIDATES</p>
+              <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', letterSpacing: '0.03em', color: NAVY }}>MORE FEMALE CANDIDATES</h2>
+              <div className="w-16 h-1 mx-auto mt-4 rounded-full" style={{ backgroundColor: O }} />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+              {liveCandidates.map(c => (
+                <div key={c.id} className="group flex flex-col items-center text-center rounded-2xl overflow-hidden"
+                  style={{ backgroundColor: '#fff', border: '1px solid #f0f0f0', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
+                  <LiveCandidatePhoto id={c.id} name={c.name} />
+                  <div className="px-6 pb-8 pt-5 w-full">
+                    {c.scopeName && (
+                      <span className="inline-block text-xs px-3 py-1 rounded-full mb-3" style={{ backgroundColor: 'rgba(232,98,26,0.1)', color: O, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
+                        {c.scopeName}
+                      </span>
+                    )}
+                    <h3 className="mb-1" style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem', letterSpacing: '0.04em', color: NAVY }}>{c.name}</h3>
+                    {c.title && <p className="text-xs mb-3" style={{ color: '#9ca3af' }}>{c.title}</p>}
+                    {c.bio && <p className="text-xs leading-relaxed" style={{ color: '#6b7280' }}>{c.bio.slice(0, 140)}{c.bio.length > 140 ? '…' : ''}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA */}
       <section className="py-16 px-4 text-center" style={{ background: `linear-gradient(135deg, ${O} 0%, ${R} 100%)` }}>

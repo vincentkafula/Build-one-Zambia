@@ -44,6 +44,14 @@ export function updateMemberStatus(id, status, note) {
   return updated;
 }
 
+export function updateMember(id, patch) {
+  const m = getMember(id);
+  if (!m) return null;
+  const updated = { ...m, ...patch, updatedAt: new Date().toISOString() };
+  kv.set(`boz:reg:member:${id}`, updated);
+  return updated;
+}
+
 export function getMemberStats() {
   const all = getMemberIndex().map(id => kv.get(`boz:reg:member:${id}`)).filter(Boolean);
   const byStatus = {};

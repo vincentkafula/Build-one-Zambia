@@ -190,15 +190,6 @@ app.get(`${BASE}/auth/users`,
   (req, res) => res.json({ users: auth.listUsers() })
 );
 
-app.post(`${BASE}/security/change-password`, auth.requireAuth, async (req, res) => {
-  try {
-    await auth.changePassword(req.user.username, req.body.newPassword);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
 // ─── Leadership ──────────────────────────────────────────────────────────────
 
 // Seed on first request if needed
@@ -883,6 +874,15 @@ app.get(`${BASE}/membership/members`,
   (req, res) => res.json({ members: registrations.listMembers() })
 );
 
+app.get(`${BASE}/membership/members/:id`,
+  auth.requireAuth, auth.requireRole('admin', 'super_admin'),
+  (req, res) => {
+    const m = registrations.getMember(req.params.id);
+    if (!m) return res.status(404).json({ error: 'Member not found' });
+    res.json({ member: m });
+  }
+);
+
 app.get(`${BASE}/membership/stats`,
   auth.requireAuth, auth.requireRole('admin', 'super_admin'),
   (req, res) => res.json(registrations.getMemberStats())
@@ -891,7 +891,7 @@ app.get(`${BASE}/membership/stats`,
 app.patch(`${BASE}/membership/members/:id`,
   auth.requireAuth, auth.requireRole('admin', 'super_admin'),
   (req, res) => {
-    const m = registrations.updateMemberStatus(req.params.id, req.body.status, req.body.note);
+    const m = registrations.updateMember(req.params.id, req.body);
     if (!m) return res.status(404).json({ error: 'Not found' });
     res.json({ member: m });
   }
@@ -1014,7 +1014,6 @@ app.get(`${BASE}/results/heatmap/:electionType`, (req, res) => res.json({ heatma
 app.get(`${BASE}/results/trend/:electionType`, (req, res) => res.json({ trend: results.getTrend(req.params.electionType) }));
 app.get(`${BASE}/results/live-feed`, (req, res) => res.json({ feed: results.getLiveFeed(parseInt(req.query.limit || '20', 10), req.query.electionType) }));
 app.get(`${BASE}/results/compare/:electionType/:levelType/:levelId`, auth.requireAuth, (req, res) => res.json({ comparison: { electionType: req.params.electionType, levelType: req.params.levelType, levelId: req.params.levelId, boz: results.getLevel(req.params.electionType, req.params.levelType, decodeURIComponent(req.params.levelId)), ecz: null, agreementPercent: 100, flagged: false } }));
-app.post(`${BASE}/results/cache/invalidate`, auth.requireAuth, (req, res) => res.json({ success: true }));
 
 // ─── ECZ Comparisons ─────────────────────────────────────────────────────────
 // In-memory store for ECZ figures entered by managers
@@ -1200,6 +1199,420 @@ app.get(`${BASE}/data-entry/audit-log`, auth.requireAuth, (req, res) => {
   res.json({ entries: dataEntryStore.auditLog.slice(-limit), count: dataEntryStore.auditLog.length });
 });
 
+
+// ─── Events ───────────────────────────────────────────────────────────────────
+
+const eventsStore = { events: kv.get('events') || [] };
+function saveEvents() { kv.set('events', eventsStore.events); }
+
+app.get(`${BASE}/events`, (req, res) => {
+  let evts = [...eventsStore.events];
+  if (req.query.status) evts = evts.filter(e => e.status === req.query.status);
+  res.json({ events: evts, count: evts.length });
+});
+
+app.get(`${BASE}/events/:id`, (req, res) => {
+  const evt = eventsStore.events.find(e => e.id === req.params.id);
+  if (!evt) return res.status(404).json({ error: 'Event not found' });
+  res.json({ event: evt });
+});
+
+app.get(`${BASE}/events/:id/photo`, (req, res) => {
+  const photo = kv.get(`events:photo:${req.params.id}`);
+  if (!photo) return res.status(404).json({ error: 'No photo' });
+  const [meta, b64] = photo.split(',');
+  const mime = meta.replace('data:', '').replace(';base64', '');
+  res.setHeader('Content-Type', mime);
+  res.send(Buffer.from(b64, 'base64'));
+});
+
+app.post(`${BASE}/events`, auth.requireAuth, (req, res) => {
+  const { imageDataUrl, ...rest } = req.body;
+  const id = `evt-${Date.now()}`;
+  const evt = { ...rest, id, createdAt: new Date().toISOString(), status: rest.status || 'upcoming', hasPhoto: !!imageDataUrl };
+  if (imageDataUrl) kv.set(`events:photo:${id}`, imageDataUrl);
+  eventsStore.events.push(evt);
+  saveEvents();
+  res.json({ event: evt });
+});
+
+app.patch(`${BASE}/events/:id`, auth.requireAuth, (req, res) => {
+  const idx = eventsStore.events.findIndex(e => e.id === req.params.id);
+  if (idx < 0) return res.status(404).json({ error: 'Event not found' });
+  const { imageDataUrl, ...rest } = req.body;
+  if (imageDataUrl) kv.set(`events:photo:${req.params.id}`, imageDataUrl);
+  eventsStore.events[idx] = { ...eventsStore.events[idx], ...rest, ...(imageDataUrl ? { hasPhoto: true } : {}), updatedAt: new Date().toISOString() };
+  saveEvents();
+  res.json({ event: eventsStore.events[idx] });
+});
+
+app.delete(`${BASE}/events/:id`, auth.requireAuth, (req, res) => {
+  eventsStore.events = eventsStore.events.filter(e => e.id !== req.params.id);
+  kv.del(`events:photo:${req.params.id}`);
+  saveEvents();
+  res.json({ success: true });
+});
+
+// ─── Registrations ────────────────────────────────────────────────────────────
+
+const regStore = {
+  member:      kv.get('reg:member')      || [],
+  cooperative: kv.get('reg:cooperative') || [],
+  agent:       kv.get('reg:agent')       || [],
+  internship:  kv.get('reg:internship')  || [],
+};
+function saveReg(type) { kv.set(`reg:${type}`, regStore[type]); }
+
+function regRoutes(type, noun) {
+  app.post(`${BASE}/registrations/${type}`, (req, res) => {
+    const reg = { ...req.body, id: `${type}-${Date.now()}`, status: 'pending', submittedAt: new Date().toISOString() };
+    regStore[type].push(reg);
+    saveReg(type);
+    res.json({ success: true, message: `${noun} registration submitted`, registration: reg });
+  });
+
+  app.get(`${BASE}/registrations/${type}`, auth.requireAuth, (req, res) => {
+    let regs = [...regStore[type]];
+    if (req.query.status) regs = regs.filter(r => r.status === req.query.status);
+    res.json({ registrations: regs, count: regs.length });
+  });
+
+  app.patch(`${BASE}/registrations/${type}/:id/status`, auth.requireAuth, (req, res) => {
+    const idx = regStore[type].findIndex(r => r.id === req.params.id);
+    if (idx < 0) return res.status(404).json({ error: 'Registration not found' });
+    regStore[type][idx] = { ...regStore[type][idx], status: req.body.status, notes: req.body.notes, reviewedAt: new Date().toISOString() };
+    saveReg(type);
+    res.json({ success: true, registration: regStore[type][idx] });
+  });
+}
+
+regRoutes('member',      'Member');
+regRoutes('cooperative', 'Cooperative');
+regRoutes('agent',       'Agent');
+regRoutes('internship',  'Internship');
+
+app.get(`${BASE}/registrations/stats`, auth.requireAuth, (req, res) => {
+  const stats = {};
+  for (const [type, regs] of Object.entries(regStore)) {
+    stats[type] = { total: regs.length, pending: regs.filter(r => r.status === 'pending').length, approved: regs.filter(r => r.status === 'approved').length, rejected: regs.filter(r => r.status === 'rejected').length };
+  }
+  res.json({ success: true, stats });
+});
+
+// ─── Donations ────────────────────────────────────────────────────────────────
+
+const donationStore = { donations: kv.get('donations') || [] };
+function saveDonations() { kv.set('donations', donationStore.donations); }
+
+app.post(`${BASE}/donations`, (req, res) => {
+  const donation = { ...req.body, id: `don-${Date.now()}`, status: 'pending', createdAt: new Date().toISOString() };
+  donationStore.donations.push(donation);
+  saveDonations();
+  res.json({ success: true, message: 'Donation initiated', donation });
+});
+
+app.get(`${BASE}/donations`, auth.requireAuth, (req, res) => {
+  const donations = donationStore.donations;
+  const total = donations.filter(d => d.status === 'completed').reduce((s, d) => s + (d.amount || 0), 0);
+  const byMethod = {};
+  donations.forEach(d => { if (d.method) byMethod[d.method] = (byMethod[d.method] || 0) + 1; });
+  res.json({ donations, count: donations.length, stats: { total, count: donations.length, byMethod } });
+});
+
+app.patch(`${BASE}/donations/:id/status`, auth.requireAuth, (req, res) => {
+  const idx = donationStore.donations.findIndex(d => d.id === req.params.id);
+  if (idx < 0) return res.status(404).json({ error: 'Donation not found' });
+  donationStore.donations[idx] = { ...donationStore.donations[idx], status: req.body.status, updatedAt: new Date().toISOString() };
+  saveDonations();
+  res.json({ success: true, donation: donationStore.donations[idx] });
+});
+
+// ─── Contact ──────────────────────────────────────────────────────────────────
+
+const contactStore = { messages: kv.get('contact') || [] };
+function saveContact() { kv.set('contact', contactStore.messages); }
+
+app.post(`${BASE}/contact`, (req, res) => {
+  const msg = { ...req.body, id: `msg-${Date.now()}`, read: false, createdAt: new Date().toISOString() };
+  contactStore.messages.push(msg);
+  saveContact();
+  res.json({ success: true, message: 'Message received' });
+});
+
+app.get(`${BASE}/contact`, auth.requireAuth, (req, res) => {
+  const messages = contactStore.messages;
+  res.json({ messages, count: messages.length, unread: messages.filter(m => !m.read).length });
+});
+
+app.patch(`${BASE}/contact/:id/read`, auth.requireAuth, (req, res) => {
+  const idx = contactStore.messages.findIndex(m => m.id === req.params.id);
+  if (idx < 0) return res.status(404).json({ error: 'Message not found' });
+  contactStore.messages[idx] = { ...contactStore.messages[idx], read: true };
+  saveContact();
+  res.json({ success: true });
+});
+
+// ─── Membership — adoption & order linking (extends the canonical alias block above) ──
+
+app.post(`${BASE}/membership/members/:id/grant-adoption`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => {
+  const {
+    grantedByTitle, electionPosition, electionYear,
+    adoptionProvince, adoptionDistrict, adoptionConstituency, adoptionWard, reason,
+  } = req.body;
+  const certNumber = `BOZ-ADOPT-${electionYear || new Date().getFullYear()}-${req.params.id.slice(-6).toUpperCase()}`;
+  const member = registrations.updateMember(req.params.id, {
+    adoptionGranted: true,
+    adoptionGrantedAt: new Date().toISOString(),
+    adoptionGrantedBy: req.user?.username,
+    adoptionGrantedByTitle: grantedByTitle,
+    adoptionReason: reason,
+    adoptionCertNumber: certNumber,
+    electionPosition, electionYear,
+    adoptionProvince, adoptionDistrict, adoptionConstituency, adoptionWard,
+  });
+  if (!member) return res.status(404).json({ error: 'Member not found' });
+  res.json({ success: true, member });
+});
+
+app.post(`${BASE}/membership/members/:id/revoke-adoption`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => {
+  const member = registrations.updateMember(req.params.id, {
+    adoptionGranted: false,
+    adoptionRevokedAt: new Date().toISOString(),
+    adoptionRevokedBy: req.user?.username,
+  });
+  if (!member) return res.status(404).json({ error: 'Member not found' });
+  res.json({ success: true, member });
+});
+
+app.post(`${BASE}/membership/members/:id/link-order`, auth.requireAuth, (req, res) => {
+  const member = registrations.updateMember(req.params.id, { orderId: req.body.orderId });
+  if (!member) return res.status(404).json({ error: 'Member not found' });
+  res.json({ success: true, member });
+});
+
+app.get(`${BASE}/membership/certificate/membership`, auth.requireAuth, (req, res) => {
+  res.json({ certificateUrl: null, message: 'Certificate generation not yet configured' });
+});
+
+app.get(`${BASE}/membership/certificate/adoption`, auth.requireAuth, (req, res) => {
+  res.json({ certificateUrl: null, message: 'Certificate generation not yet configured' });
+});
+
+app.get(`${BASE}/registrations/validate-membership`, auth.requireAuth, (req, res) => {
+  const m = registrations.getMemberByMembershipNumber(req.query.number);
+  if (!m) return res.json({ valid: false, error: 'No member found with that number' });
+  res.json({ valid: true, fullName: `${m.firstName || ''} ${m.lastName || ''}`.trim(), membershipNumber: m.membershipNumber, status: m.status });
+});
+
+app.post(`${BASE}/registrations/validate-memberships`, auth.requireAuth, (req, res) => {
+  const { numbers = [] } = req.body;
+  const results = {};
+  let invalidCount = 0;
+  const invalidNumbers = [];
+  for (const num of numbers) {
+    const m = registrations.getMemberByMembershipNumber(num);
+    if (m) {
+      results[num] = { valid: true, fullName: `${m.firstName || ''} ${m.lastName || ''}`.trim() };
+    } else {
+      results[num] = { valid: false, error: 'Not found' };
+      invalidCount++;
+      invalidNumbers.push(num);
+    }
+  }
+  res.json({ results, invalidCount, invalidNumbers });
+});
+
+
+// ─── Candidates Seed ─────────────────────────────────────────────────────────
+app.post(`${BASE}/candidates/seed`, auth.requireAuth, auth.requireRole('super_admin','admin'), async (req, res) => {
+  try {
+    const result = await candidates.seedDefault();
+    res.json({ success: true, seeded: result });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── Documents Stats ─────────────────────────────────────────────────────────
+app.get(`${BASE}/documents/stats`, auth.requireAuth, (req, res) => {
+  try {
+    const list = docs.list ? docs.list() : [];
+    res.json({ total: list.length, byType: {} });
+  } catch(e) { res.json({ total: 0, byType: {} }); }
+});
+
+// ─── Gateway Config ──────────────────────────────────────────────────────────
+app.get(`${BASE}/gateway/config`, (req, res) => {
+  res.json({
+    config: {
+      flutterwaveEnabled: !!process.env.FLUTTERWAVE_SECRET_KEY,
+      resendEnabled:      !!process.env.RESEND_API_KEY,
+      twilioEnabled:      !!process.env.TWILIO_ACCOUNT_SID,
+      publicKey:          process.env.FLUTTERWAVE_PUBLIC_KEY || null,
+      siteUrl:            process.env.SITE_URL || '',
+    }
+  });
+});
+
+// ─── Security ────────────────────────────────────────────────────────────────
+const secStore = { blockedIPs: kv.get('security:blocked-ips') || [], sessions: kv.get('security:sessions') || [] };
+function saveSec() { kv.set('security:blocked-ips', secStore.blockedIPs); kv.set('security:sessions', secStore.sessions); }
+
+app.get(`${BASE}/security/stats`, auth.requireAuth, auth.requireRole('super_admin','admin'), (req, res) => {
+  res.json({ blockedIPs: secStore.blockedIPs.length, activeSessions: secStore.sessions.length, failedLogins: kv.get('security:failed-logins') || 0 });
+});
+
+app.get(`${BASE}/security/sessions`, auth.requireAuth, auth.requireRole('super_admin','admin'), (req, res) => {
+  res.json({ sessions: secStore.sessions });
+});
+
+app.delete(`${BASE}/security/sessions/all`, auth.requireAuth, auth.requireRole('super_admin','admin'), (req, res) => {
+  secStore.sessions = [];
+  saveSec();
+  res.json({ success: true });
+});
+
+app.get(`${BASE}/security/blocked-ips`, auth.requireAuth, auth.requireRole('super_admin','admin'), (req, res) => {
+  res.json({ blockedIPs: secStore.blockedIPs });
+});
+
+app.post(`${BASE}/security/block-ip`, auth.requireAuth, auth.requireRole('super_admin','admin'), (req, res) => {
+  const { ip, reason } = req.body;
+  if (!ip) return res.status(400).json({ error: 'IP required' });
+  if (!secStore.blockedIPs.find(b => b.ip === ip)) {
+    secStore.blockedIPs.push({ ip, reason, blockedAt: new Date().toISOString(), blockedBy: req.user?.username });
+    saveSec();
+  }
+  res.json({ success: true });
+});
+
+app.delete(`${BASE}/security/blocked-ips/:ip`, auth.requireAuth, auth.requireRole('super_admin','admin'), (req, res) => {
+  secStore.blockedIPs = secStore.blockedIPs.filter(b => b.ip !== req.params.ip);
+  saveSec();
+  res.json({ success: true });
+});
+
+app.post(`${BASE}/security/change-password`, auth.requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Both passwords required' });
+    const storedHash = kv.get(`password:${req.user.username}`);
+    const verified = await auth.verifyPassword(currentPassword, storedHash);
+    if (!verified) return res.status(401).json({ error: 'Current password incorrect' });
+    await auth.changePassword(req.user.username, newPassword);
+    res.json({ success: true, message: 'Password changed successfully' });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post(`${BASE}/security/deactivate-user`, auth.requireAuth, auth.requireRole('super_admin','admin'), async (req, res) => {
+  try {
+    const { username } = req.body;
+    await auth.updateUser(auth.getUser(username)?.id, { active: false });
+    res.json({ success: true });
+  } catch(e) { res.status(400).json({ error: e.message }); }
+});
+
+app.post(`${BASE}/security/unlock-account`, auth.requireAuth, auth.requireRole('super_admin','admin'), async (req, res) => {
+  try {
+    const { username } = req.body;
+    await auth.updateUser(auth.getUser(username)?.id, { active: true, lockedUntil: null });
+    res.json({ success: true });
+  } catch(e) { res.status(400).json({ error: e.message }); }
+});
+
+// ─── Voter Roll Verify ───────────────────────────────────────────────────────
+app.post(`${BASE}/voter-roll/verify`, (req, res) => {
+  const { nrc, name } = req.body;
+  const roll = kv.get('voter-roll:data') || [];
+  const voter = roll.find(v => v.nrc === nrc || (name && v.name?.toLowerCase().includes(name.toLowerCase())));
+  res.json({ found: !!voter, voter: voter || null });
+});
+
+// ─── Chambers ────────────────────────────────────────────────────────────────
+const chamberStore = { chambers: kv.get('chambers') || [] };
+function saveChambers() { kv.set('chambers', chamberStore.chambers); }
+
+app.get(`${BASE}/chambers`, (req, res) => {
+  res.json({ chambers: chamberStore.chambers, count: chamberStore.chambers.length });
+});
+
+app.get(`${BASE}/chambers/stats`, auth.requireAuth, (req, res) => {
+  res.json({ total: chamberStore.chambers.length, active: chamberStore.chambers.filter(c => c.active).length });
+});
+
+app.post(`${BASE}/chambers`, auth.requireAuth, (req, res) => {
+  const chamber = { ...req.body, id: `ch-${Date.now()}`, createdAt: new Date().toISOString(), active: true };
+  chamberStore.chambers.push(chamber);
+  saveChambers();
+  res.json({ chamber });
+});
+
+app.patch(`${BASE}/chambers/:id`, auth.requireAuth, (req, res) => {
+  const idx = chamberStore.chambers.findIndex(c => c.id === req.params.id);
+  if (idx < 0) return res.status(404).json({ error: 'Chamber not found' });
+  chamberStore.chambers[idx] = { ...chamberStore.chambers[idx], ...req.body, updatedAt: new Date().toISOString() };
+  saveChambers();
+  res.json({ chamber: chamberStore.chambers[idx] });
+});
+
+app.delete(`${BASE}/chambers/:id`, auth.requireAuth, (req, res) => {
+  chamberStore.chambers = chamberStore.chambers.filter(c => c.id !== req.params.id);
+  saveChambers();
+  res.json({ success: true });
+});
+
+app.get(`${BASE}/chambers/amendments`, (req, res) => {
+  res.json({ amendments: kv.get('chambers:amendments') || [] });
+});
+
+// ─── Email Test ───────────────────────────────────────────────────────────────
+app.post(`${BASE}/email/test`, auth.requireAuth, auth.requireRole('super_admin','admin'), async (req, res) => {
+  try {
+    if (!process.env.RESEND_API_KEY) return res.status(400).json({ error: 'RESEND_API_KEY not configured', configured: false });
+    const { to } = req.body;
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: process.env.EMAIL_FROM_ADDRESS || 'no-reply@bozplans.org', to: to || process.env.ADMIN_EMAIL, subject: 'BOZ Email Test', html: '<p>Email service is working correctly.</p>' })
+    });
+    const data = await r.json();
+    if (r.ok) res.json({ success: true, message: 'Test email sent', id: data.id });
+    else res.status(400).json({ error: data.message || 'Email send failed', configured: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── Results Cache Invalidate ─────────────────────────────────────────────────
+app.post(`${BASE}/results/cache/invalidate`, auth.requireAuth, auth.requireRole('super_admin','admin'), (req, res) => {
+  // Clear any cached results
+  const keys = ['results:cache:presidential','results:cache:mp','results:cache:mayoral','results:cache:councillor'];
+  keys.forEach(k => kv.del ? kv.del(k) : null);
+  res.json({ success: true, message: 'Results cache invalidated', clearedKeys: keys.length });
+});
+
+// ─── OTP ─────────────────────────────────────────────────────────────────────
+const otpStore = {};
+app.post(`${BASE}/otp/send`, async (req, res) => {
+  try {
+    const { phone, email } = req.body;
+    if (!phone && !email) return res.status(400).json({ error: 'Phone or email required' });
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const key = phone || email;
+    otpStore[key] = { otp, expiresAt: Date.now() + 10 * 60 * 1000 };
+    // TODO: Send via Twilio/Resend when keys are configured
+    const sent = !!(process.env.TWILIO_ACCOUNT_SID || process.env.RESEND_API_KEY);
+    console.log(`OTP for ${key}: ${otp}`); // Log for debugging
+    res.json({ success: true, sent, message: sent ? 'OTP sent' : 'OTP generated (SMS/Email not configured)', ...(process.env.NODE_ENV !== 'production' ? { otp } : {}) });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post(`${BASE}/otp/verify`, (req, res) => {
+  const { phone, email, otp } = req.body;
+  const key = phone || email;
+  const stored = otpStore[key];
+  if (!stored) return res.status(400).json({ error: 'No OTP found. Request a new one.' });
+  if (Date.now() > stored.expiresAt) { delete otpStore[key]; return res.status(400).json({ error: 'OTP expired' }); }
+  if (stored.otp !== otp) return res.status(400).json({ error: 'Invalid OTP' });
+  delete otpStore[key];
+  res.json({ success: true, verified: true });
+});
 
 // ─── 404 catch-all ───────────────────────────────────────────────────────────
 

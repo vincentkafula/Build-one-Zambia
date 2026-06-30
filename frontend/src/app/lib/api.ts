@@ -113,6 +113,7 @@ export const candidatesApi = {
     electionType?: CandidateElectionType;
     scopeId?: string;
     party?: string;
+    gender?: 'male' | 'female' | 'other';
     active?: boolean;
     q?: string;
     photos?: boolean;
@@ -121,6 +122,7 @@ export const candidatesApi = {
     if (filters?.electionType) qs.set('electionType', filters.electionType);
     if (filters?.scopeId)      qs.set('scopeId', filters.scopeId);
     if (filters?.party)        qs.set('party', filters.party);
+    if (filters?.gender)       qs.set('gender', filters.gender);
     if (filters?.active !== undefined) qs.set('active', String(filters.active));
     if (filters?.q)            qs.set('q', filters.q);
     if (filters?.photos)       qs.set('photos', 'true');

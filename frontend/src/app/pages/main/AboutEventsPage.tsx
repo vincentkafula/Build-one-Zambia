@@ -9,7 +9,10 @@ interface BackendEvent {
   id: string; title: string; date: string; time: string;
   venue: string; province: string; type: string; description: string;
   capacity?: number; status: 'upcoming' | 'past' | 'cancelled'; featured: boolean;
+  hasPhoto?: boolean;
 }
+
+function eventPhotoUrl(id: string) { return `${BACKEND}/events/${id}/photo`; }
 
 const O    = '#dc2626';
 const GREEN = '#007A30';
@@ -227,6 +230,11 @@ export function AboutEventsPage() {
 
                 <div className="p-6 sm:p-8">
                   <div className="flex flex-col sm:flex-row sm:items-start gap-5">
+                    {ev.hasPhoto && (
+                      <div className="shrink-0 w-full sm:w-28 h-28 rounded-xl overflow-hidden order-first sm:order-none">
+                        <img src={eventPhotoUrl(ev.id)} alt={ev.title} className="w-full h-full object-cover" />
+                      </div>
+                    )}
                     {/* Date block */}
                     <div
                       className="shrink-0 flex flex-col items-center justify-center rounded-xl text-white"

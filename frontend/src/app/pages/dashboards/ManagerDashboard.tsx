@@ -5,7 +5,7 @@ import {
   Edit2, Save, TrendingUp, Users, CheckCircle, Clock, ExternalLink, Radio, FileText, Activity, Scale, ShoppingBag, Newspaper, Crown, Building2, Mail, Award, Vote, ScanLine, Server, Shield, Calendar, User, Upload
 } from 'lucide-react';
 import { DashboardShell, DashCard, StatCard } from '../../components/DashboardShell';
-import { SuperAdminGate } from '../../components/SuperAdminGate';
+import { SuperAdminGate, getSuperAdminToken } from '../../components/SuperAdminGate';
 import { provinces } from '../../data/mockData';
 
 // Lazy-load all heavy components to avoid circular dependency at build time
@@ -59,16 +59,10 @@ const NAV: { group: string; items: { key: SectionKey; label: string; icon: React
     items: [
       { key: 'overview',       label: 'Overview',       icon: <LayoutDashboard size={16} /> },
       { key: 'notice-board',   label: 'Notice Board',   icon: <Activity size={16} /> },
-      { key: 'system-setup',   label: 'System Setup',   icon: <Server size={16} /> },
-      { key: 'election-users', label: 'Election Users', icon: <Users size={16} /> },
+      { key: 'admin',          label: 'Admin Panel',    icon: <ShieldCheck size={16} /> },
     ],
   },
-  {
-    group: 'ELECTION OPERATIONS',
-    items: [
-      { key: 'admin',             label: 'Admin Panel',             icon: <ShieldCheck size={16} /> },
-    ],
-  },
+
   {
     group: 'PROFILE',
     items: [
@@ -272,7 +266,25 @@ export default function ManagerDashboard() {
   const totalConst      = provinceStats.reduce((s, p) => s + p.constituencies, 0);
   const totalDistricts  = provinceStats.reduce((s, p) => s + p.districts, 0);
 
+  const ADMIN_ONLY_SECTIONS = new Set<SectionKey>([
+    'system-setup', 'election-users', 'candidates', 'shop', 'news', 'leadership',
+    'membership-admin', 'registrations', 'press-statements', 'email', 'adoption-certs',
+    'chamber-amendments', 'security-centre', 'live-streams', 'documents', 'events',
+    'voter-roll-upload',
+  ]);
+
   function renderSection() {
+    if (ADMIN_ONLY_SECTIONS.has(active) && !getSuperAdminToken()) {
+      return (
+        <SuperAdminGate>
+          <div className="flex items-center justify-center py-10">
+            <button onClick={() => setActive('admin')} className="text-sm" style={{ color: A, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
+              &larr; BACK TO ADMIN PANEL
+            </button>
+          </div>
+        </SuperAdminGate>
+      );
+    }
     switch (active) {
       case 'overview':
         return (
