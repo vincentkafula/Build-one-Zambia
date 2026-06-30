@@ -50,6 +50,7 @@ const ChamberDashboard     = lazy(() => import('./pages/dashboards/ChamberDashbo
 const InternshipDashboard  = lazy(() => import('./pages/dashboards/InternshipDashboard'));
 const ElectionAgentDashboard = lazy(() => import('./pages/dashboards/ElectionAgentDashboard'));
 const ManagerDashboard     = lazy(() => import('./pages/dashboards/ManagerDashboard'));
+const ElectionDashboard    = lazy(() => import('./pages/dashboards/ElectionDashboard'));
 
 // ── Election results portal pages ────────────────────────────────────────────
 const HomePage         = lazy(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
@@ -161,6 +162,7 @@ function AppRoutes() {
         <Route path="/dashboard/internship" element={<InternshipDashboard />} />
         <Route path="/dashboard/agent"      element={<ElectionAgentDashboard />} />
         <Route path="/dashboard/manager"    element={<ManagerDashboard />} />
+        <Route path="/dashboard/election"   element={<ElectionDashboard />} />
 
         <Route
           path="/admin/*"
