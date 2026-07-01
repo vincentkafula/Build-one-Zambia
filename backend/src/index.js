@@ -1614,6 +1614,22 @@ app.post(`${BASE}/otp/verify`, (req, res) => {
   res.json({ success: true, verified: true });
 });
 
+
+// ─── Email config endpoint ────────────────────────────────────────────────────
+app.get(`${BASE}/email/config`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  const key = process.env.RESEND_API_KEY || '';
+  res.json({
+    connected: !!key,
+    keyPreview: key ? `re_...${key.slice(-6)}` : null,
+    fromName: process.env.EMAIL_FROM_NAME || 'Build One Zambia',
+    fromEmail: process.env.EMAIL_FROM_ADDRESS || 'noreply@bozplans.org',
+    adminEmail: process.env.ADMIN_EMAIL || '',
+    siteUrl: process.env.SITE_URL || 'https://www.bozplans.org',
+    provider: 'Resend',
+    configured: !!key,
+  });
+});
+
 // ─── 404 catch-all ───────────────────────────────────────────────────────────
 
 app.use((req, res) => {

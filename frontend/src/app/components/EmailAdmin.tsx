@@ -125,7 +125,7 @@ export function EmailAdmin() {
                 <p className="text-sm text-muted-foreground mt-1">
                   {config.connected
                     ? 'Your Resend API key is configured and emails are active.'
-                    : 'Set RESEND_API_KEY in your Supabase Edge Function secrets to enable emails.'}
+                    : 'Set RESEND_API_KEY in your Railway backend service Variables to enable emails.'}
                 </p>
                 {config.keyPreview && (
                   <div className="mt-3 flex items-center gap-2 bg-background/60 rounded-lg px-3 py-2 w-fit">
@@ -145,8 +145,8 @@ export function EmailAdmin() {
                 <div>
                   <p className="font-semibold text-amber-800 mb-1">How to connect Resend</p>
                   <ol className="text-sm text-amber-700 space-y-1 list-decimal list-inside">
-                    <li>Go to <strong>Supabase Dashboard → Edge Functions → Secrets</strong></li>
-                    <li>Add a new secret: <code className="bg-amber-100 px-1 rounded">RESEND_API_KEY</code> with your Resend API key</li>
+                    <li>Go to <strong>Railway Dashboard → Backend service → Variables</strong></li>
+                    <li>Add variable: <code className="bg-amber-100 px-1 rounded">RESEND_API_KEY</code> = your Resend API key</li>
                     <li>Optionally add <code className="bg-amber-100 px-1 rounded">EMAIL_FROM_ADDRESS</code> (your verified sender)</li>
                     <li>Redeploy the edge function</li>
                   </ol>
@@ -175,7 +175,7 @@ export function EmailAdmin() {
               ))}
             </div>
             <p className="text-xs text-muted-foreground mt-3">
-              To change these values, set <code className="bg-muted px-1 rounded">EMAIL_FROM_NAME</code>, <code className="bg-muted px-1 rounded">EMAIL_FROM_ADDRESS</code>, <code className="bg-muted px-1 rounded">ADMIN_EMAIL</code>, or <code className="bg-muted px-1 rounded">SITE_URL</code> in Supabase Edge Function secrets.
+              To change these values, set <code className="bg-muted px-1 rounded">EMAIL_FROM_NAME</code>, <code className="bg-muted px-1 rounded">EMAIL_FROM_ADDRESS</code>, <code className="bg-muted px-1 rounded">ADMIN_EMAIL</code>, or <code className="bg-muted px-1 rounded">SITE_URL</code> in your Railway Backend service Variables.
             </p>
           </div>
 

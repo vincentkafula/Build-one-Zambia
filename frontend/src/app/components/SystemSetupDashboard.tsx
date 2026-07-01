@@ -170,7 +170,7 @@ export function SystemSetupDashboard() {
       description: 'Required for member credentials, OTP, and order confirmations.',
       status: 'idle',
       manual: true,
-      detail: 'Set RESEND_API_KEY and EMAIL_FROM_ADDRESS in Supabase Secrets, then verify the sending domain.',
+      detail: 'Set RESEND_API_KEY and EMAIL_FROM_ADDRESS in Railway Backend Variables, then verify your sending domain in Resend.',
     },
     {
       id: 'sms',
@@ -188,7 +188,7 @@ export function SystemSetupDashboard() {
       description: 'Required for the BOZ shop and donation pages.',
       status: 'idle',
       manual: true,
-      detail: 'Set FLUTTERWAVE_SECRET_KEY, FLUTTERWAVE_PUBLIC_KEY, and FLUTTERWAVE_WEBHOOK_HASH in Supabase Secrets.',
+      detail: 'Set FLUTTERWAVE_SECRET_KEY, FLUTTERWAVE_PUBLIC_KEY, and FLUTTERWAVE_WEBHOOK_HASH in Railway Backend Variables.',
     },
   ];
 
@@ -293,7 +293,7 @@ export function SystemSetupDashboard() {
                   {/* Step-specific instructions */}
                   {step.id === 'database' && (
                     <div>
-                      <p className="text-xs font-semibold text-muted-foreground mb-1">Run in Supabase SQL Editor:</p>
+                      <p className="text-xs font-semibold text-muted-foreground mb-1">Run in your database console:</p>
                       <CodeBlock code={`# No database setup needed.
 # The backend uses a JSON file database on Railway.
 # It initialises automatically on first start.`} />
@@ -314,7 +314,7 @@ Authorization: Bearer <your-token>
 
                   {step.id === 'email' && (
                     <div>
-                      <p className="text-xs font-semibold text-muted-foreground mb-1">Set via Supabase CLI:</p>
+                      <p className="text-xs font-semibold text-muted-foreground mb-1">Set in Railway Backend Variables:</p>
                       <p className="text-xs text-muted-foreground">Set these in Railway → backend service → Variables tab.</p>
                     </div>
                   )}
@@ -347,7 +347,7 @@ Authorization: Bearer <your-token>
 
                   {step.id === 'payments' && (
                     <div>
-                      <p className="text-xs font-semibold text-muted-foreground mb-1">Set via Supabase CLI:</p>
+                      <p className="text-xs font-semibold text-muted-foreground mb-1">Set in Railway Backend Variables:</p>
                       <p className="text-xs text-muted-foreground">Set these in Railway → backend service → Variables tab.</p>
                       <p className="text-xs text-muted-foreground mt-2">
                         Webhook URL to register in Flutterwave dashboard:{' '}
