@@ -1414,3 +1414,5 @@ function HelpTab() {
     </div>
   );
 }
+
+export { BallotScanSystem as default };

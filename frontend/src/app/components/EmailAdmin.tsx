@@ -240,3 +240,5 @@ export function EmailAdmin() {
     </div>
   );
 }
+
+export { EmailAdmin as default };

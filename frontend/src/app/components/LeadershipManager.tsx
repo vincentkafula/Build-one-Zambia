@@ -526,3 +526,5 @@ export function LeadershipManager() {
     </div>
   );
 }
+
+export { LeadershipManager as default };

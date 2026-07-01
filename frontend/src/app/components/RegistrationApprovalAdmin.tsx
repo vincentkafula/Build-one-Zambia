@@ -689,3 +689,5 @@ export function RegistrationApprovalAdmin() {
     </div>
   );
 }
+
+export { RegistrationApprovalAdmin as default };

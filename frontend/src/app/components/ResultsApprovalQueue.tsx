@@ -352,3 +352,5 @@ export function ResultsApprovalQueue() {
     </div>
   );
 }
+
+export { ResultsApprovalQueue as default };

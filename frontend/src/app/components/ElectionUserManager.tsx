@@ -614,3 +614,5 @@ export function ElectionUserManager() {
     </div>
   );
 }
+
+export { ElectionUserManager as default };

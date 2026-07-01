@@ -905,3 +905,5 @@ export function CandidateManager() {
     </div>
   );
 }
+
+export { CandidateManager as default };

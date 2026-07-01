@@ -514,3 +514,5 @@ export function VoterVerification({ pollingStationId, pollingStationName, agentN
     </div>
   );
 }
+
+export { VoterVerification as default };

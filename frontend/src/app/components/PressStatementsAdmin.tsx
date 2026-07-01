@@ -510,3 +510,5 @@ export function PressStatementsAdmin() {
     </div>
   );
 }
+
+export { PressStatementsAdmin as default };

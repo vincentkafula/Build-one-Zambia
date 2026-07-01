@@ -248,3 +248,5 @@ export function ChamberAmendmentsAdmin() {
     </div>
   );
 }
+
+export { ChamberAmendmentsAdmin as default };

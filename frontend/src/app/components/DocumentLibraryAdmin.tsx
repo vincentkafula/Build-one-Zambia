@@ -421,3 +421,5 @@ export function DocumentLibraryAdmin() {
     </div>
   );
 }
+
+export { DocumentLibraryAdmin as default };

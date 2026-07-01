@@ -425,3 +425,5 @@ export function MembershipAdmin() {
     </div>
   );
 }
+
+export { MembershipAdmin as default };

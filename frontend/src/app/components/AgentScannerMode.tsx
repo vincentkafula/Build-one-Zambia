@@ -571,3 +571,5 @@ function FinalTally({ live }: { live: LiveSession }) {
     </div>
   );
 }
+
+export { AgentScannerMode as default };

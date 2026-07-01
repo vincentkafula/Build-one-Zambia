@@ -374,3 +374,5 @@ export function AdoptionCertAdmin() {
     </div>
   );
 }
+
+export { AdoptionCertAdmin as default };

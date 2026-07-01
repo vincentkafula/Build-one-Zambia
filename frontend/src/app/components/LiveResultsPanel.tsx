@@ -601,3 +601,5 @@ export function LiveResultsPanel({
     </div>
   );
 }
+
+export { LiveResultsPanel as default };

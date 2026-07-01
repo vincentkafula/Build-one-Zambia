@@ -535,3 +535,5 @@ export function ECZEntryPage() {
     </div>
   );
 }
+
+export { ECZEntryPage as default };

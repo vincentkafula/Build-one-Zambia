@@ -965,3 +965,5 @@ export function ShopManager() {
     </div>
   );
 }
+
+export { ShopManager as default };

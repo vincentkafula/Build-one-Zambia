@@ -327,3 +327,5 @@ export function VoterRollUpload() {
     </div>
   );
 }
+
+export { VoterRollUpload as default };

@@ -377,3 +377,5 @@ ${BASE.replace('/make-server-8fca9621', '')}`} />
     </div>
   );
 }
+
+export { SystemSetupDashboard as default };

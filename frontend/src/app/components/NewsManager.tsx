@@ -698,3 +698,5 @@ export function NewsManager() {
     </div>
   );
 }
+
+export { NewsManager as default };

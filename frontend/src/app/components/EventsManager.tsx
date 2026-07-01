@@ -295,3 +295,5 @@ export function EventsManager() {
     </div>
   );
 }
+
+export { EventsManager as default };

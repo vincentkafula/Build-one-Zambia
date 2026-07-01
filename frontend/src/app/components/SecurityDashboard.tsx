@@ -483,3 +483,5 @@ export function SecurityDashboard() {
     </div>
   );
 }
+
+export { SecurityDashboard as default };

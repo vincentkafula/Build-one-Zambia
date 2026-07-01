@@ -800,3 +800,5 @@ export function DataEntryPage() {
     </div>
   );
 }
+
+export { DataEntryPage as default };

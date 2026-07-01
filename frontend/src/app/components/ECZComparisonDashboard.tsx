@@ -562,3 +562,5 @@ export function ECZComparisonDashboard() {
     </div>
   );
 }
+
+export { ECZComparisonDashboard as default };
