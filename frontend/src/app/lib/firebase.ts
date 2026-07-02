@@ -56,6 +56,11 @@ export function setupRecaptcha(container: HTMLElement | string): RecaptchaVerifi
       size: 'invisible',
       callback: () => {},
       'expired-callback': () => { clearRecaptcha(); },
+      // reCAPTCHA v2 site key — registered for bozplans.org
+      // This overrides reCAPTCHA Enterprise and fixes auth/error-code:-39
+      params: {
+        sitekey: import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6Lc5nkEtAAAAAOvnbbO8fD4NKbLGQ2MRKiVVZqnr',
+      },
     },
   );
   return recaptchaVerifier;
