@@ -84,7 +84,15 @@ app.set('trust proxy', 1);
 
 // ─── Health (registered BEFORE rate limiter so it's never blocked) ───────────
 app.get(`${BASE}/health`, (req, res) => {
-  res.json({ name: 'Build One Zambia API', status: 'ok', server: 'node-express', version: '1.0.0', timestamp: new Date().toISOString() });
+  res.json({
+    name: 'Build One Zambia API',
+    status: 'ok',
+    server: 'node-express',
+    version: '2.1.0',
+    build_sha: 'fc46771',
+    shadow_cabinet_routes: typeof shadowStore !== 'undefined' ? Object.keys(shadowStore) : 'not_loaded',
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // Simple top-level ping — no path prefix, works from browser immediately
