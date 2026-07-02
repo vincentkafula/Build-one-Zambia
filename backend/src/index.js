@@ -1618,10 +1618,60 @@ app.post(`${BASE}/otp/send`, async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const key = phone || email;
     otpStore[key] = { otp, expiresAt: Date.now() + 10 * 60 * 1000 };
-    // TODO: Send via Twilio/Resend when keys are configured
-    const sent = !!(process.env.TWILIO_ACCOUNT_SID || process.env.RESEND_API_KEY);
-    console.log(`OTP for ${key}: ${otp}`); // Log for debugging
-    res.json({ success: true, sent, message: sent ? 'OTP sent' : 'OTP generated (SMS/Email not configured)', ...(process.env.NODE_ENV !== 'production' ? { otp } : {}) });
+
+    let sent = false;
+    let channel = null;
+
+    // ── Twilio SMS ────────────────────────────────────────────────────────────
+    if (phone && process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+      try {
+        const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${process.env.TWILIO_ACCOUNT_SID}/Messages.json`;
+        const body = new URLSearchParams({
+          From: process.env.TWILIO_FROM_NUMBER,
+          To:   phone,
+          Body: `Your BOZ verification code is: ${otp}. Valid for 10 minutes. Do not share this code.`,
+        });
+        const r = await fetch(twilioUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Authorization: `Basic ${Buffer.from(`${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`).toString('base64')}`,
+          },
+          body,
+        });
+        const data = await r.json();
+        if (r.ok && data.sid) { sent = true; channel = 'sms'; }
+        else { console.error('[OTP] Twilio error:', data.message || data); }
+      } catch (twilioErr) { console.error('[OTP] Twilio fetch error:', twilioErr.message); }
+    }
+
+    // ── Resend Email fallback ─────────────────────────────────────────────────
+    if (!sent && email && process.env.RESEND_API_KEY) {
+      try {
+        const r = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: process.env.EMAIL_FROM_ADDRESS || 'no-reply@bozplans.org',
+            to: email,
+            subject: 'Your BOZ Verification Code',
+            html: `<p>Your verification code is: <strong style="font-size:24px;letter-spacing:4px">${otp}</strong></p><p>Valid for 10 minutes. Do not share this code.</p>`,
+          }),
+        });
+        const data = await r.json();
+        if (r.ok && data.id) { sent = true; channel = 'email'; }
+        else { console.error('[OTP] Resend error:', data.message || data); }
+      } catch (resendErr) { console.error('[OTP] Resend fetch error:', resendErr.message); }
+    }
+
+    if (!sent) console.log(`[OTP] No transport configured. Code for ${key}: ${otp}`);
+
+    res.json({
+      success: true,
+      sent,
+      channel,
+      message: sent ? `OTP sent via ${channel}` : 'OTP generated but SMS/Email not configured',
+    });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
