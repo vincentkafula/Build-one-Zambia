@@ -9,3 +9,6 @@ cmds = []
 
 [start]
 cmd = "node src/index.js"
+
+[variables]
+NIXPACKS_CACHE_KEY = "bust-shadow-cabinet-20260702"
