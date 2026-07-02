@@ -1749,3 +1749,4 @@ export default app;
 // confirms Railway backend service is running a stale build predating commit 8be9b71
 // (kv import fix) and 86249ec/1cb1d33 (data-entry routes). This comment forces a new
 // commit SHA so Railway's GitHub webhook has a fresh push event to deploy from.
+// redeploy Thu Jul  2 07:31:08 UTC 2026
