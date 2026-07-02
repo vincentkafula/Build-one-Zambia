@@ -150,3 +150,5 @@ export function TermsOfServicePage() {
     </div>
   );
 }
+
+export { TermsOfServicePage as default };

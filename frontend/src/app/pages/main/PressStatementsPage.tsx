@@ -305,3 +305,5 @@ export function PressStatementsPage() {
     </div>
   );
 }
+
+export { PressStatementsPage as default };

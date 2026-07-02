@@ -341,3 +341,5 @@ export function AboutEventsPage() {
     </div>
   );
 }
+
+export { AboutEventsPage as default };

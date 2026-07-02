@@ -341,3 +341,5 @@ export function HomePage() {
     </div>
   );
 }
+
+export { HomePage as default };

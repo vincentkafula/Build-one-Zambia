@@ -961,3 +961,5 @@ export function AboutPage() {
     </div>
   );
 }
+
+export { AboutPage as default };

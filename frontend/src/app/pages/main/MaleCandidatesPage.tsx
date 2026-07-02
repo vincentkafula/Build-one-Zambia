@@ -772,3 +772,5 @@ export function MaleCandidatesPage() {
     </div>
   );
 }
+
+export { MaleCandidatesPage as default };

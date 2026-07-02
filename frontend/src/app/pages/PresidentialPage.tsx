@@ -404,3 +404,5 @@ export function PresidentialPage() {
     </div>
   );
 }
+
+export { PresidentialPage as default };

@@ -337,3 +337,5 @@ export function ParliamentPage() {
     </div>
   );
 }
+
+export { ParliamentPage as default };

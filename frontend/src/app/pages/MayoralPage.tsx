@@ -337,3 +337,5 @@ export function MayoralPage() {
     </div>
   );
 }
+
+export { MayoralPage as default };

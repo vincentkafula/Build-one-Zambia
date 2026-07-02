@@ -602,4 +602,5 @@ export function LiveResultsPanel({
   );
 }
 
+
 export { LiveResultsPanel as default };

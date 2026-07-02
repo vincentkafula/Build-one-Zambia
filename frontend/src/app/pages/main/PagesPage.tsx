@@ -436,3 +436,5 @@ export function PagesPage() {
     </div>
   );
 }
+
+export { PagesPage as default };

@@ -329,4 +329,5 @@ export function NoticeBoard() {
   );
 }
 
+
 export { NoticeBoard as default };

@@ -7,9 +7,9 @@ import {
 } from 'lucide-react';
 import { clearToken } from '../../lib/api';
 
-const DataEntryPage          = lazy(() => import('../DataEntryPage').then(m => ({ default: m.DataEntryPage })));
-const ECZEntryPage           = lazy(() => import('../ECZEntryPage').then(m => ({ default: m.ECZEntryPage })));
-const ECZComparisonDashboard = lazy(() => import('../../components/ECZComparisonDashboard').then(m => ({ default: m.ECZComparisonDashboard })));
+const DataEntryPage          = lazy(() => import('../DataEntryPage'));
+const ECZEntryPage           = lazy(() => import('../ECZEntryPage'));
+const ECZComparisonDashboard = lazy(() => import('../../components/ECZComparisonDashboard'));
 
 function SectionLoader() {
   return (
@@ -158,7 +158,8 @@ export default function ElectionDashboard() {
     setPwSaving(true); setPwMsg('');
     try {
       const token = sessionStorage.getItem('boz_session_token');
-      const res = await fetch('/make-server-8fca9621/security/change-password', {
+      const base = typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? '/make-server-8fca9621' : (import.meta.env.VITE_API_URL || 'http://localhost:3001') + '/make-server-8fca9621';
+      const res = await fetch(`${base}/security/change-password`, {
         method: 'POST',
         headers: {'Content-Type':'application/json', ...(token?{Authorization:`Bearer ${token}`}:{})},
         body: JSON.stringify({newPassword: pwFields.next}),

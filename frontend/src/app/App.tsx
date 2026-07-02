@@ -17,24 +17,24 @@ import MainHomePage from './pages/main/MainHomePage';
 bootstrapProduction();
 
 // ── Main campaign site pages ─────────────────────────────────────────────────
-const AboutPage         = lazy(() => import('./pages/main/AboutPage').then(m => ({ default: m.AboutPage })));
-const CampaignPage      = lazy(() => import('./pages/main/CampaignPage').then(m => ({ default: m.CampaignPage })));
-const PagesPage         = lazy(() => import('./pages/main/PagesPage').then(m => ({ default: m.PagesPage })));
-const ContactDonatePage    = lazy(() => import('./pages/main/ContactDonatePage').then(m => ({ default: m.ContactDonatePage })));
-const ShopPage             = lazy(() => import('./pages/main/ShopPage').then(m => ({ default: m.ShopPage })));
-const MaleCandidatesPage   = lazy(() => import('./pages/main/MaleCandidatesPage').then(m => ({ default: m.MaleCandidatesPage })));
-const FemaleCandidatesPage = lazy(() => import('./pages/main/FemaleCandidatesPage').then(m => ({ default: m.FemaleCandidatesPage })));
-const OpportunitiesPage    = lazy(() => import('./pages/main/OpportunitiesPage').then(m => ({ default: m.OpportunitiesPage })));
-const ChambersPage         = lazy(() => import('./pages/main/ChambersPage').then(m => ({ default: m.ChambersPage })));
-const DonatePage           = lazy(() => import('./pages/main/DonatePage').then(m => ({ default: m.DonatePage })));
-const LiveStreamingPage    = lazy(() => import('./pages/main/LiveStreamingPage').then(m => ({ default: m.LiveStreamingPage })));
-const DocumentsPage        = lazy(() => import('./pages/main/DocumentsPage').then(m => ({ default: m.DocumentsPage })));
-const NewsPage             = lazy(() => import('./pages/main/NewsPage').then(m => ({ default: m.NewsPage })));
-const PartyMusicPage       = lazy(() => import('./pages/main/PartyMusicPage').then(m => ({ default: m.PartyMusicPage })));
-const EventsGalleryPage    = lazy(() => import('./pages/main/EventsGalleryPage').then(m => ({ default: m.EventsGalleryPage })));
-const AboutEventsPage      = lazy(() => import('./pages/main/AboutEventsPage').then(m => ({ default: m.AboutEventsPage })));
-const TermsOfServicePage   = lazy(() => import('./pages/main/TermsOfServicePage').then(m => ({ default: m.TermsOfServicePage })));
-const PressStatementsPage  = lazy(() => import('./pages/main/PressStatementsPage').then(m => ({ default: m.PressStatementsPage })));
+const AboutPage         = lazy(() => import('./pages/main/AboutPage'));
+const CampaignPage      = lazy(() => import('./pages/main/CampaignPage'));
+const PagesPage         = lazy(() => import('./pages/main/PagesPage'));
+const ContactDonatePage    = lazy(() => import('./pages/main/ContactDonatePage'));
+const ShopPage             = lazy(() => import('./pages/main/ShopPage'));
+const MaleCandidatesPage   = lazy(() => import('./pages/main/MaleCandidatesPage'));
+const FemaleCandidatesPage = lazy(() => import('./pages/main/FemaleCandidatesPage'));
+const OpportunitiesPage    = lazy(() => import('./pages/main/OpportunitiesPage'));
+const ChambersPage         = lazy(() => import('./pages/main/ChambersPage'));
+const DonatePage           = lazy(() => import('./pages/main/DonatePage'));
+const LiveStreamingPage    = lazy(() => import('./pages/main/LiveStreamingPage'));
+const DocumentsPage        = lazy(() => import('./pages/main/DocumentsPage'));
+const NewsPage             = lazy(() => import('./pages/main/NewsPage'));
+const PartyMusicPage       = lazy(() => import('./pages/main/PartyMusicPage'));
+const EventsGalleryPage    = lazy(() => import('./pages/main/EventsGalleryPage'));
+const AboutEventsPage      = lazy(() => import('./pages/main/AboutEventsPage'));
+const TermsOfServicePage   = lazy(() => import('./pages/main/TermsOfServicePage'));
+const PressStatementsPage  = lazy(() => import('./pages/main/PressStatementsPage'));
 
 // ── Registration pages ───────────────────────────────────────────────────────
 const MemberRegistration         = lazy(() => import('./pages/registration/MemberRegistration'));
@@ -53,13 +53,13 @@ const ManagerDashboard     = lazy(() => import('./pages/dashboards/ManagerDashbo
 const ElectionDashboard    = lazy(() => import('./pages/dashboards/ElectionDashboard'));
 
 // ── Election results portal pages ────────────────────────────────────────────
-const HomePage         = lazy(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
-const PresidentialPage = lazy(() => import('./pages/PresidentialPage').then(m => ({ default: m.PresidentialPage })));
-const ParliamentPage   = lazy(() => import('./pages/ParliamentPage').then(m => ({ default: m.ParliamentPage })));
-const MayoralPage      = lazy(() => import('./pages/MayoralPage').then(m => ({ default: m.MayoralPage })));
-const CouncillorPage   = lazy(() => import('./pages/CouncillorPage').then(m => ({ default: m.CouncillorPage })));
-const DataEntryPage    = lazy(() => import('./pages/DataEntryPage').then(m => ({ default: m.DataEntryPage })));
-const ECZEntryPage     = lazy(() => import('./pages/ECZEntryPage').then(m => ({ default: m.ECZEntryPage })));
+const HomePage         = lazy(() => import('./pages/HomePage'));
+const PresidentialPage = lazy(() => import('./pages/PresidentialPage'));
+const ParliamentPage   = lazy(() => import('./pages/ParliamentPage'));
+const MayoralPage      = lazy(() => import('./pages/MayoralPage'));
+const CouncillorPage   = lazy(() => import('./pages/CouncillorPage'));
+const DataEntryPage    = lazy(() => import('./pages/DataEntryPage'));
+const ECZEntryPage     = lazy(() => import('./pages/ECZEntryPage'));
 const LoginPage        = lazy(() => import('./pages/LoginPage'));
 const AdminPage        = lazy(() => import('./pages/AdminPage'));
 const NotFoundPage     = lazy(() => import('./pages/NotFoundPage'));

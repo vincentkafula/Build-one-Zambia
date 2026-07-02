@@ -299,3 +299,5 @@ export function OpportunitiesPage() {
     </div>
   );
 }
+
+export { OpportunitiesPage as default };

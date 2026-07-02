@@ -562,3 +562,5 @@ export function FemaleCandidatesPage() {
     </div>
   );
 }
+
+export { FemaleCandidatesPage as default };

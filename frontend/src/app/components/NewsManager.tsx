@@ -699,4 +699,5 @@ export function NewsManager() {
   );
 }
 
+
 export { NewsManager as default };

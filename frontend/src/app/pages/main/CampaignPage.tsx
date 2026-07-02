@@ -559,3 +559,4 @@ export function CampaignPage() {
     </div>
   );
 }
+export { CampaignPage as default };

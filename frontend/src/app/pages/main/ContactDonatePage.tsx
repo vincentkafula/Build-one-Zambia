@@ -222,3 +222,5 @@ export function ContactDonatePage() {
     </div>
   );
 }
+
+export { ContactDonatePage as default };

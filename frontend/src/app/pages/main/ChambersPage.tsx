@@ -410,3 +410,5 @@ export function ChambersPage() {
     </div>
   );
 }
+
+export { ChambersPage as default };

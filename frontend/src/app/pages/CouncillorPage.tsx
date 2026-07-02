@@ -356,3 +356,5 @@ export function CouncillorPage() {
     </div>
   );
 }
+
+export { CouncillorPage as default };
