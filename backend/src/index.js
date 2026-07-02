@@ -1630,6 +1630,82 @@ app.get(`${BASE}/email/config`, auth.requireAuth, auth.requireRole('super_admin'
   });
 });
 
+// ─── Shadow Cabinet ────────────────────────────────────────────────────────────
+
+const shadowStore = {
+  male:   kv.get('shadow:male')   || [],
+  female: kv.get('shadow:female') || [],
+};
+function saveShadow(gender) { kv.set(`shadow:${gender}`, shadowStore[gender]); }
+
+app.get(`${BASE}/shadow-cabinet/:gender`, (req, res) => {
+  const g = req.params.gender;
+  if (!['male','female'].includes(g)) return res.status(400).json({ error: 'gender must be male or female' });
+  res.json({ members: shadowStore[g], count: shadowStore[g].length });
+});
+
+app.get(`${BASE}/shadow-cabinet/:gender/:id`, (req, res) => {
+  const g = req.params.gender;
+  if (!['male','female'].includes(g)) return res.status(400).json({ error: 'invalid gender' });
+  const member = shadowStore[g].find(m => m.id === req.params.id);
+  if (!member) return res.status(404).json({ error: 'Member not found' });
+  res.json({ member });
+});
+
+app.get(`${BASE}/shadow-cabinet/:gender/:id/photo`, (req, res) => {
+  const photo = kv.get(`shadow:photo:${req.params.id}`);
+  if (!photo) return res.status(404).json({ error: 'No photo' });
+  const [meta, b64] = photo.split(',');
+  const mime = meta.replace('data:', '').replace(';base64', '');
+  res.setHeader('Content-Type', mime);
+  res.send(Buffer.from(b64, 'base64'));
+});
+
+app.post(`${BASE}/shadow-cabinet/:gender`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  const g = req.params.gender;
+  if (!['male','female'].includes(g)) return res.status(400).json({ error: 'invalid gender' });
+  const { photoDataUrl, ...rest } = req.body;
+  const id = `sc-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
+  const member = { ...rest, id, gender: g, hasPhoto: !!photoDataUrl, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  if (photoDataUrl) kv.set(`shadow:photo:${id}`, photoDataUrl);
+  shadowStore[g].push(member);
+  saveShadow(g);
+  res.json({ member });
+});
+
+app.patch(`${BASE}/shadow-cabinet/:gender/reorder`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  const g = req.params.gender;
+  if (!['male','female'].includes(g)) return res.status(400).json({ error: 'invalid gender' });
+  const { ids } = req.body;
+  if (!Array.isArray(ids)) return res.status(400).json({ error: 'ids must be an array' });
+  const map = Object.fromEntries(shadowStore[g].map(m => [m.id, m]));
+  shadowStore[g] = ids.map(id => map[id]).filter(Boolean);
+  saveShadow(g);
+  res.json({ success: true, count: shadowStore[g].length });
+});
+
+app.patch(`${BASE}/shadow-cabinet/:gender/:id`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  const g = req.params.gender;
+  if (!['male','female'].includes(g)) return res.status(400).json({ error: 'invalid gender' });
+  const idx = shadowStore[g].findIndex(m => m.id === req.params.id);
+  if (idx < 0) return res.status(404).json({ error: 'Member not found' });
+  const { photoDataUrl, ...rest } = req.body;
+  if (photoDataUrl) { kv.set(`shadow:photo:${req.params.id}`, photoDataUrl); rest.hasPhoto = true; }
+  shadowStore[g][idx] = { ...shadowStore[g][idx], ...rest, updatedAt: new Date().toISOString() };
+  saveShadow(g);
+  res.json({ member: shadowStore[g][idx] });
+});
+
+app.delete(`${BASE}/shadow-cabinet/:gender/:id`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  const g = req.params.gender;
+  if (!['male','female'].includes(g)) return res.status(400).json({ error: 'invalid gender' });
+  shadowStore[g] = shadowStore[g].filter(m => m.id !== req.params.id);
+  kv.del(`shadow:photo:${req.params.id}`);
+  saveShadow(g);
+  res.json({ success: true });
+});
+
+
 // ─── 404 catch-all ───────────────────────────────────────────────────────────
 
 app.use((req, res) => {

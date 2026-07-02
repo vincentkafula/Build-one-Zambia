@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Heart, Users, Leaf, ArrowRight, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router';
-import { candidatesApi, type BackendCandidate } from '../../lib/api';
+import { candidatesApi, shadowCabinetApi, type BackendCandidate, type ShadowMember } from '../../lib/api';
 import chilesheKapwepwePhoto from '../../../imports/Chileshe.png';
 import mwituaMushibwePhoto from '../../../imports/image-26.png';
 import margaretMwanakatwePhoto from '../../../imports/image-27.png';
@@ -214,6 +214,22 @@ const ACTION_CARDS = [
   { icon: Leaf,  title: 'Join Volunteer',  desc: 'Join our team of volunteers and help make a positive impact in your community today.', path: '/contact' },
 ];
 
+function ShadowMemberPhoto({ id, name }: { id: string; name: string }) {
+  const [imgError, setImgError] = useState(false);
+  return (
+    <div className="w-full aspect-[4/5] overflow-hidden bg-gray-100">
+      {!imgError ? (
+        <img src={shadowCabinetApi.photoUrl(id, 'female')} alt={name}
+          onError={() => setImgError(true)} className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center" style={{ color: '#d1d5db' }}>
+          <Users className="w-12 h-12" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LiveCandidatePhoto({ id, name }: { id: string; name: string }) {
   const [imgError, setImgError] = useState(false);
   return (
@@ -238,11 +254,15 @@ export function FemaleCandidatesPage() {
   const [featuredIdx, setFeaturedIdx] = useState(0);
   const [animating, setAnimating]     = useState(false);
   const [liveCandidates, setLiveCandidates] = useState<BackendCandidate[]>([]);
+  const [shadowMembers, setShadowMembers] = useState<ShadowMember[]>([]);
 
   useEffect(() => {
     candidatesApi.list({ gender: 'female', active: true })
       .then(res => setLiveCandidates(res.candidates))
       .catch(() => setLiveCandidates([]));
+    shadowCabinetApi.list('female')
+      .then(res => setShadowMembers(res.members))
+      .catch(() => setShadowMembers([]));
   }, []);
 
   const go = (next: number) => {
@@ -455,6 +475,40 @@ export function FemaleCandidatesPage() {
           </div>
         </div>
       </section>
+
+      {/* Shadow Cabinet from Admin Panel */}
+      {shadowMembers.length > 0 && (
+        <section className="py-20 px-4" style={{ backgroundColor: '#f0f4ff' }}>
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-14">
+              <p className="text-xs tracking-widest mb-3" style={{ color: O, fontFamily: 'Oswald, sans-serif' }}>SHADOW CABINET</p>
+              <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', letterSpacing: '0.03em', color: NAVY }}>ADDITIONAL FEMALE SHADOW MINISTERS</h2>
+              <div className="w-16 h-1 mx-auto mt-4 rounded-full" style={{ backgroundColor: O }} />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+              {shadowMembers.map(m => (
+                <div key={m.id} className="flex flex-col items-center text-center rounded-2xl overflow-hidden"
+                  style={{ backgroundColor: '#fff', border: '1px solid #e0e7ff', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
+                  <ShadowMemberPhoto id={m.id} name={m.name} />
+                  <div className="px-6 pb-8 pt-5 w-full">
+                    {m.constituency && (
+                      <span className="inline-block text-xs px-3 py-1 rounded-full mb-3"
+                        style={{ backgroundColor: 'rgba(249,115,22,0.1)', color: O, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
+                        {m.constituency}
+                      </span>
+                    )}
+                    <h3 className="mb-1" style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem', letterSpacing: '0.04em', color: NAVY }}>{m.name}</h3>
+                    <p className="text-xs mb-2" style={{ color: '#9ca3af' }}>{m.role}</p>
+                    {m.focus && (
+                      <p className="text-xs" style={{ color: O }}>{m.focus}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Live candidates from Admin Panel */}
       {liveCandidates.length > 0 && (

@@ -428,6 +428,40 @@ export const emailApi = {
     request<{ success: boolean; id?: string; error?: string }>('POST', `/email/resend/payment/${paymentRef}`, undefined, true),
 };
 
+
+// ─── Shadow Cabinet API ───────────────────────────────────────────────────────
+export interface ShadowMember {
+  id: string;
+  name: string;
+  role: string;
+  credentials?: string;
+  constituency?: string;
+  focus?: string;
+  headline?: string;
+  bio1?: string;
+  bio2?: string;
+  quote?: string;
+  signature?: string;
+  gender: 'male' | 'female';
+  hasPhoto: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const shadowCabinetApi = {
+  list: (gender: 'male' | 'female') =>
+    request<{ members: ShadowMember[]; count: number }>('GET', `/shadow-cabinet/${gender}`),
+  photoUrl: (id: string, gender: 'male' | 'female') => `${BASE}/shadow-cabinet/${gender}/${id}/photo`,
+  create: (gender: 'male' | 'female', data: Record<string, unknown>) =>
+    request<{ member: ShadowMember }>('POST', `/shadow-cabinet/${gender}`, data, true),
+  update: (gender: 'male' | 'female', id: string, data: Record<string, unknown>) =>
+    request<{ member: ShadowMember }>('PATCH', `/shadow-cabinet/${gender}/${id}`, data, true),
+  reorder: (gender: 'male' | 'female', ids: string[]) =>
+    request<{ success: boolean }>('PATCH', `/shadow-cabinet/${gender}/reorder`, { ids }, true),
+  remove: (gender: 'male' | 'female', id: string) =>
+    request<{ success: boolean }>('DELETE', `/shadow-cabinet/${gender}/${id}`, undefined, true),
+};
+
 // ─── Shop ─────────────────────────────────────────────────────────────────────
 
 export interface ShopProduct {

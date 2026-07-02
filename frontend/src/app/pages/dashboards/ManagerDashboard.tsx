@@ -14,6 +14,7 @@ const LiveStreamAdmin         = lazy(() => import('../../components/LiveStreamAd
 const DocumentLibraryAdmin    = lazy(() => import('../../components/DocumentLibraryAdmin').then(m => ({ default: m.DocumentLibraryAdmin })));
 const LiveResultsPanel        = lazy(() => import('../../components/LiveResultsPanel').then(m => ({ default: m.LiveResultsPanel })));
 const CandidateManager        = lazy(() => import('../../components/CandidateManager').then(m => ({ default: m.CandidateManager })));
+const ShadowCabinetManager    = lazy(() => import('../../components/ShadowCabinetManager'));
 const ECZComparisonDashboard  = lazy(() => import('../../components/ECZComparisonDashboard').then(m => ({ default: m.ECZComparisonDashboard })));
 const ShopManager             = lazy(() => import('../../components/ShopManager').then(m => ({ default: m.ShopManager })));
 const NewsManager             = lazy(() => import('../../components/NewsManager').then(m => ({ default: m.NewsManager })));
@@ -267,7 +268,7 @@ export default function ManagerDashboard() {
   const totalDistricts  = provinceStats.reduce((s, p) => s + p.districts, 0);
 
   const ADMIN_ONLY_SECTIONS = new Set<SectionKey>([
-    'system-setup', 'election-users', 'candidates', 'shop', 'news', 'leadership',
+    'system-setup', 'election-users', 'candidates', 'shadow-cabinet', 'shop', 'news', 'leadership',
     'membership-admin', 'registrations', 'press-statements', 'email', 'adoption-certs',
     'chamber-amendments', 'security-centre', 'live-streams', 'documents', 'events',
     'voter-roll-upload',
@@ -343,6 +344,7 @@ export default function ManagerDashboard() {
 
       case 'ecz-figures':        return <Suspense fallback={<SectionLoader />}><ECZEntryPage /></Suspense>;
       case 'candidates':         return <Suspense fallback={<SectionLoader />}><CandidateManager /></Suspense>;
+      case 'shadow-cabinet':     return <Suspense fallback={<SectionLoader />}><ShadowCabinetManager /></Suspense>;
       case 'ecz-comparison':     return <Suspense fallback={<SectionLoader />}><ECZComparisonDashboard /></Suspense>;
       case 'results-approval':   return <Suspense fallback={<SectionLoader />}><ResultsApprovalQueue /></Suspense>;
       case 'system-setup':       return <Suspense fallback={<SectionLoader />}><SystemSetupDashboard /></Suspense>;
@@ -454,6 +456,7 @@ export default function ManagerDashboard() {
                 {[
                   { key: 'system-setup',      label: 'System Setup',         desc: 'Configure backend, check service health.',                          icon: <Server size={18} />,      color: '#6366f1' },
                   { key: 'election-users',    label: 'Election Users',        desc: 'Create & manage all 7 tiers of election staff.',                    icon: <Users size={18} />,       color: '#0ea5e9' },
+                  { key: 'shadow-cabinet',    label: 'Shadow Cabinet',        desc: 'Edit Shadow Ministers — names, roles, bios & photos for male & female pages.', icon: <Users size={18} />, color: '#c084fc' },
                   { key: 'candidates',        label: 'Candidates',            desc: 'Add, edit & remove presidential, MP, mayoral & councillor candidates.', icon: <Shield size={18} />, color: '#f59e0b' },
                   { key: 'leadership',        label: 'Party Leadership',      desc: 'Add or remove party leaders and officials.',                        icon: <Crown size={18} />,       color: '#a855f7' },
                   { key: 'news',              label: 'News & Posts',          desc: 'Publish, edit and remove news articles.',                           icon: <Newspaper size={18} />,   color: '#10b981' },
