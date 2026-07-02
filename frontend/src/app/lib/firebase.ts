@@ -59,7 +59,7 @@ export function setupRecaptcha(container: HTMLElement | string): RecaptchaVerifi
       // reCAPTCHA v2 site key — registered for bozplans.org
       // This overrides reCAPTCHA Enterprise and fixes auth/error-code:-39
       params: {
-        sitekey: import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6Lc5nkEtAAAAAOvnbbO8fD4NKbLGQ2MRKiVVZqnr',
+        sitekey: import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LfLskEtAAAAAObUAe_ceJtLdT0V8vuSn9gXuMdS',
       },
     },
   );
