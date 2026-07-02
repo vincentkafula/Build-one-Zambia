@@ -163,7 +163,7 @@ function injectCSP(): void {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com data:",
     "img-src 'self' data: blob: https:",
-    "connect-src 'self' https://*.railway.app https://*.up.railway.app https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.resend.com https://images.unsplash.com wss://*.railway.app",
+    "connect-src 'self' https://*.railway.app https://*.up.railway.app https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.resend.com https://images.unsplash.com wss://*.railway.app https://www.google.com https://recaptcha.google.com https://*.twilio.com",
     "worker-src 'self' blob:",
     "frame-src https://www.google.com https://build-one-zambia.firebaseapp.com",
         "base-uri 'self'",
