@@ -1308,13 +1308,6 @@ regRoutes('internship',  'Internship');
   });
 });
 
-app.get(`${BASE}/registrations/stats`, auth.requireAuth, (req, res) => {
-  const stats = {};
-  for (const [type, regs] of Object.entries(regStore)) {
-    stats[type] = { total: regs.length, pending: regs.filter(r => r.status === 'pending').length, approved: regs.filter(r => r.status === 'approved').length, rejected: regs.filter(r => r.status === 'rejected').length };
-  }
-  res.json({ success: true, stats });
-});
 
 // ─── Donations ────────────────────────────────────────────────────────────────
 
@@ -1688,19 +1681,6 @@ app.post(`${BASE}/otp/verify`, (req, res) => {
 
 
 // ─── Email config endpoint ────────────────────────────────────────────────────
-app.get(`${BASE}/email/config`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
-  const key = process.env.RESEND_API_KEY || '';
-  res.json({
-    connected: !!key,
-    keyPreview: key ? `re_...${key.slice(-6)}` : null,
-    fromName: process.env.EMAIL_FROM_NAME || 'Build One Zambia',
-    fromEmail: process.env.EMAIL_FROM_ADDRESS || 'noreply@bozplans.org',
-    adminEmail: process.env.ADMIN_EMAIL || '',
-    siteUrl: process.env.SITE_URL || 'https://www.bozplans.org',
-    provider: 'Resend',
-    configured: !!key,
-  });
-});
 
 // ─── Shadow Cabinet ────────────────────────────────────────────────────────────
 
@@ -1917,6 +1897,54 @@ app.get(`${BASE}/voter/stats/:pollingStationId`, auth.requireAuth, (req, res) =>
 
 
 // ─── Registrations by type ────────────────────────────────────────────────────
+
+
+// ─── Registration capacity & extras ──────────────────────────────────────────
+app.get(`${BASE}/registrations/agent/capacity`, (req, res) => {
+  // Returns capacity info for polling agent registration
+  const agents = registrations.listAgents({});
+  res.json({
+    capacity: { total: 500, registered: agents.length, remaining: Math.max(0, 500 - agents.length), open: agents.length < 500 },
+  });
+});
+
+app.get(`${BASE}/registrations/agent/validate`, (req, res) => {
+  res.json({ valid: false, message: 'No registration found for this query.' });
+});
+
+app.get(`${BASE}/registrations/stats`, auth.requireAuth, (req, res) => {
+  const agents = registrations.listAgents({});
+  const members = registrations.listMembers({});
+  const interns = registrations.listInterns({});
+  const coops = registrations.listCoops({});
+  const all = [...agents, ...members, ...interns, ...coops];
+  res.json({
+    stats: {
+      total: all.length,
+      agent: agents.length,
+      member: members.length,
+      internship: interns.length,
+      cooperative: coops.length,
+      pending:  all.filter(r => r.status === 'pending').length,
+      approved: all.filter(r => r.status === 'approved').length,
+      rejected: all.filter(r => r.status === 'rejected').length,
+    },
+  });
+});
+
+// ─── Email config ──────────────────────────────────────────────────────────────
+app.get(`${BASE}/email/config`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  const key = process.env.RESEND_API_KEY || '';
+  res.json({
+    connected: !!key,
+    keyPreview: key ? `re_...${key.slice(-6)}` : null,
+    fromName: process.env.EMAIL_FROM_NAME || 'Build One Zambia',
+    fromEmail: process.env.EMAIL_FROM_ADDRESS || 'noreply@bozplans.org',
+    adminEmail: process.env.ADMIN_EMAIL || '',
+    siteUrl: process.env.SITE_URL || 'https://www.bozplans.org',
+    provider: 'Resend',
+  });
+});
 
 // ─── 404 catch-all ───────────────────────────────────────────────────────────
 

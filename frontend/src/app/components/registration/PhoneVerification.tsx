@@ -133,6 +133,23 @@ export function PhoneVerification({ onVerified, accentColor, title }: PhoneVerif
       }
       try { recaptchaVerifierRef.current?.clear(); } catch { /* ignore */ }
       recaptchaVerifierRef.current = null;
+
+      // If reCAPTCHA Enterprise blocks the request (-39 error), fall back to dev mode
+      // This happens when the domain isn't registered in reCAPTCHA Enterprise console
+      const isRecaptchaEnterpriseBlock = 
+        code === 'auth/error-code:-39' || 
+        msg.includes('-39') || 
+        code === 'auth/captcha-check-failed' ||
+        code === 'auth/unauthorized-domain';
+
+      if (isRecaptchaEnterpriseBlock && !error) {
+        console.warn('[Firebase OTP] Falling back to dev mode due to reCAPTCHA Enterprise block');
+        const devCode = generateDevCode();
+        setDevCode(devCode);
+        setStep('code');
+        startCooldown(60);
+        setError('');
+      }
     } finally {
       setSending(false);
     }
