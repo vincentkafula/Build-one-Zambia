@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
-import { PhoneVerification } from '../../components/registration/PhoneVerification';
 import { SelfieCapture } from '../../components/registration/SelfieCapture';
 import { zambianUniversities } from '../../data/locationData';
 import {
@@ -23,8 +22,6 @@ interface InternshipFormData {
 
 export default function InternshipRegistration() {
   const navigate = useNavigate();
-  const [phoneVerified, setPhoneVerified] = useState(false);
-  const [verifiedPhone, setVerifiedPhone] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
   const [formComplete, setFormComplete] = useState(false);
   const [registrationId, setRegistrationId] = useState('');
@@ -105,12 +102,12 @@ export default function InternshipRegistration() {
     const data = watch();
     try {
       const res = await registrationApi.submitInternship({
-        fullName: verifiedPhone,
+        fullName: data.fullName || "",
         nrcId: data.membershipNumber,
         membershipNumber: data.membershipNumber,
         dateOfBirth: '',
         gender: '',
-        phone: verifiedPhone,
+        phone: data.cellNumber || data.phone || "",
         email: '',
         province: '',
         district: '',
@@ -134,19 +131,6 @@ export default function InternshipRegistration() {
     }
   };
 
-  if (!phoneVerified) {
-    return (
-      <PhoneVerification
-        onVerified={(phone) => {
-          setVerifiedPhone(phone);
-          setValue('cellNumber', phone);
-          setPhoneVerified(true);
-        }}
-        accentColor={ACCENT_COLOR}
-        title="Internship Registration"
-      />
-    );
-  }
 
   if (formComplete) {
     return (
@@ -391,7 +375,7 @@ export default function InternshipRegistration() {
                     </label>
                     <input
                       type="tel"
-                      value={verifiedPhone}
+                      value=""
                       disabled
                       className="w-full px-4 py-3 rounded-lg"
                       style={{ border: '1px solid #d1d5db', backgroundColor: `${ACCENT_COLOR}08`, color: ACCENT_COLOR }}

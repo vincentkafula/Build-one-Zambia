@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
-import { PhoneVerification } from '../../components/registration/PhoneVerification';
 import { DocumentUpload } from '../../components/registration/DocumentUpload';
 import { SelfieCapture } from '../../components/registration/SelfieCapture';
 import { zambiaLocationData, type Province, type District, type Constituency, type Ward } from '../../data/locationData';
@@ -64,8 +63,6 @@ const STEPS = [
 
 export default function MemberRegistration() {
   const navigate = useNavigate();
-  const [phoneVerified, setPhoneVerified] = useState(false);
-  const [verifiedPhone, setVerifiedPhone] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
   const [formComplete, setFormComplete] = useState(false);
   const [registrationId, setRegistrationId] = useState('');
@@ -161,7 +158,7 @@ export default function MemberRegistration() {
         nrcId: data.nrcNumber || data.voterCardNumber,
         dateOfBirth: data.dateOfBirth || '',
         gender: data.gender || '',
-        phone: verifiedPhone || data.cellNumber,
+        phone: data.cellNumber,
         email: data.email,
         province: data.province,
         district: data.district,
@@ -202,17 +199,6 @@ export default function MemberRegistration() {
     });
   }
 
-  // ─── Phone verification gate ──────────────────────────────────────────────────
-
-  if (!phoneVerified) {
-    return (
-      <PhoneVerification
-        onVerified={(phone) => { setVerifiedPhone(phone); setValue('cellNumber', phone); setPhoneVerified(true); }}
-        accentColor={ACCENT}
-        title="Member Registration"
-      />
-    );
-  }
 
   // ─── Success screen ───────────────────────────────────────────────────────────
 
@@ -401,7 +387,7 @@ export default function MemberRegistration() {
                   </div>
                   <div>
                     <label className="block mb-1.5 text-sm" style={labelStyle}>CELL NUMBER (VERIFIED)</label>
-                    <input value={verifiedPhone} disabled className={fieldClass} style={{ ...fieldStyle, backgroundColor: `${ACCENT}08`, color: ACCENT }} />
+                    <input value="" disabled className={fieldClass} style={{ ...fieldStyle, backgroundColor: `${ACCENT}08`, color: ACCENT }} />
                   </div>
                   <div>
                     <label className="block mb-1.5 text-sm" style={labelStyle}>NRC NUMBER *</label>

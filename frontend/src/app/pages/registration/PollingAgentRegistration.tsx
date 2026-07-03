@@ -8,7 +8,6 @@ import {
 } from 'lucide-react';
 import { provinces } from '../../data/mockData';
 import { agentApi, getToken } from '../../lib/api';
-import { sendFirebaseOTP, verifyFirebaseOTP, type ConfirmationResult as FirebaseConfirmation } from '../../lib/firebase';
 
 // Safe fetch wrapper — handles non-JSON responses (e.g. rate limit plain text)
 async function safeFetch(url: string, options?: RequestInit) {
@@ -246,13 +245,8 @@ export default function PollingAgentRegistration() {
 
   // Step 1 — Phone
   const [phone, setPhone] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
   const [otpId, setOtpId] = useState('');
-  const [phoneVerified, setPhoneVerified] = useState(false);
-  const [otpLoading, setOtpLoading] = useState(false);
   const [firebaseConfirmation, setFirebaseConfirmation] = useState<FirebaseConfirmation | null>(null);
-  const [otpError, setOtpError] = useState('');
   const [notifyWhenOpen, setNotifyWhenOpen] = useState(false);
 
   // Step 2 — Role & Area selection
@@ -316,53 +310,9 @@ export default function PollingAgentRegistration() {
   // ── OTP flow ──────────────────────────────────────────────────────────────
 
   // Track whether backend is reachable
-  const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
   const [devCode, setDevCode] = useState('');
 
   // ── OTP via Firebase Phone Authentication ─────────────────────────────────
-  const sendOtp = async () => {
-    const formatted = formatPhone(phone);
-    if (!/^\+260[976]\d{8}$/.test(formatted)) {
-      setOtpError('Enter a valid Zambian mobile number (e.g. 0966 123 456)');
-      return;
-    }
-    setOtpLoading(true); setOtpError('');
-    try {
-      const result = await sendFirebaseOTP(formatted, 'firebase-recaptcha');
-      if (result.success && result.confirmationResult) {
-        setFirebaseConfirmation(result.confirmationResult);
-        setOtpSent(true);
-        setBackendOnline(true);
-      } else {
-        setOtpError(result.error ?? 'Failed to send SMS');
-      }
-    } catch (e) {
-      setOtpError(e instanceof Error ? e.message : 'Failed to send SMS');
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  const verifyOtp = async () => {
-    setOtpLoading(true); setOtpError('');
-    try {
-      if (!firebaseConfirmation) {
-        setOtpError('Session expired. Please request a new code.');
-        return;
-      }
-      const result = await verifyFirebaseOTP(firebaseConfirmation, otpCode);
-      if (result.success) {
-        setPhoneVerified(true);
-      } else {
-        setOtpError(result.error ?? 'Incorrect code. Please try again.');
-      }
-    } catch (e) {
-      setOtpError(e instanceof Error ? e.message : 'Verification failed');
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
   // ── Validation ────────────────────────────────────────────────────────────
 
   const roleConfig = ROLES.find(r => r.key === selectedRole);
@@ -382,7 +332,7 @@ export default function PollingAgentRegistration() {
   }
 
   function canAdvance(): boolean {
-    if (step === 1) return phoneVerified;
+    if (step === 1) return !!(phone);  // phone verification skipped
     if (step === 2) return !!(selectedRole && !roleCap?.full);
     if (step === 3) return !!(personal.firstName && personal.lastName && personal.dateOfBirth && personal.grade && personal.email && personal.address);
     if (step === 4) return areaValid();
@@ -554,7 +504,7 @@ export default function PollingAgentRegistration() {
             />
           </div>
 
-          {/* ── STEP 1: Phone Verification ── */}
+          {/* ── STEP 1: Contact Details ── */}
           {step === 1 && (
             <div>
               <div className="flex items-center gap-3 mb-6">
@@ -562,113 +512,27 @@ export default function PollingAgentRegistration() {
                   <Phone className="w-5 h-5" style={{ color: GREEN }} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">Phone Verification</h2>
-                  <p className="text-sm text-gray-500">Enter your Zambian mobile number to receive a verification code</p>
+                  <h2 className="text-xl font-bold text-gray-900">Contact Details</h2>
+                  <p className="text-sm text-gray-500">Enter your Zambian mobile number</p>
                 </div>
               </div>
-
-              {!phoneVerified ? (
-                <div className="space-y-4">
-                  <Field label="Mobile Number" required>
-                    <div className="flex gap-2">
-                      <div className="flex items-center px-3.5 bg-gray-100 border border-gray-300 rounded-xl text-sm text-gray-600 shrink-0">
-                        🇿🇲 +260
-                      </div>
-                      <input
-                        type="tel"
-                        placeholder="966 123 456"
-                        value={phone}
-                        onChange={e => setPhone(e.target.value)}
-                        className={inputCls + " flex-1"}
-                        style={inputStyle}
-                      />
+              <div className="space-y-4">
+                <Field label="Mobile Number" required>
+                  <div className="flex gap-2">
+                    <div className="flex items-center px-3.5 bg-gray-100 border border-gray-300 rounded-xl text-sm text-gray-600 shrink-0">
+                      🇿🇲 +260
                     </div>
-                  </Field>
-
-                  {!otpSent ? (
-                    <button
-                      onClick={sendOtp}
-                      disabled={otpLoading || !phone}
-                      className="w-full py-3.5 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-                      style={{ backgroundColor: GREEN }}
-                    >
-                      {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Phone className="w-4 h-4" />}
-                      Send Verification Code
-                    </button>
-                  ) : (
-                    <div className="space-y-4">
-                      {backendOnline === false ? (
-                        <div className="bg-amber-50 border border-amber-300 rounded-xl px-4 py-3 text-sm text-amber-800">
-                          <p className="font-semibold mb-1">Preview Mode — Backend not yet deployed</p>
-                          <p>Your verification code is: <strong className="text-2xl tracking-widest font-mono">{devCode}</strong></p>
-                          <p className="text-xs mt-1 text-amber-600">Enter this code below to continue. SMS will work once the backend is deployed.</p>
-                        </div>
-                      ) : (
-                        <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-800">
-                          A 6-digit code was sent to <strong>{formatPhone(phone)}</strong>
-                        </div>
-                      )}
-                      <Field label="Verification Code" required>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          maxLength={6}
-                          placeholder="000 000"
-                          value={otpCode}
-                          onChange={e => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                          className={inputCls + " text-center text-2xl tracking-[0.5em] font-mono"}
-                          style={inputStyle}
-                        />
-                      </Field>
-                      <button
-                        onClick={verifyOtp}
-                        disabled={otpLoading || otpCode.length < 6}
-                        className="w-full py-3.5 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-                        style={{ backgroundColor: GREEN }}
-                      >
-                        {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                        Verify Code
-                      </button>
-                      <button onClick={() => { setOtpSent(false); setOtpCode(''); }} className="w-full text-sm text-gray-500 underline">
-                        Change number
-                      </button>
-                    </div>
-                  )}
-
-                  {otpError && (
-                    <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
-                      <AlertCircle className="w-4 h-4 shrink-0" />{otpError}
-                    </div>
-                  )}
-
-                  {/* Notification opt-in */}
-                  <label className="flex items-start gap-3 cursor-pointer mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
                     <input
-                      type="checkbox"
-                      checked={notifyWhenOpen}
-                      onChange={e => setNotifyWhenOpen(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 rounded accent-green-600"
+                      type="tel"
+                      placeholder="966 123 456"
+                      value={phone}
+                      onChange={e => setPhone(e.target.value)}
+                      className={inputCls + " flex-1"}
+                      style={inputStyle}
                     />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-                        <Bell className="w-3.5 h-3.5" style={{ color: GREEN }} />
-                        Notify me when applications open
-                      </p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        Receive an SMS when the polling agent registration officially opens.
-                      </p>
-                    </div>
-                  </label>
-                </div>
-              ) : (
-                <div className="text-center py-6">
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#dcfce7' }}>
-                    <CheckCircle2 className="w-8 h-8" style={{ color: GREEN }} />
                   </div>
-                  <p className="text-lg font-bold text-gray-900">Number Verified!</p>
-                  <p className="text-sm text-gray-500 mt-1">{formatPhone(phone)}</p>
-                </div>
-              )}
+                </Field>
+              </div>
             </div>
           )}
 

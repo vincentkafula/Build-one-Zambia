@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
-import { PhoneVerification } from '../../components/registration/PhoneVerification';
 import { ArrowRight, ArrowLeft, CheckCircle, Users, UserCheck, Camera, Loader2, XCircle, BadgeCheck, AlertCircle } from 'lucide-react';
 import { SelfieCapture } from '../../components/registration/SelfieCapture';
 import { registrationApi } from '../../lib/api';
@@ -22,8 +21,6 @@ interface CooperativeFormData {
 
 export default function CooperativeRegistration() {
   const navigate = useNavigate();
-  const [phoneVerified, setPhoneVerified] = useState(false);
-  const [verifiedPhone, setVerifiedPhone] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
   const [formComplete, setFormComplete] = useState(false);
   const [selfieDataUrl, setSelfieDataUrl] = useState<string | null>(null);
@@ -89,7 +86,7 @@ export default function CooperativeRegistration() {
       await registrationApi.submitCooperative({
         cooperativeName: data.cooperativeName,
         contactPerson: data.groupChairperson,
-        contactPhone: verifiedPhone,
+        contactPhone: data.cellNumber || data.phone || "",
         nrcId: '',
         members: 20,
         membershipNumbers,
@@ -108,19 +105,6 @@ export default function CooperativeRegistration() {
     }
   };
 
-  if (!phoneVerified) {
-    return (
-      <PhoneVerification
-        onVerified={(phone) => {
-          setVerifiedPhone(phone);
-          setValue('cellNumber', phone);
-          setPhoneVerified(true);
-        }}
-        accentColor={ACCENT_COLOR}
-        title="Cooperative Registration"
-      />
-    );
-  }
 
   if (formComplete) {
     return (
@@ -273,7 +257,7 @@ export default function CooperativeRegistration() {
                     </label>
                     <input
                       type="tel"
-                      value={verifiedPhone}
+                      value=""
                       disabled
                       className="w-full px-4 py-3 rounded-lg"
                       style={{ border: '1px solid #d1d5db', backgroundColor: `${ACCENT_COLOR}08`, color: ACCENT_COLOR }}
