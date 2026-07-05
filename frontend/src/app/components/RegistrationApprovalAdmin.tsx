@@ -28,6 +28,19 @@ const A    = '#16a34a';
 const NAVY = '#1e2d4a';
 const BASE = API_BASE;
 
+async function grantLogin(type: string, id: string, username: string, password: string) {
+  const token = sessionStorage.getItem('boz_session_token');
+  const res = await fetch(`${BASE}/registrations/${type}/${id}/grant-login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: JSON.stringify({ username, password }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to grant login');
+  return data as { success: boolean; username: string; message: string };
+}
+
+
 type TabKey = 'member' | 'cooperative' | 'internship' | 'agent';
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
@@ -345,13 +358,18 @@ function RegRow({
 }: {
   reg: AnyReg;
   type: TabKey;
-  onDecision: (id: string, status: RegStatus, notes: string) => Promise<GeneratedCredentials | null>;
+  onDecision: (id: string, status: RegStatus, notes: string, username?: string, password?: string) => Promise<GeneratedCredentials | null>;
 }) {
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState('');
   const [acting, setActing] = useState(false);
   const [freshCreds, setFreshCreds] = useState<GeneratedCredentials | null>(null);
   const [actionMsg, setActionMsg] = useState('');
+  const [showGrantLogin, setShowGrantLogin] = useState(false);
+  const [grantUsername, setGrantUsername] = useState('');
+  const [grantPassword, setGrantPassword] = useState('');
+  const [grantMsg, setGrantMsg] = useState('');
+  const [granting, setGranting] = useState(false);
   const cfg = STATUS_CFG[reg.status];
 
   const displayName =
@@ -366,12 +384,30 @@ function RegRow({
   const hasSelfie = !!(reg as unknown as { hasSelfie?: boolean }).hasSelfie;
 
   async function decide(status: RegStatus) {
-    setActing(true);
-    setActionMsg('');
+    setActing(true); setActionMsg('');
     const creds = await onDecision(reg.id, status, note);
     if (creds) setFreshCreds(creds);
-    setActionMsg(status === 'approved' ? 'Approved — credentials generated.' : 'Application rejected.');
+    if (status === 'approved') {
+      const rawName = (reg as any).fullName || (reg as any).name || (reg as any).cooperativeName || '';
+      const autoUser = rawName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 16) || ('user' + Date.now().toString().slice(-5));
+      const autoPass = Math.random().toString(36).slice(2, 7).toUpperCase() + Math.floor(Math.random() * 90 + 10) + '!';
+      setGrantUsername(autoUser); setGrantPassword(autoPass); setShowGrantLogin(true);
+      setActionMsg('Approved — grant login credentials below.');
+    } else {
+      setActionMsg('Application rejected.');
+    }
     setActing(false);
+  }
+
+  async function handleGrantLogin() {
+    if (!grantUsername || !grantPassword) { setGrantMsg('Username and password required'); return; }
+    setGranting(true); setGrantMsg('');
+    try {
+      await grantLogin(type, reg.id, grantUsername, grantPassword);
+      setFreshCreds({ username: grantUsername, password: grantPassword, generatedAt: new Date().toISOString() });
+      setGrantMsg('Login granted successfully'); setShowGrantLogin(false);
+    } catch (e) { setGrantMsg(e instanceof Error ? e.message : 'Failed'); }
+    finally { setGranting(false); }
   }
 
   return (
@@ -474,10 +510,50 @@ function RegRow({
             </div>
           )}
 
-          {/* Already approved */}
+          {/* Grant Login panel */}
           {reg.status === 'approved' && !freshCreds && (
-            <div className="p-3 rounded-lg text-xs text-green-800 bg-green-50 border border-green-200">
-              ✓ This application was approved. Credentials were issued at approval time.
+            <div className="space-y-2">
+              <div className="p-3 rounded-lg text-xs text-green-800 bg-green-50 border border-green-200">
+                ✓ Application approved.
+                {(reg as any).loginCreated
+                  ? ` Login granted — username: ${(reg as any).username}`
+                  : ' Grant login credentials to activate the account.'}
+              </div>
+              {!(reg as any).loginCreated && (
+                <button onClick={() => setShowGrantLogin(v => !v)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-xs font-semibold"
+                  style={{ background: '#0ea5e9' }}>
+                  Grant Login Credentials
+                </button>
+              )}
+            </div>
+          )}
+
+          {showGrantLogin && (
+            <div className="mt-3 p-4 rounded-xl border border-blue-200 bg-blue-50 space-y-3">
+              <p className="text-xs font-semibold text-blue-800">Grant Login — applicant uses these to sign in</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-blue-700 mb-1 font-medium">USERNAME</label>
+                  <input value={grantUsername} onChange={e => setGrantUsername(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-blue-200 text-xs bg-white" placeholder="username" />
+                </div>
+                <div>
+                  <label className="block text-xs text-blue-700 mb-1 font-medium">TEMP PASSWORD</label>
+                  <input value={grantPassword} onChange={e => setGrantPassword(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-blue-200 text-xs bg-white font-mono" placeholder="password" />
+                </div>
+              </div>
+              {grantMsg && <p className="text-xs" style={{ color: grantMsg.includes('success') ? '#16a34a' : '#dc2626' }}>{grantMsg}</p>}
+              <div className="flex gap-2">
+                <button onClick={handleGrantLogin} disabled={granting}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-xs font-semibold disabled:opacity-50"
+                  style={{ background: '#16a34a' }}>
+                  {granting ? 'Granting...' : 'Grant & Activate Account'}
+                </button>
+                <button onClick={() => setShowGrantLogin(false)}
+                  className="px-4 py-2 rounded-lg text-xs text-gray-600 border border-gray-200">Cancel</button>
+              </div>
             </div>
           )}
         </div>
@@ -541,14 +617,17 @@ export function RegistrationApprovalAdmin() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  async function handleDecision(id: string, status: RegStatus, notes: string): Promise<GeneratedCredentials | null> {
+  async function handleDecision(id: string, status: RegStatus, notes: string, username?: string, password?: string): Promise<GeneratedCredentials | null> {
     try {
       let res: { credentials?: GeneratedCredentials | null } = {};
-      if (activeTab === 'member')      res = await registrationApi.approveMember(id, status, notes);
+      if (activeTab === 'member')           res = await registrationApi.approveMember(id, status, notes);
       else if (activeTab === 'cooperative') res = await registrationApi.approveCoop(id, status, notes);
       else if (activeTab === 'internship')  res = await registrationApi.approveIntern(id, status, notes);
       else                                  res = await registrationApi.approveAgent(id, status, notes);
-      setMsg(status === 'approved' ? '✓ Registration approved. Credentials generated.' : '✗ Registration rejected.');
+      if (status === 'approved' && username && password) {
+        try { await grantLogin(activeTab, id, username, password); } catch {}
+      }
+      setMsg(status === 'approved' ? '✓ Approved — grant login credentials to activate.' : '✗ Registration rejected.');
       await loadData();
       return res.credentials || null;
     } catch {

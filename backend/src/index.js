@@ -1106,13 +1106,64 @@ function saveDataEntry() {
 // Submit result
 app.post(`${BASE}/data-entry/result`, async (req, res) => {
   try {
-    const { pollingStationId, electionType, candidates, totalVotesCast, totalRejectedBallots, totalVoterTurnout, agentId, agentName, notes } = req.body;
+    const {
+      pollingStationId, pollingStationName,
+      wardId, wardName, constituencyId, constituencyName,
+      districtId, districtName, provinceId, provinceName,
+      electionType, candidates, candidateResults, candidateVotes,
+      totalVotesCast, totalVotes, totalRejectedBallots, totalRejected,
+      registeredVoters, agentId, agentName, enteredBy, notes,
+    } = req.body;
+
     if (!pollingStationId || !electionType) return res.status(400).json({ error: 'pollingStationId and electionType required' });
+
     const id = `sub-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    const submission = { id, pollingStationId, electionType, candidates: candidates || [], totalVotesCast, totalRejectedBallots, totalVoterTurnout, agentId, agentName, notes, status: 'pending', submittedAt: new Date().toISOString() };
+    const now = new Date().toISOString();
+
+    // Normalise candidate results — support candidateVotes, candidateResults, candidates
+    const rawList = candidateVotes || candidateResults || candidates || [];
+    const normCandidates = rawList.map(c => ({
+      candidateId: c.candidateId || c.id || '',
+      name:        c.name || c.candidateName || '',
+      party:       c.party || c.partyName || '',
+      votes:       Number(c.votes || c.voteCount || 0),
+    }));
+    const totalVotesNum = normCandidates.reduce((s, c) => s + c.votes, 0) || Number(totalVotesCast || totalVotes || 0);
+    const rejectedNum   = Number(totalRejectedBallots || totalRejected || 0);
+    const registeredNum = Number(registeredVoters || 0);
+
+    // Save to approval queue
+    const submission = {
+      id, pollingStationId, pollingStationName,
+      wardId, wardName, constituencyId, constituencyName,
+      districtId, districtName, provinceId, provinceName,
+      electionType, candidateResults: normCandidates, candidates: normCandidates,
+      totalVotes: totalVotesNum, totalVotesCast: totalVotesNum,
+      totalRejected: rejectedNum, totalRejectedBallots: rejectedNum,
+      registeredVoters: registeredNum,
+      agentId, agentName: agentName || enteredBy, notes,
+      status: 'pending', submittedAt: now,
+    };
     dataEntryStore.submissions.push(submission);
     saveDataEntry();
-    res.json({ success: true, message: 'Result submitted successfully', submission: { id, submittedAt: submission.submittedAt, status: 'pending' } });
+
+    // Write directly to results store so dashboard reflects immediately
+    const category = electionType === 'parliament' ? 'parliamentary' : electionType;
+    kv.set(`boz:results:${category}:station:${pollingStationId}`, {
+      id, pollingStationId, pollingStationName,
+      wardId, wardName, constituencyId, constituencyName,
+      districtId, districtName, provinceId, provinceName,
+      category, electionType,
+      candidateVotes: normCandidates, candidateResults: normCandidates, candidates: normCandidates,
+      totalVotes: totalVotesNum, totalVotesCast: totalVotesNum,
+      totalRejected: rejectedNum, rejectedBallots: rejectedNum,
+      registeredVoters: registeredNum,
+      status: 'pending', verified: false,
+      submittedBy: agentName || enteredBy || agentId || 'agent',
+      submittedAt: now, updatedAt: now,
+    });
+
+    res.json({ success: true, message: 'Result submitted successfully', submission: { id, submittedAt: now, status: 'pending' } });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -1146,13 +1197,24 @@ app.get(`${BASE}/data-entry/submissions/:id`, auth.requireAuth, (req, res) => {
   res.json({ submission: sub });
 });
 
-// Update submission status (approve/reject)
+// Update submission status (approve/reject) — also updates boz:results store
 app.patch(`${BASE}/data-entry/submissions/:id/status`, auth.requireAuth, (req, res) => {
   const idx = dataEntryStore.submissions.findIndex(s => s.id === req.params.id);
   if (idx < 0) return res.status(404).json({ error: 'Submission not found' });
-  dataEntryStore.submissions[idx] = { ...dataEntryStore.submissions[idx], status: req.body.status, notes: req.body.notes, reviewedAt: new Date().toISOString(), reviewedBy: req.user?.username };
+  const { status, notes } = req.body;
+  const now = new Date().toISOString();
+  const updated = { ...dataEntryStore.submissions[idx], status, notes, reviewedAt: now, reviewedBy: req.user?.username };
+  dataEntryStore.submissions[idx] = updated;
   saveDataEntry();
-  res.json({ success: true, submission: dataEntryStore.submissions[idx] });
+  // Sync verified flag to boz:results store
+  const category = updated.electionType === 'parliament' ? 'parliamentary' : updated.electionType;
+  const key = `boz:results:${category}:station:${updated.pollingStationId}`;
+  const existing = kv.get(key);
+  if (existing) {
+    kv.set(key, { ...existing, status, verified: status === 'approved' || status === 'verified',
+      verifiedBy: req.user?.username, updatedAt: now });
+  }
+  res.json({ success: true, submission: updated });
 });
 
 // Stats
@@ -1285,12 +1347,61 @@ function regRoutes(type, noun) {
     res.json({ registrations: regs, count: regs.length });
   });
 
-  app.patch(`${BASE}/registrations/${type}/:id/status`, auth.requireAuth, (req, res) => {
+  app.patch(`${BASE}/registrations/${type}/:id/status`, auth.requireAuth, async (req, res) => {
     const idx = regStore[type].findIndex(r => r.id === req.params.id);
     if (idx < 0) return res.status(404).json({ error: 'Registration not found' });
-    regStore[type][idx] = { ...regStore[type][idx], status: req.body.status, notes: req.body.notes, reviewedAt: new Date().toISOString() };
+    const { status, notes, username, password } = req.body;
+    const now = new Date().toISOString();
+    regStore[type][idx] = { ...regStore[type][idx], status, notes, reviewedAt: now, reviewedBy: req.user?.username };
+    // Auto-create election user when approved with credentials
+    if (status === 'approved' && username && password) {
+      try {
+        const roleMap = { agent: 'election_agent', member: 'member', internship: 'intern', cooperative: 'cooperative_admin' };
+        if (!auth.getUser(username)) {
+          const reg = regStore[type][idx];
+          await auth.registerUser({
+            username,
+            name: reg.name || ((reg.firstName || '') + ' ' + (reg.lastName || '')).trim() || username,
+            role: roleMap[type] || 'election_agent',
+            email: reg.email || '', phone: reg.phone || '',
+            scopeName: reg.ward || reg.constituency || reg.district || reg.province || 'National',
+            active: true, registrationId: reg.id, registrationType: type,
+          }, password);
+        }
+        regStore[type][idx].username = username;
+        regStore[type][idx].loginCreated = true;
+        regStore[type][idx].loginCreatedAt = now;
+      } catch (e) { regStore[type][idx].loginError = e.message; }
+    }
     saveReg(type);
     res.json({ success: true, registration: regStore[type][idx] });
+  });
+
+  app.post(`${BASE}/registrations/${type}/:id/grant-login`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
+    try {
+      const idx = regStore[type]?.findIndex(r => r.id === req.params.id);
+      if (idx === undefined || idx < 0) return res.status(404).json({ error: 'Registration not found' });
+      const { username, password } = req.body;
+      if (!username || !password) return res.status(400).json({ error: 'username and password required' });
+      const roleMap = { agent: 'election_agent', member: 'member', internship: 'intern', cooperative: 'cooperative_admin' };
+      const reg = regStore[type][idx];
+      const existingUser = auth.getUser(username);
+      if (existingUser) {
+        await auth.resetPassword(existingUser.id, password);
+      } else {
+        await auth.registerUser({
+          username,
+          name: reg.name || ((reg.firstName || '') + ' ' + (reg.lastName || '')).trim() || username,
+          role: roleMap[type] || 'election_agent',
+          email: reg.email || '', phone: reg.phone || '',
+          scopeName: reg.ward || reg.constituency || reg.district || reg.province || 'National',
+          active: true, registrationId: reg.id, registrationType: type,
+        }, password);
+      }
+      regStore[type][idx] = { ...reg, status: 'approved', username, loginCreated: true, loginCreatedAt: new Date().toISOString() };
+      saveReg(type);
+      res.json({ success: true, username, message: `Login granted for ${reg.name || username}` });
+    } catch (e) { res.status(500).json({ error: e.message }); }
   });
 }
 
