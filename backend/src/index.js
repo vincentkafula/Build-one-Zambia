@@ -1387,26 +1387,50 @@ function regRoutes(type, noun) {
     try {
       const idx = regStore[type]?.findIndex(r => r.id === req.params.id);
       if (idx === undefined || idx < 0) return res.status(404).json({ error: 'Registration not found' });
-      const { username, password } = req.body;
-      if (!username || !password) return res.status(400).json({ error: 'username and password required' });
-      const roleMap = { agent: 'election_agent', member: 'member', internship: 'intern', cooperative: 'cooperative_admin' };
       const reg = regStore[type][idx];
+
+      // Auto-generate credentials if not provided
+      const roleMap = { agent: 'polling_agent', member: 'ward_manager', internship: 'constituency_manager', cooperative: 'district_manager' };
+      const name = reg.fullName || reg.name || ((reg.firstName || '') + ' ' + (reg.lastName || '')).trim() || 'user';
+      const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
+      const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
+      const autoUsername = `${type}_${safeName}_${suffix}`;
+      const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#';
+      let autoPassword = '';
+      for (let i = 0; i < 10; i++) autoPassword += chars[Math.floor(Math.random() * chars.length)];
+
+      const username = req.body.username || autoUsername;
+      const password = req.body.password || autoPassword;
+      const role = roleMap[type] || 'polling_agent';
+
+      // Check if user already exists — reset password if so
       const existingUser = auth.getUser(username);
       if (existingUser) {
         await auth.resetPassword(existingUser.id, password);
       } else {
         await auth.registerUser({
-          username,
-          name: reg.name || ((reg.firstName || '') + ' ' + (reg.lastName || '')).trim() || username,
-          role: roleMap[type] || 'election_agent',
-          email: reg.email || '', phone: reg.phone || '',
-          scopeName: reg.ward || reg.constituency || reg.district || reg.province || 'National',
+          username, role, name,
+          email: reg.email || '',
+          phone: reg.phone || reg.cellNumber || '',
+          scopeName: reg.pollingStation || reg.ward || reg.constituency || reg.district || reg.province || 'National',
           active: true, registrationId: reg.id, registrationType: type,
         }, password);
       }
-      regStore[type][idx] = { ...reg, status: 'approved', username, loginCreated: true, loginCreatedAt: new Date().toISOString() };
+
+      // Mark registration as login granted
+      regStore[type][idx] = {
+        ...reg,
+        status: reg.status === 'pending' ? 'approved' : reg.status,
+        username,
+        loginGranted: true,
+        loginCreated: true,
+        loginCreatedAt: new Date().toISOString(),
+        loginGrantedBy: req.user?.username,
+      };
       saveReg(type);
-      res.json({ success: true, username, message: `Login granted for ${reg.name || username}` });
+
+      const credentials = { username, password, role, generatedAt: new Date().toISOString(), name, alreadyExists: !!existingUser };
+      res.json({ success: true, credentials, message: `Login granted for ${name}` });
     } catch (e) { res.status(500).json({ error: e.message }); }
   });
 }
@@ -2141,37 +2165,6 @@ async function grantLoginForReg(type, id, customUsername, customPassword, adminU
 
   return { username, password, role, generatedAt: new Date().toISOString(), name, alreadyExists: false };
 }
-
-// Grant login route for each type
-['agent', 'member', 'internship', 'cooperative'].forEach(type => {
-  app.post(`${BASE}/registrations/${type}/:id/grant-login`,
-    auth.requireAuth, auth.requireRole('super_admin', 'admin'),
-    async (req, res) => {
-      try {
-        const { username: customUsername, password: customPassword } = req.body;
-        const result = await grantLoginForReg(type, req.params.id, customUsername, customPassword, req.user.username);
-        res.json({ success: true, credentials: result });
-      } catch (err) { res.status(400).json({ error: err.message }); }
-    }
-  );
-
-  // Revoke login
-  app.delete(`${BASE}/registrations/${type}/:id/grant-login`,
-    auth.requireAuth, auth.requireRole('super_admin'),
-    async (req, res) => {
-      try {
-        const reg = TYPE_GETTERS[type]?.(req.params.id);
-        if (!reg) return res.status(404).json({ error: 'Registration not found' });
-        if (reg.username) {
-          try { auth.deleteUser(reg.username); } catch {}
-        }
-        const updated = { ...reg, loginGranted: false, username: null, loginRevokedAt: new Date().toISOString(), loginRevokedBy: req.user.username };
-        TYPE_SAVERS[type]?.(req.params.id, updated);
-        res.json({ success: true, message: 'Login access revoked' });
-      } catch (err) { res.status(400).json({ error: err.message }); }
-    }
-  );
-});
 
 // Auto-grant on approval — when PATCH /registrations/:type/:id/status sets status=approved, auto-create user
 async function autoGrantOnApproval(type, id, adminUser) {
