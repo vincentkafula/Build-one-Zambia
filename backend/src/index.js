@@ -1475,12 +1475,46 @@ regRoutes('internship',  'Internship');
   // Documents endpoint — returns all uploaded document base64 strings
   app.get(`${BASE}/registrations/${type}/:id/documents`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
     const id = req.params.id;
-    const reg = regStore[type]?.find(r => r.id === id)
-      || kv.get(`boz:reg:${type === 'internship' ? 'intern' : type === 'cooperative' ? 'coop' : type}:${id}`);
-    if (!reg) return res.status(404).json({ error: 'Registration not found' });
-    // Return documents stored in different possible fields
-    const documents = reg.documents || reg.uploads || {};
+
+    // Try all possible storage locations
+    let reg = regStore[type]?.find(r => r.id === id);
+
+    // Try KV store variants
+    if (!reg) {
+      const kvVariants = [
+        `reg:${type}`,           // regStore key
+        `boz:reg:${type}:${id}`, // individual record
+        `boz:reg:intern:${id}`,  // internship alias
+        `boz:reg:coop:${id}`,    // cooperative alias
+        `boz:reg:agent:${id}`,   // agent alias
+        `boz:reg:member:${id}`,  // member alias
+      ];
+      for (const key of kvVariants) {
+        const val = kv.get(key);
+        if (Array.isArray(val)) {
+          // It's the full list — find by ID
+          const found = val.find(r => r.id === id);
+          if (found) { reg = found; break; }
+        } else if (val && (val.id === id || !val.id)) {
+          reg = val; break;
+        }
+      }
+    }
+
+    if (!reg) {
+      console.warn(`[documents] Registration not found: ${type}/${id}. regStore has ${regStore[type]?.length || 0} entries.`);
+      return res.status(404).json({ error: `Registration ${id} not found. It may have been submitted before this server started.` });
+    }
+
+    // Return documents from any field they might be stored in
+    const documents = reg.documents || reg.uploads || reg.docs || {};
     const documentsMeta = reg.documentsMeta || {};
+
+    // Also include selfie in documents for convenience
+    if (reg.selfieDataUrl && !documents.selfie) {
+      documents.selfie = reg.selfieDataUrl;
+    }
+
     res.json({ documents, documentsMeta, hasDocuments: Object.keys(documents).length > 0 });
   });
 });

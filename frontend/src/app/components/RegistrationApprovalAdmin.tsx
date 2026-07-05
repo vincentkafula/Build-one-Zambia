@@ -246,8 +246,17 @@ function DocumentViewer({ regId, type }: { regId: string; type: TabKey }) {
       const res = await fetch(`${BASE}/registrations/${type}/${regId}/documents`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       });
-      if (!res.ok) throw new Error('Could not load documents');
       const data = await res.json();
+      if (!res.ok) {
+        // 404 means registration not in current server memory (submitted before restart)
+        // Show "no documents" instead of error
+        if (res.status === 404) {
+          setDocs({});
+          setLoaded(true);
+          return;
+        }
+        throw new Error(data.error || 'Could not load documents');
+      }
       setDocs(data.documents || {});
       setMeta(data.documentsMeta || {});
       setLoaded(true);
@@ -275,7 +284,9 @@ function DocumentViewer({ regId, type }: { regId: string; type: TabKey }) {
           {loading && <p className="text-xs text-gray-400">Loading documents…</p>}
           {error && <p className="text-xs text-red-500">{error}</p>}
           {loaded && docKeys.length === 0 && (
-            <p className="text-xs text-gray-400 italic">No documents uploaded</p>
+            <div className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-3">
+              ⚠ No documents found. The applicant may not have uploaded any, or they were submitted before the current server deployment.
+            </div>
           )}
           {loaded && docKeys.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
