@@ -23,6 +23,7 @@ import {
   registrationApi, RegStatus, RegStats,
   MemberReg, CoopReg, InternshipReg, AgentReg, GeneratedCredentials,
 } from '../lib/api';
+import { Key } from 'lucide-react';
 
 const A    = '#16a34a';
 const NAVY = '#1e2d4a';
@@ -349,7 +350,76 @@ function AgentDetail({ reg }: { reg: AgentReg }) {
 
 // ── Registration row ──────────────────────────────────────────────────────────
 
-type AnyReg = MemberReg | CoopReg | InternshipReg | AgentReg;
+type AnyReg = (MemberReg | CoopReg | InternshipReg | AgentReg) & { loginGranted?: boolean; username?: string; loginGrantedAt?: string };
+
+// ── Grant Login Section ───────────────────────────────────────────────────────
+
+function GrantLoginSection({
+  reg, type, onCredentials,
+}: {
+  reg: AnyReg;
+  type: TabKey;
+  onCredentials: (c: GeneratedCredentials) => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const hasLogin = !!(reg as Record<string, unknown>).loginGranted;
+  const existingUsername = (reg as Record<string, unknown>).username as string | undefined;
+
+  async function handleGrant() {
+    setLoading(true); setError('');
+    try {
+      const res = await registrationApi.grantLogin(type, reg.id);
+      if (res.credentials) onCredentials(res.credentials);
+    } catch (e: unknown) {
+      setError((e as Error).message || 'Failed to grant login');
+    }
+    setLoading(false);
+  }
+
+  if (hasLogin && existingUsername) {
+    return (
+      <div className="p-4 rounded-xl bg-green-50 border border-green-200 space-y-2">
+        <div className="flex items-center gap-2 text-green-800 text-sm font-semibold">
+          <CheckCircle size={14} /> Login already granted
+        </div>
+        <p className="text-xs text-green-700">Username: <code className="font-mono bg-white px-1 rounded border border-green-200">{existingUsername}</code></p>
+        <button
+          onClick={handleGrant}
+          disabled={loading}
+          className="text-xs px-3 py-1.5 rounded-lg border border-green-400 text-green-700 hover:bg-green-100"
+        >
+          {loading ? 'Regenerating…' : 'Regenerate Credentials'}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 rounded-xl border border-dashed border-amber-300 bg-amber-50 space-y-3">
+      <div className="flex items-start gap-3">
+        <Key size={16} className="shrink-0 mt-0.5" style={{ color: '#d97706' }} />
+        <div>
+          <p className="text-sm font-semibold text-amber-800">Login Not Yet Granted</p>
+          <p className="text-xs text-amber-700 mt-0.5">
+            This application is approved. Click below to generate login credentials for this applicant.
+          </p>
+        </div>
+      </div>
+      {error && <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded p-2">{error}</p>}
+      <button
+        onClick={handleGrant}
+        disabled={loading}
+        className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-semibold disabled:opacity-50 transition-opacity"
+        style={{ background: '#d97706' }}
+      >
+        <Key size={14} />
+        {loading ? 'Generating Credentials…' : 'Grant Login Access'}
+      </button>
+    </div>
+  );
+}
+
 
 function RegRow({
   reg,

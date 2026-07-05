@@ -1501,6 +1501,12 @@ export const registrationApi = {
   getAgentCredentials: (id: string) =>
     request<{ success: boolean; credentials: GeneratedCredentials; fullName: string }>('GET', `/registrations/agent/${id}/credentials`),
 
+  // Grant / revoke login access
+  grantLogin: (type: 'member' | 'cooperative' | 'internship' | 'agent', id: string, opts?: { username?: string; password?: string }) =>
+    request<{ success: boolean; credentials: GeneratedCredentials & { alreadyExists?: boolean } }>('POST', `/registrations/${type}/${id}/grant-login`, opts || {}, true),
+  revokeLogin: (type: 'member' | 'cooperative' | 'internship' | 'agent', id: string) =>
+    request<{ success: boolean; message: string }>('DELETE', `/registrations/${type}/${id}/grant-login`, undefined, true),
+
   // Selfie retrieval (admin only)
   getMemberSelfie: (id: string) =>
     request<{ success: boolean; dataUrl: string; storedAt: string }>('GET', `/registrations/member/${id}/selfie`, undefined, true),

@@ -1374,7 +1374,13 @@ function regRoutes(type, noun) {
       } catch (e) { regStore[type][idx].loginError = e.message; }
     }
     saveReg(type);
-    res.json({ success: true, registration: regStore[type][idx] });
+
+    // Auto-grant login credentials when approved
+    if (req.body.status === 'approved') {
+      setImmediate(async () => { try { if (typeof autoGrantOnApproval === 'function') await autoGrantOnApproval(type, regStore[type][idx]?.id, req.user?.username); } catch(e) { console.error('[auto-grant]', e.message); } });
+    }
+
+    res.json({ success: true, registration: regStore[type][idx], credentials: null });
   });
 
   app.post(`${BASE}/registrations/${type}/:id/grant-login`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
@@ -2056,6 +2062,127 @@ app.get(`${BASE}/email/config`, auth.requireAuth, auth.requireRole('super_admin'
     provider: 'Resend',
   });
 });
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GRANT LOGIN — create election user account for approved applicants
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function generateUsername(name, type, id) {
+  const base = (name || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
+  const suffix = id.slice(-4);
+  return `${type}_${base}_${suffix}`;
+}
+
+function generatePassword() {
+  const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$';
+  let p = '';
+  for (let i = 0; i < 10; i++) p += chars[Math.floor(Math.random() * chars.length)];
+  return p;
+}
+
+const TYPE_ROLES = {
+  agent:       'polling_agent',
+  member:      'ward_manager',
+  internship:  'constituency_manager',
+  cooperative: 'district_manager',
+};
+
+const TYPE_GETTERS = {
+  agent:       (id) => kv.get(`boz:reg:agent:${id}`),
+  member:      (id) => kv.get(`boz:reg:member:${id}`),
+  internship:  (id) => kv.get(`boz:reg:intern:${id}`),
+  cooperative: (id) => kv.get(`boz:reg:coop:${id}`),
+};
+
+const TYPE_SAVERS = {
+  agent:       (id, data) => kv.set(`boz:reg:agent:${id}`, data),
+  member:      (id, data) => kv.set(`boz:reg:member:${id}`, data),
+  internship:  (id, data) => kv.set(`boz:reg:intern:${id}`, data),
+  cooperative: (id, data) => kv.set(`boz:reg:coop:${id}`, data),
+};
+
+async function grantLoginForReg(type, id, customUsername, customPassword, adminUser) {
+  const reg = TYPE_GETTERS[type]?.(id);
+  if (!reg) throw new Error('Registration not found');
+
+  const name = reg.fullName || reg.name || reg.contactName || reg.applicantName || '';
+  const username = customUsername || generateUsername(name, type, id);
+  const password = customPassword || generatePassword();
+  const role = TYPE_ROLES[type] || 'polling_agent';
+
+  // Check if already has login
+  if (reg.loginGranted && reg.username) {
+    return { username: reg.username, password: null, role, alreadyExists: true, generatedAt: reg.loginGrantedAt };
+  }
+
+  // Create the user account
+  await auth.registerUser({
+    username,
+    role,
+    name,
+    email: reg.email || '',
+    phone: reg.phone || reg.cellNumber || '',
+    registrationId: id,
+    registrationType: type,
+    scopeName: reg.pollingStation || reg.ward || reg.constituency || reg.district || reg.province || 'National',
+  }, password);
+
+  // Mark the registration as having login
+  const updated = {
+    ...reg,
+    loginGranted: true,
+    username,
+    role,
+    loginGrantedAt: new Date().toISOString(),
+    loginGrantedBy: adminUser,
+  };
+  TYPE_SAVERS[type]?.(id, updated);
+
+  return { username, password, role, generatedAt: new Date().toISOString(), name, alreadyExists: false };
+}
+
+// Grant login route for each type
+['agent', 'member', 'internship', 'cooperative'].forEach(type => {
+  app.post(`${BASE}/registrations/${type}/:id/grant-login`,
+    auth.requireAuth, auth.requireRole('super_admin', 'admin'),
+    async (req, res) => {
+      try {
+        const { username: customUsername, password: customPassword } = req.body;
+        const result = await grantLoginForReg(type, req.params.id, customUsername, customPassword, req.user.username);
+        res.json({ success: true, credentials: result });
+      } catch (err) { res.status(400).json({ error: err.message }); }
+    }
+  );
+
+  // Revoke login
+  app.delete(`${BASE}/registrations/${type}/:id/grant-login`,
+    auth.requireAuth, auth.requireRole('super_admin'),
+    async (req, res) => {
+      try {
+        const reg = TYPE_GETTERS[type]?.(req.params.id);
+        if (!reg) return res.status(404).json({ error: 'Registration not found' });
+        if (reg.username) {
+          try { auth.deleteUser(reg.username); } catch {}
+        }
+        const updated = { ...reg, loginGranted: false, username: null, loginRevokedAt: new Date().toISOString(), loginRevokedBy: req.user.username };
+        TYPE_SAVERS[type]?.(req.params.id, updated);
+        res.json({ success: true, message: 'Login access revoked' });
+      } catch (err) { res.status(400).json({ error: err.message }); }
+    }
+  );
+});
+
+// Auto-grant on approval — when PATCH /registrations/:type/:id/status sets status=approved, auto-create user
+async function autoGrantOnApproval(type, id, adminUser) {
+  try {
+    const reg = TYPE_GETTERS[type]?.(id);
+    if (!reg || reg.loginGranted) return; // already has login
+    await grantLoginForReg(type, id, null, null, adminUser);
+  } catch (err) {
+    console.error(`[auto-grant] Failed for ${type}/${id}:`, err.message);
+  }
+}
 
 // ─── 404 catch-all ───────────────────────────────────────────────────────────
 
