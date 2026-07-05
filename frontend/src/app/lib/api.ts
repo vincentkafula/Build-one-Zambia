@@ -11,7 +11,26 @@ const BASE = API_BASE;
 const SESSION_KEY = 'boz_session_token';
 
 export function getToken(): string | null {
-  return sessionStorage.getItem(SESSION_KEY);
+  // Check regular session token first
+  const regular = sessionStorage.getItem(SESSION_KEY);
+  if (regular) return regular;
+  // Check super admin session (stored as JSON object)
+  try {
+    const raw = sessionStorage.getItem('boz_super_admin_token');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.token) return parsed.token;
+    }
+  } catch {}
+  // Check election user object
+  try {
+    const raw = sessionStorage.getItem('boz_election_user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.token) return parsed.token;
+    }
+  } catch {}
+  return null;
 }
 
 export function setToken(token: string): void {

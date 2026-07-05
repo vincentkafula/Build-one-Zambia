@@ -29,6 +29,31 @@ const A    = '#16a34a';
 const NAVY = '#1e2d4a';
 const BASE = API_BASE;
 
+// Get the best available auth token from any active session
+function getAuthToken(): string {
+  // Super admin session (stored as JSON object)
+  try {
+    const raw = sessionStorage.getItem('boz_super_admin_token');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.token) return parsed.token;
+    }
+  } catch {}
+  // Election user session (raw token string)
+  const t1 = sessionStorage.getItem('boz_session_token');
+  if (t1) return t1;
+  // Election user object
+  try {
+    const raw = sessionStorage.getItem('boz_election_user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.token) return parsed.token;
+    }
+  } catch {}
+  return '';
+}
+
+
 async function grantLogin(type: string, id: string, username: string, password: string) {
   const token = sessionStorage.getItem('boz_session_token');
   const res = await fetch(`${BASE}/registrations/${type}/${id}/grant-login`, {
@@ -146,9 +171,8 @@ function SelfieViewer({ regId, type, hasSelfie }: { regId: string; type: TabKey;
     setLoading(true);
     setError('');
     try {
-      const token = sessionStorage.getItem('boz_session_token');
       const res = await safeFetch(`${BASE}/registrations/${type}/${regId}/selfie`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${getAuthToken()}` },
       });
       if (!res.ok) throw new Error('Not found');
       const data = await res.json();
@@ -219,9 +243,8 @@ function DocumentViewer({ regId, type }: { regId: string; type: TabKey }) {
     if (loaded || loading) return;
     setLoading(true); setError('');
     try {
-      const token = sessionStorage.getItem('boz_super_admin_token') || sessionStorage.getItem('boz_session_token') || sessionStorage.getItem('boz_election_user') && JSON.parse(sessionStorage.getItem('boz_election_user')!)?.token;
       const res = await fetch(`${BASE}/registrations/${type}/${regId}/documents`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${getAuthToken()}` },
       });
       if (!res.ok) throw new Error('Could not load documents');
       const data = await res.json();
@@ -367,40 +390,13 @@ function MemberDetail({ reg }: { reg: MemberReg }) {
 
       {/* Documents */}
       <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Documents Submitted</p>
-        {documentsUploaded ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {[
-              { key: 'nationalId', label: 'NRC Document' },
-              { key: 'votersCard', label: "Voter's Card" },
-              { key: 'proofOfAddress', label: 'Proof of Address' },
-            ].map(({ key, label }) => {
-              const doc = docsMeta?.[key];
-              return (
-                <div key={key} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: doc ? '#f0fdf4' : '#fafafa', border: `1px solid ${doc ? '#bbf7d0' : '#e5e7eb'}` }}>
-                  <FileText size={14} style={{ color: doc ? '#16a34a' : '#9ca3af' }} />
-                  <div className="min-w-0">
-                    <p className="text-xs text-gray-600">{label}</p>
-                    {doc ? (
-                      <p className="text-xs text-green-600 truncate">{doc.name} ({Math.round(doc.size / 1024)}KB)</p>
-                    ) : (
-                      <p className="text-xs text-gray-400">Not uploaded</p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-2">
-            ⚠ Documents were not submitted electronically. Request physical copies.
-          </p>
-        )}
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Uploaded Documents</p>
+        <DocumentViewer regId={reg.id} type="member" />
       </div>
 
       {/* Selfie */}
       <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Identity Selfie</p>
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Identity Selfie</p>
         <SelfieViewer regId={reg.id} type="member" hasSelfie={!!(reg as unknown as { hasSelfie?: boolean }).hasSelfie} />
       </div>
     </div>
