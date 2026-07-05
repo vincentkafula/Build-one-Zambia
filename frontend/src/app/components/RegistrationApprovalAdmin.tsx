@@ -191,6 +191,145 @@ function SelfieViewer({ regId, type, hasSelfie }: { regId: string; type: TabKey;
   );
 }
 
+
+// ── Document Viewer ───────────────────────────────────────────────────────────
+
+const DOC_LABELS: Record<string, string> = {
+  grade12:     'Grade 12 Certificate',
+  nrc:         'NRC (National Registration Card)',
+  voterCard:   "Voter's Card",
+  proofAddress:'Proof of Address',
+  headTeacher: 'Letter from Head Teacher',
+  police:      'Police Clearance',
+  idDocument:  'ID Document (NRC)',
+  votersCard:  "Voter's Card",
+  selfie:      'Selfie Photo',
+};
+
+function DocumentViewer({ regId, type }: { regId: string; type: TabKey }) {
+  const [docs, setDocs] = useState<Record<string, string>>({});
+  const [meta, setMeta] = useState<Record<string, { name: string; size: number } | null>>({});
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState('');
+  const [open, setOpen] = useState(false);
+  const [preview, setPreview] = useState<{ key: string; url: string } | null>(null);
+
+  async function load() {
+    if (loaded || loading) return;
+    setLoading(true); setError('');
+    try {
+      const token = sessionStorage.getItem('boz_super_admin_token') || sessionStorage.getItem('boz_session_token') || sessionStorage.getItem('boz_election_user') && JSON.parse(sessionStorage.getItem('boz_election_user')!)?.token;
+      const res = await fetch(`${BASE}/registrations/${type}/${regId}/documents`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Could not load documents');
+      const data = await res.json();
+      setDocs(data.documents || {});
+      setMeta(data.documentsMeta || {});
+      setLoaded(true);
+    } catch (e: unknown) {
+      setError((e as Error).message || 'Failed to load documents');
+    }
+    setLoading(false);
+  }
+
+  const docKeys = Object.keys(docs).filter(k => docs[k]);
+
+  return (
+    <div>
+      <button
+        onClick={() => { setOpen(o => !o); if (!open) load(); }}
+        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border"
+        style={{ borderColor: '#7c3aed', color: '#7c3aed' }}
+      >
+        <FileText size={12} />
+        {open ? 'Hide Documents' : `View Documents${loaded && docKeys.length > 0 ? ` (${docKeys.length})` : ''}`}
+      </button>
+
+      {open && (
+        <div className="mt-3 space-y-3">
+          {loading && <p className="text-xs text-gray-400">Loading documents…</p>}
+          {error && <p className="text-xs text-red-500">{error}</p>}
+          {loaded && docKeys.length === 0 && (
+            <p className="text-xs text-gray-400 italic">No documents uploaded</p>
+          )}
+          {loaded && docKeys.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {docKeys.map(key => {
+                const url = docs[key];
+                const label = DOC_LABELS[key] || key;
+                const isPdf = url.startsWith('data:application/pdf') || url.includes(';base64,JVBERi');
+                const isImage = url.startsWith('data:image');
+                return (
+                  <div
+                    key={key}
+                    className="relative rounded-xl border border-gray-200 overflow-hidden bg-gray-50 cursor-pointer hover:border-purple-400 transition-colors"
+                    onClick={() => setPreview({ key, url })}
+                  >
+                    {isImage ? (
+                      <img src={url} alt={label} className="w-full h-24 object-cover" />
+                    ) : (
+                      <div className="w-full h-24 flex flex-col items-center justify-center gap-1">
+                        <FileText size={24} style={{ color: '#7c3aed' }} />
+                        <span className="text-xs text-gray-500">PDF</span>
+                      </div>
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
+                      <p className="text-white text-xs truncate">{label}</p>
+                    </div>
+                    <div className="absolute top-1 right-1">
+                      <span className="text-xs bg-white/90 px-1.5 py-0.5 rounded text-gray-600">Click to view</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Full-screen preview modal */}
+      {preview && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80"
+          onClick={() => setPreview(null)}
+        >
+          <div
+            className="relative max-w-3xl max-h-[90vh] bg-white rounded-2xl overflow-hidden shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <p className="font-semibold text-gray-800">{DOC_LABELS[preview.key] || preview.key}</p>
+              <div className="flex items-center gap-2">
+                <a
+                  href={preview.url}
+                  download={`${preview.key}.${preview.url.startsWith('data:application/pdf') ? 'pdf' : 'jpg'}`}
+                  className="text-xs px-3 py-1.5 rounded-lg bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100"
+                  onClick={e => e.stopPropagation()}
+                >
+                  Download
+                </a>
+                <button
+                  onClick={() => setPreview(null)}
+                  className="text-xs px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200"
+                >
+                  Close ✕
+                </button>
+              </div>
+            </div>
+            {preview.url.startsWith('data:image') ? (
+              <img src={preview.url} alt={preview.key} className="w-full max-h-[75vh] object-contain" />
+            ) : (
+              <iframe src={preview.url} className="w-full h-[75vh]" title={preview.key} />
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Member detail panel ────────────────────────────────────────────────────────
 
 function MemberDetail({ reg }: { reg: MemberReg }) {
@@ -288,9 +427,15 @@ function CoopDetail({ reg }: { reg: CoopReg }) {
           <Field label="Address" value={reg.address} />
         </div>
       </div>
-      <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Selfie</p>
-        <SelfieViewer regId={reg.id} type="cooperative" hasSelfie={!!(reg as unknown as { hasSelfie?: boolean }).hasSelfie} />
+      <div className="space-y-3">
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Documents</p>
+          <DocumentViewer regId={reg.id} type="cooperative" />
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Selfie</p>
+          <SelfieViewer regId={reg.id} type="cooperative" hasSelfie={!!(reg as unknown as { hasSelfie?: boolean }).hasSelfie} />
+        </div>
       </div>
     </div>
   );
@@ -313,9 +458,15 @@ function InternDetail({ reg }: { reg: InternshipReg }) {
           <Field label="Membership Number" value={reg.membershipNumber} icon={<CreditCard size={13} />} />
         </div>
       </div>
-      <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Selfie</p>
-        <SelfieViewer regId={reg.id} type="internship" hasSelfie={!!(reg as unknown as { hasSelfie?: boolean }).hasSelfie} />
+      <div className="space-y-3">
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Documents</p>
+          <DocumentViewer regId={reg.id} type="internship" />
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Selfie</p>
+          <SelfieViewer regId={reg.id} type="internship" hasSelfie={!!(reg as unknown as { hasSelfie?: boolean }).hasSelfie} />
+        </div>
       </div>
     </div>
   );
@@ -340,9 +491,15 @@ function AgentDetail({ reg }: { reg: AgentReg }) {
           <Field label="Membership Number" value={reg.membershipNumber} icon={<CreditCard size={13} />} />
         </div>
       </div>
-      <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Selfie</p>
-        <SelfieViewer regId={reg.id} type="agent" hasSelfie={!!(reg as unknown as { hasSelfie?: boolean }).hasSelfie} />
+      <div className="space-y-3">
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Documents</p>
+          <DocumentViewer regId={reg.id} type="agent" />
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Selfie</p>
+          <SelfieViewer regId={reg.id} type="agent" hasSelfie={!!(reg as unknown as { hasSelfie?: boolean }).hasSelfie} />
+        </div>
       </div>
     </div>
   );

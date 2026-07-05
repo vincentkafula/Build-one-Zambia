@@ -1385,9 +1385,25 @@ function regRoutes(type, noun) {
 
   app.post(`${BASE}/registrations/${type}/:id/grant-login`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
     try {
-      const idx = regStore[type]?.findIndex(r => r.id === req.params.id);
-      if (idx === undefined || idx < 0) return res.status(404).json({ error: 'Registration not found' });
-      const reg = regStore[type][idx];
+      const id = req.params.id;
+      let idx = regStore[type]?.findIndex(r => r.id === id) ?? -1;
+      let reg = idx >= 0 ? regStore[type][idx] : null;
+
+      // Also check the registrations.js KV store (boz:reg:*)
+      if (!reg) {
+        const kvKey = type === 'internship' ? `boz:reg:intern:${id}` :
+                      type === 'cooperative' ? `boz:reg:coop:${id}` :
+                      `boz:reg:${type}:${id}`;
+        reg = kv.get(kvKey);
+        if (reg) {
+          // Add to regStore for subsequent operations
+          regStore[type].push(reg);
+          saveReg(type);
+          idx = regStore[type].length - 1;
+        }
+      }
+
+      if (!reg) return res.status(404).json({ error: `Registration ${id} not found` });
 
       // Auto-generate credentials if not provided
       const roleMap = { agent: 'polling_agent', member: 'ward_manager', internship: 'constituency_manager', cooperative: 'district_manager' };
@@ -1441,11 +1457,31 @@ regRoutes('agent',       'Agent');
 regRoutes('internship',  'Internship');
 
 ['member', 'cooperative', 'agent', 'internship'].forEach(type => {
-  app.get(`${BASE}/registrations/${type}/:id/credentials`, auth.requireAuth, (req, res) => {
+  app.get(`${BASE}/registrations/${type}/:id/credentials`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
     res.json({ credentials: { id: req.params.id, type, generatedAt: new Date().toISOString() } });
   });
-  app.get(`${BASE}/registrations/${type}/:id/selfie`, auth.requireAuth, (req, res) => {
-    res.json({ selfie: null, id: req.params.id });
+
+  // Selfie endpoint — reads selfieDataUrl stored in the registration
+  app.get(`${BASE}/registrations/${type}/:id/selfie`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+    const id = req.params.id;
+    // Check regStore first
+    const reg = regStore[type]?.find(r => r.id === id)
+      || kv.get(`boz:reg:${type === 'internship' ? 'intern' : type === 'cooperative' ? 'coop' : type}:${id}`);
+    if (!reg) return res.status(404).json({ error: 'Registration not found' });
+    const dataUrl = reg.selfieDataUrl || reg.selfie || null;
+    res.json({ dataUrl, hasSelfie: !!dataUrl });
+  });
+
+  // Documents endpoint — returns all uploaded document base64 strings
+  app.get(`${BASE}/registrations/${type}/:id/documents`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+    const id = req.params.id;
+    const reg = regStore[type]?.find(r => r.id === id)
+      || kv.get(`boz:reg:${type === 'internship' ? 'intern' : type === 'cooperative' ? 'coop' : type}:${id}`);
+    if (!reg) return res.status(404).json({ error: 'Registration not found' });
+    // Return documents stored in different possible fields
+    const documents = reg.documents || reg.uploads || {};
+    const documentsMeta = reg.documentsMeta || {};
+    res.json({ documents, documentsMeta, hasDocuments: Object.keys(documents).length > 0 });
   });
 });
 

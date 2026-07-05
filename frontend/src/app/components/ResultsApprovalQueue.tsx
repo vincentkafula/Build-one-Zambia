@@ -117,7 +117,7 @@ function SubmissionRow({
           <div>
             <p className="text-xs text-muted-foreground">Votes Cast / Turnout</p>
             <p className="text-sm font-mono font-semibold text-foreground">
-              {sub.totalVotesCast.toLocaleString()} <span className="text-muted-foreground font-normal">({turnout}%)</span>
+              {(sub.totalVotesCast ?? 0).toLocaleString()} <span className="text-muted-foreground font-normal">({turnout}%)</span>
             </p>
           </div>
           <div className="flex items-center gap-2 justify-end sm:justify-start">
@@ -136,10 +136,10 @@ function SubmissionRow({
           {/* Stats row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Registered Voters', value: sub.registeredVoters.toLocaleString() },
-              { label: 'Total Votes Cast',  value: sub.totalVotesCast.toLocaleString() },
-              { label: 'Rejected Ballots',  value: sub.rejectedBallots.toLocaleString() },
-              { label: 'Submitted',         value: new Date(sub.submittedAt).toLocaleString() },
+              { label: 'Registered Voters', value: (sub.registeredVoters ?? 0).toLocaleString() },
+              { label: 'Total Votes Cast',  value: (sub.totalVotesCast ?? 0).toLocaleString() },
+              { label: 'Rejected Ballots',  value: (sub.rejectedBallots ?? 0).toLocaleString() },
+              { label: 'Submitted',         value: sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : '—' },
             ].map(({ label, value }) => (
               <div key={label} className="bg-card rounded-lg p-3 border border-border">
                 <p className="text-xs text-muted-foreground">{label}</p>
@@ -149,14 +149,14 @@ function SubmissionRow({
           </div>
 
           {/* Candidate results */}
-          {sub.candidateResults.length > 0 && (
+          {(sub.candidateResults ?? sub.candidateVotes ?? []).length > 0 && (
             <div>
               <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Candidate Results</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {sub.candidateResults.map(cr => (
+                {(sub.candidateResults ?? sub.candidateVotes ?? []).map(cr => (
                   <div key={cr.candidateId} className="bg-card rounded-lg px-3 py-2 border border-border">
                     <p className="text-xs text-muted-foreground truncate">{cr.candidateId}</p>
-                    <p className="text-sm font-mono font-bold text-foreground">{cr.votes.toLocaleString()}</p>
+                    <p className="text-sm font-mono font-bold text-foreground">{(cr.votes ?? 0).toLocaleString()}</p>
                   </div>
                 ))}
               </div>
