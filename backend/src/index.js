@@ -83,6 +83,48 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.set('trust proxy', 1);
 
 // ─── Health (registered BEFORE rate limiter so it's never blocked) ───────────
+
+// ─── Auto-seed presidential candidates if backend has none ───────────────────
+// Uses same IDs as frontend mockData.ts so submitted votes match candidate records
+async function autoSeedCandidates() {
+  const existing = candidates.listCandidates({ electionType: 'presidential' });
+  if (existing.length > 0) return; // Already seeded
+
+  const presidentialCandidates = [
+    { id: 'gmc',    name: 'Mr Given Mwenya Chansa',       party: 'MEE',         partyColor: '#16a34a', ballotNumber: 1 },
+    { id: 'rs',     name: 'Dr Richard Silumbe',            party: 'LM',          partyColor: '#0891b2', ballotNumber: 2 },
+    { id: 'hk',     name: 'Mr Harry Kalaba',               party: 'CF',          partyColor: '#d97706', ballotNumber: 3 },
+    { id: 'fm',     name: "Dr Fred M'membe",               party: 'SP',          partyColor: '#dc2626', ballotNumber: 4 },
+    { id: 'kbf',    name: 'Mr Kelvin Fube Bwalya (KBF)',  party: 'ZMP',         partyColor: '#7c3aed', ballotNumber: 5 },
+    { id: 'bm',     name: 'Mr Brian Mundubile',            party: 'NRPUP',       partyColor: '#0f766e', ballotNumber: 6 },
+    { id: 'hkunda', name: 'Mr Howard Kunda',               party: 'ZAWAPA',      partyColor: '#b45309', ballotNumber: 7 },
+    { id: 'bmush',  name: 'Dr Brian Mushimba',             party: 'OPP',         partyColor: '#0369a1', ballotNumber: 8 },
+    { id: 'gk',     name: 'Ms Given Katuta',               party: 'Independent', partyColor: '#6b7280', ballotNumber: 9 },
+    { id: 'xc',     name: 'Mr Xavier Chungu',              party: 'LDP',         partyColor: '#9333ea', ballotNumber: 10 },
+    { id: 'hh',     name: 'Mr Hakainde Hichilema',         party: 'UPND',        partyColor: '#e11d48', ballotNumber: 11 },
+    { id: 'dp',     name: 'Dr Dan Pule',                   party: 'CDP',         partyColor: '#1d4ed8', ballotNumber: 12 },
+    { id: 'rs2',    name: 'Mr Richwell Siamunene',         party: 'NFP',         partyColor: '#065f46', ballotNumber: 13 },
+    { id: 'aan',    name: 'Mr Ackim Antony Njobvu',        party: 'DU',          partyColor: '#92400e', ballotNumber: 14 },
+  ];
+
+  // Use fixed IDs that match frontend mockData — store directly with known IDs
+  const ids = [];
+  for (const c of presidentialCandidates) {
+    const cand = { ...c, electionType: 'presidential', scopeId: 'national', scopeName: 'National', gender: c.name.startsWith('Ms') ? 'female' : 'male', active: true, hasPhoto: false, addedBy: 'system', addedAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    kv.set(`boz:candidates:cand:${c.id}`, cand);
+    ids.push(c.id);
+  }
+
+  // Merge with existing index
+  const existingIndex = kv.get('boz:candidates:index') || [];
+  const merged = [...new Set([...existingIndex, ...ids])];
+  kv.set('boz:candidates:index', merged);
+  console.log(`[auto-seed] Seeded ${presidentialCandidates.length} presidential candidates`);
+}
+
+autoSeedCandidates().catch(e => console.error('[auto-seed]', e.message));
+
+
 app.get(`${BASE}/health`, (req, res) => {
   res.json({
     name: 'Build One Zambia API',
@@ -2246,6 +2288,25 @@ async function autoGrantOnApproval(type, id, adminUser) {
     console.error(`[auto-grant] Failed for ${type}/${id}:`, err.message);
   }
 }
+
+
+// ─── Results debug endpoint (admin only) ─────────────────────────────────────
+app.get(`${BASE}/results/debug`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  const keys = kv.getKeysByPrefix('boz:results:');
+  const entries = keys.map(k => {
+    const v = kv.get(k);
+    return {
+      key: k,
+      electionType: v?.electionType,
+      pollingStationId: v?.pollingStationId,
+      status: v?.status,
+      candidateCount: (v?.candidateVotes || v?.candidateResults || []).length,
+      totalVotesCast: v?.totalVotesCast || v?.totalVotes || 0,
+      submittedAt: v?.submittedAt,
+    };
+  });
+  res.json({ total: keys.length, entries });
+});
 
 // ─── 404 catch-all ───────────────────────────────────────────────────────────
 
