@@ -28,6 +28,39 @@ export interface UseElectionResultsReturn {
   stationsReporting: number;
 }
 
+
+// ── Hardcoded candidate name fallbacks ────────────────────────────────────────
+// Used when backend candidate fetch fails or ID not in map
+// Keys match the IDs stored in mockData.ts and auto-seeded in backend
+const CANDIDATE_FALLBACKS: Record<string, { name: string; party: string; partyColor: string }> = {
+  // Presidential
+  gmc:    { name: 'Mr Given Mwenya Chansa',         party: 'MEE',         partyColor: '#16a34a' },
+  rs:     { name: 'Dr Richard Silumbe',              party: 'LM',          partyColor: '#0891b2' },
+  hk:     { name: 'Mr Harry Kalaba',                 party: 'CF',          partyColor: '#d97706' },
+  fm:     { name: "Dr Fred M'membe",                 party: 'SP',          partyColor: '#dc2626' },
+  kbf:    { name: 'Mr Kelvin Fube Bwalya (KBF)',    party: 'ZMP',         partyColor: '#7c3aed' },
+  bm:     { name: 'Mr Brian Mundubile',              party: 'NRPUP',       partyColor: '#0f766e' },
+  hkunda: { name: 'Mr Howard Kunda',                 party: 'ZAWAPA',      partyColor: '#b45309' },
+  bmush:  { name: 'Dr Brian Mushimba',               party: 'OPP',         partyColor: '#0369a1' },
+  gk:     { name: 'Ms Given Katuta',                 party: 'Independent', partyColor: '#6b7280' },
+  xc:     { name: 'Mr Xavier Chungu',                party: 'LDP',         partyColor: '#9333ea' },
+  hh:     { name: 'Mr Hakainde Hichilema',           party: 'UPND',        partyColor: '#e11d48' },
+  dp:     { name: 'Dr Dan Pule',                     party: 'CDP',         partyColor: '#1d4ed8' },
+  rs2:    { name: 'Mr Richwell Siamunene',           party: 'NFP',         partyColor: '#065f46' },
+  aan:    { name: 'Mr Ackim Antony Njobvu',          party: 'DU',          partyColor: '#92400e' },
+};
+
+function resolveCandidate(candidateId: string, map: Map<string, Candidate>): Candidate {
+  // 1. Try live backend map
+  const fromMap = map.get(candidateId);
+  if (fromMap) return fromMap;
+  // 2. Try hardcoded fallback
+  const fallback = CANDIDATE_FALLBACKS[candidateId];
+  if (fallback) return { id: candidateId, ...fallback };
+  // 3. Last resort — show ID
+  return { id: candidateId, name: candidateId, party: '—', partyColor: '#6b7280' };
+}
+
 function toCandidate(bc: BackendCandidate): Candidate {
   return { id: bc.id, name: bc.name, party: bc.party, partyColor: bc.partyColor, photo: bc.photoDataUrl };
 }
@@ -87,12 +120,7 @@ export function useElectionResults(
   const liveResults: LiveCandidateResult[] = result
     ? result.candidates
         .map(t => ({
-          candidate: candidateMap.get(t.candidateId) ?? {
-            id: t.candidateId,
-            name: `Candidate ${t.candidateId.slice(0, 8)}`,
-            party: '—',
-            partyColor: '#6b7280',
-          },
+          candidate: resolveCandidate(t.candidateId, candidateMap),
           votes: t.votes,
           percentage: t.percentage,
           rank: t.rank,

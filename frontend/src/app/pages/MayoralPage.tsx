@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { provinces, PollingStation, calculateTurnout } from '../data/mockData';
+import { provinces, PollingStation, calculateTurnout, resolveCandidate } from '../data/mockData';
 import { CandidateCard } from '../components/CandidateCard';
 import { DrillDownFilters } from '../components/DrillDownFilters';
 import { useElectionResults } from '../hooks/useElectionResults';
@@ -102,8 +102,7 @@ export function MayoralPage() {
       totalRejected,
       turnout,
       voteTotals,
-      stationCount: stations.length,
-    };
+      stationCount: stations.length };
   };
 
   const aggregatedResults = getAggregatedResults();
@@ -237,8 +236,7 @@ export function MayoralPage() {
                             name: c.id,
                             label: c.party,
                             value: aggregatedResults.voteTotals.get(c.id) || 0,
-                            color: c.partyColor,
-                          }))}
+                            color: c.partyColor }))}
                           cx="50%"
                           cy="50%"
                           labelLine={false}

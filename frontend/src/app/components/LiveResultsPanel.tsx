@@ -25,15 +25,38 @@ import {
 
 // ─── Candidate resolver ───────────────────────────────────────────────────────
 
+// Build candidate map from mockData — covers all known candidate IDs
 const ALL_CANDIDATES_MAP = new Map<string, Candidate>(
   presidentialCandidates.map(c => [c.id, c])
 );
 
+// Hardcoded fallbacks for any ID not in mockData (keeps names correct even without backend)
+const EXTRA_FALLBACKS: Record<string, { name: string; party: string; partyColor: string }> = {
+  gmc:    { name: 'Mr Given Mwenya Chansa',         party: 'MEE',         partyColor: '#16a34a' },
+  rs:     { name: 'Dr Richard Silumbe',              party: 'LM',          partyColor: '#0891b2' },
+  hk:     { name: 'Mr Harry Kalaba',                 party: 'CF',          partyColor: '#d97706' },
+  fm:     { name: "Dr Fred M'membe",                 party: 'SP',          partyColor: '#dc2626' },
+  kbf:    { name: 'Mr Kelvin Fube Bwalya (KBF)',    party: 'ZMP',         partyColor: '#7c3aed' },
+  bm:     { name: 'Mr Brian Mundubile',              party: 'NRPUP',       partyColor: '#0f766e' },
+  hkunda: { name: 'Mr Howard Kunda',                 party: 'ZAWAPA',      partyColor: '#b45309' },
+  bmush:  { name: 'Dr Brian Mushimba',               party: 'OPP',         partyColor: '#0369a1' },
+  gk:     { name: 'Ms Given Katuta',                 party: 'Independent', partyColor: '#6b7280' },
+  xc:     { name: 'Mr Xavier Chungu',                party: 'LDP',         partyColor: '#9333ea' },
+  hh:     { name: 'Mr Hakainde Hichilema',           party: 'UPND',        partyColor: '#e11d48' },
+  dp:     { name: 'Dr Dan Pule',                     party: 'CDP',         partyColor: '#1d4ed8' },
+  rs2:    { name: 'Mr Richwell Siamunene',           party: 'NFP',         partyColor: '#065f46' },
+  aan:    { name: 'Mr Ackim Antony Njobvu',          party: 'DU',          partyColor: '#92400e' },
+};
+
 function resolveCandidate(id: string): { name: string; party: string; color: string } {
+  // 1. Try mockData map
   const c = ALL_CANDIDATES_MAP.get(id);
-  return c
-    ? { name: c.name, party: c.party, color: c.partyColor || '#6b7280' }
-    : { name: id, party: 'Unknown', color: '#6b7280' };
+  if (c) return { name: c.name, party: c.party, color: c.partyColor || '#6b7280' };
+  // 2. Try hardcoded fallbacks
+  const fb = EXTRA_FALLBACKS[id];
+  if (fb) return { name: fb.name, party: fb.party, color: fb.partyColor };
+  // 3. Show ID as-is — never show "Unknown"
+  return { name: id, party: '—', color: '#6b7280' };
 }
 
 function resolveProvinceName(id: string): string {

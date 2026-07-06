@@ -9,8 +9,7 @@ import {
   provinces,
   aggregateResults,
   calculateTurnout,
-  PollingStation,
-} from '../data/mockData';
+  PollingStation, resolveCandidate } from '../data/mockData';
 import { useElectionResults } from '../hooks/useElectionResults';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { MapPin, Clock, Wifi, WifiOff } from 'lucide-react';
@@ -84,8 +83,7 @@ export function PresidentialPage() {
     name: r.candidate.id,
     label: r.candidate.party,
     value: r.votes,
-    color: r.candidate.partyColor,
-  }));
+    color: r.candidate.partyColor }));
 
   const handleProvinceChange = (value: string) => {
     setSelectedProvince(value);
@@ -375,8 +373,7 @@ export function PresidentialPage() {
 
                   <div className="space-y-1">
                     {station.results && Array.isArray(station.results) && station.results.map(result => {
-                      const candidate = presidentialCandidates.find(c => c.id === result.candidateId);
-                      if (!candidate) return null;
+                      const candidate = resolveCandidate(result.candidateId);
 
                       const percentage = station.totalVotes > 0
                         ? ((result.votes / station.totalVotes) * 100).toFixed(1)

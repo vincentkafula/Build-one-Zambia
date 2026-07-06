@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { provinces, PollingStation, calculateTurnout } from '../data/mockData';
+import { provinces, PollingStation, calculateTurnout, resolveCandidate } from '../data/mockData';
 import { DrillDownFilters } from '../components/DrillDownFilters';
 import { useElectionResults } from '../hooks/useElectionResults';
 import { MapPin, Clock, Wifi, WifiOff } from 'lucide-react';
@@ -96,8 +96,7 @@ export function CouncillorPage() {
       totalRejected,
       turnout,
       voteTotals,
-      stationCount: stations.length,
-    };
+      stationCount: stations.length };
   };
 
   const aggregatedResults = getAggregatedResults();
@@ -256,8 +255,7 @@ export function CouncillorPage() {
                             name: c.id,
                             label: c.party,
                             value: aggregatedResults.voteTotals.get(c.id) || 0,
-                            color: c.partyColor,
-                          }))}
+                            color: c.partyColor }))}
                           cx="50%"
                           cy="50%"
                           labelLine={false}
