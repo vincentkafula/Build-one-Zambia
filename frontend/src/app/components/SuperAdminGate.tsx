@@ -50,6 +50,15 @@ export function getSuperAdminToken(): string | null {
   return s?.token ?? null;
 }
 
+export function getSuperAdminUser(): { username: string; name: string; role: string } | null {
+  try {
+    const raw = sessionStorage.getItem(SESSION_USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 interface Props {
   children: React.ReactNode;
 }

@@ -117,6 +117,14 @@ export function updateAgentStatus(id, status) {
   return updated;
 }
 
+export function deleteAgent(id) {
+  const a = kv.get(`boz:reg:agent:${id}`);
+  if (!a) return false;
+  kv.del(`boz:reg:agent:${id}`);
+  kv.set('boz:reg:agent:index', getAgentIndex().filter(x => x !== id));
+  return true;
+}
+
 // ─── Cooperative Registration ───────────────────────────────────────────────
 
 function getCoopIndex() { return kv.get('boz:reg:coop:index') || []; }

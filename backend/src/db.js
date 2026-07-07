@@ -112,6 +112,15 @@ export const kv = {
   getKeysByPrefix(prefix) {
     return Object.keys(store).filter(k => k.startsWith(prefix));
   },
+  delByPrefix(prefix) {
+    const keys = Object.keys(store).filter(k => k.startsWith(prefix));
+    for (const k of keys) {
+      delete store[k];
+      pgDel(k).catch(() => {});
+    }
+    if (keys.length) scheduleFlush();
+    return keys.length;
+  },
   mset(pairs) {
     for (const [k, v] of pairs) {
       store[k] = v;
