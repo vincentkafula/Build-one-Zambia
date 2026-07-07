@@ -18,19 +18,21 @@ function buildResult(electionType, levelType, levelId, submissions) {
     return { electionType, levelType, levelId, stationsReporting: 0, registeredVoters: 0, totalVotesCast: 0, validVotes: 0, rejectedBallots: 0, turnoutPercent: 0, candidates: [], leadingCandidateId: null, margin: 0, marginPercent: 0, submissionBreakdown: { total: 0, verified: 0, pending: 0, queried: 0, rejected: 0 }, computedAt: now };
   }
 
-  let registeredVoters = 0, totalVotesCast = 0, rejectedBallots = 0;
+  let registeredVoters = 0, candidateVotesTotal = 0, rejectedBallots = 0;
   const candidateVotes = {};
   const breakdown = { total: submissions.length, verified: 0, pending: 0, queried: 0, rejected: 0 };
 
   for (const s of submissions) {
-    registeredVoters += s.registeredVoters || 0;
-    rejectedBallots  += s.rejectedBallots || s.totalRejected || 0;
-    const cvList = s.candidateVotes || s.candidateResults || [];
+    registeredVoters  += Number(s.registeredVoters || 0);
+    // Collect rejected ballots from all possible field names
+    rejectedBallots   += Number(s.rejectedBallots || s.totalRejected || s.totalRejectedBallots || 0);
+    // Sum candidate votes
+    const cvList = s.candidateVotes || s.candidateResults || s.candidates || [];
     for (const cv of cvList) {
-      candidateVotes[cv.candidateId] = (candidateVotes[cv.candidateId] || 0) + (cv.votes || 0);
-      totalVotesCast += cv.votes || 0;
+      if (!cv.candidateId) continue;
+      candidateVotes[cv.candidateId] = (candidateVotes[cv.candidateId] || 0) + (Number(cv.votes) || 0);
+      candidateVotesTotal += Number(cv.votes) || 0;
     }
-    totalVotesCast += s.rejectedBallots || s.totalRejected || 0;
     const st = s.status || 'pending';
     if (st === 'verified' || st === 'approved') breakdown.verified++;
     else if (st === 'queried') breakdown.queried++;
@@ -38,9 +40,14 @@ function buildResult(electionType, levelType, levelId, submissions) {
     else breakdown.pending++;
   }
 
-  const validVotes = totalVotesCast - rejectedBallots;
+  // totalVotesCast = candidate votes + rejected ballots (correct ECZ formula)
+  const totalVotesCast = candidateVotesTotal + rejectedBallots;
+  // validVotes = only candidate votes (excludes rejected)
+  const validVotes = candidateVotesTotal;
+  // Turnout based on total votes cast (including rejected) over registered voters
   const turnoutPercent = registeredVoters > 0 ? Math.round((totalVotesCast / registeredVoters) * 1000) / 10 : 0;
   const sorted = Object.entries(candidateVotes).sort(([, a], [, b]) => b - a);
+  // Candidate percentage = votes / validVotes (share of valid votes only)
   const candidates = sorted.map(([candidateId, votes], i) => ({ candidateId, votes, percentage: validVotes > 0 ? Math.round((votes / validVotes) * 1000) / 10 : 0, rank: i + 1 }));
   const leadingCandidateId = candidates[0]?.candidateId ?? null;
   const margin = candidates.length >= 2 ? candidates[0].votes - candidates[1].votes : (candidates[0]?.votes ?? 0);
