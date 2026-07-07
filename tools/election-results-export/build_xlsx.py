@@ -34,11 +34,17 @@ thin = Side(style="thin", color=MID_GRAY)
 box_border = Border(left=thin, right=thin, top=thin, bottom=thin)
 
 # capture raw values we need before wiping
-report_title = summ["B2"].value
-location = summ["B3"].value
-generated = summ["B4"].value
-registered = summ["B20"].value
-rejected = summ["B23"].value
+def find_value(label):
+    for row in summ.iter_rows():
+        if row[0].value is not None and str(row[0].value).strip().lower() == label.lower():
+            return row[1].value
+    return None
+
+report_title = find_value("Report Title")
+location = find_value("Location")
+generated = find_value("Generated")
+registered = find_value("Registered Voters")
+rejected = find_value("Rejected Ballots")
 
 n_candidates = res.max_row - 1  # minus header, includes TOTAL row currently
 last_data_row = None

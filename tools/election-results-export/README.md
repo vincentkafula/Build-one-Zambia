@@ -38,8 +38,8 @@ soffice --headless --convert-to xlsx --calc-recalc <output.xlsx>
 python build_pdf.py <output.xlsx> [output.pdf]
 ```
 
-`sample-raw-export.xlsx` is a real example of the raw export shape (with
-placeholder "Candidate xx" test data) — use it to try the pipeline:
+`sample-raw-export.xlsx` is an example raw export shape with realistic
+candidate names/parties — use it to try the pipeline:
 
 ```bash
 python build_xlsx.py sample-raw-export.xlsx formatted.xlsx
@@ -48,8 +48,10 @@ python build_pdf.py formatted.xlsx results.pdf
 
 ## Input format expected
 
-- **`Summary` sheet**: key/value rows including `Report Title`,
-  `Location`, `Generated`, `Registered Voters`, `Rejected Ballots`.
+- **`Summary` sheet**: key/value rows (label in column A, value in column
+  B) including `Report Title`, `Location`, `Generated`, `Registered
+  Voters`, `Rejected Ballots`. These are looked up by label, so extra
+  rows above/below them (or a different row count) won't break it.
 - **`Results` sheet**: header row `Rank | Candidate | Party | Votes |
   Vote Share (%)`, one row per candidate (already sorted by rank), and
   a final `TOTAL` row.
