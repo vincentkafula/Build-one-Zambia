@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   CheckCircle2, XCircle, AlertCircle, Loader2, RefreshCw,
   Database, Shield, Users, Vote, Upload, Key, Globe, Server,
-  ChevronDown, ChevronUp, Copy, ExternalLink,
+  ChevronDown, ChevronUp, Copy, ExternalLink, AlertTriangle,
 } from 'lucide-react';
 import { getToken } from '../lib/api';
 
@@ -87,6 +87,9 @@ export function SystemSetupDashboard() {
   const [seeding, setSeeding] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [actionResults, setActionResults] = useState<Record<string, string>>({});
+  const [resetConfirmText, setResetConfirmText] = useState('');
+  const [resetting, setResetting] = useState(false);
+  const [resetResult, setResetResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -118,6 +121,24 @@ export function SystemSetupDashboard() {
       setActionResults(prev => ({ ...prev, candidates: `Error: ${e instanceof Error ? e.message : String(e)}` }));
     } finally {
       setSeeding(false);
+    }
+  };
+
+  const resetVotes = async () => {
+    if (resetConfirmText !== 'RESET') return;
+    if (!confirm('This will permanently wipe every submitted vote/result from the system. This is meant for clearing test data before election day. Are you absolutely sure?')) return;
+    setResetting(true);
+    setResetResult(null);
+    try {
+      const res = await apiFetch<{ success: boolean; stationsCleared: number; submissionsCleared: number }>(
+        'POST', '/admin/reset-votes', { confirm: 'RESET' }
+      );
+      setResetResult({ ok: true, message: `✓ Cleared ${res.stationsCleared} station result(s) and ${res.submissionsCleared} submission(s). All votes are back to zero.` });
+      setResetConfirmText('');
+    } catch (e) {
+      setResetResult({ ok: false, message: e instanceof Error ? e.message : 'Reset failed' });
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -360,6 +381,44 @@ Authorization: Bearer <your-token>
             </div>
           );
         })}
+      </div>
+
+      {/* Danger Zone — reset votes (super admin only, this whole page is already gated) */}
+      <div className="bg-red-50/40 border-2 border-red-300 rounded-xl p-5">
+        <h3 className="text-sm font-bold text-red-700 mb-1 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4" /> Danger Zone — Reset All Votes
+        </h3>
+        <p className="text-sm text-red-700/80 mb-4">
+          Permanently wipes every submitted polling-station result and vote count back to zero.
+          Use this once, after testing is finished and before election day, to clear test data.
+          This cannot be undone.
+        </p>
+
+        {resetResult && (
+          <p className={`text-sm px-3 py-2 rounded-lg mb-3 border ${resetResult.ok ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
+            {resetResult.message}
+          </p>
+        )}
+
+        <label className="block text-xs font-semibold text-red-700 mb-1">
+          Type <span className="font-mono bg-red-100 px-1 rounded">RESET</span> to confirm:
+        </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            value={resetConfirmText}
+            onChange={e => setResetConfirmText(e.target.value)}
+            placeholder="RESET"
+            className="px-3 py-2 border border-red-300 rounded-lg text-sm bg-background w-40 focus:outline-none focus:ring-1 focus:ring-red-500"
+          />
+          <button
+            onClick={resetVotes}
+            disabled={resetConfirmText !== 'RESET' || resetting}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {resetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}
+            Reset All Votes to Zero
+          </button>
+        </div>
       </div>
 
       {/* Deployment info */}

@@ -197,6 +197,7 @@ app.post(`${BASE}/register/internship`, (req, res) => { try { res.json({ registr
 app.get(`${BASE}/register/interns`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ interns: registrations.listInterns() }));
 app.post(`${BASE}/register/agent`, (req, res) => { try { res.json({ registration: registrations.registerAgent(req.body) }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/register/agents`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ agents: registrations.listAgents() }));
+app.delete(`${BASE}/register/agent/:id`, auth.requireAuth, auth.requireRole('super_admin'), (req, res) => { const ok = registrations.deleteAgent(req.params.id); if (!ok) return res.status(404).json({ error: 'Agent registration not found' }); res.json({ success: true }); });
 app.post(`${BASE}/register/cooperative`, (req, res) => { try { res.json({ registration: registrations.registerCoop(req.body) }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/register/coops`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ coops: registrations.listCoops ? registrations.listCoops() : [] }));
 
@@ -247,7 +248,7 @@ app.get(`${BASE}/election-users/stats`, auth.requireAuth, auth.requireRole('supe
 app.get(`${BASE}/election-users/:id`, auth.requireAuth, auth.requireRole('super_admin', 'admin', 'national_manager'), (req, res) => { const user = auth.listUsers().find(u => u.id === req.params.id); if (!user) return res.status(404).json({ error: 'Not found' }); res.json({ user }); });
 app.patch(`${BASE}/election-users/:id`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => { try { res.json({ user: await auth.updateUser(req.params.id, req.body) }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.post(`${BASE}/election-users/:id/reset-password`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => { try { const pw = req.body.password || req.body.newPassword; if (!pw) return res.status(400).json({ error: 'Password required' }); const user = auth.listUsers().find(u => u.id === req.params.id || u.username === req.params.id); if (!user) return res.status(404).json({ error: 'Not found' }); await auth.resetPassword(user.id, pw); res.json({ success: true }); } catch (err) { res.status(400).json({ error: err.message }); } });
-app.delete(`${BASE}/election-users/:id`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => { try { const user = auth.listUsers().find(u => u.id === req.params.id || u.username === req.params.id); if (!user) return res.status(404).json({ error: 'Not found' }); auth.deleteUser(user.id); res.json({ success: true }); } catch (err) { res.status(400).json({ error: err.message }); } });
+app.delete(`${BASE}/election-users/:id`, auth.requireAuth, auth.requireRole('super_admin'), (req, res) => { try { const user = auth.listUsers().find(u => u.id === req.params.id || u.username === req.params.id); if (!user) return res.status(404).json({ error: 'Not found' }); auth.deleteUser(user.id); res.json({ success: true }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.post(`${BASE}/election-users/bulk`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => { const { users = [] } = req.body; let created = 0, skipped = 0; const errors = []; for (const u of users) { try { const { password, ...userData } = u; await auth.registerUser(userData, password || 'TempPass@123'); created++; } catch (e) { if (e.message.includes('already exists')) skipped++; else errors.push(`${u.username}: ${e.message}`); } } res.json({ created, skipped, errors }); });
 
 // ─── Results Engine ────────────────────────────────────────────────────────────
@@ -311,6 +312,33 @@ app.post(`${BASE}/data-entry/result`, async (req, res) => {
 app.get(`${BASE}/data-entry/turnout`, (req, res) => res.json({ stats: { totalStations: 0, reportingStations: dataEntryStore.submissions.length, totalVotesCast: 0 } }));
 app.get(`${BASE}/data-entry/result/:pollingStationId/:electionType`, (req, res) => { const sub = dataEntryStore.submissions.find(s => s.pollingStationId === decodeURIComponent(req.params.pollingStationId) && s.electionType === req.params.electionType); res.json({ submitted: !!sub, submittedAt: sub?.submittedAt, status: sub?.status, id: sub?.id }); });
 app.get(`${BASE}/data-entry/submissions`, auth.requireAuth, (req, res) => { let subs = [...dataEntryStore.submissions]; if (req.query.status) subs = subs.filter(s => s.status === req.query.status); if (req.query.electionType) subs = subs.filter(s => s.electionType === req.query.electionType); res.json({ submissions: subs, count: subs.length }); });
+
+// ─── Reset Votes (Super Admin only, danger zone) ───────────────────────────────
+// Wipes every submitted result/vote after testing, so the system starts clean
+// on election day. Requires the caller to send { confirm: "RESET" } to avoid
+// accidental triggering.
+app.post(`${BASE}/admin/reset-votes`, auth.requireAuth, auth.requireRole('super_admin'), (req, res) => {
+  try {
+    if (req.body?.confirm !== 'RESET') {
+      return res.status(400).json({ error: 'Confirmation required — send { "confirm": "RESET" } to proceed.' });
+    }
+    const stationsCleared = kv.delByPrefix('boz:results:');
+    const submissionsCleared = dataEntryStore.submissions.length;
+    dataEntryStore.submissions = [];
+    dataEntryStore.auditLog.push({
+      id: `audit-${Date.now()}`,
+      action: 'reset_votes',
+      by: req.user.username,
+      at: new Date().toISOString(),
+      stationsCleared,
+      submissionsCleared,
+    });
+    saveDataEntry();
+    res.json({ success: true, stationsCleared, submissionsCleared });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 app.get(`${BASE}/data-entry/submissions/:id`, auth.requireAuth, (req, res) => { const sub = dataEntryStore.submissions.find(s => s.id === req.params.id); if (!sub) return res.status(404).json({ error: 'Not found' }); res.json({ submission: sub }); });
 app.patch(`${BASE}/data-entry/submissions/:id/status`, auth.requireAuth, (req, res) => { const idx = dataEntryStore.submissions.findIndex(s => s.id === req.params.id); if (idx < 0) return res.status(404).json({ error: 'Not found' }); const now = new Date().toISOString(); const updated = { ...dataEntryStore.submissions[idx], status: req.body.status, notes: req.body.notes, reviewedAt: now, reviewedBy: req.user?.username }; dataEntryStore.submissions[idx] = updated; saveDataEntry(); const category = updated.electionType === 'parliament' ? 'parliamentary' : updated.electionType; const key = `boz:results:${category}:station:${updated.pollingStationId}`; const existing = kv.get(key); if (existing) kv.set(key, { ...existing, status: req.body.status, verified: req.body.status === 'approved' || req.body.status === 'verified', verifiedBy: req.user?.username, updatedAt: now }); res.json({ success: true, submission: updated }); });
 app.get(`${BASE}/data-entry/stats`, auth.requireAuth, (req, res) => { const subs = dataEntryStore.submissions; res.json({ stats: { total: subs.length, pending: subs.filter(s => s.status === 'pending').length, approved: subs.filter(s => s.status === 'approved').length, rejected: subs.filter(s => s.status === 'rejected').length } }); });

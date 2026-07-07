@@ -368,8 +368,8 @@ function UserRow({ user, onRefresh }: { user: ElectionUser; onRefresh: () => voi
     finally { setResetting(false); }
   };
 
-  const deactivate = async () => {
-    if (!confirm(`Deactivate ${user.name}? They will lose dashboard access immediately.`)) return;
+  const removeUser = async () => {
+    if (!confirm(`Permanently remove ${user.name} (@${user.username})?\n\nThis deletes their login account completely — they will lose all dashboard/agent access immediately and this cannot be undone.`)) return;
     setDeactivating(true);
     try { await api('DELETE', `/election-users/${user.username}`); onRefresh(); }
     catch (e) { alert(e instanceof Error ? e.message : 'Failed'); setDeactivating(false); }
@@ -413,8 +413,8 @@ function UserRow({ user, onRefresh }: { user: ElectionUser; onRefresh: () => voi
               </button>
             </div>
             {user.active && (
-              <button onClick={deactivate} disabled={deactivating} className="flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium disabled:opacity-50">
-                {deactivating ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />} Deactivate
+              <button onClick={removeUser} disabled={deactivating} className="flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium disabled:opacity-50">
+                {deactivating ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />} Remove Permanently
               </button>
             )}
           </div>
