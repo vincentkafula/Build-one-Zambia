@@ -311,7 +311,19 @@ app.post(`${BASE}/data-entry/result`, async (req, res) => {
 });
 app.get(`${BASE}/data-entry/turnout`, (req, res) => res.json({ stats: { totalStations: 0, reportingStations: dataEntryStore.submissions.length, totalVotesCast: 0 } }));
 app.get(`${BASE}/data-entry/result/:pollingStationId/:electionType`, (req, res) => { const sub = dataEntryStore.submissions.find(s => s.pollingStationId === decodeURIComponent(req.params.pollingStationId) && s.electionType === req.params.electionType); res.json({ submitted: !!sub, submittedAt: sub?.submittedAt, status: sub?.status, id: sub?.id }); });
-app.get(`${BASE}/data-entry/submissions`, auth.requireAuth, (req, res) => { let subs = [...dataEntryStore.submissions]; if (req.query.status) subs = subs.filter(s => s.status === req.query.status); if (req.query.electionType) subs = subs.filter(s => s.electionType === req.query.electionType); res.json({ submissions: subs, count: subs.length }); });
+app.get(`${BASE}/data-entry/submissions`, auth.requireAuth, (req, res) => {
+  let subs = [...dataEntryStore.submissions];
+  const { status, electionType, wardId, constituencyId, districtId, provinceId, pollingStationId, agentId } = req.query;
+  if (status) subs = subs.filter(s => s.status === status);
+  if (electionType) subs = subs.filter(s => s.electionType === electionType);
+  if (wardId) subs = subs.filter(s => s.wardId === wardId);
+  if (constituencyId) subs = subs.filter(s => s.constituencyId === constituencyId);
+  if (districtId) subs = subs.filter(s => s.districtId === districtId);
+  if (provinceId) subs = subs.filter(s => s.provinceId === provinceId);
+  if (pollingStationId) subs = subs.filter(s => s.pollingStationId === pollingStationId);
+  if (agentId) subs = subs.filter(s => s.agentId === agentId);
+  res.json({ submissions: subs, count: subs.length });
+});
 
 // ─── Reset Votes (Super Admin only, danger zone) ───────────────────────────────
 // Wipes every submitted result/vote after testing, so the system starts clean
