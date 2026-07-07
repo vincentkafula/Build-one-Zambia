@@ -70,14 +70,16 @@ export function PresidentialPage() {
     .sort((a, b) => b.votes - a.votes)
     .map((r, i) => ({ ...r, rank: i + 1 }));
 
+  // Use live data for stats if backend is connected (even if liveResults is empty)
   const usingLive = !live.usingMockData && live.liveResults.length > 0;
+  const hasLiveStats = live.backendConnected && !live.usingMockData;
   const candidateResults = usingLive ? live.liveResults : mockResults;
 
   const totalValidVotes = candidateResults.reduce((sum, r) => sum + r.votes, 0);
-  const totalRegistered = usingLive ? live.totalRegistered : filteredStations.reduce((sum, s) => sum + s.registeredVoters, 0);
-  const totalVotes      = usingLive ? live.totalVotes      : filteredStations.reduce((sum, s) => sum + (s.totalVotes ?? 0), 0);
-  const totalRejected   = usingLive ? live.rejectedBallots : filteredStations.reduce((sum, s) => sum + (s.totalRejected ?? 0), 0);
-  const turnout         = usingLive ? live.turnoutPercent  : calculateTurnout(totalRegistered, totalVotes);
+  const totalRegistered = hasLiveStats ? live.totalRegistered : filteredStations.reduce((sum, s) => sum + s.registeredVoters, 0);
+  const totalVotes      = hasLiveStats ? live.totalVotes      : filteredStations.reduce((sum, s) => sum + (s.totalVotes ?? 0), 0);
+  const totalRejected   = hasLiveStats ? live.rejectedBallots : filteredStations.reduce((sum, s) => sum + (s.totalRejected ?? 0), 0);
+  const turnout         = hasLiveStats ? live.turnoutPercent  : calculateTurnout(totalRegistered, totalVotes);
 
   const chartData = candidateResults.map(r => ({
     name: r.candidate.id,

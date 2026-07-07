@@ -35,6 +35,7 @@ export function CouncillorPage() {
   const levelId = selectedWard || selectedConstituency || selectedDistrict || selectedProvince || '';
   const live = useElectionResults('councillor' as any, levelType as any, levelId);
   const usingLive = !live.usingMockData && live.liveResults.length > 0;
+  const hasLiveStats = live.backendConnected && !live.usingMockData;
 
   const handleProvinceChange = (value: string) => {
     setSelectedProvince(value);

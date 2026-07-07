@@ -77,6 +77,7 @@ export function ParliamentPage() {
   const levelId = selectedWard || selectedConstituency || selectedDistrict || selectedProvince || '';
   const live = useElectionResults('parliament' as any, levelType as any, levelId);
   const usingLive = !live.usingMockData && live.liveResults.length > 0;
+  const hasLiveStats = live.backendConnected && !live.usingMockData;
 
   const handleProvinceChange = (value: string) => {
     setSelectedProvince(value);

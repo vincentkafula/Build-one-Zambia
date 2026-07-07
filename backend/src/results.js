@@ -9,7 +9,13 @@ const ELECTION_TYPES = ['presidential', 'parliament', 'mayoral', 'councillor'];
 
 function getAllSubmissions(electionType) {
   const all = kv.getByPrefix('boz:results:');
-  return all.filter(s => !electionType || s.electionType === electionType);
+  const filtered = all.filter(s => !electionType || s.electionType === electionType);
+  // Debug log — remove after confirming
+  if (all.length > 0 || filtered.length > 0) {
+    console.log(`[results] getAllSubmissions(${electionType}): ${all.length} total, ${filtered.length} matching`);
+    if (all.length > 0) console.log(`[results] Sample fields:`, JSON.stringify({ rejectedBallots: all[0]?.rejectedBallots, totalRejected: all[0]?.totalRejected, electionType: all[0]?.electionType }));
+  }
+  return filtered;
 }
 
 function buildResult(electionType, levelType, levelId, submissions) {

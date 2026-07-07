@@ -99,7 +99,8 @@ export function useElectionResults(
           candidatesApi.list({ electionType, active: true }),
         ]);
         if (cancelled) return;
-        setResult(resData.result);
+        const res = resData.result;
+        setResult(res);
         setCandidateMap(new Map(candsData.candidates.map((c: BackendCandidate) => [c.id, toCandidate(c)])));
         setUsingMockData(false);
         setBackendConnected(true);
