@@ -299,7 +299,7 @@ app.post(`${BASE}/data-entry/result`, async (req, res) => {
     const registeredNum = Number(registeredVoters || 0);
     const id = `sub-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const now = new Date().toISOString();
-    const submission = { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, totalRejectedBallots: rejectedNum, registeredVoters: registeredNum, agentId, agentName: agentName || enteredBy, notes, status: 'pending', submittedAt: now };
+    const submission = { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, totalRejectedBallots: rejectedNum, rejectedBallots: rejectedNum, registeredVoters: registeredNum, agentId, agentName: agentName || enteredBy, notes, status: 'pending', submittedAt: now };
     dataEntryStore.submissions.push(submission);
     saveDataEntry();
     // Write to results KV for immediate dashboard display
