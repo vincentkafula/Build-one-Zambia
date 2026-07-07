@@ -88,7 +88,7 @@ async function autoSeedCandidates() {
 autoSeedCandidates().catch(e => console.error('[auto-seed]', e.message));
 
 // ─── Health ───────────────────────────────────────────────────────────────────
-app.get(`${BASE}/health`, (req, res) => res.json({ name: 'Build One Zambia API', status: 'ok', server: 'node-express', version: '2.1.0', timestamp: new Date().toISOString() }));
+app.get(`${BASE}/health`, (req, res) => res.json({ name: 'Build One Zambia API', status: 'ok', server: 'node-express', version: '2.2.0', timestamp: new Date().toISOString() }));
 app.get('/ping', (req, res) => res.json({ status: 'ok', service: 'boz-backend', port: PORT, timestamp: new Date().toISOString() }));
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -583,6 +583,30 @@ app.get(`${BASE}/notices/sent`, auth.requireAuth, (req, res) => res.json({ notic
 app.post(`${BASE}/notices`, auth.requireAuth, auth.requireRole('super_admin', 'national_manager', 'provincial_manager'), (req, res) => { const notice = { id: `notice-${Date.now()}`, ...req.body, createdBy: req.user.username, createdAt: new Date().toISOString(), readBy: [] }; noticesStore.unshift(notice); kv.set('notices', noticesStore); res.json({ notice }); });
 app.patch(`${BASE}/notices/:id/read`, auth.requireAuth, (req, res) => { const n = noticesStore.find(x => x.id === req.params.id); if (!n) return res.status(404).json({ error: 'Not found' }); if (!n.readBy.includes(req.user.username)) n.readBy.push(req.user.username); kv.set('notices', noticesStore); res.json({ notice: n }); });
 
+
+// ─── Rejected ballots debug (temporary) ──────────────────────────────────────
+app.get(`${BASE}/results/rejected-debug`, (req, res) => {
+  const keys = kv.getKeysByPrefix('boz:results:');
+  const entries = keys.map(k => {
+    const v = kv.get(k);
+    return {
+      key: k,
+      electionType: v?.electionType,
+      pollingStationId: v?.pollingStationId,
+      rejectedBallots: v?.rejectedBallots,
+      totalRejected: v?.totalRejected,
+      totalRejectedBallots: v?.totalRejectedBallots,
+      candidateVotesCount: (v?.candidateVotes || v?.candidateResults || []).length,
+      totalVotesCast: v?.totalVotesCast,
+      submittedAt: v?.submittedAt,
+    };
+  });
+  // Also compute what buildResult would return
+  const presResults = entries.filter(e => e.electionType === 'presidential');
+  const totalRejected = presResults.reduce((s, e) => s + (Number(e.rejectedBallots) || Number(e.totalRejected) || 0), 0);
+  res.json({ total: keys.length, entries, presTotal: presResults.length, totalRejected });
+});
+
 // ─── 404 ──────────────────────────────────────────────────────────────────────
 app.use((req, res) => res.status(404).json({ error: `Route not found: ${req.method} ${req.path}` }));
 app.use((err, req, res, _next) => { console.error(err); res.status(500).json({ error: 'Internal server error', message: err.message }); });
@@ -600,3 +624,4 @@ app.listen(PORT, '0.0.0.0', () => {
 });
 
 export default app;
+// cache-bust: 20260707-204500
