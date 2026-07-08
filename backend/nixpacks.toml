@@ -11,4 +11,4 @@ cmds = []
 cmd = "node src/index.js"
 
 [variables]
-NIXPACKS_CACHE_KEY = "bust-shadow-cabinet-20260702"
+NIXPACKS_CACHE_KEY = "bust-voter-validation-20260708"
