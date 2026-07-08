@@ -65,6 +65,75 @@ const STATUS_CONFIG = {
   rejected: { label: 'Rejected',       color: 'bg-red-100    text-red-800    border-red-300',    dot: 'bg-red-400' },
 };
 
+
+// ── Editable Rejected Ballots ─────────────────────────────────────────────────
+function EditableRejectedBallots({ sub, onUpdated }: { sub: Submission; onUpdated: (v: number) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(String(sub.rejectedBallots ?? 0));
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await apiFetch('PATCH', `/data-entry/submissions/${sub.id}/rejected-ballots`, {
+        rejectedBallots: Number(value),
+      });
+      onUpdated(Number(value));
+      sub.rejectedBallots = Number(value);
+      setSaved(true);
+      setEditing(false);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e) {
+      alert('Failed to update: ' + (e instanceof Error ? e.message : 'Unknown error'));
+    }
+    setSaving(false);
+  }
+
+  return (
+    <div className="bg-card rounded-lg p-3 border border-border">
+      <p className="text-xs text-muted-foreground mb-1">Rejected Ballots</p>
+      {editing ? (
+        <div className="flex items-center gap-1">
+          <input
+            type="number"
+            min={0}
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            className="w-20 px-2 py-1 text-sm border border-blue-400 rounded focus:outline-none"
+            autoFocus
+          />
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="text-xs px-2 py-1 rounded bg-green-600 text-white disabled:opacity-50"
+          >
+            {saving ? '…' : '✓'}
+          </button>
+          <button
+            onClick={() => { setEditing(false); setValue(String(sub.rejectedBallots ?? 0)); }}
+            className="text-xs px-2 py-1 rounded bg-gray-200 text-gray-700"
+          >
+            ✕
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <p className={`text-sm font-semibold ${saved ? 'text-green-600' : 'text-foreground'}`}>
+            {saved ? '✓ Saved' : (sub.rejectedBallots ?? 0).toLocaleString()}
+          </p>
+          <button
+            onClick={() => setEditing(true)}
+            className="text-xs text-blue-500 hover:text-blue-700 underline"
+          >
+            edit
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SubmissionRow({
   sub, onStatusChange,
 }: {
@@ -138,7 +207,6 @@ function SubmissionRow({
             {[
               { label: 'Registered Voters', value: (sub.registeredVoters ?? 0).toLocaleString() },
               { label: 'Total Votes Cast',  value: (sub.totalVotesCast ?? 0).toLocaleString() },
-              { label: 'Rejected Ballots',  value: (sub.rejectedBallots ?? 0).toLocaleString() },
               { label: 'Submitted',         value: sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : '—' },
             ].map(({ label, value }) => (
               <div key={label} className="bg-card rounded-lg p-3 border border-border">
@@ -146,6 +214,8 @@ function SubmissionRow({
                 <p className="text-sm font-semibold text-foreground">{value}</p>
               </div>
             ))}
+            {/* Rejected Ballots — editable by admin */}
+            <EditableRejectedBallots sub={sub} onUpdated={(v) => { sub.rejectedBallots = v; }} />
           </div>
 
           {/* Candidate results */}

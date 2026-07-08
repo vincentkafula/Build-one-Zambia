@@ -300,8 +300,18 @@ app.post(`${BASE}/data-entry/result`, async (req, res) => {
     const registeredNum = Number(registeredVoters || 0);
     const id = `sub-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const now = new Date().toISOString();
-    const submission = { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, totalRejectedBallots: rejectedNum, rejectedBallots: rejectedNum, registeredVoters: registeredNum, agentId, agentName: agentName || enteredBy, notes, status: 'pending', submittedAt: now };
-    dataEntryStore.submissions.push(submission);
+    let submission = { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, totalRejectedBallots: rejectedNum, rejectedBallots: rejectedNum, registeredVoters: registeredNum, agentId, agentName: agentName || enteredBy, notes, status: 'pending', submittedAt: now };
+    // Check if station already submitted — update instead of duplicate
+    const existingIdx = dataEntryStore.submissions.findIndex(
+      s => s.pollingStationId === pollingStationId && s.electionType === electionType
+    );
+    if (existingIdx >= 0) {
+      // UPDATE existing submission (allows correction of rejected ballots)
+      dataEntryStore.submissions[existingIdx] = { ...dataEntryStore.submissions[existingIdx], ...submission, id: dataEntryStore.submissions[existingIdx].id, updatedAt: now };
+      submission = dataEntryStore.submissions[existingIdx];
+    } else {
+      dataEntryStore.submissions.push(submission);
+    }
     saveDataEntry();
     // Write to results KV for immediate dashboard display
     const category = electionType === 'parliament' ? 'parliamentary' : electionType;
@@ -661,6 +671,59 @@ app.post(`${BASE}/results/migrate-rejected`, auth.requireAuth, auth.requireRole(
   }
 
   res.json({ total: keys.length, patched, log });
+});
+
+
+// ─── Patch rejected ballots for existing submission ───────────────────────────
+app.patch(`${BASE}/data-entry/submissions/:id/rejected-ballots`, auth.requireAuth, auth.requireRole('super_admin', 'admin', 'national_manager'), (req, res) => {
+  const { rejectedBallots } = req.body;
+  if (rejectedBallots === undefined) return res.status(400).json({ error: 'rejectedBallots required' });
+  const rejected = Number(rejectedBallots);
+
+  // Update dataEntryStore
+  const idx = dataEntryStore.submissions.findIndex(s => s.id === req.params.id);
+  if (idx < 0) return res.status(404).json({ error: 'Submission not found' });
+
+  const sub = dataEntryStore.submissions[idx];
+  dataEntryStore.submissions[idx] = { ...sub, rejectedBallots: rejected, totalRejected: rejected, totalRejectedBallots: rejected, updatedAt: new Date().toISOString() };
+  saveDataEntry();
+
+  // Update KV entry
+  const category = sub.electionType === 'parliament' ? 'parliamentary' : sub.electionType;
+  const key = `boz:results:${category}:station:${sub.pollingStationId}`;
+  const existing = kv.get(key);
+  if (existing) {
+    kv.set(key, { ...existing, rejectedBallots: rejected, totalRejected: rejected, totalRejectedBallots: rejected, updatedAt: new Date().toISOString() });
+  }
+
+  res.json({ success: true, submission: dataEntryStore.submissions[idx] });
+});
+
+// ─── Bulk patch all existing submissions to pull rejectedBallots from request body ─
+app.post(`${BASE}/data-entry/bulk-patch-rejected`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  // Expects: { patches: [{ pollingStationId, electionType, rejectedBallots }] }
+  const { patches = [] } = req.body;
+  let updated = 0;
+  for (const patch of patches) {
+    const rejected = Number(patch.rejectedBallots || 0);
+    // Update dataEntryStore
+    const idx = dataEntryStore.submissions.findIndex(
+      s => s.pollingStationId === patch.pollingStationId && s.electionType === patch.electionType
+    );
+    if (idx >= 0) {
+      dataEntryStore.submissions[idx] = { ...dataEntryStore.submissions[idx], rejectedBallots: rejected, totalRejected: rejected, totalRejectedBallots: rejected };
+    }
+    // Update KV
+    const category = patch.electionType === 'parliament' ? 'parliamentary' : patch.electionType;
+    const key = `boz:results:${category}:station:${patch.pollingStationId}`;
+    const existing = kv.get(key);
+    if (existing) {
+      kv.set(key, { ...existing, rejectedBallots: rejected, totalRejected: rejected, totalRejectedBallots: rejected });
+      updated++;
+    }
+  }
+  if (patches.length > 0) saveDataEntry();
+  res.json({ success: true, updated });
 });
 
 // ─── 404 ──────────────────────────────────────────────────────────────────────
