@@ -10,7 +10,9 @@ import { clearToken } from '../../lib/api';
 const DataEntryPage          = lazy(() => import('../DataEntryPage'));
 const ECZEntryPage           = lazy(() => import('../ECZEntryPage'));
 const WardECZEntryPage       = lazy(() => import('../WardECZEntryPage'));
+const ConstituencyECZEntryPage = lazy(() => import('../ConstituencyECZEntryPage'));
 const PollingAgentFiguresPage = lazy(() => import('../PollingAgentFiguresPage'));
+const WardManagerFiguresPage = lazy(() => import('../WardManagerFiguresPage'));
 const ECZComparisonDashboard = lazy(() => import('../../components/ECZComparisonDashboard'));
 
 function SectionLoader() {
@@ -21,7 +23,7 @@ function SectionLoader() {
   );
 }
 
-type SectionKey = 'overview'|'data-entry'|'polling-agents'|'ecz-entry'|'comparison'|'discrepancy'|'personal-details'|'security';
+type SectionKey = 'overview'|'data-entry'|'polling-agents'|'ward-managers'|'ecz-entry'|'comparison'|'discrepancy'|'personal-details'|'security';
 
 interface RoleConfig {
   label: string; color: string; eczLevel: string;
@@ -34,7 +36,7 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
   polling_agent:        { label:'Polling Station Agent',  color:'#dc2626', eczLevel:'polling_station', canEnterPollingResults:true,  sections:['overview','data-entry','ecz-entry','comparison','personal-details','security'], comparisonTitle:'Your Results vs ECZ Results', eczEntryTitle:'ECZ Official Figures' },
   election_agent:       { label:'Election Agent',         color:'#dc2626', eczLevel:'polling_station', canEnterPollingResults:true,  sections:['overview','data-entry','ecz-entry','comparison','personal-details','security'], comparisonTitle:'Your Results vs ECZ Results', eczEntryTitle:'ECZ Official Figures' },
   ward_manager:         { label:'Ward Manager',           color:'#16a34a', eczLevel:'ward',            canEnterPollingResults:false, sections:['overview','polling-agents','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (Ward)', eczEntryTitle:'ECZ Announced Figures — Ward Level' },
-  constituency_manager: { label:'Constituency Manager',   color:'#0ea5e9', eczLevel:'constituency',    canEnterPollingResults:false, sections:['overview','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (Constituency)', eczEntryTitle:'ECZ Announced Figures — Constituency Level' },
+  constituency_manager: { label:'Constituency Manager',   color:'#0ea5e9', eczLevel:'constituency',    canEnterPollingResults:false, sections:['overview','ward-managers','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (Constituency)', eczEntryTitle:'ECZ Announced Figures — Constituency Level' },
   district_manager:     { label:'District Manager',       color:'#f59e0b', eczLevel:'district',        canEnterPollingResults:false, sections:['overview','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (District)', eczEntryTitle:'ECZ Announced Figures — District Level' },
   provincial_manager:   { label:'Provincial Manager',     color:'#8b5cf6', eczLevel:'province',        canEnterPollingResults:false, sections:['overview','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (Province)', eczEntryTitle:'ECZ Announced Figures — Province Level' },
   province_manager:     { label:'Provincial Manager',     color:'#8b5cf6', eczLevel:'province',        canEnterPollingResults:false, sections:['overview','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (Province)', eczEntryTitle:'ECZ Announced Figures — Province Level' },
@@ -49,6 +51,7 @@ const ALL_NAV: NavItem[] = [
   { key:'overview',         label:'Overview',             icon:<LayoutDashboard size={16}/>, group:'MAIN' },
   { key:'data-entry',       label:'Data Entry',           icon:<ClipboardList size={16}/>,   group:'ELECTION' },
   { key:'polling-agents',   label:'Polling Agents Figures', icon:<Users size={16}/>,         group:'ELECTION' },
+  { key:'ward-managers',    label:'Ward Manager Figures', icon:<Users size={16}/>,           group:'ELECTION' },
   { key:'ecz-entry',        label:'ECZ Official Figures', icon:<Scale size={16}/>,           group:'ELECTION' },
   { key:'comparison',       label:'Results vs ECZ',       icon:<BarChart2 size={16}/>,       group:'ELECTION' },
   { key:'discrepancy',      label:'Discrepancy Notices',  icon:<AlertTriangle size={16}/>,   group:'ELECTION' },
@@ -259,6 +262,20 @@ export default function ElectionDashboard() {
           </div>
         );
 
+      case 'ward-managers':
+        return (
+          <div>
+            <div className="mb-5">
+              <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.4rem',letterSpacing:'0.04em',color:'#fff'}}>Ward Manager Figures</h2>
+              <p style={{color:'rgba(255,255,255,0.38)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
+                Review the ECZ figures each ward manager has entered for the wards in <strong style={{color:conf.color}}>{profile.scopeName}</strong>.
+                Mark each ward's figures Approved or Not Approved once you've checked them.
+              </p>
+            </div>
+            <Suspense fallback={<SectionLoader/>}><WardManagerFiguresPage/></Suspense>
+          </div>
+        );
+
       case 'ecz-entry':
         return (
           <div>
@@ -276,7 +293,7 @@ export default function ElectionDashboard() {
               )}
             </div>
             <Suspense fallback={<SectionLoader/>}>
-              {role === 'ward_manager' ? <WardECZEntryPage/> : <ECZEntryPage/>}
+              {role === 'ward_manager' ? <WardECZEntryPage/> : role === 'constituency_manager' ? <ConstituencyECZEntryPage/> : <ECZEntryPage/>}
             </Suspense>
           </div>
         );
