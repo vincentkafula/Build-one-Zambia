@@ -620,6 +620,49 @@ app.get(`${BASE}/results/rejected-debug`, (req, res) => {
   res.json({ total: keys.length, entries, presTotal: presResults.length, totalRejected });
 });
 
+
+// ─── Migrate old results: pull rejectedBallots from dataEntryStore ────────────
+app.post(`${BASE}/results/migrate-rejected`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  const keys = kv.getKeysByPrefix('boz:results:');
+  let patched = 0;
+  const log = [];
+
+  for (const k of keys) {
+    const v = kv.get(k);
+    if (!v) continue;
+
+    // Already has rejected ballots — skip
+    const existing = Number(v.rejectedBallots || v.totalRejected || v.totalRejectedBallots || 0);
+    if (existing > 0) {
+      log.push({ key: k, action: 'skip', rejectedBallots: existing });
+      continue;
+    }
+
+    // Try to find matching submission in dataEntryStore by pollingStationId + electionType
+    const match = dataEntryStore.submissions.find(s =>
+      s.pollingStationId === v.pollingStationId &&
+      (s.electionType === v.electionType || s.electionType === v.category)
+    );
+
+    const rejected = match
+      ? Number(match.rejectedBallots || match.totalRejected || match.totalRejectedBallots || 0)
+      : 0;
+
+    // Patch the KV entry
+    kv.set(k, {
+      ...v,
+      rejectedBallots: rejected,
+      totalRejected: rejected,
+      totalRejectedBallots: rejected,
+      _migratedAt: new Date().toISOString(),
+    });
+    patched++;
+    log.push({ key: k, action: 'patched', rejectedBallots: rejected, pollingStationId: v.pollingStationId });
+  }
+
+  res.json({ total: keys.length, patched, log });
+});
+
 // ─── 404 ──────────────────────────────────────────────────────────────────────
 app.use((req, res) => res.status(404).json({ error: `Route not found: ${req.method} ${req.path}` }));
 app.use((err, req, res, _next) => { console.error(err); res.status(500).json({ error: 'Internal server error', message: err.message }); });
