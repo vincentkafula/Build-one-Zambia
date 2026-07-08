@@ -791,6 +791,76 @@ export const dataEntryApi = {
     request<{ entries: unknown[]; count: number }>('GET', `/data-entry/audit-log?limit=${limit}`, undefined, true),
 };
 
+// ─── Voter Roll (polling-station voter validation) ───────────────────────────
+
+export interface VoterRollRecord {
+  nrc: string;
+  fullName: string;
+  gender?: string;
+  voterId?: string;
+}
+
+export interface VoterRollStationStatus {
+  pollingStationId: string;
+  pollingStationName: string;
+  wardId?: string; wardName?: string;
+  constituencyId?: string; constituencyName?: string;
+  districtId?: string; districtName?: string;
+  provinceId?: string; provinceName?: string;
+  count: number;
+  uploadedBy: string;
+  uploadedAt: string;
+}
+
+export interface VoterRollMatch {
+  nrc: string;
+  nrcDisplay?: string;
+  fullName: string;
+  gender?: string;
+  voterId?: string;
+  pollingStationId: string;
+  pollingStationName: string;
+  wardName?: string;
+  constituencyName?: string;
+  districtName?: string;
+  provinceName?: string;
+  registeredHere: boolean;
+}
+
+export interface VoterRollSearchResult {
+  found: boolean;
+  mode: 'nrc' | 'name' | 'none';
+  registeredHere?: boolean;
+  voter?: VoterRollMatch;
+  matches?: VoterRollMatch[];
+}
+
+export const voterRollApi = {
+  upload: (data: {
+    pollingStationId: string;
+    pollingStationName: string;
+    wardId?: string; wardName?: string;
+    constituencyId?: string; constituencyName?: string;
+    districtId?: string; districtName?: string;
+    provinceId?: string; provinceName?: string;
+    records: VoterRollRecord[];
+  }) => request<{ success: boolean } & VoterRollStationStatus>('POST', '/voter-roll/upload', data as unknown as Record<string, unknown>, true),
+
+  status: (pollingStationId: string) =>
+    request<{ status: VoterRollStationStatus | null }>('GET', `/voter-roll/status/${encodeURIComponent(pollingStationId)}`, undefined, true),
+
+  search: (params: { nrc?: string; name?: string; pollingStationId?: string }) => {
+    const qs = new URLSearchParams();
+    if (params.nrc) qs.set('nrc', params.nrc);
+    if (params.name) qs.set('name', params.name);
+    if (params.pollingStationId) qs.set('pollingStationId', params.pollingStationId);
+    return request<VoterRollSearchResult>('GET', `/voter-roll/search?${qs.toString()}`, undefined, true);
+  },
+
+  remove: (pollingStationId: string) =>
+    request<{ success: boolean }>('DELETE', `/voter-roll/${encodeURIComponent(pollingStationId)}`, undefined, true),
+};
+
 // ─── Live Streaming ───────────────────────────────────────────────────────────
 
 export const streamApi = {

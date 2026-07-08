@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router';
 import {
   LayoutDashboard, ClipboardList, UserCircle, Lock,
   Scale, AlertTriangle, BarChart2, LogOut, ChevronRight,
-  Menu, X, Zap, Shield, CheckCircle2, Users,
+  Menu, X, Zap, Shield, CheckCircle2, Users, UserCheck,
 } from 'lucide-react';
 import { clearToken } from '../../lib/api';
 
 const DataEntryPage          = lazy(() => import('../DataEntryPage'));
+const VoterValidationPage    = lazy(() => import('../VoterValidationPage'));
 const ECZEntryPage           = lazy(() => import('../ECZEntryPage'));
 const WardECZEntryPage       = lazy(() => import('../WardECZEntryPage'));
 const ConstituencyECZEntryPage = lazy(() => import('../ConstituencyECZEntryPage'));
@@ -29,7 +30,7 @@ function SectionLoader() {
   );
 }
 
-type SectionKey = 'overview'|'data-entry'|'polling-agents'|'ward-managers'|'constituency-managers'|'district-managers'|'province-managers'|'ecz-entry'|'comparison'|'discrepancy'|'personal-details'|'security';
+type SectionKey = 'overview'|'data-entry'|'voter-validation'|'polling-agents'|'ward-managers'|'constituency-managers'|'district-managers'|'province-managers'|'ecz-entry'|'comparison'|'discrepancy'|'personal-details'|'security';
 
 interface RoleConfig {
   label: string; color: string; eczLevel: string;
@@ -38,9 +39,9 @@ interface RoleConfig {
 }
 
 const ROLE_CONFIGS: Record<string, RoleConfig> = {
-  agent:                { label:'Polling Station Agent',  color:'#dc2626', eczLevel:'polling_station', canEnterPollingResults:true,  sections:['overview','data-entry','ecz-entry','comparison','personal-details','security'], comparisonTitle:'Your Results vs ECZ Results', eczEntryTitle:'ECZ Official Figures' },
-  polling_agent:        { label:'Polling Station Agent',  color:'#dc2626', eczLevel:'polling_station', canEnterPollingResults:true,  sections:['overview','data-entry','ecz-entry','comparison','personal-details','security'], comparisonTitle:'Your Results vs ECZ Results', eczEntryTitle:'ECZ Official Figures' },
-  election_agent:       { label:'Election Agent',         color:'#dc2626', eczLevel:'polling_station', canEnterPollingResults:true,  sections:['overview','data-entry','ecz-entry','comparison','personal-details','security'], comparisonTitle:'Your Results vs ECZ Results', eczEntryTitle:'ECZ Official Figures' },
+  agent:                { label:'Polling Station Agent',  color:'#dc2626', eczLevel:'polling_station', canEnterPollingResults:true,  sections:['overview','data-entry','voter-validation','ecz-entry','comparison','personal-details','security'], comparisonTitle:'Your Results vs ECZ Results', eczEntryTitle:'ECZ Official Figures' },
+  polling_agent:        { label:'Polling Station Agent',  color:'#dc2626', eczLevel:'polling_station', canEnterPollingResults:true,  sections:['overview','data-entry','voter-validation','ecz-entry','comparison','personal-details','security'], comparisonTitle:'Your Results vs ECZ Results', eczEntryTitle:'ECZ Official Figures' },
+  election_agent:       { label:'Election Agent',         color:'#dc2626', eczLevel:'polling_station', canEnterPollingResults:true,  sections:['overview','data-entry','voter-validation','ecz-entry','comparison','personal-details','security'], comparisonTitle:'Your Results vs ECZ Results', eczEntryTitle:'ECZ Official Figures' },
   ward_manager:         { label:'Ward Manager',           color:'#16a34a', eczLevel:'ward',            canEnterPollingResults:false, sections:['overview','polling-agents','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (Ward)', eczEntryTitle:'ECZ Announced Figures — Ward Level' },
   constituency_manager: { label:'Constituency Manager',   color:'#0ea5e9', eczLevel:'constituency',    canEnterPollingResults:false, sections:['overview','ward-managers','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (Constituency)', eczEntryTitle:'ECZ Announced Figures — Constituency Level' },
   district_manager:     { label:'District Manager',       color:'#f59e0b', eczLevel:'district',        canEnterPollingResults:false, sections:['overview','constituency-managers','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (District)', eczEntryTitle:'ECZ Announced Figures — District Level' },
@@ -56,6 +57,7 @@ interface NavItem { key: SectionKey; label: string; icon: React.ReactNode; group
 const ALL_NAV: NavItem[] = [
   { key:'overview',         label:'Overview',             icon:<LayoutDashboard size={16}/>, group:'MAIN' },
   { key:'data-entry',       label:'Data Entry',           icon:<ClipboardList size={16}/>,   group:'ELECTION' },
+  { key:'voter-validation', label:'Voter Validation',     icon:<UserCheck size={16}/>,       group:'ELECTION' },
   { key:'polling-agents',   label:'Polling Agents Figures', icon:<Users size={16}/>,         group:'ELECTION' },
   { key:'ward-managers',    label:'Ward Manager Figures', icon:<Users size={16}/>,           group:'ELECTION' },
   { key:'constituency-managers', label:'Constituency Manager Figures', icon:<Users size={16}/>, group:'ELECTION' },
@@ -254,6 +256,20 @@ export default function ElectionDashboard() {
               </p>
             </div>
             <Suspense fallback={<SectionLoader/>}><DataEntryPage/></Suspense>
+          </div>
+        );
+
+      case 'voter-validation':
+        return (
+          <div>
+            <div className="mb-5">
+              <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.4rem',letterSpacing:'0.04em',color:'#fff'}}>Voter Validation</h2>
+              <p style={{color:'rgba(255,255,255,0.38)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
+                Upload the official voters roll for your polling station, then check whether a voter is registered
+                there — or find out which polling station to direct them to instead.
+              </p>
+            </div>
+            <Suspense fallback={<SectionLoader/>}><VoterValidationPage/></Suspense>
           </div>
         );
 

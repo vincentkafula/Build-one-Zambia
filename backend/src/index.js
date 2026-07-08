@@ -20,6 +20,7 @@ import * as docs from './documents.js';
 import * as results from './results.js';
 import * as shop from './shop.js';
 import * as streams from './streams.js';
+import * as voterRoll from './voterRoll.js';
 import { kv } from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -41,8 +42,8 @@ app.use(cors({
   credentials: true,
   allowedHeaders: ['Content-Type','Authorization','X-Requested-With'],
 }));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 app.set('trust proxy', 1);
 
 // ─── Uploads ─────────────────────────────────────────────────────────────────
@@ -369,6 +370,25 @@ app.get(`${BASE}/data-entry/ecz-figures`, auth.requireAuth, (req, res) => { let 
 app.get(`${BASE}/data-entry/ecz-figures/:levelType/:levelId/:electionType`, auth.requireAuth, (req, res) => { const figure = dataEntryStore.eczFigures.find(f => f.levelType === req.params.levelType && f.levelId === decodeURIComponent(req.params.levelId) && f.electionType === req.params.electionType); res.json({ exists: !!figure, figure: figure || null }); });
 app.patch(`${BASE}/data-entry/ecz-figures/:levelType/:levelId/:electionType/status`, auth.requireAuth, (req, res) => { const idx = dataEntryStore.eczFigures.findIndex(f => f.levelType === req.params.levelType && f.levelId === decodeURIComponent(req.params.levelId) && f.electionType === req.params.electionType); if (idx < 0) return res.status(404).json({ error: 'Not found' }); const { status, notes } = req.body; if (!['approved', 'rejected', 'pending'].includes(status)) return res.status(400).json({ error: 'status must be approved, rejected, or pending' }); dataEntryStore.eczFigures[idx] = { ...dataEntryStore.eczFigures[idx], status, reviewNotes: notes, reviewedBy: req.user?.username, reviewedAt: new Date().toISOString() }; saveDataEntry(); res.json({ success: true, figure: dataEntryStore.eczFigures[idx] }); });
 app.delete(`${BASE}/data-entry/ecz-figures/:levelType/:levelId/:electionType`, auth.requireAuth, (req, res) => { const before = dataEntryStore.eczFigures.length; dataEntryStore.eczFigures = dataEntryStore.eczFigures.filter(f => !(f.levelType === req.params.levelType && f.levelId === decodeURIComponent(req.params.levelId) && f.electionType === req.params.electionType)); saveDataEntry(); res.json({ success: dataEntryStore.eczFigures.length < before }); });
+
+// ── Voter Roll (polling-station voter validation) ────────────────────────────
+app.post(`${BASE}/voter-roll/upload`, auth.requireAuth, (req, res) => {
+  const { pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, records } = req.body;
+  if (!pollingStationId || !Array.isArray(records)) return res.status(400).json({ error: 'pollingStationId and records[] are required' });
+  if (records.length > 50000) return res.status(400).json({ error: 'Roll too large — please split into smaller files (max 50,000 records per upload).' });
+  const stationRecord = voterRoll.saveStationRoll({ pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, records, uploadedBy: req.user?.username });
+  res.json({ success: true, ...stationRecord });
+});
+app.get(`${BASE}/voter-roll/status/:pollingStationId`, auth.requireAuth, (req, res) => {
+  res.json({ status: voterRoll.getStationRollStatus(decodeURIComponent(req.params.pollingStationId)) });
+});
+app.get(`${BASE}/voter-roll/search`, auth.requireAuth, (req, res) => {
+  res.json(voterRoll.searchVoter({ nrc: req.query.nrc, name: req.query.name, pollingStationId: req.query.pollingStationId }));
+});
+app.delete(`${BASE}/voter-roll/:pollingStationId`, auth.requireAuth, (req, res) => {
+  voterRoll.deleteStationRoll(decodeURIComponent(req.params.pollingStationId));
+  res.json({ success: true });
+});
 app.get(`${BASE}/data-entry/audit-log`, auth.requireAuth, (req, res) => { const limit = parseInt(req.query.limit || '50', 10); res.json({ entries: dataEntryStore.auditLog.slice(-limit), count: dataEntryStore.auditLog.length }); });
 
 // ─── Events ───────────────────────────────────────────────────────────────────
