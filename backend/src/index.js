@@ -190,16 +190,16 @@ app.post(`${BASE}/streams/:id/comments`, (req, res) => res.json({ success: true,
 app.delete(`${BASE}/streams/:streamId/comments/:commentId`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { streams.deleteComment(req.params.streamId, req.params.commentId); res.json({ success: true }); });
 
 // ─── Register (legacy endpoints) ─────────────────────────────────────────────
-app.post(`${BASE}/register/member`, (req, res) => { try { res.json({ registration: registrations.registerMember(req.body) }); } catch (err) { res.status(400).json({ error: err.message }); } });
+app.post(`${BASE}/register/member`, (req, res) => { try { const registration = registrations.registerMember(req.body); setImmediate(() => notifyNewApplication('member', registration)); res.json({ registration }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/register/members`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ members: registrations.listMembers({ status: req.query.status }) }));
 app.get(`${BASE}/register/members/stats`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json(registrations.getMemberStats()));
 app.patch(`${BASE}/register/members/:id/status`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const m = registrations.updateMemberStatus(req.params.id, req.body.status, req.body.note); if (!m) return res.status(404).json({ error: 'Not found' }); res.json({ member: m }); });
-app.post(`${BASE}/register/internship`, (req, res) => { try { res.json({ registration: registrations.registerIntern(req.body) }); } catch (err) { res.status(400).json({ error: err.message }); } });
+app.post(`${BASE}/register/internship`, (req, res) => { try { const registration = registrations.registerIntern(req.body); setImmediate(() => notifyNewApplication('internship', registration)); res.json({ registration }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/register/interns`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ interns: registrations.listInterns() }));
-app.post(`${BASE}/register/agent`, (req, res) => { try { res.json({ registration: registrations.registerAgent(req.body) }); } catch (err) { res.status(400).json({ error: err.message }); } });
+app.post(`${BASE}/register/agent`, (req, res) => { try { const registration = registrations.registerAgent(req.body); setImmediate(() => notifyNewApplication('agent', registration)); res.json({ registration }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/register/agents`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ agents: registrations.listAgents() }));
 app.delete(`${BASE}/register/agent/:id`, auth.requireAuth, auth.requireRole('super_admin'), (req, res) => { const ok = registrations.deleteAgent(req.params.id); if (!ok) return res.status(404).json({ error: 'Agent registration not found' }); res.json({ success: true }); });
-app.post(`${BASE}/register/cooperative`, (req, res) => { try { res.json({ registration: registrations.registerCoop(req.body) }); } catch (err) { res.status(400).json({ error: err.message }); } });
+app.post(`${BASE}/register/cooperative`, (req, res) => { try { const registration = registrations.registerCoop(req.body); setImmediate(() => notifyNewApplication('cooperative', registration)); res.json({ registration }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/register/coops`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ coops: registrations.listCoops ? registrations.listCoops() : [] }));
 
 // ─── Elections (legacy) ───────────────────────────────────────────────────────
@@ -230,7 +230,7 @@ app.patch(`${BASE}/documents/:id`, auth.requireAuth, auth.requireRole('admin', '
 app.delete(`${BASE}/documents/:id`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { docs.deleteDocument(req.params.id); res.json({ success: true }); });
 
 // ─── Membership ───────────────────────────────────────────────────────────────
-app.post(`${BASE}/membership/register`, (req, res) => { try { res.json({ member: registrations.registerMember(req.body) }); } catch (err) { res.status(400).json({ error: err.message }); } });
+app.post(`${BASE}/membership/register`, (req, res) => { try { const member = registrations.registerMember(req.body); setImmediate(() => notifyNewApplication('member', member)); res.json({ member }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/membership/me`, auth.requireAuth, (req, res) => { const m = registrations.getMemberByMembershipNumber(req.query.membershipNumber); if (!m) return res.status(404).json({ error: 'Member not found' }); res.json({ member: m }); });
 app.get(`${BASE}/membership/members`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ members: registrations.listMembers() }));
 app.get(`${BASE}/membership/members/:id`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const m = registrations.getMember(req.params.id); if (!m) return res.status(404).json({ error: 'Not found' }); res.json({ member: m }); });
@@ -413,6 +413,7 @@ function regRoutes(type, noun) {
   app.post(`${BASE}/registrations/${type}`, (req, res) => {
     const reg = { ...req.body, id: `${type}-${Date.now()}`, status: 'pending', submittedAt: new Date().toISOString() };
     regStore[type].push(reg); saveReg(type);
+    setImmediate(() => notifyNewApplication(type, reg));
     res.json({ success: true, message: `${noun} registration submitted`, registration: reg });
   });
 
@@ -606,6 +607,50 @@ app.get(`${BASE}/email/config`, auth.requireAuth, auth.requireRole('super_admin'
 app.post(`${BASE}/email/test`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => { try { if (!process.env.RESEND_API_KEY) return res.status(400).json({ error: 'RESEND_API_KEY not configured', configured: false }); const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from: process.env.EMAIL_FROM_ADDRESS || 'no-reply@bozplans.org', to: req.body.to || process.env.ADMIN_EMAIL, subject: 'BOZ Email Test', html: '<p>Email service is working correctly.</p>' }) }); const data = await r.json(); if (r.ok) res.json({ success: true, id: data.id }); else res.status(400).json({ error: data.message || 'Email send failed', configured: true }); } catch (e) { res.status(500).json({ error: e.message }); } });
 app.post(`${BASE}/email/resend/order/:orderId`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => res.json({ success: true, orderId: req.params.orderId, message: 'Email queued' }));
 app.post(`${BASE}/email/resend/payment/:paymentRef`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => res.json({ success: true, paymentRef: req.params.paymentRef, message: 'Receipt email queued' }));
+
+// ─── Application Notifications (send all submitted applications + documents to BOZ) ──
+const APPLICATION_NOTIFY_EMAIL = 'info@bozplans.org';
+function formatRegLabel(k) { return k.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim(); }
+async function notifyNewApplication(type, reg) {
+  if (!process.env.RESEND_API_KEY) { console.warn(`[notify] RESEND_API_KEY not set, skipping application email for ${type}/${reg?.id}`); return; }
+  try {
+    const skipKeys = new Set(['id', 'password', 'selfieDataUrl', 'selfie', 'documents', 'uploads', 'docs', 'documentsMeta']);
+    const rows = Object.entries(reg)
+      .filter(([k, v]) => !skipKeys.has(k) && v !== undefined && v !== null && v !== '')
+      .map(([k, v]) => `<tr><td style="padding:4px 8px;font-weight:600;border:1px solid #ddd;">${formatRegLabel(k)}</td><td style="padding:4px 8px;border:1px solid #ddd;">${typeof v === 'object' ? JSON.stringify(v) : String(v)}</td></tr>`)
+      .join('');
+
+    // Collect any uploaded documents/selfie as email attachments
+    const attachments = [];
+    const docSources = { ...(reg.documents || {}), ...(reg.uploads || {}), ...(reg.docs || {}) };
+    if (reg.selfieDataUrl) docSources.selfie = reg.selfieDataUrl;
+    else if (reg.selfie) docSources.selfie = reg.selfie;
+    for (const [name, val] of Object.entries(docSources)) {
+      if (typeof val === 'string' && val.startsWith('data:')) {
+        const [meta, b64] = val.split(',');
+        const ext = (meta.match(/data:[^/]+\/([^;]+)/) || [, 'bin'])[1];
+        if (b64) attachments.push({ filename: `${name}.${ext}`, content: b64 });
+      }
+    }
+
+    const html = `<h2>New ${formatRegLabel(type)} application submitted</h2><p>A new ${type} registration/application was submitted through the BOZ website.</p><table style="border-collapse:collapse;">${rows}</table><p>${attachments.length ? `${attachments.length} document(s) attached.` : 'No documents were attached to this application.'}</p>`;
+
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: process.env.EMAIL_FROM_ADDRESS || 'no-reply@bozplans.org',
+        to: APPLICATION_NOTIFY_EMAIL,
+        subject: `New ${formatRegLabel(type)} application — ${reg.fullName || reg.name || ((reg.firstName || '') + ' ' + (reg.lastName || '')).trim() || reg.id}`,
+        html,
+        ...(attachments.length ? { attachments } : {})
+      })
+    });
+    const data = await r.json();
+    if (!r.ok) console.error(`[notify] Resend error sending ${type} application email:`, data);
+    else console.log(`[notify] Application email sent to ${APPLICATION_NOTIFY_EMAIL} for ${type}/${reg.id}: ${data.id}`);
+  } catch (e) { console.error(`[notify] Failed to send ${type} application email:`, e.message); }
+}
 
 // ─── Adoption certs ───────────────────────────────────────────────────────────
 const _adoptionStore = [];
