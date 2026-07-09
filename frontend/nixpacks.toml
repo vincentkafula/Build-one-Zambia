@@ -11,4 +11,4 @@ cmds = ["npm run build"]
 cmd = "node server.js"
 
 [variables]
-NIXPACKS_CACHE_KEY = "bust-voter-validation-20260708"
+NIXPACKS_CACHE_KEY = "redeploy-after-limit-raise-20260709"
