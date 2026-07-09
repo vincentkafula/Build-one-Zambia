@@ -25,7 +25,7 @@ import { kv } from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3001', 10);
-const BASE = '/make-server-8fca9621';
+const BASE = '/api';
 
 const app = express();
 
