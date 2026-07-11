@@ -766,6 +766,7 @@ export const dataEntryApi = {
     electionType: string;
     totalVotesCast: number;
     rejectedBallots: number;
+    registeredVoters?: number;
     figures: CandidateVotePayload[];
     enteredBy: string;
     constituencyId?: string;

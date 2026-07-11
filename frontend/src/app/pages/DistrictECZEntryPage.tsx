@@ -25,6 +25,7 @@ interface ConstituencyFigure {
   totalVotesCast?: number;
   totalVotes?: number;
   rejectedBallots?: number;
+  registeredVoters?: number;
   districtId?: string;
 }
 
@@ -50,6 +51,7 @@ export function DistrictECZEntryPage() {
   const [enteredBy, setEnteredBy] = useState('');
   const [totalVotesCast, setTotalVotesCast] = useState('');
   const [rejectedBallots, setRejectedBallots] = useState('');
+  const [registeredVoters, setRegisteredVoters] = useState('');
   const [candidateVotes, setCandidateVotes] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -84,11 +86,12 @@ export function DistrictECZEntryPage() {
     dataEntryApi.getECZFigure('district', districtId, eczElectionType)
       .then(res => {
         if (res.exists && res.figure) {
-          const data = res.figure as { enteredBy?: string; savedAt?: string; totalVotesCast?: number; rejectedBallots?: number; figures?: ECZFigureCandidate[] };
+          const data = res.figure as { enteredBy?: string; savedAt?: string; totalVotesCast?: number; rejectedBallots?: number; registeredVoters?: number; figures?: ECZFigureCandidate[] };
           setExisting(data);
           setEnteredBy(data.enteredBy || '');
           setTotalVotesCast(String(data.totalVotesCast ?? ''));
           setRejectedBallots(String(data.rejectedBallots ?? ''));
+          setRegisteredVoters(String(data.registeredVoters ?? ''));
           const cv: Record<string, string> = {};
           (data.figures || []).forEach(f => { cv[f.candidateId] = String(f.votes); });
           setCandidateVotes(cv);
@@ -96,6 +99,7 @@ export function DistrictECZEntryPage() {
           setExisting(null);
           setTotalVotesCast('');
           setRejectedBallots('');
+          setRegisteredVoters('');
           setCandidateVotes({});
         }
       })
@@ -111,13 +115,14 @@ export function DistrictECZEntryPage() {
 
   const approvedTotals = useMemo(() => {
     const perCandidate: Record<string, number> = {};
-    let rejected = 0, total = 0;
+    let rejected = 0, total = 0, registered = 0;
     for (const f of approvedFigs) {
       for (const c of f.figures || []) perCandidate[c.candidateId] = (perCandidate[c.candidateId] || 0) + (c.votes || 0);
       rejected += f.rejectedBallots ?? 0;
       total += f.totalVotesCast ?? f.totalVotes ?? 0;
+      registered += f.registeredVoters ?? 0;
     }
-    return { perCandidate, rejected, total };
+    return { perCandidate, rejected, total, registered };
   }, [approvedFigs]);
 
   const canEnterFigures = isCombinable && pendingCount === 0 && constituencyFigures.length > 0;
@@ -138,6 +143,7 @@ export function DistrictECZEntryPage() {
     const sumCandidates = figures.reduce((s, f) => s + f.votes, 0);
     const rejectedInt = parseInt(rejectedBallots) || 0;
     const totalInt = parseInt(totalVotesCast) || 0;
+    const registeredInt = parseInt(registeredVoters) || 0;
 
     if (sumCandidates + rejectedInt !== totalInt) {
       setError(`Candidate votes (${sumCandidates.toLocaleString()}) + Rejected ballots (${rejectedInt.toLocaleString()}) = ${(sumCandidates + rejectedInt).toLocaleString()}, but Total Votes Cast is ${totalInt.toLocaleString()}. These must match.`);
@@ -147,6 +153,9 @@ export function DistrictECZEntryPage() {
     // Equality gate: ECZ figures for this district must equal the sum of
     // approved constituency manager figures for this district and election type.
     const mismatches: string[] = [];
+    if (registeredInt !== approvedTotals.registered) {
+      mismatches.push(`Registered voters: ECZ ${registeredInt.toLocaleString()} vs Constituencies ${approvedTotals.registered.toLocaleString()}`);
+    }
     if (rejectedInt !== approvedTotals.rejected) {
       mismatches.push(`Rejected ballots: ECZ ${rejectedInt.toLocaleString()} vs Constituencies ${approvedTotals.rejected.toLocaleString()}`);
     }
@@ -174,6 +183,7 @@ export function DistrictECZEntryPage() {
         electionType: eczElectionType,
         totalVotesCast: totalInt,
         rejectedBallots: rejectedInt,
+        registeredVoters: registeredInt,
         figures,
         enteredBy: enteredBy.trim(),
         provinceId: chain?.province.id,
@@ -301,7 +311,20 @@ export function DistrictECZEntryPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+            <div>
+              <label className="block text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
+                REGISTERED VOTERS (ECZ) — Constituencies: {approvedTotals.registered.toLocaleString()}
+              </label>
+              <input
+                type="text" inputMode="numeric" disabled={!canEnterFigures}
+                value={registeredVoters}
+                onChange={e => setRegisteredVoters(e.target.value.replace(/[^0-9]/g, ''))}
+                placeholder="0"
+                className="w-full px-3 py-2.5 rounded-lg font-mono text-sm disabled:opacity-40"
+                style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', outline: 'none' }}
+              />
+            </div>
             <div>
               <label className="block text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
                 TOTAL VOTES CAST (ECZ) — Constituencies: {approvedTotals.total.toLocaleString()}
