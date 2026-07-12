@@ -10,13 +10,14 @@ import heroSlide5 from '../../../imports/vincent_5.png';
 import heroSlide6 from '../../../imports/vincent_6.png';
 import heroSlide7 from '../../../imports/vincent_7.png';
 import heroSlide8 from '../../../imports/vincent_8.png';
+import rallyImg from '../../../imports/rally_zambian_flags_engen.png';
 
 const HERO_SLIDES = [
   heroSlide1, heroSlide2, heroSlide3, heroSlide4,
   heroSlide5, heroSlide6, heroSlide7, heroSlide8,
 ];
 
-const RALLY_IMG     = 'https://images.unsplash.com/photo-1604212561903-5ca7f041c58b?w=1600&h=700&fit=crop&auto=format';
+const RALLY_IMG     = rallyImg;
 const COMMUNITY_IMG = 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=800&h=600&fit=crop&auto=format';
 
 const PROMISES = [
