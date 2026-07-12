@@ -43,11 +43,16 @@ function findDistrictChain(districtId: string, districtName?: string) {
     }
   }
   if (matches.length === 0) return null;
-  if (matches.length === 1) return matches[0];
+  if (matches.length === 1) return { ...matches[0], ambiguousId: false, resolvedByName: false };
   // District IDs are only unique within a province (e.g. '006' exists in both
   // Central and Copperbelt), so when the id collides, disambiguate using the
-  // district name, which is unique nationally.
-  return matches.find(m => m.district.name === districtName) || matches[0];
+  // district name, which is unique nationally. Normalize both sides in case
+  // the stored name has different casing/whitespace than mockData.
+  const norm = (s?: string) => (s || '').trim().toLowerCase();
+  const target = norm(districtName);
+  const byName = matches.find(m => norm(m.district.name) === target);
+  if (byName) return { ...byName, ambiguousId: true, resolvedByName: true };
+  return { ...matches[0], ambiguousId: true, resolvedByName: false };
 }
 
 function resolveCandidateList(electionType: ElectionType, chain: ReturnType<typeof findDistrictChain>, constituencyId: string): Candidate[] {
@@ -174,6 +179,19 @@ export function ConstituencyManagerFiguresPage() {
 
   return (
     <div className="space-y-5">
+      {chain?.ambiguousId && (
+        <div className="flex items-start gap-3 px-4 py-3 rounded-xl" style={{
+          backgroundColor: chain.resolvedByName ? 'rgba(14,165,233,0.08)' : 'rgba(220,38,38,0.1)',
+          border: `1px solid ${chain.resolvedByName ? 'rgba(14,165,233,0.25)' : 'rgba(220,38,38,0.3)'}`,
+        }}>
+          <MapPin size={16} style={{ color: chain.resolvedByName ? '#0ea5e9' : '#dc2626', marginTop: 2, flexShrink: 0 }} />
+          <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.78rem', lineHeight: 1.5 }}>
+            {chain.resolvedByName
+              ? `Diagnostic: this district id also exists in another province — resolved to ${chain.province.name} / ${chain.district.name} using your account's stored district name.`
+              : `Diagnostic: this district id exists in multiple provinces and couldn't be matched to your account's stored district name — showing ${chain.province.name} / ${chain.district.name}, which may be wrong. Please tell your administrator: scopeId="${districtId}", scopeName="${districtName}".`}
+          </p>
+        </div>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
           {ELECTION_OPTIONS.map(opt => (

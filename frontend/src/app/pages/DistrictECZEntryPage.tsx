@@ -40,8 +40,11 @@ function findDistrictChain(districtId: string, districtName?: string) {
   if (matches.length === 1) return matches[0];
   // District IDs are only unique within a province (e.g. '006' exists in both
   // Central and Copperbelt), so when the id collides, disambiguate using the
-  // district name, which is unique nationally.
-  return matches.find(m => m.district.name === districtName) || matches[0];
+  // district name, which is unique nationally. Normalize both sides in case
+  // the stored name has different casing/whitespace than mockData.
+  const norm = (s?: string) => (s || '').trim().toLowerCase();
+  const target = norm(districtName);
+  return matches.find(m => norm(m.district.name) === target) || matches[0];
 }
 
 export function DistrictECZEntryPage() {
