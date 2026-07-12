@@ -35,18 +35,23 @@ const ELECTION_OPTIONS: { value: ElectionType; label: string; eczValue: string }
   { value: 'councillor', label: 'Ward Councillor', eczValue: 'councillor' },
 ];
 
-function findDistrictChain(districtId: string) {
+function findDistrictChain(districtId: string, districtName?: string) {
+  const matches: { province: (typeof provinces)[number]; district: (typeof provinces)[number]['districts'][number] }[] = [];
   for (const p of provinces) {
     for (const d of p.districts) {
-      if (d.id === districtId) return { province: p, district: d };
+      if (d.id === districtId) matches.push({ province: p, district: d });
     }
   }
-  return null;
+  if (matches.length === 0) return null;
+  if (matches.length === 1) return matches[0];
+  // District IDs are only unique within a province (e.g. '006' exists in both
+  // Central and Copperbelt), so when the id collides, disambiguate using the
+  // district name, which is unique nationally.
+  return matches.find(m => m.district.name === districtName) || matches[0];
 }
 
-function resolveCandidateList(electionType: ElectionType, districtId: string, constituencyId: string): Candidate[] {
+function resolveCandidateList(electionType: ElectionType, chain: ReturnType<typeof findDistrictChain>, constituencyId: string): Candidate[] {
   if (electionType === 'presidential') return presidentialCandidates;
-  const chain = findDistrictChain(districtId);
   if (!chain) return [];
   if (electionType === 'mayoral') return chain.district.mayoralCandidates ?? [];
   if (electionType === 'parliament') {
@@ -75,7 +80,7 @@ export function ConstituencyManagerFiguresPage() {
   const districtId: string = user?.scopeId || '';
   const districtName: string = user?.scopeName || 'your district';
 
-  const chain = useMemo(() => (districtId ? findDistrictChain(districtId) : null), [districtId]);
+  const chain = useMemo(() => (districtId ? findDistrictChain(districtId, districtName) : null), [districtId, districtName]);
   const constituencies = chain?.district.constituencies ?? [];
 
   const [electionType, setElectionType] = useState<ElectionType>('presidential');
@@ -161,7 +166,7 @@ export function ConstituencyManagerFiguresPage() {
   }
 
   const badge = selected ? statusBadge(selected.status) : null;
-  const candList = selected ? resolveCandidateList(electionType, districtId, selected.levelId) : [];
+  const candList = selected ? resolveCandidateList(electionType, chain, selected.levelId) : [];
   const rejected = selected?.rejectedBallots ?? 0;
   const totalCast = selected?.totalVotesCast ?? selected?.totalVotes ?? 0;
   const registered = selected?.registeredVoters ?? 0;

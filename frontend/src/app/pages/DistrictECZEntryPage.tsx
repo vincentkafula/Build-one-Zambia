@@ -29,13 +29,19 @@ interface ConstituencyFigure {
   districtId?: string;
 }
 
-function findDistrictChain(districtId: string) {
+function findDistrictChain(districtId: string, districtName?: string) {
+  const matches: { province: (typeof provinces)[number]; district: (typeof provinces)[number]['districts'][number] }[] = [];
   for (const p of provinces) {
     for (const d of p.districts) {
-      if (d.id === districtId) return { province: p, district: d };
+      if (d.id === districtId) matches.push({ province: p, district: d });
     }
   }
-  return null;
+  if (matches.length === 0) return null;
+  if (matches.length === 1) return matches[0];
+  // District IDs are only unique within a province (e.g. '006' exists in both
+  // Central and Copperbelt), so when the id collides, disambiguate using the
+  // district name, which is unique nationally.
+  return matches.find(m => m.district.name === districtName) || matches[0];
 }
 
 export function DistrictECZEntryPage() {
@@ -44,7 +50,7 @@ export function DistrictECZEntryPage() {
   const districtId: string = user?.scopeId || '';
   const districtNameFallback: string = user?.scopeName || '';
 
-  const chain = useMemo(() => (districtId ? findDistrictChain(districtId) : null), [districtId]);
+  const chain = useMemo(() => (districtId ? findDistrictChain(districtId, districtNameFallback) : null), [districtId, districtNameFallback]);
   const resolvedDistrictName = chain?.district.name || districtNameFallback;
 
   const [electionType, setElectionType] = useState<ElectionType>('presidential');

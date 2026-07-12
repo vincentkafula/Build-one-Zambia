@@ -63,9 +63,13 @@ function findWard(wardId: string) {
   return null;
 }
 
-function resolveCandidateList(electionType: ElectionType, sub: { constituencyId?: string; districtId?: string; wardId?: string }): Candidate[] {
+function resolveCandidateList(electionType: ElectionType, sub: { constituencyId?: string; districtId?: string; wardId?: string; provinceId?: string }): Candidate[] {
   if (electionType === 'presidential') return presidentialCandidates;
   for (const p of provinces) {
+    // District IDs repeat across provinces (e.g. '006' exists in several
+    // provinces), so scope the mayoral lookup to the submission's own
+    // province whenever we have it, instead of matching district id alone.
+    if (electionType === 'mayoral' && sub.provinceId && p.id !== sub.provinceId) continue;
     for (const d of p.districts) {
       if (electionType === 'mayoral' && d.id === sub.districtId) return d.mayoralCandidates ?? [];
       for (const c of d.constituencies) {
