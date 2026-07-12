@@ -377,8 +377,9 @@ export default function MainHomePage() {
           src={RALLY_IMG}
           alt="Build One Zambia campaign rally"
           className="w-full h-full object-cover"
+          style={{ objectPosition: 'center 22%' }}
         />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.88) 40%, rgba(0,0,0,0.3) 100%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.65) 40%, rgba(0,0,0,0.18) 100%)' }} />
         <div className="absolute inset-0 flex items-center">
           <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full">
             <div className="max-w-xl">
