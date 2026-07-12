@@ -386,6 +386,19 @@ export default function MainHomePage() {
                 <span className="block w-8 h-0.5" style={{ backgroundColor: '#dc2626' }} />
                 <span className="text-xs tracking-widest uppercase" style={{ color: '#dc2626', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.2em', fontWeight: 600 }}>ELECTION RESULTS PORTAL</span>
               </div>
+              <h2 className="text-white mb-4" style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 700, lineHeight: 1.1 }}>
+                Real-Time Results.<br />Station by Station.
+              </h2>
+              <p className="mb-8" style={{ color: '#d1d5db', fontSize: '15px', lineHeight: 1.75, maxWidth: '460px' }}>
+                Our trained agents cover all 13,529 polling stations across Zambia's 10 provinces on 14 August 2031. Every result captured, verified, and published in real time.
+              </p>
+              <Link
+                to="/results"
+                className="inline-flex items-center gap-2 px-7 py-4 font-bold text-white transition-all duration-200 hover:opacity-90"
+                style={{ fontFamily: 'Oswald, sans-serif', fontSize: '14px', letterSpacing: '0.1em', backgroundColor: '#dc2626' }}
+              >
+                VIEW LIVE RESULTS <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
           </div>
         </div>
