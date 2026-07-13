@@ -735,7 +735,7 @@ export const dataEntryApi = {
     candidateVotes: CandidateVotePayload[];
     documents: DocumentPayload[];
     enteredBy: string;
-  }) => request<{ success: boolean; message: string; submission: { id: string; submittedAt: string; status: string } }>('POST', '/data-entry/result', data as unknown as Record<string, unknown>),
+  }) => request<{ success: boolean; message: string; submission: { id: string; submittedAt: string; status: string } }>('POST', '/data-entry/result', data as unknown as Record<string, unknown>, true),
 
   getVoterTurnout: (electionType?: string) => {
     const qs = electionType ? `?electionType=${electionType}` : '';
