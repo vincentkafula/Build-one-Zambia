@@ -18,14 +18,58 @@ interface UploadedFile {
 }
 
 export function DataEntryPage() {
+  // ── Session user — polling agents are locked to their assigned station ──────
+  const sessionUser = (() => {
+    try { return JSON.parse(sessionStorage.getItem('boz_election_user') || 'null'); } catch { return null; }
+  })();
+  const isPollingAgent = ['polling_agent', 'agent', 'election_agent'].includes(sessionUser?.role || '');
+
+  // Resolve the agent's assigned polling station from their user object
+  const assignedStationId   = sessionUser?.pollingStationId || sessionUser?.scopeId || '';
+  const assignedStationName = sessionUser?.pollingStationName || sessionUser?.scopeName || '';
+
+  // Auto-resolve province→district→constituency→ward from mockData using the station ID/name
+  const resolvedLocation = (() => {
+    if (!assignedStationId && !assignedStationName) return null;
+    for (const prov of provinces) {
+      for (const dist of prov.districts) {
+        for (const cons of dist.constituencies) {
+          for (const ward of cons.wards) {
+            const ps = ward.pollingStations.find(s =>
+              s.id === assignedStationId || s.name === assignedStationName
+            );
+            if (ps) return {
+              provinceId: prov.id, provinceName: prov.name,
+              districtId: dist.id, districtName: dist.name,
+              constituencyId: cons.id, constituencyName: cons.name,
+              wardId: ward.id, wardName: ward.name,
+              pollingStationId: ps.id, pollingStationName: ps.name,
+              registeredVoters: ps.registeredVoters,
+            };
+          }
+        }
+      }
+    }
+    return null;
+  })();
+
+  const locked = resolvedLocation || {
+    provinceId: sessionUser?.provinceId || '', provinceName: '',
+    districtId: sessionUser?.districtId || '', districtName: '',
+    constituencyId: sessionUser?.constituencyId || '', constituencyName: '',
+    wardId: sessionUser?.wardId || '', wardName: '',
+    pollingStationId: assignedStationId, pollingStationName: assignedStationName,
+    registeredVoters: 0,
+  };
+
   const [electionType, setElectionType] = useState<ElectionType>('');
   const [formData, setFormData] = useState({
-    province: '',
-    district: '',
-    constituency: '',
-    ward: '',
-    pollingStation: '',
-    registeredVoters: '',
+    province:        isPollingAgent ? locked.provinceId      : '',
+    district:        isPollingAgent ? locked.districtId      : '',
+    constituency:    isPollingAgent ? locked.constituencyId  : '',
+    ward:            isPollingAgent ? locked.wardId          : '',
+    pollingStation:  isPollingAgent ? locked.pollingStationId : '',
+    registeredVoters: isPollingAgent && locked.registeredVoters ? String(locked.registeredVoters) : '',
     rejectedBallots: '',
     candidateVotes: {} as Record<string, string>,
   });
@@ -73,14 +117,17 @@ export function DataEntryPage() {
 
   // Check if polling station already submitted when station is selected
   useEffect(() => {
-    if (!formData.pollingStation || !electionType) { setAlreadySubmitted(null); return; }
-    dataEntryApi.checkSubmission(formData.pollingStation, electionType)
+    const stationToCheck = isPollingAgent
+      ? (locked.pollingStationId || formData.pollingStation)
+      : formData.pollingStation;
+    if (!stationToCheck || !electionType) { setAlreadySubmitted(null); return; }
+    dataEntryApi.checkSubmission(stationToCheck, electionType)
       .then(res => {
         if (res.submitted) setAlreadySubmitted({ submittedAt: res.submittedAt!, status: res.status! });
         else setAlreadySubmitted(null);
       })
       .catch(() => setAlreadySubmitted(null));
-  }, [formData.pollingStation, electionType]);
+  }, [formData.pollingStation, electionType, locked.pollingStationId]);
 
   // Auto-computed totals
   const totalCandidateVotes = Object.values(formData.candidateVotes).reduce(
@@ -122,22 +169,28 @@ export function DataEntryPage() {
 
       const currentStation = currentWard?.pollingStations.find(s => s.id === formData.pollingStation);
 
+      const effectiveStationId   = isPollingAgent ? (locked.pollingStationId || formData.pollingStation) : formData.pollingStation;
+      const effectiveStationName = isPollingAgent ? (locked.pollingStationName || currentStation?.name)   : currentStation?.name;
+      const effectiveRegistered  = isPollingAgent && locked.registeredVoters > 0 ? locked.registeredVoters : registeredVotersNum;
+
       const payload = {
         electionType,
-        provinceId: formData.province,
-        districtId: formData.district,
-        constituencyId: formData.constituency,
-        wardId: formData.ward,
-        pollingStationId: formData.pollingStation,
-        pollingStationName: currentStation?.name,
-        registeredVoters: registeredVotersNum,
-        rejectedBallots: rejectedBallotsNum,
+        provinceId:        isPollingAgent ? locked.provinceId      : formData.province,
+        districtId:        isPollingAgent ? locked.districtId      : formData.district,
+        constituencyId:    isPollingAgent ? locked.constituencyId  : formData.constituency,
+        wardId:            isPollingAgent ? locked.wardId          : formData.ward,
+        pollingStationId:  effectiveStationId,
+        pollingStationName: effectiveStationName,
+        registeredVoters:  effectiveRegistered,
+        rejectedBallots:   rejectedBallotsNum,
         candidateVotes: candidates.map(c => ({
           candidateId: c.id,
           votes: parseInt(formData.candidateVotes[c.id] ?? '0') || 0,
         })),
         documents,
-        enteredBy: 'Polling Agent',
+        enteredBy:  sessionUser?.name || sessionUser?.username || 'Polling Agent',
+        agentId:    sessionUser?.username || '',
+        agentName:  sessionUser?.name || sessionUser?.username || 'Polling Agent',
       };
 
       if (!isOnline) {
@@ -307,130 +360,96 @@ export function DataEntryPage() {
             </div>
           </div>
 
-          {/* Location Selection - Only show if election type is selected */}
+          {/* Location Selection */}
           {electionType && (
             <div className="mb-6">
               <h3 className="font-semibold text-foreground mb-4">Polling Station Location</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm mb-2">Province *</label>
-                <select
-                  required
-                  value={formData.province}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    province: e.target.value,
-                    district: '',
-                    constituency: '',
-                    ward: '',
-                    pollingStation: '',
-                  })}
-                  className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  <option value="">Select Province</option>
-                  {provinces.map(province => (
-                    <option key={province.id} value={province.id}>
-                      {province.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
 
-              <div>
-                <label className="block text-sm mb-2">District *</label>
-                <select
-                  required
-                  disabled={!formData.province}
-                  value={formData.district}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    district: e.target.value,
-                    constituency: '',
-                    ward: '',
-                    pollingStation: '',
-                  })}
-                  className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
-                >
-                  <option value="">Select District</option>
-                  {currentProvince?.districts.map(district => (
-                    <option key={district.id} value={district.id}>
-                      {district.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm mb-2">Constituency *</label>
-                <select
-                  required
-                  disabled={!formData.district}
-                  value={formData.constituency}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    constituency: e.target.value,
-                    ward: '',
-                    pollingStation: '',
-                  })}
-                  className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
-                >
-                  <option value="">Select Constituency</option>
-                  {currentDistrict?.constituencies.map(constituency => (
-                    <option key={constituency.id} value={constituency.id}>
-                      {constituency.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm mb-2">Ward *</label>
-                <select
-                  required
-                  disabled={!formData.constituency}
-                  value={formData.ward}
-                  onChange={(e) => setFormData({ ...formData, ward: e.target.value, pollingStation: '', registeredVoters: '' })}
-                  className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
-                >
-                  <option value="">Select Ward</option>
-                  {currentConstituency?.wards.map(ward => (
-                    <option key={ward.id} value={ward.id}>
-                      {ward.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-sm mb-2">Polling Station *</label>
-                <select
-                  required
-                  disabled={!formData.ward}
-                  value={formData.pollingStation}
-                  onChange={(e) => {
-                    const stationId = e.target.value;
-                    const station = currentWard?.pollingStations.find(s => s.id === stationId);
-                    setFormData({
-                      ...formData,
-                      pollingStation: stationId,
-                      registeredVoters: station ? String(station.registeredVoters) : '',
-                    });
-                  }}
-                  className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
-                >
-                  <option value="">Select Polling Station</option>
-                  {currentWard?.pollingStations.map(station => (
-                    <option key={station.id} value={station.id}>
-                      {station.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {isPollingAgent ? (
+                /* Polling agent: locked to their assigned station */
+                <div className="rounded-xl border-2 border-green-500 bg-green-50 p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-green-700 font-semibold text-sm">📍 Your Assigned Polling Station</span>
+                    <span className="text-xs bg-green-700 text-white px-2 py-0.5 rounded-full font-semibold">Locked</span>
+                  </div>
+                  {locked.pollingStationId || locked.pollingStationName ? (
+                    <>
+                      <p className="text-green-900 font-bold text-base">{locked.pollingStationName || locked.pollingStationId}</p>
+                      {resolvedLocation && (
+                        <p className="text-green-700 text-xs mt-1">
+                          {[resolvedLocation.provinceName, resolvedLocation.districtName, resolvedLocation.constituencyName, resolvedLocation.wardName].filter(Boolean).join(' → ')}
+                        </p>
+                      )}
+                      {locked.registeredVoters > 0 && (
+                        <p className="text-green-700 text-xs mt-1">
+                          Registered Voters: <strong>{locked.registeredVoters.toLocaleString()}</strong>
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-red-600 font-medium text-sm">
+                      ⚠ No polling station has been assigned to your account.<br />
+                      Please contact your supervisor or the national manager.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                /* Non-agent: full dropdown selectors */
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm mb-2">Province *</label>
+                    <select required value={formData.province}
+                      onChange={(e) => setFormData({ ...formData, province: e.target.value, district: '', constituency: '', ward: '', pollingStation: '' })}
+                      className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                      <option value="">Select Province</option>
+                      {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-2">District *</label>
+                    <select required disabled={!formData.province} value={formData.district}
+                      onChange={(e) => setFormData({ ...formData, district: e.target.value, constituency: '', ward: '', pollingStation: '' })}
+                      className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50">
+                      <option value="">Select District</option>
+                      {currentProvince?.districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-2">Constituency *</label>
+                    <select required disabled={!formData.district} value={formData.constituency}
+                      onChange={(e) => setFormData({ ...formData, constituency: e.target.value, ward: '', pollingStation: '' })}
+                      className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50">
+                      <option value="">Select Constituency</option>
+                      {currentDistrict?.constituencies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-2">Ward *</label>
+                    <select required disabled={!formData.constituency} value={formData.ward}
+                      onChange={(e) => setFormData({ ...formData, ward: e.target.value, pollingStation: '' })}
+                      className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50">
+                      <option value="">Select Ward</option>
+                      {currentConstituency?.wards.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm mb-2">Polling Station *</label>
+                    <select required disabled={!formData.ward} value={formData.pollingStation}
+                      onChange={(e) => {
+                        const ps = currentWard?.pollingStations.find(s => s.id === e.target.value);
+                        setFormData({ ...formData, pollingStation: e.target.value, registeredVoters: ps ? String(ps.registeredVoters) : '' });
+                      }}
+                      className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50">
+                      <option value="">Select Polling Station</option>
+                      {currentWard?.pollingStations.map(ps => <option key={ps.id} value={ps.id}>{ps.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
           )}
 
-          {/* Voting Statistics - Only show if election type is selected */}
+                    {/* Voting Statistics - Only show if election type is selected */}
           {electionType && (
             <div className="mb-6 pt-6 border-t border-border">
             <h3 className="font-semibold text-foreground mb-1">Voting Statistics</h3>

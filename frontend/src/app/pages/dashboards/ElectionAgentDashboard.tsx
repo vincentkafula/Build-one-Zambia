@@ -448,6 +448,14 @@ function ElectionDashboardMain({ user }: { user: Record<string, string> }) {
               <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
                 Enter the votes as officially announced at your polling station.
               </p>
+              {/* Show assigned station banner for polling agents */}
+              {(user?.role === 'polling_agent' || user?.role === 'agent' || user?.role === 'election_agent') && (user?.pollingStationName || user?.scopeName) && (
+                <div className="mt-3 px-4 py-3 rounded-xl" style={{ backgroundColor: '#10b98118', border: '1px solid #10b98140' }}>
+                  <p className="text-sm" style={{ color: '#6ee7b7' }}>
+                    📍 You are entering results for: <strong style={{ color: '#fff' }}>{user?.pollingStationName || user?.scopeName}</strong>
+                  </p>
+                </div>
+              )}
             </div>
             <Suspense fallback={<SectionLoader />}><DataEntryPage /></Suspense>
           </div>

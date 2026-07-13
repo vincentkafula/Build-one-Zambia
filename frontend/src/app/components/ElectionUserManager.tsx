@@ -184,8 +184,8 @@ function CreateUserForm({ onCreated, defaultRole }: { onCreated: () => void; def
       await api('POST', '/election-users', {
         ...form,
         scopeId, scopeName, scopeType,
-        pollingStationId: form.role === 'agent' ? pollingStationId : undefined,
-        pollingStationName: form.role === 'agent' ? selStation?.name : undefined,
+        pollingStationId: ['agent', 'polling_agent', 'election_agent'].includes(form.role) ? pollingStationId : undefined,
+        pollingStationName: ['agent', 'polling_agent', 'election_agent'].includes(form.role) ? selStation?.name : undefined,
       });
       const cfg = ROLE_CONFIG[form.role as RoleKey];
       setSuccess(`✓ ${form.name} created as ${cfg?.label ?? form.role}`);

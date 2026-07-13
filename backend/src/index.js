@@ -290,10 +290,23 @@ app.get(`${BASE}/voter/stats/:pollingStationId`, auth.requireAuth, (req, res) =>
 const dataEntryStore = { submissions: kv.get('data-entry:submissions') || [], eczFigures: kv.get('data-entry:ecz-figures') || [], auditLog: kv.get('data-entry:audit-log') || [] };
 function saveDataEntry() { kv.set('data-entry:submissions', dataEntryStore.submissions); kv.set('data-entry:ecz-figures', dataEntryStore.eczFigures); kv.set('data-entry:audit-log', dataEntryStore.auditLog); }
 
-app.post(`${BASE}/data-entry/result`, async (req, res) => {
+app.post(`${BASE}/data-entry/result`, auth.requireAuth, async (req, res) => {
   try {
     const { pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, candidates: rawCands, candidateResults, candidateVotes, totalVotesCast, totalVotes, totalRejectedBallots, totalRejected, rejectedBallots, registeredVoters, agentId, agentName, enteredBy, notes } = req.body;
     if (!pollingStationId || !electionType) return res.status(400).json({ error: 'pollingStationId and electionType required' });
+
+    // Enforce: polling agents can only submit for their assigned station
+    const isAgent = ['polling_agent', 'agent', 'election_agent'].includes(req.user?.role || '');
+    if (isAgent) {
+      const user = auth.getUser(req.user.username);
+      const assignedStation = user?.pollingStationId || user?.scopeId || '';
+      const assignedName    = user?.pollingStationName || user?.scopeName || '';
+      if (assignedStation && assignedStation !== pollingStationId) {
+        return res.status(403).json({
+          error: `Access denied. You are assigned to "${assignedName}" and cannot submit results for a different polling station.`
+        });
+      }
+    }
     const rawList = candidateVotes || candidateResults || rawCands || [];
     const normCandidates = rawList.map(c => ({ candidateId: c.candidateId || c.id || '', name: c.name || c.candidateName || '', party: c.party || c.partyName || '', votes: Number(c.votes || c.voteCount || 0) }));
     const totalVotesNum = normCandidates.reduce((s, c) => s + c.votes, 0) || Number(totalVotesCast || totalVotes || 0);
