@@ -58,9 +58,7 @@ export function DistrictECZEntryPage() {
 
   const [electionType, setElectionType] = useState<ElectionType>('presidential');
   const [enteredBy, setEnteredBy] = useState('');
-  const [totalVotesCast, setTotalVotesCast] = useState('');
   const [rejectedBallots, setRejectedBallots] = useState('');
-  const [registeredVoters, setRegisteredVoters] = useState('');
   const [candidateVotes, setCandidateVotes] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -95,20 +93,16 @@ export function DistrictECZEntryPage() {
     dataEntryApi.getECZFigure('district', districtId, eczElectionType)
       .then(res => {
         if (res.exists && res.figure) {
-          const data = res.figure as { enteredBy?: string; savedAt?: string; totalVotesCast?: number; rejectedBallots?: number; registeredVoters?: number; figures?: ECZFigureCandidate[] };
+          const data = res.figure as { enteredBy?: string; savedAt?: string; rejectedBallots?: number; figures?: ECZFigureCandidate[] };
           setExisting(data);
           setEnteredBy(data.enteredBy || '');
-          setTotalVotesCast(String(data.totalVotesCast ?? ''));
           setRejectedBallots(String(data.rejectedBallots ?? ''));
-          setRegisteredVoters(String(data.registeredVoters ?? ''));
           const cv: Record<string, string> = {};
           (data.figures || []).forEach(f => { cv[f.candidateId] = String(f.votes); });
           setCandidateVotes(cv);
         } else {
           setExisting(null);
-          setTotalVotesCast('');
           setRejectedBallots('');
-          setRegisteredVoters('');
           setCandidateVotes({});
         }
       })
@@ -136,6 +130,15 @@ export function DistrictECZEntryPage() {
 
   const canEnterFigures = isCombinable && pendingCount === 0 && constituencyFigures.length > 0;
 
+  const registeredInt = approvedTotals.registered;
+  const liveCandidateFigures = useMemo(
+    () => candidates.map(c => ({ candidateId: c.id, votes: parseInt(candidateVotes[c.id] ?? '0') || 0 })),
+    [candidates, candidateVotes]
+  );
+  const sumCandidates = liveCandidateFigures.reduce((s, f) => s + f.votes, 0);
+  const rejectedIntLive = parseInt(rejectedBallots) || 0;
+  const computedTotalVotesCast = sumCandidates + rejectedIntLive;
+
   const handleVoteChange = (candidateId: string, value: string) => {
     setCandidateVotes(prev => ({ ...prev, [candidateId]: value.replace(/[^0-9]/g, '') }));
   };
@@ -148,23 +151,15 @@ export function DistrictECZEntryPage() {
     if (!isCombinable) { setError('This race has different candidates in each constituency/ward within the district, so ECZ figures cannot be entered at district level for it.'); return; }
     if (!enteredBy.trim()) { setError('Please enter the name of the person entering these figures.'); return; }
 
-    const figures = candidates.map(c => ({ candidateId: c.id, votes: parseInt(candidateVotes[c.id] ?? '0') || 0 }));
-    const sumCandidates = figures.reduce((s, f) => s + f.votes, 0);
-    const rejectedInt = parseInt(rejectedBallots) || 0;
-    const totalInt = parseInt(totalVotesCast) || 0;
-    const registeredInt = parseInt(registeredVoters) || 0;
-
-    if (sumCandidates + rejectedInt !== totalInt) {
-      setError(`Candidate votes (${sumCandidates.toLocaleString()}) + Rejected ballots (${rejectedInt.toLocaleString()}) = ${(sumCandidates + rejectedInt).toLocaleString()}, but Total Votes Cast is ${totalInt.toLocaleString()}. These must match.`);
-      return;
-    }
+    const figures = liveCandidateFigures;
+    const rejectedInt = rejectedIntLive;
+    const totalInt = computedTotalVotesCast;
 
     // Equality gate: ECZ figures for this district must equal the sum of
-    // approved constituency manager figures for this district and election type.
+    // approved constituency manager figures for this district and election
+    // type. Registered voters and total votes cast are auto-derived, so they
+    // can only mismatch through the candidate/rejected-ballot figures.
     const mismatches: string[] = [];
-    if (registeredInt !== approvedTotals.registered) {
-      mismatches.push(`Registered voters: ECZ ${registeredInt.toLocaleString()} vs Constituencies ${approvedTotals.registered.toLocaleString()}`);
-    }
     if (rejectedInt !== approvedTotals.rejected) {
       mismatches.push(`Rejected ballots: ECZ ${rejectedInt.toLocaleString()} vs Constituencies ${approvedTotals.rejected.toLocaleString()}`);
     }
@@ -322,30 +317,30 @@ export function DistrictECZEntryPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
             <div>
-              <label className="block text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
-                REGISTERED VOTERS (ECZ) — Constituencies: {approvedTotals.registered.toLocaleString()}
+              <label className="block text-xs mb-1.5 flex items-center gap-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
+                REGISTERED VOTERS
+                <span className="text-[10px] px-1 rounded" style={{ background: 'rgba(22,163,74,0.2)', color: '#16a34a' }}>Auto-filled</span>
               </label>
-              <input
-                type="text" inputMode="numeric" disabled={!canEnterFigures}
-                value={registeredVoters}
-                onChange={e => setRegisteredVoters(e.target.value.replace(/[^0-9]/g, ''))}
-                placeholder="0"
-                className="w-full px-3 py-2.5 rounded-lg font-mono text-sm disabled:opacity-40"
-                style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', outline: 'none' }}
-              />
+              <div className="w-full px-3 py-2.5 rounded-lg font-mono text-sm relative" style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff' }}>
+                {canEnterFigures ? registeredInt.toLocaleString() : '—'}
+                {canEnterFigures && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs" style={{ color: '#16a34a' }}>✓</span>}
+              </div>
             </div>
             <div>
-              <label className="block text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
-                TOTAL VOTES CAST (ECZ) — Constituencies: {approvedTotals.total.toLocaleString()}
+              <label className="block text-xs mb-1.5 flex items-center gap-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
+                TOTAL VOTES CAST
+                <span className="text-[10px] px-1 rounded" style={{ background: 'rgba(22,163,74,0.2)', color: '#16a34a' }}>Auto-calculated</span>
               </label>
-              <input
-                type="text" inputMode="numeric" disabled={!canEnterFigures}
-                value={totalVotesCast}
-                onChange={e => setTotalVotesCast(e.target.value.replace(/[^0-9]/g, ''))}
-                placeholder="0"
-                className="w-full px-3 py-2.5 rounded-lg font-mono text-sm disabled:opacity-40"
-                style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', outline: 'none' }}
-              />
+              <div className="w-full px-3 py-2.5 rounded-lg font-mono text-sm" style={{
+                backgroundColor: 'rgba(255,255,255,0.03)',
+                border: `1px solid ${canEnterFigures && computedTotalVotesCast !== approvedTotals.total ? '#dc2626' : 'rgba(255,255,255,0.08)'}`,
+                color: '#fff',
+              }}>
+                {computedTotalVotesCast.toLocaleString()}
+              </div>
+              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.68rem', marginTop: 4 }}>
+                Candidate votes + rejected ballots · Constituencies: {approvedTotals.total.toLocaleString()}
+              </p>
             </div>
             <div>
               <label className="block text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
@@ -360,6 +355,7 @@ export function DistrictECZEntryPage() {
                 style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', outline: 'none' }}
               />
             </div>
+
           </div>
         </div>
 
