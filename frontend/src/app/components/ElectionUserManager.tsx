@@ -353,11 +353,129 @@ function CreateUserForm({ onCreated, defaultRole }: { onCreated: () => void; def
   );
 }
 
+function EditScopeForm({ user, onSaved, onCancel }: { user: ElectionUser; onSaved: () => void; onCancel: () => void }) {
+  const cfg = ROLE_CONFIG[user.role as RoleKey];
+  const roleScope = cfg?.scope ?? null;
+  const isAgentRole = ['agent', 'polling_agent', 'election_agent'].includes(user.role);
+
+  // Try to pre-locate the user's current scope within the real hierarchy so
+  // the cascading selects start pre-filled where possible; falls back to
+  // empty (forcing a fresh, correct selection) if the stored value doesn't
+  // match anything real — which is exactly the broken state this form fixes.
+  function locate() {
+    for (const p of provinces) {
+      if (roleScope === 'province' && p.id === user.scopeId) return { provinceId: p.id };
+      for (const d of p.districts) {
+        if (roleScope === 'district' && d.id === user.scopeId) return { provinceId: p.id, districtId: d.id };
+        for (const c of d.constituencies) {
+          if (roleScope === 'constituency' && c.id === user.scopeId) return { provinceId: p.id, districtId: d.id, constituencyId: c.id };
+          for (const w of c.wards) {
+            if (roleScope === 'ward' && w.id === user.scopeId) return { provinceId: p.id, districtId: d.id, constituencyId: c.id, wardId: w.id };
+            if (roleScope === 'polling_station') {
+              const stationId = user.pollingStationId || user.scopeId;
+              const s = w.pollingStations.find(s => s.id === stationId);
+              if (s) return { provinceId: p.id, districtId: d.id, constituencyId: c.id, wardId: w.id, pollingStationId: s.id };
+            }
+          }
+        }
+      }
+    }
+    return {};
+  }
+  const initial = locate();
+
+  const [provinceId, setProvinceId] = useState(initial.provinceId ?? '');
+  const [districtId, setDistrictId] = useState(initial.districtId ?? '');
+  const [constituencyId, setConstituencyId] = useState(initial.constituencyId ?? '');
+  const [wardId, setWardId] = useState(initial.wardId ?? '');
+  const [pollingStationId, setPollingStationId] = useState(initial.pollingStationId ?? '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const selProvince     = provinces.find(p => p.id === provinceId);
+  const selDistrict     = selProvince?.districts.find(d => d.id === districtId);
+  const selConstituency = selDistrict?.constituencies.find(c => c.id === constituencyId);
+  const selWard         = selConstituency?.wards.find(w => w.id === wardId);
+  const selStation      = selWard?.pollingStations.find(s => s.id === pollingStationId);
+
+  function getScopeFields() {
+    if (roleScope === 'province')        return { scopeId: provinceId,     scopeName: selProvince?.name ?? '',     scopeType: 'province' };
+    if (roleScope === 'district')        return { scopeId: districtId,     scopeName: selDistrict?.name ?? '',     scopeType: 'district' };
+    if (roleScope === 'constituency')    return { scopeId: constituencyId, scopeName: selConstituency?.name ?? '', scopeType: 'constituency' };
+    if (roleScope === 'ward')            return { scopeId: wardId,         scopeName: selWard?.name ?? '',         scopeType: 'ward' };
+    if (roleScope === 'polling_station') return { scopeId: pollingStationId, scopeName: selStation?.name ?? '',    scopeType: 'polling_station' };
+    return { scopeId: '', scopeName: '', scopeType: null };
+  }
+
+  const handleSave = async () => {
+    const { scopeId, scopeName, scopeType } = getScopeFields();
+    if (!scopeId) { setError('Please select a complete location before saving.'); return; }
+    setSaving(true); setError('');
+    try {
+      await api('PATCH', `/election-users/${user.username}`, {
+        scopeId, scopeName, scopeType,
+        ...(isAgentRole ? { pollingStationId, pollingStationName: selStation?.name } : {}),
+      });
+      onSaved();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="rounded-lg border border-border p-3 space-y-2.5 bg-card">
+      <p className="text-xs font-semibold text-foreground">Fix Location / Scope for {user.name}</p>
+      <p className="text-xs text-muted-foreground">
+        Select the real {roleScope?.replace('_', ' ') ?? 'area'} from the official list below. This replaces
+        whatever was previously stored (which may have been free text that didn't match the real register).
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        <select value={provinceId} onChange={e => { setProvinceId(e.target.value); setDistrictId(''); setConstituencyId(''); setWardId(''); setPollingStationId(''); }} className={INP}>
+          <option value="">Province</option>
+          {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+        <select value={districtId} onChange={e => { setDistrictId(e.target.value); setConstituencyId(''); setWardId(''); setPollingStationId(''); }} disabled={!selProvince} className={INP + ' disabled:opacity-50'}>
+          <option value="">District</option>
+          {selProvince?.districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+        </select>
+        {(roleScope === 'constituency' || roleScope === 'ward' || roleScope === 'polling_station') && (
+          <select value={constituencyId} onChange={e => { setConstituencyId(e.target.value); setWardId(''); setPollingStationId(''); }} disabled={!selDistrict} className={INP + ' disabled:opacity-50'}>
+            <option value="">Constituency</option>
+            {selDistrict?.constituencies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        )}
+        {(roleScope === 'ward' || roleScope === 'polling_station') && (
+          <select value={wardId} onChange={e => { setWardId(e.target.value); setPollingStationId(''); }} disabled={!selConstituency} className={INP + ' disabled:opacity-50'}>
+            <option value="">Ward</option>
+            {selConstituency?.wards.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+          </select>
+        )}
+        {roleScope === 'polling_station' && (
+          <select value={pollingStationId} onChange={e => setPollingStationId(e.target.value)} disabled={!selWard} className={INP + ' disabled:opacity-50'}>
+            <option value="">Polling Station</option>
+            {selWard?.pollingStations.map(s => <option key={s.id} value={s.id}>{s.name} ({s.registeredVoters.toLocaleString()} voters)</option>)}
+          </select>
+        )}
+      </div>
+      {error && <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700"><AlertCircle className="w-3.5 h-3.5 shrink-0" />{error}</div>}
+      <div className="flex gap-2">
+        <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-medium disabled:opacity-50">
+          {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />} Save Correct Location
+        </button>
+        <button onClick={onCancel} className="px-3 py-1.5 bg-muted rounded-lg text-xs font-medium text-muted-foreground">Cancel</button>
+      </div>
+    </div>
+  );
+}
+
 function UserRow({ user, onRefresh }: { user: ElectionUser; onRefresh: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [newPwd, setNewPwd] = useState('');
   const [deactivating, setDeactivating] = useState(false);
+  const [editingScope, setEditingScope] = useState(false);
   const cfg = ROLE_CONFIG[user.role as RoleKey] ?? { label: user.role, color: '#6b7280' };
 
   const resetPassword = async () => {
@@ -406,6 +524,9 @@ function UserRow({ user, onRefresh }: { user: ElectionUser; onRefresh: () => voi
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
+            <button onClick={() => setEditingScope(v => !v)} className="flex items-center gap-1 px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-medium">
+              <Edit2 className="w-3 h-3" /> {editingScope ? 'Close' : 'Fix Location'}
+            </button>
             <div className="flex gap-1">
               <input value={newPwd} onChange={e => setNewPwd(e.target.value)} type="password" placeholder="New password" className="px-2 py-1.5 border border-border rounded-lg text-xs bg-background w-36 focus:outline-none focus:ring-1 focus:ring-primary" />
               <button onClick={resetPassword} disabled={resetting} className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium disabled:opacity-50">
@@ -418,6 +539,13 @@ function UserRow({ user, onRefresh }: { user: ElectionUser; onRefresh: () => voi
               </button>
             )}
           </div>
+          {editingScope && (
+            <EditScopeForm
+              user={user}
+              onSaved={() => { setEditingScope(false); onRefresh(); }}
+              onCancel={() => setEditingScope(false)}
+            />
+          )}
         </div>
       )}
     </div>

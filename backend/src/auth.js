@@ -149,9 +149,12 @@ export async function changePassword(username, newPassword) {
   kv.set(`user:${username}`, { ...user, passwordChangedAt: new Date().toISOString() });
 }
 
-export async function updateUser(id, updates) {
+export async function updateUser(idOrUsername, updates) {
   const index = kv.get('users:index') || [];
-  const username = index.find(u => kv.get(`user:${u}`)?.id === id);
+  const username = index.find(u => {
+    const user = kv.get(`user:${u}`);
+    return user?.id === idOrUsername || u === idOrUsername;
+  });
   if (!username) throw new Error('User not found');
   const existing = kv.get(`user:${username}`);
   const updated = { ...existing, ...updates, id: existing.id, username: existing.username, updatedAt: new Date().toISOString() };

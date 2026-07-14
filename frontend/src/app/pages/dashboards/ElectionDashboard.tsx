@@ -21,6 +21,8 @@ const ConstituencyManagerFiguresPage = lazy(() => import('../ConstituencyManager
 const DistrictManagerFiguresPage = lazy(() => import('../DistrictManagerFiguresPage'));
 const ProvinceManagerFiguresPage = lazy(() => import('../ProvinceManagerFiguresPage'));
 const ECZComparisonDashboard = lazy(() => import('../../components/ECZComparisonDashboard'));
+const AgentOverviewStats = lazy(() => import('./AgentOverviewStats'));
+const TotalRegisteredVotersStat = lazy(() => import('./TotalRegisteredVotersStat'));
 
 function SectionLoader() {
   return (
@@ -213,6 +215,10 @@ export default function ElectionDashboard() {
               <Stat label="Area" value={profile.scopeName.split(' ').slice(0,2).join(' ')||'—'} color={conf.color}/>
               <Stat label="ECZ Level" value={conf.eczLevel.charAt(0).toUpperCase()+conf.eczLevel.slice(1)} color={conf.color}/>
               <Stat label="Status" value="Active" color="#10b981"/>
+              {(role === 'agent' || role === 'polling_agent' || role === 'election_agent') && (
+                <Suspense fallback={null}><AgentOverviewStats color={conf.color}/></Suspense>
+              )}
+              <Suspense fallback={null}><TotalRegisteredVotersStat color={conf.color}/></Suspense>
             </div>
             <div>
               <p className="mb-3 text-xs" style={{fontFamily:'Oswald, sans-serif',letterSpacing:'0.1em',color:'rgba(255,255,255,0.35)'}}>QUICK ACCESS</p>

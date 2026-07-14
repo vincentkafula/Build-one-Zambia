@@ -28,29 +28,45 @@ export function DataEntryPage() {
   const assignedStationId   = sessionUser?.pollingStationId || sessionUser?.scopeId || '';
   const assignedStationName = sessionUser?.pollingStationName || sessionUser?.scopeName || '';
 
-  // Auto-resolve province→district→constituency→ward from mockData using the station ID/name
+  // Auto-resolve province→district→constituency→ward from mockData using the station ID/name.
+  // Matching is normalized (trim + lowercase) since a self-registered agent's
+  // stored station name may not be a byte-exact match to the official name.
   const resolvedLocation = (() => {
     if (!assignedStationId && !assignedStationName) return null;
+    const normId = assignedStationId.trim();
+    const normName = assignedStationName.trim().toLowerCase();
+    let fallback: ReturnType<typeof buildLocation> | null = null;
+
+    function buildLocation(prov: typeof provinces[number], dist: typeof prov.districts[number], cons: typeof dist.constituencies[number], ward: typeof cons.wards[number], ps: typeof ward.pollingStations[number]) {
+      return {
+        provinceId: prov.id, provinceName: prov.name,
+        districtId: dist.id, districtName: dist.name,
+        constituencyId: cons.id, constituencyName: cons.name,
+        wardId: ward.id, wardName: ward.name,
+        pollingStationId: ps.id, pollingStationName: ps.name,
+        registeredVoters: ps.registeredVoters,
+      };
+    }
+
     for (const prov of provinces) {
       for (const dist of prov.districts) {
         for (const cons of dist.constituencies) {
           for (const ward of cons.wards) {
-            const ps = ward.pollingStations.find(s =>
-              s.id === assignedStationId || s.name === assignedStationName
-            );
-            if (ps) return {
-              provinceId: prov.id, provinceName: prov.name,
-              districtId: dist.id, districtName: dist.name,
-              constituencyId: cons.id, constituencyName: cons.name,
-              wardId: ward.id, wardName: ward.name,
-              pollingStationId: ps.id, pollingStationName: ps.name,
-              registeredVoters: ps.registeredVoters,
-            };
+            for (const ps of ward.pollingStations) {
+              if (normId && ps.id === normId) return buildLocation(prov, dist, cons, ward, ps);
+              const psNameNorm = ps.name.trim().toLowerCase();
+              if (normName && psNameNorm === normName) return buildLocation(prov, dist, cons, ward, ps);
+              // Fuzzy fallback: one name contains the other (handles minor
+              // suffix/prefix differences in self-reported station names).
+              if (!fallback && normName && (psNameNorm.includes(normName) || normName.includes(psNameNorm))) {
+                fallback = buildLocation(prov, dist, cons, ward, ps);
+              }
+            }
           }
         }
       }
     }
-    return null;
+    return fallback;
   })();
 
   const locked = resolvedLocation || {
