@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { ImageWithFallback } from '../../components/figma/ImageWithFallback';
 import { mukubesaMundia, mulazaKaira, scartChansa, garyNkombo, willahMudolo, christopherKangombe, josephKalimbwe } from '../../data/leaderPhotos';
-import vincentKafulaLeaderPhoto from '../../../imports/vincent_61.png';
+import vincentKafulaLeaderPhoto from '../../../imports/vincent_kafula_leadership.jpg';
 import { leadershipApi, Leader } from '../../lib/api';
 import {
   ZAMBIA_HIERARCHY,
