@@ -383,8 +383,10 @@ function LeadershipAccordion() {
     [branchWards, branchWard],
   );
 
-  // Resolve national leaders: backend data if available, else hardcoded fallback
-  const nationalLeaders = backendNationals.length > 0
+  // Resolve national leaders: backend data if available, else hardcoded fallback.
+  // Public site currently shows only Vincent Kafula — all other leadership
+  // tiers/entries are hidden from visitors until they're ready to be published.
+  const nationalLeaders = (backendNationals.length > 0
     ? backendNationals.filter(l => l.active).map(l => ({
         name: l.name,
         position: l.position,
@@ -398,7 +400,8 @@ function LeadershipAccordion() {
         image: (l as { _localImg?: string })._localImg || l.imageUrl || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=500&fit=crop&auto=format',
         whiteBg: (l as { whiteBg?: boolean }).whiteBg,
         redacted: (l as { redacted?: boolean }).redacted ?? false,
-      }));
+      }))
+  ).filter(l => l.name.trim().toLowerCase() === 'vincent kafula');
 
   const leadershipLevels = [
     {
@@ -406,24 +409,6 @@ function LeadershipAccordion() {
       title: 'National Leadership',
       description: 'The National Leadership constitutes the highest governing body of the party. These officials are elected at the National Conference and are collectively responsible for the overall strategic direction, policy formulation, and governance of the organisation at a national level.',
       leaders: nationalLeaders,
-    },
-    {
-      id: 'provincial',
-      title: 'Provincial Leadership',
-      description: 'The Provincial Leadership is responsible for driving the party\'s mandate within a specific province. These officials are elected at the Provincial Conference and work to implement national resolutions while responding to the unique political and social dynamics of their province.',
-      leaders: PROVINCIAL_LEADERS[selectedProvince],
-    },
-    {
-      id: 'district',
-      title: 'District Leadership',
-      description: 'The District Leadership coordinates party activities across branches within a defined district. These officials bridge the gap between provincial leadership and branch structures, ensuring effective implementation of programmes and growth of the party at the local government level.',
-      leaders: getDistrictLeaders(selectedDistrict),
-    },
-    {
-      id: 'branch',
-      title: 'Branch Leadership',
-      description: 'The Branch Leadership is the most grassroots tier of the party. Each of Zambia\'s 1,858 wards has its own Branch with elected officials who are the direct interface between the party and the community. Select your ward below to view its leadership.',
-      leaders: branchLeaders,
     },
   ];
 
