@@ -165,7 +165,7 @@ function SubmissionRow({
     <div className={`rounded-xl border overflow-hidden ${sub.status === 'pending' ? 'border-amber-300' : sub.status === 'verified' ? 'border-green-300' : sub.status === 'rejected' ? 'border-red-300' : 'border-blue-300'}`}>
       {/* Summary row */}
       <div
-        className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/20 transition-colors"
+        className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:/20 transition-colors" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }}
         onClick={() => setExpanded(v => !v)}
       >
         <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-4 gap-2 items-center">
@@ -201,7 +201,7 @@ function SubmissionRow({
 
       {/* Expanded detail */}
       {expanded && (
-        <div className="border-t border-border px-4 py-4 space-y-4 bg-muted/10">
+        <div className="border-t  px-4 py-4 space-y-4 /10" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }}>
           {/* Stats row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
@@ -240,7 +240,7 @@ function SubmissionRow({
               <textarea
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border  rounded-lg text-sm  resize-none focus:outline-none focus:ring-2 focus:ring-primary" style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }}
                 rows={2}
                 placeholder="Reason for query or rejection…"
               />
@@ -333,7 +333,7 @@ export function ResultsApprovalQueue() {
         </div>
         <div className="flex items-center gap-2">
           {lastRefresh && <span className="text-xs text-muted-foreground">Updated {lastRefresh.toLocaleTimeString()}</span>}
-          <button onClick={load} className="p-2 rounded-lg border border-border hover:bg-muted transition-colors">
+          <button onClick={load} className="p-2 rounded-lg border  hover: transition-colors" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }}>
             <RefreshCw className={`w-4 h-4 text-muted-foreground ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
@@ -376,7 +376,7 @@ export function ResultsApprovalQueue() {
         <select
           value={filterElection}
           onChange={e => setFilterElection(e.target.value)}
-          className="px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          className="px-3 py-2 border  rounded-lg  text-sm focus:outline-none focus:ring-2 focus:ring-primary" style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }}
         >
           <option value="">All Election Types</option>
           {Object.entries(ELECTION_LABELS).map(([k, v]) => (
@@ -396,10 +396,10 @@ export function ResultsApprovalQueue() {
             <div key={i} className="rounded-xl border border-border p-4 animate-pulse">
               <div className="flex items-center gap-4">
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-muted rounded w-1/3" />
-                  <div className="h-3 bg-muted rounded w-1/5" />
+                  <div className="h-4  rounded w-1/3" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }} />
+                  <div className="h-3  rounded w-1/5" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }} />
                 </div>
-                <div className="h-6 bg-muted rounded w-24" />
+                <div className="h-6  rounded w-24" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }} />
               </div>
             </div>
           ))}

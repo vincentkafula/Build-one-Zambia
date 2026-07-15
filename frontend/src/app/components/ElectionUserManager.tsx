@@ -104,7 +104,7 @@ function RoleCard({ role, stats, selected, onClick }: {
       </div>
       <p className="text-2xl font-bold mb-1" style={{ color: cfg.color }}>{count.toLocaleString()}</p>
       <p className="text-xs text-muted-foreground mb-2">of {cfg.target.toLocaleString()} target</p>
-      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+      <div className="h-1.5  rounded-full overflow-hidden" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }}>
         <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: cfg.color }} />
       </div>
     </button>
@@ -253,7 +253,7 @@ function CreateUserForm({ onCreated, defaultRole }: { onCreated: () => void; def
 
       {/* ECZ Geography — Province (all scoped roles) */}
       {roleScope && roleScope !== null && (
-        <div className="space-y-3 p-4 rounded-xl border border-border bg-muted/20">
+        <div className="space-y-3 p-4 rounded-xl border  /20" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }}>
           <p className="text-xs font-bold text-foreground uppercase tracking-wider">Assignment Area</p>
 
           <div>
@@ -495,7 +495,7 @@ function UserRow({ user, onRefresh }: { user: ElectionUser; onRefresh: () => voi
 
   return (
     <div className={`rounded-xl border overflow-hidden ${!user.active ? 'opacity-50' : ''}`} style={{ borderColor: `${cfg.color}30` }}>
-      <div className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/10" onClick={() => setExpanded(v => !v)}>
+      <div className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:/10" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }} onClick={() => setExpanded(v => !v)}>
         <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${cfg.color}15` }}>
           <span className="text-xs font-bold" style={{ color: cfg.color }}>{user.name.charAt(0)}</span>
         </div>
@@ -509,7 +509,7 @@ function UserRow({ user, onRefresh }: { user: ElectionUser; onRefresh: () => voi
       </div>
 
       {expanded && (
-        <div className="border-t border-border px-4 py-3 space-y-3 bg-muted/10">
+        <div className="border-t  px-4 py-3 space-y-3 /10" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }}>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             {[
               { label: 'Email', value: user.email || '—' },
@@ -528,7 +528,7 @@ function UserRow({ user, onRefresh }: { user: ElectionUser; onRefresh: () => voi
               <Edit2 className="w-3 h-3" /> {editingScope ? 'Close' : 'Fix Location'}
             </button>
             <div className="flex gap-1">
-              <input value={newPwd} onChange={e => setNewPwd(e.target.value)} type="password" placeholder="New password" className="px-2 py-1.5 border border-border rounded-lg text-xs bg-background w-36 focus:outline-none focus:ring-1 focus:ring-primary" />
+              <input value={newPwd} onChange={e => setNewPwd(e.target.value)} type="password" placeholder="New password" className="px-2 py-1.5 border  rounded-lg text-xs  w-36 focus:outline-none focus:ring-1 focus:ring-primary" style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }} />
               <button onClick={resetPassword} disabled={resetting} className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium disabled:opacity-50">
                 {resetting ? <Loader2 className="w-3 h-3 animate-spin" /> : <KeyRound className="w-3 h-3" />} Reset
               </button>
@@ -626,7 +626,7 @@ export function ElectionUserManager() {
             Manage all {(13529 + 1858 + 226 + 116 + 10 + 10 + 1).toLocaleString()} election system users across 7 access tiers.
           </p>
         </div>
-        <button onClick={load} disabled={loading} className="p-2 rounded-lg border border-border hover:bg-muted">
+        <button onClick={load} disabled={loading} className="p-2 rounded-lg border  hover:" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }}>
           <RefreshCw className={`w-4 h-4 text-muted-foreground ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -672,11 +672,11 @@ export function ElectionUserManager() {
               <h3 className="text-sm font-bold text-foreground">Bulk Import Users</h3>
             </div>
             <p className="text-xs text-muted-foreground mb-3">
-              One user per line: <code className="bg-muted px-1 rounded">username, password, full name, scopeId, scopeName</code>
+              One user per line: <code className="px-1 rounded" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }}>username, password, full name, scopeId, scopeName</code>
             </p>
             <div className="flex gap-2 mb-3 flex-wrap">
               <select value={bulkRole} onChange={e => setBulkRole(e.target.value as RoleKey)}
-                className="px-3 py-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
+                className="px-3 py-2 border  rounded-lg text-sm  focus:outline-none focus:ring-2 focus:ring-primary" style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }}>
                 {(Object.keys(ROLE_CONFIG) as RoleKey[]).filter(r => r !== 'super_admin').map(r => (
                   <option key={r} value={r}>{ROLE_CONFIG[r].label}</option>
                 ))}
@@ -684,7 +684,7 @@ export function ElectionUserManager() {
             </div>
             <textarea value={bulkText} onChange={e => setBulkText(e.target.value)} rows={6}
               placeholder={`agent001, SecurePass123, John Mwale, ps-lusaka-001, Lusaka Primary School\nagent002, SecurePass456, Mary Banda, ps-lusaka-002, Chilenje Hall`}
-              className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-background font-mono resize-none focus:outline-none focus:ring-2 focus:ring-primary mb-3" />
+              className="w-full px-3 py-2 border  rounded-lg text-sm  font-mono resize-none focus:outline-none focus:ring-2 focus:ring-primary mb-3" style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }} />
             {bulkResult && <p className={`text-sm mb-3 ${bulkResult.startsWith('✓') ? 'text-green-700' : 'text-red-700'}`}>{bulkResult}</p>}
             <button onClick={handleBulkImport} disabled={bulking || !bulkText.trim()}
               className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-sm font-semibold disabled:opacity-50">
@@ -702,10 +702,10 @@ export function ElectionUserManager() {
             <div className="relative flex-1 min-w-52">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, username, or area…"
-                className="w-full pl-9 pr-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                className="w-full pl-9 pr-3 py-2 border  rounded-lg  text-sm focus:outline-none focus:ring-2 focus:ring-primary" style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }} />
             </div>
             <select value={filterRole} onChange={e => setFilterRole(e.target.value as RoleKey | 'all')}
-              className="px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+              className="px-3 py-2 border  rounded-lg  text-sm focus:outline-none focus:ring-2 focus:ring-primary" style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }}>
               <option value="all">All Roles</option>
               {(Object.keys(ROLE_CONFIG) as RoleKey[]).map(r => (
                 <option key={r} value={r}>{ROLE_CONFIG[r].label}</option>
@@ -718,7 +718,7 @@ export function ElectionUserManager() {
           </p>
 
           {loading ? (
-            <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-muted animate-pulse rounded-xl" />)}</div>
+            <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-14  animate-pulse rounded-xl" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }} />)}</div>
           ) : filtered.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
               <Users className="w-10 h-10 mx-auto mb-2 opacity-20" />

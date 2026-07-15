@@ -365,7 +365,7 @@ export function DataEntryPage() {
                     candidateVotes: {},
                   });
                 }}
-                className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }}
               >
                 <option value="">-- Select Election Type --</option>
                 <option value="presidential">Presidential Candidate</option>
@@ -413,49 +413,49 @@ export function DataEntryPage() {
                 /* Non-agent: full dropdown selectors */
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm mb-2">Province *</label>
+                    <label className="block text-sm mb-2 font-semibold" style={{ color: "#e2e8f0" }}>Province *</label>
                     <select required value={formData.province}
                       onChange={(e) => setFormData({ ...formData, province: e.target.value, district: '', constituency: '', ward: '', pollingStation: '' })}
-                      className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                      className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }}>
                       <option value="">Select Province</option>
                       {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm mb-2">District *</label>
+                    <label className="block text-sm mb-2 font-semibold" style={{ color: "#e2e8f0" }}>District *</label>
                     <select required disabled={!formData.province} value={formData.district}
                       onChange={(e) => setFormData({ ...formData, district: e.target.value, constituency: '', ward: '', pollingStation: '' })}
-                      className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50">
+                      className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50" style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }}>
                       <option value="">Select District</option>
                       {currentProvince?.districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm mb-2">Constituency *</label>
+                    <label className="block text-sm mb-2 font-semibold" style={{ color: "#e2e8f0" }}>Constituency *</label>
                     <select required disabled={!formData.district} value={formData.constituency}
                       onChange={(e) => setFormData({ ...formData, constituency: e.target.value, ward: '', pollingStation: '' })}
-                      className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50">
+                      className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50" style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }}>
                       <option value="">Select Constituency</option>
                       {currentDistrict?.constituencies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm mb-2">Ward *</label>
+                    <label className="block text-sm mb-2 font-semibold" style={{ color: "#e2e8f0" }}>Ward *</label>
                     <select required disabled={!formData.constituency} value={formData.ward}
                       onChange={(e) => setFormData({ ...formData, ward: e.target.value, pollingStation: '' })}
-                      className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50">
+                      className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50" style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }}>
                       <option value="">Select Ward</option>
                       {currentConstituency?.wards.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
                     </select>
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-sm mb-2">Polling Station *</label>
+                    <label className="block text-sm mb-2 font-semibold" style={{ color: "#e2e8f0" }}>Polling Station *</label>
                     <select required disabled={!formData.ward} value={formData.pollingStation}
                       onChange={(e) => {
                         const ps = currentWard?.pollingStations.find(s => s.id === e.target.value);
                         setFormData({ ...formData, pollingStation: e.target.value, registeredVoters: ps ? String(ps.registeredVoters) : '' });
                       }}
-                      className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50">
+                      className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50" style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }}>
                       <option value="">Select Polling Station</option>
                       {currentWard?.pollingStations.map(ps => <option key={ps.id} value={ps.id}>{ps.name}</option>)}
                     </select>
@@ -484,7 +484,7 @@ export function DataEntryPage() {
                     type="text"
                     readOnly
                     value={formData.registeredVoters ? Number(formData.registeredVoters).toLocaleString() : '—'}
-                    className="w-full px-3 py-2 bg-muted border border-border rounded-lg text-foreground font-semibold cursor-default select-none"
+                    className="w-full px-3 py-2 rounded-lg font-semibold cursor-default select-none" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }}
                   />
                   {formData.registeredVoters && (
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#198754] font-semibold">✓ ECZ</span>
@@ -497,14 +497,14 @@ export function DataEntryPage() {
 
               {/* Rejected Ballots — only manual entry */}
               <div>
-                <label className="block text-sm mb-2">Rejected Ballots *</label>
+                <label className="block text-sm font-semibold mb-2">Rejected Ballots *</label>
                 <input
                   type="number"
                   required
                   min="0"
                   value={formData.rejectedBallots}
                   onChange={(e) => setFormData({ ...formData, rejectedBallots: e.target.value })}
-                  className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }}
                   placeholder="0"
                 />
               </div>
@@ -577,7 +577,7 @@ export function DataEntryPage() {
                       min="0"
                       value={formData.candidateVotes[candidate.id] ?? ''}
                       onChange={(e) => updateCandidateVote(candidate.id, e.target.value)}
-                      className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }}
                       placeholder="0"
                     />
                   </div>
