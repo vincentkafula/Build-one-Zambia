@@ -350,13 +350,6 @@ function LeadershipAccordion() {
   const [openSection, setOpenSection] = useState<string | null>('national');
   const [selectedProvince, setSelectedProvince] = useState<ZambiaProvince>('Lusaka Province');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('Lusaka');
-  const [backendNationals, setBackendNationals] = useState<Leader[]>([]);
-
-  useEffect(() => {
-    leadershipApi.list({ tier: 'national' })
-      .then(res => { if (res.leaders.length > 0) setBackendNationals(res.leaders); })
-      .catch(() => {});
-  }, []);
 
   // Branch cascading selectors
   const [branchProvince, setBranchProvince] = useState<string>(ZAMBIA_HIERARCHY[4].name); // Lusaka
@@ -383,25 +376,20 @@ function LeadershipAccordion() {
     [branchWards, branchWard],
   );
 
-  // Resolve national leaders: backend data if available, else hardcoded fallback.
-  // Every leader except Vincent Kafula is shown with name/photo redacted
-  // (placeholder silhouette + blank name bars) until real details are ready
-  // to publish — position and description still show normally.
-  const nationalLeaders = (backendNationals.length > 0
-    ? backendNationals.filter(l => l.active).map(l => ({
-        name: l.name,
-        position: l.position,
-        description: l.description,
-        image: l.hasCustomImage ? leadershipApi.imageUrl(l.id) : (l.imageUrl || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=500&fit=crop&auto=format'),
-      }))
-    : FALLBACK_NATIONAL.map(l => ({
+  // National leaders: always the curated, locally-controlled list below.
+  // (Previously this switched to backend-fetched data once an async request
+  // resolved, which caused a visible flicker whenever that backend data was
+  // stale or had a broken image — reverting to a plain white/blank box after
+  // the correct photo had already painted. Keeping this fully local avoids
+  // that entirely and matches the deliberate redaction choices made above.)
+  const nationalLeaders = FALLBACK_NATIONAL.map(l => ({
         name: l.name!,
         position: l.position!,
         description: l.description!,
         image: (l as { _localImg?: string })._localImg || l.imageUrl || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=500&fit=crop&auto=format',
         whiteBg: (l as { whiteBg?: boolean }).whiteBg,
         redacted: (l as { redacted?: boolean }).redacted ?? false,
-      }))
+      })
   ).map(l => l.name.trim().toLowerCase() === 'vincent kafula' ? l : { ...l, redacted: true });
 
   const leadershipLevels = [
