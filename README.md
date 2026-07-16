@@ -1,4 +1,4 @@
-# 🇿🇲 Build One Zambia Portal
+# 🇿🇲 Build One Zambia 
 
 Full-stack web portal: **React** frontend + **Node.js / Express** backend.
 
@@ -169,14 +169,14 @@ All 8 national leadership portraits are included and displayed:
 
 | Name | Position |
 |------|----------|
-| Vincent Kafula | Presidential Candidate |
-| Mukubesa Mundia | Deputy President |
-| Mulaza Kaira | Secretary General |
-| Scart Chansa Kantanta | Deputy Secretary General |
-| Gary Nkombo | Chairperson |
-| Willah Mudolo | Deputy Chairperson |
-| Christopher Kang'ombe | Treasurer General |
-| Joseph Kalimbwe | Deputy Treasurer General |
+| Vincent Kafula | Presidential  |
+| to be appointed| Deputy President |
+| to be appointed | Secretary General |
+|to be appointed | Deputy Secretary General |
+| to be appointed | Chairperson |
+| to be appointed | Deputy Chairperson |
+| to be appointed | Treasurer General |
+| to be appointed| Deputy Treasurer General |
 
 Images are served from `backend/uploads/leaders/` and automatically referenced when the backend seeds the database on first start.
 
