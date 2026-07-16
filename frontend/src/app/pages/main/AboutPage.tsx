@@ -78,14 +78,14 @@ function LeaderCard({ leader }: { leader: Leader }) {
     <div
       className="group overflow-hidden transition-all duration-300"
       style={{
-        backgroundColor: '#111',
+        backgroundColor: '#EE4A3C',
         border: '1px solid #1f1f1f',
       }}
     >
       {/* Leader Photo */}
       <div
         className="relative overflow-hidden"
-        style={{ height: '280px', backgroundColor: leader.redacted ? '#111' : leader.whiteBg ? '#ffffff' : undefined }}
+        style={{ height: '280px', backgroundColor: leader.redacted ? '#EE4A3C' : leader.whiteBg ? '#ffffff' : undefined }}
       >
         {leader.redacted ? (
           <div className="w-full h-full flex flex-col items-center justify-center gap-3">
@@ -434,7 +434,7 @@ function LeadershipAccordion() {
               onClick={() => toggleSection(level.id)}
               className="w-full mb-6 px-6 py-5 flex items-center justify-between text-left transition-all"
               style={{
-                backgroundColor: '#111',
+                backgroundColor: '#EE4A3C',
                 border: '1px solid #1f1f1f',
               }}
             >
@@ -488,7 +488,7 @@ function LeadershipAccordion() {
                       onChange={(e) => setSelectedProvince(e.target.value as ZambiaProvince)}
                       className="w-full appearance-none px-5 py-3 pr-12 text-white cursor-pointer outline-none"
                       style={{
-                        backgroundColor: '#111',
+                        backgroundColor: '#EE4A3C',
                         border: '1px solid #dc2626',
                         fontFamily: 'Oswald, sans-serif',
                         fontSize: '1rem',
@@ -497,7 +497,7 @@ function LeadershipAccordion() {
                       }}
                     >
                       {ZAMBIA_PROVINCES.map((prov) => (
-                        <option key={prov} value={prov} style={{ backgroundColor: '#111', color: '#fff' }}>
+                        <option key={prov} value={prov} style={{ backgroundColor: '#EE4A3C', color: '#fff' }}>
                           {prov}
                         </option>
                       ))}
@@ -526,7 +526,7 @@ function LeadershipAccordion() {
                       onChange={(e) => setSelectedDistrict(e.target.value)}
                       className="w-full appearance-none px-5 py-3 pr-12 cursor-pointer outline-none"
                       style={{
-                        backgroundColor: '#111',
+                        backgroundColor: '#EE4A3C',
                         border: '1px solid #dc2626',
                         fontFamily: 'Oswald, sans-serif',
                         fontSize: '1rem',
@@ -537,7 +537,7 @@ function LeadershipAccordion() {
                       {ZAMBIA_PROVINCES.map((prov) => (
                         <optgroup key={prov} label={prov} style={{ backgroundColor: '#1a1a1a', color: '#dc2626', fontFamily: 'Oswald, sans-serif' }}>
                           {ZAMBIA_DISTRICTS[prov].map((dist) => (
-                            <option key={dist} value={dist} style={{ backgroundColor: '#111', color: '#fff' }}>
+                            <option key={dist} value={dist} style={{ backgroundColor: '#EE4A3C', color: '#fff' }}>
                               {dist}
                             </option>
                           ))}
@@ -578,10 +578,10 @@ function LeadershipAccordion() {
                             setBranchWard('');
                           }}
                           className="w-full appearance-none px-4 py-3 pr-10 cursor-pointer outline-none"
-                          style={{ backgroundColor: '#111', border: '1px solid #dc2626', fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#fff' }}
+                          style={{ backgroundColor: '#EE4A3C', border: '1px solid #dc2626', fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#fff' }}
                         >
                           {ZAMBIA_HIERARCHY.map(p => (
-                            <option key={p.name} value={p.name} style={{ backgroundColor: '#111' }}>{p.name}</option>
+                            <option key={p.name} value={p.name} style={{ backgroundColor: '#EE4A3C' }}>{p.name}</option>
                           ))}
                         </select>
                         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3" style={{ backgroundColor: '#dc2626' }}>
@@ -605,11 +605,11 @@ function LeadershipAccordion() {
                           }}
                           disabled={!branchProvince}
                           className="w-full appearance-none px-4 py-3 pr-10 cursor-pointer outline-none disabled:opacity-40"
-                          style={{ backgroundColor: '#111', border: `1px solid ${branchDistrict ? '#dc2626' : '#333'}`, fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#fff' }}
+                          style={{ backgroundColor: '#EE4A3C', border: `1px solid ${branchDistrict ? '#dc2626' : '#333'}`, fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#fff' }}
                         >
-                          <option value="" style={{ backgroundColor: '#111' }}>— Select District —</option>
+                          <option value="" style={{ backgroundColor: '#EE4A3C' }}>— Select District —</option>
                           {branchDistricts.map(d => (
-                            <option key={d.name} value={d.name} style={{ backgroundColor: '#111' }}>{d.name}</option>
+                            <option key={d.name} value={d.name} style={{ backgroundColor: '#EE4A3C' }}>{d.name}</option>
                           ))}
                         </select>
                         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3" style={{ backgroundColor: branchDistrict ? '#dc2626' : '#222' }}>
@@ -632,11 +632,11 @@ function LeadershipAccordion() {
                           }}
                           disabled={!branchDistrict}
                           className="w-full appearance-none px-4 py-3 pr-10 cursor-pointer outline-none disabled:opacity-40"
-                          style={{ backgroundColor: '#111', border: `1px solid ${branchConstituency ? '#dc2626' : '#333'}`, fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#fff' }}
+                          style={{ backgroundColor: '#EE4A3C', border: `1px solid ${branchConstituency ? '#dc2626' : '#333'}`, fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#fff' }}
                         >
-                          <option value="" style={{ backgroundColor: '#111' }}>— Select Constituency —</option>
+                          <option value="" style={{ backgroundColor: '#EE4A3C' }}>— Select Constituency —</option>
                           {branchConstituencies.map(c => (
-                            <option key={c.id} value={c.id} style={{ backgroundColor: '#111' }}>{c.name}</option>
+                            <option key={c.id} value={c.id} style={{ backgroundColor: '#EE4A3C' }}>{c.name}</option>
                           ))}
                         </select>
                         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3" style={{ backgroundColor: branchConstituency ? '#dc2626' : '#222' }}>
@@ -656,11 +656,11 @@ function LeadershipAccordion() {
                           onChange={(e) => setBranchWard(e.target.value)}
                           disabled={!branchConstituency}
                           className="w-full appearance-none px-4 py-3 pr-10 cursor-pointer outline-none disabled:opacity-40"
-                          style={{ backgroundColor: '#111', border: `1px solid ${branchWard ? '#dc2626' : '#333'}`, fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#fff' }}
+                          style={{ backgroundColor: '#EE4A3C', border: `1px solid ${branchWard ? '#dc2626' : '#333'}`, fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#fff' }}
                         >
-                          <option value="" style={{ backgroundColor: '#111' }}>— Select Ward —</option>
+                          <option value="" style={{ backgroundColor: '#EE4A3C' }}>— Select Ward —</option>
                           {branchWards.map(w => (
-                            <option key={w.id} value={w.id} style={{ backgroundColor: '#111' }}>{w.name}</option>
+                            <option key={w.id} value={w.id} style={{ backgroundColor: '#EE4A3C' }}>{w.name}</option>
                           ))}
                         </select>
                         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3" style={{ backgroundColor: branchWard ? '#dc2626' : '#222' }}>
