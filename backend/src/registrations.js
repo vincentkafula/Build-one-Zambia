@@ -36,6 +36,22 @@ export function listMembers(filters = {}) {
   return members.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }
 
+export function assignMembershipNumberIfNeeded(id) {
+  const m = getMember(id);
+  if (!m) return null;
+  if (m.membershipNumber) return m; // already issued — don't reissue
+  const year = new Date().getFullYear();
+  const membershipNumber = `BOZ-${year}-${id.replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase()}`;
+  const updated = {
+    ...m,
+    membershipNumber,
+    joinDate: m.joinDate || m.createdAt,
+    certificateIssuedAt: new Date().toISOString(),
+  };
+  kv.set(`boz:reg:member:${id}`, updated);
+  return updated;
+}
+
 export function updateMemberStatus(id, status, note) {
   const m = getMember(id);
   if (!m) return null;

@@ -1298,6 +1298,8 @@ export const membershipApi = {
     const qs = byNumber ? `number=${encodeURIComponent(emailOrNumber)}` : `email=${encodeURIComponent(emailOrNumber)}`;
     return request<AdoptionCert>('GET', `/membership/certificate/adoption?${qs}`);
   },
+
+  getCertificatePdfUrl: (memberId: string) => `${BASE}/membership/members/${memberId}/certificate.pdf`,
 };
 
 // ─── Leadership ───────────────────────────────────────────────────────────────

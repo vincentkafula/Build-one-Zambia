@@ -12,6 +12,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { bootstrapProduction } from './lib/production';
 import MainHomePage from './pages/main/MainHomePage';
+import VerifyMembershipPage from './pages/VerifyMembershipPage';
 
 // Bootstrap SEO, error handlers, CSP, service worker once at module load
 bootstrapProduction();
@@ -100,6 +101,7 @@ const MainLayout = memo(function MainLayout() {
               <Route path="/news/gallery"           element={<EventsGalleryPage />} />
               <Route path="/news/press-statements"  element={<PressStatementsPage />} />
               <Route path="/shop"               element={<ShopPage />} />
+              <Route path="/verify/:membershipNumber" element={<VerifyMembershipPage />} />
               <Route path="/home/male"           element={<MaleCandidatesPage />} />
               <Route path="/home/female"         element={<FemaleCandidatesPage />} />
               <Route path="/home/opportunities"  element={<OpportunitiesPage />} />

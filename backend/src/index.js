@@ -21,6 +21,7 @@ import * as results from './results.js';
 import * as shop from './shop.js';
 import * as streams from './streams.js';
 import * as voterRoll from './voterRoll.js';
+import * as memberCert from './membershipCertificate.js';
 import { kv } from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -235,10 +236,101 @@ app.get(`${BASE}/membership/me`, auth.requireAuth, (req, res) => { const m = reg
 app.get(`${BASE}/membership/members`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ members: registrations.listMembers() }));
 app.get(`${BASE}/membership/members/:id`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const m = registrations.getMember(req.params.id); if (!m) return res.status(404).json({ error: 'Not found' }); res.json({ member: m }); });
 app.get(`${BASE}/membership/stats`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json(registrations.getMemberStats()));
-app.patch(`${BASE}/membership/members/:id`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const m = registrations.updateMember(req.params.id, req.body); if (!m) return res.status(404).json({ error: 'Not found' }); res.json({ member: m }); });
+app.patch(`${BASE}/membership/members/:id`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => {
+  let m = registrations.updateMember(req.params.id, req.body);
+  if (!m) return res.status(404).json({ error: 'Not found' });
+  if (m.status === 'active' && !m.membershipNumber) {
+    m = registrations.assignMembershipNumberIfNeeded(m.id);
+  }
+  res.json({ member: m });
+});
 app.post(`${BASE}/membership/members/:id/grant-adoption`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const certNumber = `BOZ-ADOPT-${req.body.electionYear || new Date().getFullYear()}-${req.params.id.slice(-6).toUpperCase()}`; const member = registrations.updateMember(req.params.id, { adoptionGranted: true, adoptionGrantedAt: new Date().toISOString(), adoptionGrantedBy: req.user?.username, ...req.body, adoptionCertNumber: certNumber }); if (!member) return res.status(404).json({ error: 'Not found' }); res.json({ success: true, member }); });
 app.post(`${BASE}/membership/members/:id/revoke-adoption`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const member = registrations.updateMember(req.params.id, { adoptionGranted: false, adoptionRevokedAt: new Date().toISOString(), adoptionRevokedBy: req.user?.username }); if (!member) return res.status(404).json({ error: 'Not found' }); res.json({ success: true, member }); });
 app.post(`${BASE}/membership/members/:id/link-order`, auth.requireAuth, (req, res) => { const member = registrations.updateMember(req.params.id, { orderId: req.body.orderId }); if (!member) return res.status(404).json({ error: 'Not found' }); res.json({ success: true, member }); });
+
+// ─── Membership certificates ────────────────────────────────────────────────
+const VERIFY_BASE_URL = process.env.VERIFY_BASE_URL || 'https://www.bozplans.org/verify';
+
+function findMemberByEmailOrNumber(query) {
+  if (query.number) return registrations.getMemberByMembershipNumber(query.number);
+  if (query.email) return registrations.listMembers().find(m => m.email === query.email) || null;
+  return null;
+}
+
+app.get(`${BASE}/membership/certificate/membership`, (req, res) => {
+  const member = findMemberByEmailOrNumber(req.query);
+  if (!member) return res.status(404).json({ error: 'Member not found' });
+  if (member.status !== 'active' || !member.membershipNumber) {
+    return res.status(403).json({ error: 'Membership is not active yet' });
+  }
+  res.json({
+    certificateType: 'membership',
+    membershipNumber: member.membershipNumber,
+    fullName: `${member.firstName || ''} ${member.lastName || ''}`.trim(),
+    tier: member.tier || 'standard',
+    province: member.province, district: member.district,
+    constituency: member.constituency, ward: member.ward,
+    joinDate: member.joinDate || member.createdAt,
+    status: member.status,
+    issuedAt: member.certificateIssuedAt || member.updatedAt,
+  });
+});
+
+app.get(`${BASE}/membership/certificate/adoption`, (req, res) => {
+  const member = findMemberByEmailOrNumber(req.query);
+  if (!member) return res.status(404).json({ error: 'Member not found' });
+  if (!member.adoptionGranted) {
+    return res.status(403).json({ error: 'Not qualified yet — adoption has not been granted by the admin.' });
+  }
+  res.json({
+    eligible: true,
+    certificateType: 'adoption',
+    membershipNumber: member.membershipNumber,
+    adoptionCertNumber: member.adoptionCertNumber,
+    fullName: `${member.firstName || ''} ${member.lastName || ''}`.trim(),
+    tier: member.tier || 'standard',
+    province: member.province, district: member.district,
+    constituency: member.constituency, ward: member.ward,
+    joinDate: member.joinDate || member.createdAt,
+    electionPosition: member.electionPosition, electionYear: member.electionYear,
+    adoptionProvince: member.adoptionProvince, adoptionDistrict: member.adoptionDistrict,
+    adoptionConstituency: member.adoptionConstituency, adoptionWard: member.adoptionWard,
+    adoptionGrantedAt: member.adoptionGrantedAt, adoptionGrantedBy: member.adoptionGrantedBy,
+    adoptionGrantedByTitle: member.adoptionGrantedByTitle, adoptionReason: member.adoptionReason,
+    issuedAt: member.adoptionGrantedAt,
+  });
+});
+
+app.get(`${BASE}/membership/members/:id/certificate.pdf`, auth.requireAuth, async (req, res) => {
+  try {
+    const member = registrations.getMember(req.params.id);
+    if (!member) return res.status(404).json({ error: 'Not found' });
+    if (member.status !== 'active' || !member.membershipNumber) {
+      return res.status(403).json({ error: 'Certificate not yet issued' });
+    }
+    const dataUrl = await memberCert.getOrCreateCertificatePdf(member, VERIFY_BASE_URL);
+    const [, b64] = dataUrl.split(',');
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${member.membershipNumber}.pdf"`);
+    res.send(Buffer.from(b64, 'base64'));
+  } catch (err) {
+    console.error('Certificate PDF generation failed:', err);
+    res.status(500).json({ error: 'Failed to generate certificate' });
+  }
+});
+
+app.get(`${BASE}/membership/verify/:membershipNumber`, (req, res) => {
+  const member = registrations.getMemberByMembershipNumber(req.params.membershipNumber);
+  if (!member || member.status !== 'active') return res.json({ valid: false });
+  res.json({
+    valid: true,
+    fullName: `${member.firstName || ''} ${member.lastName || ''}`.trim(),
+    membershipNumber: member.membershipNumber,
+    tier: member.tier || 'standard',
+    ward: member.ward, constituency: member.constituency,
+    issuedAt: member.certificateIssuedAt || member.joinDate,
+  });
+});
 app.get(`${BASE}/membership/certificate/membership`, auth.requireAuth, (req, res) => res.json({ certificateUrl: null, message: 'Certificate generation not yet configured' }));
 app.get(`${BASE}/membership/certificate/adoption`, auth.requireAuth, (req, res) => res.json({ certificateUrl: null, message: 'Certificate generation not yet configured' }));
 

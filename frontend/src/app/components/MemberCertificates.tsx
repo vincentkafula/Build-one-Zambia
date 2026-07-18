@@ -3,7 +3,7 @@ import {
   Download, Share2, Award, Shield, CheckCircle, XCircle,
   Loader, Star, Lock,
 } from 'lucide-react';
-import { membershipApi, Member, MembershipCert, AdoptionCert } from '../lib/api';
+import { membershipApi, Member, MembershipCert, AdoptionCert, getToken } from '../lib/api';
 
 const A    = '#3b82f6';
 const NAVY = '#1e2d4a';
@@ -322,6 +322,22 @@ export function MembershipCertSection({ member }: { member: typeof memberData })
           style={{ padding: '12px 24px', border: `1px solid ${A}`, color: A, backgroundColor: 'transparent', borderRadius: '8px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
           <Share2 size={15} /> SHARE
         </button>
+        <button onClick={async () => {
+            const res = await fetch(membershipApi.getCertificatePdfUrl(member.id), {
+              headers: { Authorization: `Bearer ${getToken()}` },
+            });
+            if (!res.ok) return;
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${cert?.membershipNumber || 'certificate'}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+          style={{ padding: '12px 24px', border: `1px solid ${A}`, color: A, backgroundColor: 'transparent', borderRadius: '8px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+          <Download size={15} /> OFFICIAL PDF (with QR)
+        </button>
       </div>
     </div>
   );
@@ -401,6 +417,7 @@ export function AdoptionCertSection({ member }: { member: typeof memberData }) {
 
 // Dummy member type for prop typing — matches what MemberDashboard passes
 const memberData = {} as {
+  id: string;
   email: string;
   firstName: string;
   lastName: string;
