@@ -410,6 +410,22 @@ export function AdoptionCertSection({ member }: { member: typeof memberData }) {
           style={{ padding: '12px 24px', border: `1px solid ${GREEN}`, color: GREEN, backgroundColor: 'transparent', borderRadius: '8px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
           <Share2 size={15} /> SHARE
         </button>
+        <button onClick={async () => {
+            const res = await fetch(membershipApi.getAdoptionCertificatePdfUrl(member.id), {
+              headers: { Authorization: `Bearer ${getToken()}` },
+            });
+            if (!res.ok) return;
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${(cert as any)?.adoptionCertNumber || 'adoption-certificate'}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+          style={{ padding: '12px 24px', border: `1px solid ${GREEN}`, color: GREEN, backgroundColor: 'transparent', borderRadius: '8px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+          <Download size={15} /> OFFICIAL PDF (with QR)
+        </button>
       </div>
     </div>
   );

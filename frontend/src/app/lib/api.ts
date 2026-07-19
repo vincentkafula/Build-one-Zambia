@@ -1300,6 +1300,8 @@ export const membershipApi = {
   },
 
   getCertificatePdfUrl: (memberId: string) => `${BASE}/membership/members/${memberId}/certificate.pdf`,
+
+  getAdoptionCertificatePdfUrl: (memberId: string) => `${BASE}/membership/members/${memberId}/adoption-certificate.pdf`,
 };
 
 // ─── Leadership ───────────────────────────────────────────────────────────────

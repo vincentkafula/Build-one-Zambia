@@ -22,6 +22,7 @@ import * as shop from './shop.js';
 import * as streams from './streams.js';
 import * as voterRoll from './voterRoll.js';
 import * as memberCert from './membershipCertificate.js';
+import * as adoptionCert from './adoptionCertificate.js';
 import { kv } from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -319,20 +320,53 @@ app.get(`${BASE}/membership/members/:id/certificate.pdf`, auth.requireAuth, asyn
   }
 });
 
-app.get(`${BASE}/membership/verify/:membershipNumber`, (req, res) => {
-  const member = registrations.getMemberByMembershipNumber(req.params.membershipNumber);
-  if (!member || member.status !== 'active') return res.json({ valid: false });
-  res.json({
-    valid: true,
-    fullName: `${member.firstName || ''} ${member.lastName || ''}`.trim(),
-    membershipNumber: member.membershipNumber,
-    tier: member.tier || 'standard',
-    ward: member.ward, constituency: member.constituency,
-    issuedAt: member.certificateIssuedAt || member.joinDate,
-  });
+app.get(`${BASE}/membership/verify/:code`, (req, res) => {
+  const code = req.params.code;
+  // Membership certificate numbers look like BOZ-YYYY-XXXXXX; adoption ones
+  // look like BOZ-ADOPT-YYYY-XXXXXX. Try membership first, then adoption.
+  const member = registrations.getMemberByMembershipNumber(code);
+  if (member && member.status === 'active') {
+    return res.json({
+      valid: true,
+      type: 'membership',
+      fullName: `${member.firstName || ''} ${member.lastName || ''}`.trim(),
+      membershipNumber: member.membershipNumber,
+      tier: member.tier || 'standard',
+      ward: member.ward, constituency: member.constituency,
+      issuedAt: member.certificateIssuedAt || member.joinDate,
+    });
+  }
+  const adoptedMember = registrations.listMembers().find(m => m.adoptionCertNumber === code);
+  if (adoptedMember && adoptedMember.adoptionGranted) {
+    return res.json({
+      valid: true,
+      type: 'adoption',
+      fullName: `${adoptedMember.firstName || ''} ${adoptedMember.lastName || ''}`.trim(),
+      adoptionCertNumber: adoptedMember.adoptionCertNumber,
+      position: adoptedMember.electionPosition,
+      constituency: adoptedMember.adoptionConstituency,
+      issuedAt: adoptedMember.adoptionGrantedAt,
+    });
+  }
+  res.json({ valid: false });
 });
-app.get(`${BASE}/membership/certificate/membership`, auth.requireAuth, (req, res) => res.json({ certificateUrl: null, message: 'Certificate generation not yet configured' }));
-app.get(`${BASE}/membership/certificate/adoption`, auth.requireAuth, (req, res) => res.json({ certificateUrl: null, message: 'Certificate generation not yet configured' }));
+app.get(`${BASE}/membership/members/:id/adoption-certificate.pdf`, auth.requireAuth, async (req, res) => {
+  try {
+    const member = registrations.getMember(req.params.id);
+    if (!member) return res.status(404).json({ error: 'Not found' });
+    if (!member.adoptionGranted || !member.adoptionCertNumber) {
+      return res.status(403).json({ error: 'Adoption certificate not yet issued' });
+    }
+    const dataUrl = await adoptionCert.getOrCreateAdoptionCertificatePdf(member, VERIFY_BASE_URL);
+    const [, b64] = dataUrl.split(',');
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${member.adoptionCertNumber}.pdf"`);
+    res.send(Buffer.from(b64, 'base64'));
+  } catch (err) {
+    console.error('Adoption certificate PDF generation failed:', err);
+    res.status(500).json({ error: 'Failed to generate adoption certificate' });
+  }
+});
 
 // ─── Election Users ────────────────────────────────────────────────────────────
 app.post(`${BASE}/election-users`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => { try { const { password, ...userData } = req.body; res.json({ user: await auth.registerUser(userData, password || 'TempPass@123') }); } catch (err) { res.status(400).json({ error: err.message }); } });
