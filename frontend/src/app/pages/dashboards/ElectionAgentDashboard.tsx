@@ -166,7 +166,7 @@ function ElectionLoginGate({ onLogin }: { onLogin: (user: Record<string, string>
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-4 py-12"
-      style={{ backgroundColor: '#050c17' }}
+      style={{ backgroundColor: '#04130c' }}
     >
       {/* Background grid */}
       <div className="absolute inset-0 pointer-events-none" style={{
@@ -192,7 +192,7 @@ function ElectionLoginGate({ onLogin }: { onLogin: (user: Record<string, string>
           </p>
         </div>
 
-        <div className="rounded-2xl p-7" style={{ backgroundColor: '#0b1929', border: `1px solid ${roleInfo?.color ?? 'rgba(255,255,255,0.08)'}30` }}>
+        <div className="rounded-2xl p-7" style={{ backgroundColor: '#0d2718', border: `1px solid ${roleInfo?.color ?? 'rgba(255,255,255,0.08)'}30` }}>
 
           {/* Error */}
           {error && (
@@ -231,7 +231,7 @@ function ElectionLoginGate({ onLogin }: { onLogin: (user: Record<string, string>
 
                 {dropdownOpen && (
                   <div className="absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden z-50"
-                    style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+                    style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
                     {SELECTABLE_ROLES.map(r => (
                       <button type="button" key={r.role}
                         onClick={() => { setSelectedRole(r.role); setDropdownOpen(false); setError(''); }}
@@ -365,7 +365,7 @@ function ElectionDashboardMain({ user }: { user: Record<string, string> }) {
   }
   const navGroups = Object.entries(groupMap).map(([group, items]) => ({ group, items }));
 
-  const NAVY = '#0f1f33';
+  const NAVY = '#123322';
   const C = roleDef.color;
 
   function renderSection() {

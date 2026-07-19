@@ -228,7 +228,7 @@ export default function DashboardLogin() {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden"
-      style={{ backgroundColor: '#050c17' }}
+      style={{ backgroundColor: '#04130c' }}
     >
       {/* Background grid */}
       <div
@@ -248,7 +248,7 @@ export default function DashboardLogin() {
         style={{
           top: '-10%', left: '30%',
           width: 600, height: 400,
-          background: 'radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse, rgba(34,197,94,0.09) 0%, transparent 70%)',
         }}
       />
       <div
@@ -256,7 +256,7 @@ export default function DashboardLogin() {
         style={{
           bottom: '-5%', right: '20%',
           width: 500, height: 300,
-          background: 'radial-gradient(ellipse, rgba(139,92,246,0.07) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse, rgba(16,185,129,0.07) 0%, transparent 70%)',
         }}
       />
 
@@ -264,7 +264,7 @@ export default function DashboardLogin() {
         {/* Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 mb-5 px-4 py-2 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <Zap size={13} style={{ color: '#3b82f6' }} />
+            <Zap size={13} style={{ color: '#22c55e' }} />
             <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.7rem', letterSpacing: '0.18em', color: 'rgba(255,255,255,0.5)' }}>
               BUILD ONE ZAMBIA — SECURE ACCESS
             </span>
@@ -279,7 +279,7 @@ export default function DashboardLogin() {
             }}
           >
             PORTAL{' '}
-            <span style={{ background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <span style={{ background: 'linear-gradient(90deg, #22c55e, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               DASHBOARD
             </span>
           </h1>
@@ -298,18 +298,18 @@ export default function DashboardLogin() {
                   onClick={() => handleSelect(dash.id)}
                   className="text-left rounded-2xl p-5 transition-all duration-200 group"
                   style={{
-                    backgroundColor: '#0b1929',
+                    backgroundColor: '#0d2718',
                     border: '1px solid rgba(255,255,255,0.07)',
                   }}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLElement).style.border = `1px solid ${dash.color}50`;
-                    (e.currentTarget as HTMLElement).style.backgroundColor = '#0f2038';
+                    (e.currentTarget as HTMLElement).style.backgroundColor = '#163d2a';
                     (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)';
                     (e.currentTarget as HTMLElement).style.boxShadow = `0 12px 40px ${dash.color}18`;
                   }}
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLElement).style.border = '1px solid rgba(255,255,255,0.07)';
-                    (e.currentTarget as HTMLElement).style.backgroundColor = '#0b1929';
+                    (e.currentTarget as HTMLElement).style.backgroundColor = '#0d2718';
                     (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
                     (e.currentTarget as HTMLElement).style.boxShadow = 'none';
                   }}
@@ -368,7 +368,7 @@ export default function DashboardLogin() {
             <div
               className="rounded-2xl overflow-hidden"
               style={{
-                backgroundColor: '#0b1929',
+                backgroundColor: '#0d2718',
                 border: `1px solid ${selected?.color}30`,
                 boxShadow: `0 0 60px ${selected?.color}12`,
               }}

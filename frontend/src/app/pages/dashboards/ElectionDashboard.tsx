@@ -72,7 +72,7 @@ const ALL_NAV: NavItem[] = [
   { key:'security',         label:'Security Settings',    icon:<Lock size={16}/>,            group:'PROFILE' },
 ];
 
-const SIDEBAR_BG='#07111f', TOPBAR_BG='#0b1929', CARD_BG='#0f1f33', BORDER='rgba(255,255,255,0.07)';
+const SIDEBAR_BG='#0a2016', TOPBAR_BG='#0d2718', CARD_BG='#123322', BORDER='rgba(255,255,255,0.07)';
 
 function Field({label,value}:{label:string;value:string}) {
   return (
@@ -518,7 +518,7 @@ export default function ElectionDashboard() {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{backgroundColor:'#070f1c'}}>
+    <div className="flex h-screen overflow-hidden" style={{backgroundColor:'#04130c'}}>
       {sidebarOpen&&(
         <div className="fixed inset-0 z-40 lg:hidden" style={{backgroundColor:'rgba(0,0,0,0.65)',backdropFilter:'blur(4px)'}}
           onClick={()=>setSidebarOpen(false)}/>

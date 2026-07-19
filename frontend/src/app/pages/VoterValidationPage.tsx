@@ -167,7 +167,7 @@ export function VoterValidationPage() {
   return (
     <div className="space-y-5">
       {/* Location picker */}
-      <div className="rounded-2xl p-6" style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="rounded-2xl p-6" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
         <h2 className="mb-1" style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem' }}>
           <MapPin className="inline w-5 h-5 mr-2" style={{ color: '#16a34a' }} />
           Select Your Polling Station
@@ -220,14 +220,14 @@ export function VoterValidationPage() {
       </div>
 
       {!pollingStationId ? (
-        <div className="rounded-2xl p-8 flex flex-col items-center gap-2 text-center" style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="rounded-2xl p-8 flex flex-col items-center gap-2 text-center" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
           <UserSearch size={28} style={{ color: 'rgba(255,255,255,0.3)' }} />
           <p style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '0.95rem' }}>Select a polling station above to continue</p>
         </div>
       ) : (
         <>
           {/* Voters roll upload / status */}
-          <div className="rounded-2xl p-6" style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="rounded-2xl p-6" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
             <div className="flex items-center justify-between gap-3 mb-1">
               <h2 style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem' }}>
                 <FileSpreadsheet className="inline w-5 h-5 mr-2" style={{ color: '#16a34a' }} />
@@ -301,7 +301,7 @@ export function VoterValidationPage() {
           </div>
 
           {/* Voter verification */}
-          <div className="rounded-2xl p-6" style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="rounded-2xl p-6" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
             <h2 className="mb-1" style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem' }}>
               <UserSearch className="inline w-5 h-5 mr-2" style={{ color: '#16a34a' }} />
               Verify a Voter

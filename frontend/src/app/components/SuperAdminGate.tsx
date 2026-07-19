@@ -185,7 +185,7 @@ export function SuperAdminGate({ children }: Props) {
     <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
       <div
         className="w-full max-w-md rounded-2xl p-8"
-        style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(255,255,255,0.08)' }}
+        style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.08)' }}
       >
         {/* Header */}
         <div className="flex flex-col items-center mb-8">

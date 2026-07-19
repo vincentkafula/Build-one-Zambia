@@ -180,7 +180,7 @@ export function PollingAgentFiguresPage() {
 
   if (!wardId) {
     return (
-      <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center" style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
         <FileWarning size={32} style={{ color: '#f59e0b' }} />
         <p style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '1rem' }}>Ward Not Configured</p>
         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', maxWidth: 420 }}>
@@ -234,7 +234,7 @@ export function PollingAgentFiguresPage() {
           { label: 'Pending Review', value: stats.pending, color: '#f59e0b' },
           { label: 'Not Approved', value: stats.rejected, color: '#dc2626' },
         ].map(s => (
-          <div key={s.label} className="rounded-2xl p-4 text-center" style={{ backgroundColor: '#0f1f33', border: `1px solid ${s.color}25` }}>
+          <div key={s.label} className="rounded-2xl p-4 text-center" style={{ backgroundColor: '#123322', border: `1px solid ${s.color}25` }}>
             <p style={{ color: s.color, fontSize: '1.8rem', fontFamily: 'Oswald, sans-serif', lineHeight: 1 }}>{s.value}</p>
             <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem', marginTop: 6 }}>{s.label}</p>
           </div>
@@ -248,7 +248,7 @@ export function PollingAgentFiguresPage() {
       )}
 
       {/* Polling station dropdown */}
-      <div className="rounded-2xl p-6" style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="rounded-2xl p-6" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
         <h2 className="mb-1" style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem' }}>
           <MapPin className="inline w-5 h-5 mr-2" style={{ color: '#16a34a' }} />
           Select a Polling Station
@@ -284,7 +284,7 @@ export function PollingAgentFiguresPage() {
             </div>
           </div>
         ) : (
-          <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
             <div className="flex items-center justify-between gap-3 px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               <div>
                 <p style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '0.95rem' }}>{selected.pollingStationName || selectedStation?.name}</p>
@@ -417,7 +417,7 @@ export function PollingAgentFiguresPage() {
       )}
 
       {stats.approved > 0 && (
-        <div className="rounded-2xl p-5" style={{ backgroundColor: '#0f1f33', border: '1px solid rgba(22,163,74,0.25)' }}>
+        <div className="rounded-2xl p-5" style={{ backgroundColor: '#123322', border: '1px solid rgba(22,163,74,0.25)' }}>
           <p className="mb-3 text-xs" style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.12em', color: '#16a34a' }}>
             APPROVED POLLING AGENT TOTALS — {wardName.toUpperCase()}
           </p>

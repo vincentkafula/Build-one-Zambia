@@ -1,6 +1,6 @@
 import { provinces } from '../../data/mockData';
 
-const CARD_BG = '#0f1f33';
+const CARD_BG = '#123322';
 
 function StatCard({ label, value, color }: { label: string; value: string | number; color: string }) {
   return (
