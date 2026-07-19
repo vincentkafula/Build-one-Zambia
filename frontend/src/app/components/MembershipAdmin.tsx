@@ -308,19 +308,19 @@ export function MembershipAdmin() {
               {(['basic', 'standard', 'gold', 'platinum'] as MemberTier[]).map(t => (
                 <div key={t} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #f3f4f6' }}>
                   <TierBadge tier={t} />
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>{stats.byTier[t] || 0}</span>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>{stats.byTier?.[t] ?? 0}</span>
                 </div>
               ))}
             </div>
             <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '16px' }}>
               <h4 style={{ margin: '0 0 12px', fontSize: '13px', fontWeight: 700, color: '#374151' }}>By Province</h4>
-              {Object.entries(stats.byProvince).slice(0, 8).map(([prov, count]) => (
+              {Object.entries(stats.byProvince ?? {}).slice(0, 8).map(([prov, count]) => (
                 <div key={prov} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #f3f4f6', fontSize: '12px' }}>
                   <span style={{ color: '#374151' }}>{prov}</span>
                   <span style={{ fontWeight: 700, color: '#1d4ed8' }}>{count}</span>
                 </div>
               ))}
-              {Object.keys(stats.byProvince).length === 0 && <p style={{ margin: 0, fontSize: '12px', color: '#9ca3af' }}>No data yet</p>}
+              {Object.keys(stats.byProvince ?? {}).length === 0 && <p style={{ margin: 0, fontSize: '12px', color: '#9ca3af' }}>No data yet</p>}
             </div>
           </div>
         </div>

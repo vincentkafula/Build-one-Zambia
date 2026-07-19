@@ -68,15 +68,24 @@ export function updateMember(id, patch) {
   return updated;
 }
 
+const MEMBER_TIERS = ['basic', 'standard', 'gold', 'platinum'];
+
 export function getMemberStats() {
   const all = getMemberIndex().map(id => kv.get(`boz:reg:member:${id}`)).filter(Boolean);
   const byStatus = {};
   const byProvince = {};
+  const byTier = Object.fromEntries(MEMBER_TIERS.map(t => [t, 0]));
+  let active = 0;
+  let adoptionGranted = 0;
   for (const m of all) {
     byStatus[m.status] = (byStatus[m.status] || 0) + 1;
     if (m.province) byProvince[m.province] = (byProvince[m.province] || 0) + 1;
+    const tier = MEMBER_TIERS.includes(m.tier) ? m.tier : (MEMBER_TIERS.includes(m.membershipType) ? m.membershipType : 'basic');
+    byTier[tier] = (byTier[tier] || 0) + 1;
+    if (m.status === 'approved' || m.status === 'active') active++;
+    if (m.adoptionGranted) adoptionGranted++;
   }
-  return { total: all.length, byStatus, byProvince };
+  return { total: all.length, active, adoptionGranted, byStatus, byTier, byProvince };
 }
 
 // ─── Internship Registration ────────────────────────────────────────────────
