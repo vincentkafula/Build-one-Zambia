@@ -560,7 +560,7 @@ function saveReg(type) { kv.set(`reg:${type}`, regStore[type]); }
 
 // Grant Login helper
 function generatePassword() { const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$'; let p = ''; for (let i = 0; i < 10; i++) p += chars[Math.floor(Math.random() * chars.length)]; return p; }
-const TYPE_ROLES = { agent: 'polling_agent', member: 'ward_manager', internship: 'constituency_manager', cooperative: 'district_manager' };
+const TYPE_ROLES = { agent: 'polling_agent', member: 'member', internship: 'internship', cooperative: 'cooperative' };
 
 function regRoutes(type, noun) {
   app.post(`${BASE}/registrations/${type}`, (req, res) => {
@@ -582,12 +582,16 @@ function regRoutes(type, noun) {
     const { status, notes } = req.body;
     regStore[type][idx] = { ...regStore[type][idx], status, notes, reviewedAt: new Date().toISOString(), reviewedBy: req.user?.username };
     saveReg(type);
-    // Auto-grant login on approval
+    // Auto-grant login on approval — done synchronously (not via setImmediate)
+    // so the generated credentials can actually be included in this response.
+    // Previously this ran after the response had already been sent, so the
+    // password was generated but never returned to anyone — the account
+    // existed but nobody, including the admin, ever saw its password.
+    let credentials = null;
     if (status === 'approved') {
-      setImmediate(async () => {
-        try {
-          const reg = regStore[type][idx];
-          if (reg?.loginGranted) return;
+      try {
+        const reg = regStore[type][idx];
+        if (!reg.loginGranted) {
           const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
           const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
           const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
@@ -597,13 +601,18 @@ function regRoutes(type, noun) {
           if (!auth.getUser(username)) {
             await auth.registerUser({ username, role, name, email: reg.email || '', phone: reg.phone || reg.cellNumber || '', scopeName: reg.pollingStation || reg.ward || reg.constituency || reg.district || reg.province || 'National', active: true, registrationId: reg.id, registrationType: type }, password);
           }
-          regStore[type][idx] = { ...regStore[type][idx], username, loginGranted: true, loginCreatedAt: new Date().toISOString() };
+          credentials = { username, password, role, generatedAt: new Date().toISOString(), name };
+          // pendingPassword is cleared the first time /credentials is fetched
+          // (by the registrant, using their reference number), so the
+          // plaintext password is retrievable exactly once outside of this
+          // admin-only response.
+          regStore[type][idx] = { ...regStore[type][idx], username, loginGranted: true, loginCreatedAt: new Date().toISOString(), pendingPassword: password };
           saveReg(type);
           console.log(`[auto-grant] Created login for ${type}/${reg.id}: ${username}`);
-        } catch (e) { console.error(`[auto-grant] Failed for ${type}/${regStore[type][idx]?.id}:`, e.message); }
-      });
+        }
+      } catch (e) { console.error(`[auto-grant] Failed for ${type}/${req.params.id}:`, e.message); }
     }
-    res.json({ success: true, registration: regStore[type][idx] });
+    res.json({ success: true, registration: regStore[type][idx], credentials });
   });
 
   app.post(`${BASE}/registrations/${type}/:id/grant-login`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
@@ -629,7 +638,7 @@ function regRoutes(type, noun) {
       const existingUser = auth.getUser(username);
       if (existingUser) { await auth.resetPassword(existingUser.id, password); }
       else { await auth.registerUser({ username, role, name, email: reg.email || '', phone: reg.phone || reg.cellNumber || '', scopeName: reg.pollingStation || reg.ward || reg.constituency || reg.district || reg.province || 'National', active: true, registrationId: reg.id, registrationType: type }, password); }
-      regStore[type][idx] = { ...reg, status: reg.status === 'pending' ? 'approved' : reg.status, username, loginGranted: true, loginCreatedAt: new Date().toISOString(), loginGrantedBy: req.user?.username };
+      regStore[type][idx] = { ...reg, status: reg.status === 'pending' ? 'approved' : reg.status, username, loginGranted: true, loginCreatedAt: new Date().toISOString(), loginGrantedBy: req.user?.username, pendingPassword: password };
       saveReg(type);
       res.json({ success: true, credentials: { username, password, role, generatedAt: new Date().toISOString(), name, alreadyExists: !!existingUser }, message: `Login granted for ${name}` });
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -657,7 +666,29 @@ function regRoutes(type, noun) {
     res.json({ documents, documentsMeta: reg.documentsMeta || {}, hasDocuments: Object.keys(documents).length > 0 });
   });
 
-  app.get(`${BASE}/registrations/${type}/:id/credentials`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => res.json({ credentials: { id: req.params.id, type, generatedAt: new Date().toISOString() } }));
+  // Public by design: the registrant has no login yet at this point, and
+  // the UI already tells them to "return with your reference number" to
+  // retrieve credentials. The registration id doubles as that reference
+  // number/lookup key. The password is returned once, then cleared from
+  // storage, so it can't be re-fetched by someone who intercepts the id
+  // after the real registrant has already collected it.
+  app.get(`${BASE}/registrations/${type}/:id/credentials`, (req, res) => {
+    const id = req.params.id;
+    const idx = regStore[type]?.findIndex(r => r.id === id) ?? -1;
+    const reg = idx >= 0 ? regStore[type][idx] : null;
+    if (!reg) return res.status(404).json({ success: false, credentials: null, error: 'Registration not found' });
+    if (!reg.loginGranted || !reg.username) {
+      return res.json({ success: false, credentials: null, message: 'Not approved yet — check back after an admin reviews your application.' });
+    }
+    if (!reg.pendingPassword) {
+      return res.json({ success: false, credentials: null, message: 'Your credentials have already been collected. If you lost your password, ask an admin to reset it.' });
+    }
+    const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
+    const credentials = { username: reg.username, password: reg.pendingPassword };
+    regStore[type][idx] = { ...reg, pendingPassword: null };
+    saveReg(type);
+    res.json({ success: true, credentials, fullName: name });
+  });
 }
 
 regRoutes('member', 'Member');

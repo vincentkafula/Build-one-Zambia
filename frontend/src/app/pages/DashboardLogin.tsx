@@ -120,8 +120,13 @@ export default function DashboardLogin() {
   const selected = DASHBOARD_TYPES.find(d => d.id === selectedId);
   const isElectionLogin   = selectedId === 'election';
   const isManagementLogin = selectedId === 'management';
-  // Both Election and Management dashboards authenticate against the real backend
-  const usesBackendAuth = isElectionLogin || isManagementLogin;
+  // Member Portal previously fell through to the hardcoded master
+  // username/password check below (meant only as an offline fallback),
+  // so no real member could ever sign in with their own generated
+  // credentials — it now authenticates against the real backend like
+  // Election/Management already do.
+  const isMemberLogin     = selectedId === 'member';
+  const usesBackendAuth = isElectionLogin || isManagementLogin || isMemberLogin;
 
   function handleSelect(id: DashId) {
     setSelectedId(id);
@@ -183,6 +188,19 @@ export default function DashboardLogin() {
               navigate('/dashboard/manager');
               backendSuccess = true;
             }
+
+            // Member Portal: requires the member role granted on approval
+            // (or an admin account, for support/testing access).
+            if (isMemberLogin) {
+              const MEMBER_ROLES = ['member', 'super_admin', 'admin'];
+              if (!MEMBER_ROLES.includes(role)) {
+                throw new Error(`Your account role "${role}" does not have access to the Member Portal. Please select the correct dashboard above.`);
+              }
+              sessionStorage.setItem('boz_session_token', data.token);
+              sessionStorage.setItem('boz_election_user', JSON.stringify(data.user));
+              navigate('/dashboard/member');
+              backendSuccess = true;
+            }
           } else {
             throw new Error(data.error || data.details || 'Invalid username or password');
           }
@@ -199,7 +217,7 @@ export default function DashboardLogin() {
                 scopeType: 'national',
               };
               sessionStorage.setItem('boz_election_user', JSON.stringify(localUser));
-              navigate(isElectionLogin ? '/dashboard/election' : '/dashboard/manager');
+              navigate(isElectionLogin ? '/dashboard/election' : isMemberLogin ? '/dashboard/member' : '/dashboard/manager');
               backendSuccess = true;
             } else {
               throw new Error('Cannot reach the authentication server. If you are the system administrator, use your master credentials. All other users require network access.');
