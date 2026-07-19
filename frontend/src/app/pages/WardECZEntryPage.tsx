@@ -319,8 +319,8 @@ export function WardECZEntryPage() {
                 <span className="text-[10px] px-1 rounded" style={{ background: 'rgba(22,163,74,0.2)', color: '#16a34a' }}>ECZ register</span>
               </label>
               <div className="w-full px-3 py-2.5 rounded-lg font-mono text-sm relative" style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff' }}>
-                {canEnterFigures ? registeredInt.toLocaleString() : '—'}
-                {canEnterFigures && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs" style={{ color: '#16a34a' }}>✓</span>}
+                {registeredInt > 0 ? registeredInt.toLocaleString() : '—'}
+                {registeredInt > 0 && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs" style={{ color: '#16a34a' }}>✓</span>}
               </div>
               {canEnterFigures && approvedTotals.registered !== authoritativeRegistered && (
                 <p style={{ color: '#f59e0b', fontSize: '0.68rem', marginTop: 4 }}>
