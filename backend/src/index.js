@@ -21,6 +21,7 @@ import * as results from './results.js';
 import * as shop from './shop.js';
 import * as streams from './streams.js';
 import * as voterRoll from './voterRoll.js';
+import * as voterRegister from './voterRegister.js';
 import * as memberCert from './membershipCertificate.js';
 import * as adoptionCert from './adoptionCertificate.js';
 import { kv } from './db.js';
@@ -203,6 +204,19 @@ app.get(`${BASE}/register/agents`, auth.requireAuth, auth.requireRole('admin', '
 app.delete(`${BASE}/register/agent/:id`, auth.requireAuth, auth.requireRole('super_admin'), (req, res) => { const ok = registrations.deleteAgent(req.params.id); if (!ok) return res.status(404).json({ error: 'Agent registration not found' }); res.json({ success: true }); });
 app.post(`${BASE}/register/cooperative`, (req, res) => { try { const registration = registrations.registerCoop(req.body); setImmediate(() => notifyNewApplication('cooperative', registration)); res.json({ registration }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/register/coops`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ coops: registrations.listCoops ? registrations.listCoops() : [] }));
+
+// ─── Voter Register (authoritative ECZ registered-voter totals) ───────────────
+// Source: rptPDListing20260508.md — ECZ Registered Voters per Polling Station
+// 2026. See backend/src/voterRegister.js for details. Unlike results.js /
+// elections.js (which sum whatever agents submitted), these figures are read
+// straight from ECZ's own published totals, so they're correct regardless of
+// submission status.
+app.get(`${BASE}/voter-register/me`, auth.requireAuth, (req, res) => res.json(voterRegister.getTotalsForUser(req.user)));
+app.get(`${BASE}/voter-register/national`, (req, res) => res.json({ level: 'national', ...voterRegister.getNational() }));
+app.get(`${BASE}/voter-register/:level/:id/children`, (req, res) => res.json({ children: voterRegister.getChildren(req.params.level, decodeURIComponent(req.params.id)) }));
+app.get(`${BASE}/voter-register/ward/:wardId/stations`, (req, res) => res.json({ stations: voterRegister.getStationsForWard(decodeURIComponent(req.params.wardId)) }));
+app.get(`${BASE}/voter-register/search/:level`, (req, res) => res.json({ results: voterRegister.search(req.params.level, req.query.q) }));
+app.get(`${BASE}/voter-register/:level/:id`, (req, res) => { const rec = voterRegister.getByLevel(req.params.level, decodeURIComponent(req.params.id)); if (!rec) return res.status(404).json({ error: 'Not found in ECZ register' }); res.json(rec); });
 
 // ─── Elections (legacy) ───────────────────────────────────────────────────────
 app.post(`${BASE}/results/submit`, auth.requireAuth, auth.requireRole('admin', 'super_admin', 'agent'), (req, res) => res.json({ result: elections.submitResult(req.body, req.user.username) }));
