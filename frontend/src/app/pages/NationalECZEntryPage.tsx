@@ -100,7 +100,22 @@ export function NationalECZEntryPage() {
 
   const canEnterFigures = isCombinable && pendingCount === 0 && provinceFigures.length > 0;
 
-  const registeredInt = approvedTotals.registered;
+  // Registered voters is ECZ's own published national total
+  // (rptPDListing20260508.md), not summed from whatever provinces reported
+  // in their own submissions.
+  const authoritativeRegistered = useMemo(
+    () => provinces.reduce(
+      (sum, p) => sum + p.districts.reduce(
+        (s, d) => s + d.constituencies.reduce(
+          (ss, c) => ss + c.wards.reduce(
+            (sss, w) => sss + w.pollingStations.reduce((ssss, st) => ssss + (st.registeredVoters || 0), 0), 0
+          ), 0
+        ), 0
+      ), 0
+    ),
+    []
+  );
+  const registeredInt = authoritativeRegistered;
   const liveCandidateFigures = useMemo(
     () => candidates.map(c => ({ candidateId: c.id, votes: parseInt(candidateVotes[c.id] ?? '0') || 0 })),
     [candidates, candidateVotes]
@@ -277,12 +292,17 @@ export function NationalECZEntryPage() {
             <div>
               <label className="block text-xs mb-1.5 flex items-center gap-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
                 REGISTERED VOTERS
-                <span className="text-[10px] px-1 rounded" style={{ background: 'rgba(22,163,74,0.2)', color: '#16a34a' }}>Auto-filled</span>
+                <span className="text-[10px] px-1 rounded" style={{ background: 'rgba(22,163,74,0.2)', color: '#16a34a' }}>ECZ register</span>
               </label>
               <div className="w-full px-3 py-2.5 rounded-lg font-mono text-sm relative" style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff' }}>
                 {canEnterFigures ? registeredInt.toLocaleString() : '—'}
                 {canEnterFigures && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs" style={{ color: '#16a34a' }}>✓</span>}
               </div>
+              {canEnterFigures && approvedTotals.registered !== authoritativeRegistered && (
+                <p style={{ color: '#f59e0b', fontSize: '0.68rem', marginTop: 4 }}>
+                  ⚠ Provinces reported {approvedTotals.registered.toLocaleString()} — differs from the ECZ figure above
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-xs mb-1.5 flex items-center gap-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
