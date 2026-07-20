@@ -5,10 +5,10 @@ import {
   Gift, Tag, RefreshCcw, Star, Package, Receipt,
   RotateCcw, Shield, MapPin, Lock, CheckCircle,
   Vote, Building2, Users, LayoutDashboard, Download,
-  Repeat, Wallet
+  Repeat, Wallet, CreditCard
 } from 'lucide-react';
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
-import { MembershipCertSection, AdoptionCertSection, AppointmentCertSection } from '../../components/MemberCertificates';
+import { MembershipCertSection, MembershipCardSection, AdoptionCertSection, AppointmentCertSection } from '../../components/MemberCertificates';
 
 const A = '#3b82f6';
 const NAVY = '#1e2d4a';
@@ -63,7 +63,7 @@ const SHOP_ITEMS = [
 ];
 
 type SectionKey =
-  | 'overview' | 'shop' | 'membership-status' | 'adoption-cert' | 'appointment-cert'
+  | 'overview' | 'shop' | 'membership-status' | 'membership-card' | 'adoption-cert' | 'appointment-cert'
   | 'election-presidential' | 'election-mayoral' | 'election-mp' | 'election-councillor'
   | 'orders' | 'invoices' | 'returns' | 'reviews'
   | 'coupons' | 'credit' | 'gift-voucher'
@@ -80,6 +80,7 @@ const NAV: NavGroup[] = [
       { key: 'overview', label: 'Dashboard', icon: LayoutDashboard },
       { key: 'shop', label: 'Purchase from Shop', icon: ShoppingBag },
       { key: 'membership-status', label: 'Membership Status', icon: Award },
+      { key: 'membership-card', label: 'Membership Card', icon: CreditCard },
       { key: 'adoption-cert', label: 'Adoption Certificate', icon: FileText },
       { key: 'appointment-cert', label: 'Appointment Certificate', icon: FileText },
     ],
@@ -318,6 +319,13 @@ export default function MemberDashboard() {
             <div className="mt-6">
               <MembershipCertSection member={profile} />
             </div>
+          </DashCard>
+        );
+
+      case 'membership-card':
+        return (
+          <DashCard title="MEMBERSHIP CARD">
+            <MembershipCardSection member={profile} />
           </DashCard>
         );
 

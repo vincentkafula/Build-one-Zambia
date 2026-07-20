@@ -23,6 +23,7 @@ import * as streams from './streams.js';
 import * as voterRoll from './voterRoll.js';
 import * as voterRegister from './voterRegister.js';
 import * as memberCert from './membershipCertificate.js';
+import * as memberCard from './membershipCard.js';
 import * as adoptionCert from './adoptionCertificate.js';
 import * as appointmentCert from './appointmentCertificate.js';
 import { kv } from './db.js';
@@ -279,7 +280,7 @@ function findMemberByEmailOrNumber(query) {
 app.get(`${BASE}/membership/certificate/membership`, (req, res) => {
   const member = findMemberByEmailOrNumber(req.query);
   if (!member) return res.status(404).json({ error: 'Member not found' });
-  if (member.status !== 'active' || !member.membershipNumber) {
+  if (!member.membershipNumber) {
     return res.status(403).json({ error: 'Membership is not active yet' });
   }
   res.json({
@@ -292,6 +293,23 @@ app.get(`${BASE}/membership/certificate/membership`, (req, res) => {
     joinDate: member.joinDate || member.createdAt,
     status: member.status,
     issuedAt: member.certificateIssuedAt || member.updatedAt,
+  });
+});
+
+app.get(`${BASE}/membership/certificate/card`, (req, res) => {
+  const member = findMemberByEmailOrNumber(req.query);
+  if (!member) return res.status(404).json({ error: 'Member not found' });
+  if (!member.membershipNumber) {
+    return res.status(403).json({ error: 'Card is not issued yet — membership is not approved yet.' });
+  }
+  res.json({
+    id: member.id,
+    certificateType: 'card',
+    membershipNumber: member.membershipNumber,
+    fullName: `${member.firstName || ''} ${member.lastName || ''}`.trim(),
+    tier: member.tier || 'standard',
+    joinDate: member.joinDate || member.createdAt,
+    photoDataUrl: member.selfieDataUrl || null,
   });
 });
 
@@ -348,7 +366,7 @@ app.get(`${BASE}/membership/members/:id/certificate.pdf`, auth.requireAuth, asyn
   try {
     const member = registrations.getMember(req.params.id);
     if (!member) return res.status(404).json({ error: 'Not found' });
-    if (member.status !== 'active' || !member.membershipNumber) {
+    if (!member.membershipNumber) {
       return res.status(403).json({ error: 'Certificate not yet issued' });
     }
     const dataUrl = await memberCert.getOrCreateCertificatePdf(member, VERIFY_BASE_URL);
@@ -362,13 +380,31 @@ app.get(`${BASE}/membership/members/:id/certificate.pdf`, auth.requireAuth, asyn
   }
 });
 
+app.get(`${BASE}/membership/members/:id/card.pdf`, auth.requireAuth, async (req, res) => {
+  try {
+    const member = registrations.getMember(req.params.id);
+    if (!member) return res.status(404).json({ error: 'Not found' });
+    if (!member.membershipNumber) {
+      return res.status(403).json({ error: 'Card not yet issued — membership is not approved yet' });
+    }
+    const dataUrl = await memberCard.getOrCreateCardPdf(member);
+    const [, b64] = dataUrl.split(',');
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${member.membershipNumber}-card.pdf"`);
+    res.send(Buffer.from(b64, 'base64'));
+  } catch (err) {
+    console.error('Membership card PDF generation failed:', err);
+    res.status(500).json({ error: 'Failed to generate membership card' });
+  }
+});
+
 app.get(`${BASE}/membership/verify/:code`, (req, res) => {
   const code = req.params.code;
   // Membership numbers look like BOZ-YYYY-XXXXXX; adoption ones look like
   // BOZ-ADOPT-YYYY-XXXXXX; appointment ones look like BOZ-APPT-YYYY-XXXXXX.
   // Try each in turn.
   const member = registrations.getMemberByMembershipNumber(code);
-  if (member && member.status === 'active') {
+  if (member && member.membershipNumber) {
     return res.json({
       valid: true,
       type: 'membership',

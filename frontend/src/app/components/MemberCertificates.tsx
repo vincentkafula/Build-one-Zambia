@@ -1,9 +1,9 @@
 import { useState, useRef, CSSProperties } from 'react';
 import {
   Download, Share2, Award, Shield, CheckCircle, XCircle,
-  Loader, Star, Lock,
+  Loader, Star, Lock, CreditCard, User,
 } from 'lucide-react';
-import { membershipApi, Member, MembershipCert, AdoptionCert, AppointmentCert, getToken } from '../lib/api';
+import { membershipApi, Member, MembershipCert, MembershipCardInfo, AdoptionCert, AppointmentCert, getToken } from '../lib/api';
 
 const A    = '#3b82f6';
 const NAVY = '#1e2d4a';
@@ -450,6 +450,125 @@ export function MembershipCertSection({ member }: { member: typeof memberData })
           }}
           style={{ padding: '12px 24px', border: `1px solid ${A}`, color: A, backgroundColor: 'transparent', borderRadius: '8px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
           <Download size={15} /> OFFICIAL PDF (with QR)
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Membership Card Visual (on-screen preview of the physical ID card) ──────
+
+const CARD_GREEN = '#0f6b35';
+const CARD_ORANGE = '#f47920';
+
+function MembershipCardVisual({ card }: { card: MembershipCardInfo }) {
+  const since = new Date(card.joinDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+  return (
+    <div id="membership-card-print" style={{
+      width: '100%', maxWidth: '480px', margin: '0 auto', aspectRatio: '1.6 / 1',
+      background: '#fff', borderRadius: '14px', overflow: 'hidden', position: 'relative',
+      boxShadow: '0 12px 32px rgba(0,0,0,0.25)', display: 'flex',
+    }}>
+      <div style={{ width: '38%', background: `linear-gradient(160deg, ${CARD_GREEN} 0%, #0a4d26 100%)`, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 10px' }}>
+        <div style={{ width: '56px', height: '56px', borderRadius: '50%', border: `3px solid ${CARD_ORANGE}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, color: CARD_GREEN, textAlign: 'center', lineHeight: 1.1, marginBottom: '10px' }}>
+          BOZ
+        </div>
+        {card.photoDataUrl ? (
+          <img src={card.photoDataUrl} alt={card.fullName} style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', borderRadius: '8px', border: '2px solid #fff' }} />
+        ) : (
+          <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: '8px', border: '2px solid #fff', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <User size={28} color="#fff" style={{ opacity: 0.7 }} />
+          </div>
+        )}
+      </div>
+      <div style={{ flex: 1, padding: '14px 16px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <p style={{ fontFamily: 'Oswald, sans-serif', fontWeight: 700, fontSize: '1.15rem', color: CARD_GREEN, margin: 0, lineHeight: 1.05 }}>BUILD ONE</p>
+            <p style={{ fontFamily: 'Oswald, sans-serif', fontWeight: 700, fontSize: '1.15rem', color: CARD_ORANGE, margin: 0, lineHeight: 1.05 }}>ZAMBIA</p>
+          </div>
+          <span style={{ background: CARD_GREEN, color: '#fff', fontSize: '9px', fontWeight: 700, letterSpacing: '0.06em', padding: '4px 8px', borderRadius: '4px' }}>MEMBERSHIP CARD</span>
+        </div>
+        <div style={{ marginTop: 'auto' }}>
+          <p style={{ fontSize: '9px', fontWeight: 700, color: '#111827', margin: '0 0 2px', letterSpacing: '0.04em' }}>MEMBER NAME:</p>
+          <p style={{ fontSize: '1rem', fontWeight: 700, color: CARD_GREEN, margin: '0 0 8px' }}>{card.fullName.toUpperCase()}</p>
+          <p style={{ fontSize: '9px', fontWeight: 700, color: '#111827', margin: '0 0 2px', letterSpacing: '0.04em' }}>MEMBERSHIP ID:</p>
+          <p style={{ fontSize: '0.85rem', fontWeight: 700, color: CARD_GREEN, margin: '0 0 8px' }}>{card.membershipNumber}</p>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div>
+              <p style={{ fontSize: '8px', fontWeight: 700, color: '#111827', margin: '0 0 2px', letterSpacing: '0.04em' }}>MEMBER SINCE:</p>
+              <p style={{ fontSize: '0.72rem', fontWeight: 600, color: '#374151', margin: 0 }}>{since}</p>
+            </div>
+            <div>
+              <p style={{ fontSize: '8px', fontWeight: 700, color: '#111827', margin: '0 0 2px', letterSpacing: '0.04em' }}>MEMBERSHIP TYPE:</p>
+              <p style={{ fontSize: '0.72rem', fontWeight: 600, color: '#374151', margin: 0, textTransform: 'capitalize' }}>{card.tier}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function MembershipCardSection({ member }: { member: typeof memberData }) {
+  const [card, setCard]       = useState<MembershipCardInfo | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState('');
+  const [shown, setShown]     = useState(false);
+
+  const fetchCard = async () => {
+    setLoading(true); setError('');
+    try {
+      const data = await membershipApi.getMembershipCard(member.email);
+      setCard(data);
+      setShown(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load membership card');
+    }
+    setLoading(false);
+  };
+
+  if (!shown) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+        <div style={{ width: '72px', height: '72px', borderRadius: '50%', backgroundColor: `${A}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+          <CreditCard size={36} color={A} />
+        </div>
+        <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', color: NAVY, letterSpacing: '0.06em', margin: '0 0 8px' }}>MEMBERSHIP CARD</h3>
+        <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '20px' }}>Your BOZ membership card with your photo, name, and membership ID — ready to print or keep on your phone.</p>
+        {error && <p style={{ color: '#dc2626', fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
+        <button onClick={fetchCard} disabled={loading}
+          style={{ padding: '12px 28px', backgroundColor: A, color: '#fff', border: 'none', borderRadius: '8px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '14px', cursor: loading ? 'not-allowed' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', opacity: loading ? 0.7 : 1 }}>
+          {loading ? <><Loader size={15} /> Loading…</> : <><CreditCard size={15} /> VIEW MY CARD</>}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {card && <MembershipCardVisual card={card} />}
+      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '20px' }}>
+        <button onClick={() => printElement('membership-card-print')}
+          style={{ padding: '12px 24px', backgroundColor: A, color: '#fff', border: 'none', borderRadius: '8px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+          <Download size={15} /> DOWNLOAD / PRINT
+        </button>
+        <button onClick={async () => {
+            if (!card) return;
+            const res = await fetch(membershipApi.getCardPdfUrl(card.id), {
+              headers: { Authorization: `Bearer ${getToken()}` },
+            });
+            if (!res.ok) return;
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${card.membershipNumber}-card.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+          style={{ padding: '12px 24px', border: `1px solid ${A}`, color: A, backgroundColor: 'transparent', borderRadius: '8px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+          <Download size={15} /> OFFICIAL CARD PDF
         </button>
       </div>
     </div>

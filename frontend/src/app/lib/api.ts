@@ -1226,6 +1226,16 @@ export interface MembershipCert {
   issuedAt: string;
 }
 
+export interface MembershipCardInfo {
+  id: string;
+  certificateType: 'card';
+  membershipNumber: string;
+  fullName: string;
+  tier: string;
+  joinDate: string;
+  photoDataUrl: string | null;
+}
+
 export interface AdoptionCert {
   eligible: boolean;
   reason?: string;
@@ -1345,6 +1355,11 @@ export const membershipApi = {
     return request<MembershipCert>('GET', `/membership/certificate/membership?${qs}`);
   },
 
+  getMembershipCard: (emailOrNumber: string, byNumber = false) => {
+    const qs = byNumber ? `number=${encodeURIComponent(emailOrNumber)}` : `email=${encodeURIComponent(emailOrNumber)}`;
+    return request<MembershipCardInfo>('GET', `/membership/certificate/card?${qs}`);
+  },
+
   getAdoptionCert: (emailOrNumber: string, byNumber = false) => {
     const qs = byNumber ? `number=${encodeURIComponent(emailOrNumber)}` : `email=${encodeURIComponent(emailOrNumber)}`;
     return request<AdoptionCert>('GET', `/membership/certificate/adoption?${qs}`);
@@ -1356,6 +1371,8 @@ export const membershipApi = {
   },
 
   getCertificatePdfUrl: (memberId: string) => `${BASE}/membership/members/${memberId}/certificate.pdf`,
+
+  getCardPdfUrl: (memberId: string) => `${BASE}/membership/members/${memberId}/card.pdf`,
 
   getAdoptionCertificatePdfUrl: (memberId: string) => `${BASE}/membership/members/${memberId}/adoption-certificate.pdf`,
 
