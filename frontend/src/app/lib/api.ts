@@ -1350,6 +1350,9 @@ export const membershipApi = {
   getStats: () =>
     request<MemberStats>('GET', '/membership/stats', undefined, true),
 
+  getMyProfile: () =>
+    request<{ member: Member }>('GET', '/membership/my-profile', undefined, true),
+
   getMembershipCert: (emailOrNumber: string, byNumber = false) => {
     const qs = byNumber ? `number=${encodeURIComponent(emailOrNumber)}` : `email=${encodeURIComponent(emailOrNumber)}`;
     return request<MembershipCert>('GET', `/membership/certificate/membership?${qs}`);

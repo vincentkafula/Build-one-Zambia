@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import {
   User, ShoppingBag, Award, FileText,
@@ -9,11 +9,13 @@ import {
 } from 'lucide-react';
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
 import { MembershipCertSection, MembershipCardSection, AdoptionCertSection, AppointmentCertSection } from '../../components/MemberCertificates';
+import { membershipApi } from '../../lib/api';
 
 const A = '#3b82f6';
 const NAVY = '#1e2d4a';
 
 const memberData = {
+  id: '',
   membershipNumber: 'BOZ-2026-482931',
   firstName: 'John',
   lastName: 'Banda',
@@ -189,6 +191,50 @@ export default function MemberDashboard() {
   const [activeSection, setActiveSection] = useState<SectionKey>('overview');
   const [editMode, setEditMode] = useState(false);
   const [profile, setProfile] = useState(memberData);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState('');
+
+  // The dashboard used to always show static placeholder data ("John
+  // Banda") regardless of who logged in. Replace it with the real
+  // approved applicant's own record, resolved server-side from their
+  // session (not a URL param — a member can only ever see their own
+  // profile this way).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { member } = await membershipApi.getMyProfile();
+        if (cancelled) return;
+        const STATUS_LABELS: Record<string, string> = { approved: 'Active', pending: 'Pending', rejected: 'Rejected' };
+        setProfile(p => ({
+          ...p,
+          id: member.id,
+          membershipNumber: member.membershipNumber || 'Pending approval',
+          firstName: member.firstName || '',
+          lastName: member.lastName || '',
+          email: member.email || '',
+          phone: member.phone || '',
+          dob: member.dob || '',
+          gender: member.gender || '',
+          nationalId: member.nationalId || '',
+          status: STATUS_LABELS[member.status] || member.status || 'Pending',
+          tier: member.tier ? member.tier.charAt(0).toUpperCase() + member.tier.slice(1) : 'Standard',
+          joinDate: (member.joinDate || '').slice(0, 10) || p.joinDate,
+          province: member.province || '',
+          district: member.district || '',
+          constituency: member.constituency || '',
+          ward: member.ward || '',
+          pollingStation: member.pollingStation || '',
+          address: member.address || '',
+        }));
+      } catch (e) {
+        if (!cancelled) setProfileError(e instanceof Error ? e.message : 'Failed to load your membership profile');
+      } finally {
+        if (!cancelled) setProfileLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const navTo = (key: SectionKey) => { setActiveSection(key); };
 
@@ -198,6 +244,16 @@ export default function MemberDashboard() {
       case 'overview':
         return (
           <div className="space-y-5">
+            {profileLoading && (
+              <div style={{ padding: '10px 16px', borderRadius: '8px', background: '#eff6ff', color: '#1d4ed8', fontSize: '0.85rem' }}>
+                Loading your membership profile…
+              </div>
+            )}
+            {!profileLoading && profileError && (
+              <div style={{ padding: '10px 16px', borderRadius: '8px', background: '#fef2f2', color: '#b91c1c', fontSize: '0.85rem' }}>
+                Couldn't load your membership profile ({profileError}). Showing placeholder data below.
+              </div>
+            )}
             {/* Welcome banner */}
             <div
               className="rounded-2xl p-7"

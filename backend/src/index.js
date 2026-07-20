@@ -248,6 +248,18 @@ app.patch(`${BASE}/documents/:id`, auth.requireAuth, auth.requireRole('admin', '
 app.delete(`${BASE}/documents/:id`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { docs.deleteDocument(req.params.id); res.json({ success: true }); });
 
 // ─── Membership ───────────────────────────────────────────────────────────────
+app.get(`${BASE}/membership/my-profile`, auth.requireAuth, (req, res) => {
+  const fullUser = auth.getUser(req.user.username);
+  if (!fullUser || fullUser.registrationType !== 'member' || !fullUser.registrationId) {
+    return res.status(404).json({ error: 'No member profile linked to this account' });
+  }
+  const member = registrations.getMember(fullUser.registrationId);
+  if (!member) return res.status(404).json({ error: 'Member record not found' });
+  // Never return the one-time plaintext password (or other internal
+  // bookkeeping fields) through a member-facing endpoint.
+  const { pendingPassword, ...safeMember } = member;
+  res.json({ member: safeMember });
+});
 app.post(`${BASE}/membership/register`, (req, res) => { try { const member = registrations.registerMember(req.body); setImmediate(() => notifyNewApplication('member', member)); res.json({ member }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/membership/me`, auth.requireAuth, (req, res) => { const m = registrations.getMemberByMembershipNumber(req.query.membershipNumber); if (!m) return res.status(404).json({ error: 'Member not found' }); res.json({ member: m }); });
 app.get(`${BASE}/membership/members`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ members: registrations.listMembers() }));
