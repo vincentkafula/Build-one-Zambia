@@ -11,10 +11,19 @@ function uid(prefix) { return `${prefix}_${Date.now().toString(36)}_${randomUUID
 
 function getMemberIndex() { return kv.get('boz:reg:member:index') || []; }
 
+const MEMBER_TIERS = ['basic', 'standard', 'gold', 'platinum'];
+
 export function registerMember(input) {
   const id = uid('mem');
   const now = new Date().toISOString();
-  const reg = { id, ...input, status: 'pending', createdAt: now, updatedAt: now };
+  // The public registration form sends membershipType, not tier — normalize
+  // so every stored record has a proper `tier` field regardless of which
+  // field name the caller used (tier is what the admin UI and MemberTier
+  // type actually read).
+  const tier = MEMBER_TIERS.includes(input.tier) ? input.tier
+    : MEMBER_TIERS.includes(input.membershipType) ? input.membershipType
+    : 'standard';
+  const reg = { ...input, id, tier, status: 'pending', createdAt: now, updatedAt: now };
   kv.set(`boz:reg:member:${id}`, reg);
   kv.set('boz:reg:member:index', [...getMemberIndex(), id]);
   return reg;
@@ -67,8 +76,6 @@ export function updateMember(id, patch) {
   kv.set(`boz:reg:member:${id}`, updated);
   return updated;
 }
-
-const MEMBER_TIERS = ['basic', 'standard', 'gold', 'platinum'];
 
 export function getMemberStats() {
   const all = getMemberIndex().map(id => kv.get(`boz:reg:member:${id}`)).filter(Boolean);

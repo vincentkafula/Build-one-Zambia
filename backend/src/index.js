@@ -555,7 +555,9 @@ app.patch(`${BASE}/events/:id`, auth.requireAuth, (req, res) => { const idx = ev
 app.delete(`${BASE}/events/:id`, auth.requireAuth, (req, res) => { eventsStore.events = eventsStore.events.filter(e => e.id !== req.params.id); kv.del && kv.del(`events:photo:${req.params.id}`); saveEvents(); res.json({ success: true }); });
 
 // ─── Registrations (new /registrations/* routes) ─────────────────────────────
-const regStore = { member: kv.get('reg:member') || [], cooperative: kv.get('reg:cooperative') || [], agent: kv.get('reg:agent') || [], internship: kv.get('reg:internship') || [] };
+// regStore still backs cooperative/agent/internship (not yet consolidated
+// onto registrations.js the way member was — see note above regRoutes calls).
+const regStore = { cooperative: kv.get('reg:cooperative') || [], agent: kv.get('reg:agent') || [], internship: kv.get('reg:internship') || [] };
 function saveReg(type) { kv.set(`reg:${type}`, regStore[type]); }
 
 // Grant Login helper
@@ -691,10 +693,121 @@ function regRoutes(type, noun) {
   });
 }
 
-regRoutes('member', 'Member');
 regRoutes('cooperative', 'Cooperative');
 regRoutes('agent', 'Agent');
 regRoutes('internship', 'Internship');
+
+// ─── Member registrations — consolidated onto the canonical store ─────────────
+// Previously /registrations/member (used by the live public registration
+// form and the admin approval flow) wrote into an in-memory array (regStore,
+// kv key reg:member) that was completely separate from the store
+// /membership/* (registrations.js, boz:reg:member:* keys) already used for
+// tiers, adoption granting, and certificates. A real registrant would never
+// appear in the Membership Admin panel, and an approved member had no tier/
+// adoption/certificate record, because the two never shared data. Both paths
+// now read and write registrations.js's boz:reg:member:* records directly,
+// so a registration submitted publicly, reviewed by an admin, granted login
+// access, and managed for tier/adoption/certificates is the same record
+// throughout.
+
+app.post(`${BASE}/registrations/member`, (req, res) => {
+  try {
+    const reg = registrations.registerMember(req.body);
+    setImmediate(() => notifyNewApplication('member', reg));
+    res.json({ success: true, message: 'Member registration submitted', registration: reg });
+  } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+app.get(`${BASE}/registrations/member`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  const regs = registrations.listMembers({ status: req.query.status });
+  res.json({ registrations: regs, count: regs.length });
+});
+
+app.patch(`${BASE}/registrations/member/:id/status`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
+  const { status, notes } = req.body;
+  let reg = registrations.updateMemberStatus(req.params.id, status, notes);
+  if (!reg) return res.status(404).json({ error: 'Registration not found' });
+  reg = registrations.updateMember(req.params.id, { reviewedAt: new Date().toISOString(), reviewedBy: req.user?.username });
+
+  // Auto-grant login + assign a real membership number on approval — done
+  // synchronously so credentials are included in this response, not lost
+  // the way they were before (see prior commit).
+  let credentials = null;
+  if (status === 'approved') {
+    try {
+      if (!reg.loginGranted) {
+        const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
+        const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
+        const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
+        const username = `member_${safeName}_${suffix}`;
+        const password = generatePassword();
+        const role = TYPE_ROLES.member;
+        if (!auth.getUser(username)) {
+          await auth.registerUser({ username, role, name, email: reg.email || '', phone: reg.phone || reg.cellNumber || '', scopeName: reg.pollingStation || reg.ward || reg.constituency || reg.district || reg.province || 'National', active: true, registrationId: reg.id, registrationType: 'member' }, password);
+        }
+        credentials = { username, password, role, generatedAt: new Date().toISOString(), name };
+        reg = registrations.updateMember(req.params.id, { username, loginGranted: true, loginCreatedAt: new Date().toISOString(), pendingPassword: password });
+        console.log(`[auto-grant] Created login for member/${reg.id}: ${username}`);
+      }
+      reg = registrations.assignMembershipNumberIfNeeded(req.params.id) || reg;
+    } catch (e) { console.error(`[auto-grant] Failed for member/${req.params.id}:`, e.message); }
+  }
+  res.json({ success: true, registration: reg, credentials });
+});
+
+app.post(`${BASE}/registrations/member/:id/grant-login`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
+  try {
+    const id = req.params.id;
+    const reg = registrations.getMember(id);
+    if (!reg) return res.status(404).json({ error: `Registration ${id} not found` });
+    const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
+    const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
+    const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
+    const username = req.body.username || `member_${safeName}_${suffix}`;
+    const password = req.body.password || generatePassword();
+    const role = TYPE_ROLES.member;
+    const existingUser = auth.getUser(username);
+    if (existingUser) { await auth.resetPassword(existingUser.id, password); }
+    else { await auth.registerUser({ username, role, name, email: reg.email || '', phone: reg.phone || reg.cellNumber || '', scopeName: reg.pollingStation || reg.ward || reg.constituency || reg.district || reg.province || 'National', active: true, registrationId: reg.id, registrationType: 'member' }, password); }
+    registrations.updateMember(id, { status: reg.status === 'pending' ? 'approved' : reg.status, username, loginGranted: true, loginCreatedAt: new Date().toISOString(), loginGrantedBy: req.user?.username, pendingPassword: password });
+    registrations.assignMembershipNumberIfNeeded(id);
+    res.json({ success: true, credentials: { username, password, role, generatedAt: new Date().toISOString(), name, alreadyExists: !!existingUser }, message: `Login granted for ${name}` });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get(`${BASE}/registrations/member/:id/selfie`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  const reg = registrations.getMember(req.params.id);
+  if (!reg) return res.status(404).json({ error: 'Not found' });
+  res.json({ dataUrl: reg.selfieDataUrl || reg.selfie || null, hasSelfie: !!(reg.selfieDataUrl || reg.selfie) });
+});
+
+app.get(`${BASE}/registrations/member/:id/documents`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  const reg = registrations.getMember(req.params.id);
+  if (!reg) return res.status(404).json({ error: `Registration ${req.params.id} not found` });
+  const documents = { ...(reg.documents || reg.uploads || reg.docs || {}) };
+  if (reg.selfieDataUrl && !documents.selfie) documents.selfie = reg.selfieDataUrl;
+  res.json({ documents, documentsMeta: reg.documentsMeta || {}, hasDocuments: Object.keys(documents).length > 0 });
+});
+
+// Public by design: the registrant has no login yet at this point, and the
+// UI already tells them to "return with your reference number" to retrieve
+// credentials. The registration id doubles as that reference number/lookup
+// key. The password is returned once, then cleared from storage, so it
+// can't be re-fetched after the real registrant has already collected it.
+app.get(`${BASE}/registrations/member/:id/credentials`, (req, res) => {
+  const reg = registrations.getMember(req.params.id);
+  if (!reg) return res.status(404).json({ success: false, credentials: null, error: 'Registration not found' });
+  if (!reg.loginGranted || !reg.username) {
+    return res.json({ success: false, credentials: null, message: 'Not approved yet — check back after an admin reviews your application.' });
+  }
+  if (!reg.pendingPassword) {
+    return res.json({ success: false, credentials: null, message: 'Your credentials have already been collected. If you lost your password, ask an admin to reset it.' });
+  }
+  const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
+  const credentials = { username: reg.username, password: reg.pendingPassword };
+  registrations.updateMember(req.params.id, { pendingPassword: null });
+  res.json({ success: true, credentials, fullName: name });
+});
 
 // Registration extras
 app.get(`${BASE}/registrations/agent/capacity`, (req, res) => { const agents = registrations.listAgents({}); res.json({ capacity: { total: 500, registered: agents.length, remaining: Math.max(0, 500 - agents.length), open: agents.length < 500 } }); });
