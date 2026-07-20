@@ -603,6 +603,9 @@ export const shopApi = {
   // Stats
   getStats: () =>
     request<{ stats: ShopStats }>('GET', '/shop/stats', undefined, true),
+
+  myOrders: () =>
+    request<{ orders: ShopOrder[]; payments: ShopPayment[] }>('GET', '/shop/my-orders', undefined, true),
 };
 
 // ─── Orders ───────────────────────────────────────────────────────────────────

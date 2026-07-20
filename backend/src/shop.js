@@ -179,6 +179,7 @@ export function listPayments(filters = {}) {
   let payments = getPaymentIndex().map(ref => kv.get(`boz:shop:payment:${ref}`)).filter(Boolean);
   if (filters.status) payments = payments.filter(p => p.status === filters.status);
   if (filters.method) payments = payments.filter(p => p.method === filters.method);
+  if (filters.orderIds) payments = payments.filter(p => filters.orderIds.includes(p.orderId));
   return payments.sort((a, b) => new Date(b.initiatedAt) - new Date(a.initiatedAt));
 }
 
@@ -228,6 +229,7 @@ export function updateOrderStatus(id, status, paymentRef) {
 export function listOrders(filters = {}) {
   let orders = getOrderIndex().map(id => kv.get(`boz:shop:order:${id}`)).filter(Boolean);
   if (filters.status) orders = orders.filter(o => o.status === filters.status);
+  if (filters.customerEmail) orders = orders.filter(o => (o.customerEmail || '').toLowerCase() === filters.customerEmail.toLowerCase());
   return orders.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
 }
 

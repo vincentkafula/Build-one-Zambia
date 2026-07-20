@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import {
   User, ShoppingBag, Award, FileText,
@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
 import { MembershipCertSection, MembershipCardSection, AdoptionCertSection, AppointmentCertSection } from '../../components/MemberCertificates';
-import { membershipApi } from '../../lib/api';
+import { membershipApi, shopApi, ShopOrder, ShopPayment } from '../../lib/api';
 
 const A = '#3b82f6';
 const NAVY = '#1e2d4a';
@@ -37,23 +37,9 @@ const memberData = {
   address: '15 Cairo Road, Lusaka, Zambia',
 };
 
-const ORDERS = [
-  { id: 'ORD-001', item: 'BOZ Branded T-Shirt (XL)', date: '2026-05-10', status: 'Delivered', amount: 'K 150' },
-  { id: 'ORD-002', item: 'Build One Zambia Cap', date: '2026-04-22', status: 'Delivered', amount: 'K 80' },
-  { id: 'ORD-003', item: 'Campaign Poster Set (A2)', date: '2026-06-01', status: 'Processing', amount: 'K 200' },
-];
+// ORDERS/INVOICES/PAYMENT_HISTORY are now derived from the real member's
+// actual shop orders + payments (fetched in the component), not hardcoded.
 
-const INVOICES = [
-  { id: 'INV-2026-001', desc: 'Annual Membership Fee', date: '2026-01-15', amount: 'K 500', paid: true },
-  { id: 'INV-2026-002', desc: 'Merchandise Order #ORD-001', date: '2026-05-10', amount: 'K 150', paid: true },
-  { id: 'INV-2026-003', desc: 'Merchandise Order #ORD-003', date: '2026-06-01', amount: 'K 200', paid: false },
-];
-
-const PAYMENT_HISTORY = [
-  { date: '2026-06-01', desc: 'Merchandise — Campaign Poster Set', method: 'Mobile Money', amount: 'K 200' },
-  { date: '2026-05-10', desc: 'Merchandise — T-Shirt & Cap', method: 'Mobile Money', amount: 'K 230' },
-  { date: '2026-01-15', desc: 'Annual Membership Fee', method: 'Bank Transfer', amount: 'K 500' },
-];
 
 const SHOP_ITEMS = [
   { name: 'BOZ Branded T-Shirt', price: 'K 150', img: '👕', stock: 'In Stock' },
@@ -193,6 +179,9 @@ export default function MemberDashboard() {
   const [profile, setProfile] = useState(memberData);
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileError, setProfileError] = useState('');
+  const [orders, setOrders] = useState<ShopOrder[]>([]);
+  const [payments, setPayments] = useState<ShopPayment[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
 
   // The dashboard used to always show static placeholder data ("John
   // Banda") regardless of who logged in. Replace it with the real
@@ -235,6 +224,47 @@ export default function MemberDashboard() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { orders: o, payments: p } = await shopApi.myOrders();
+        if (!cancelled) { setOrders(o); setPayments(p); }
+      } catch {
+        // No orders yet, or not a member account — leave empty, not fatal.
+      } finally {
+        if (!cancelled) setOrdersLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const fmtK = (n: number) => `K ${n.toLocaleString()}`;
+  const orderItemSummary = (o: ShopOrder) => o.items.map(it => `${it.name}${it.qty > 1 ? ` x${it.qty}` : ''}`).join(', ') || 'Order';
+  const ORDER_STATUS_LABELS: Record<string, string> = { pending: 'Pending', paid: 'Paid', processing: 'Processing', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled' };
+  const METHOD_LABELS: Record<string, string> = { card: 'Card', airtel: 'Mobile Money (Airtel)', zamtel: 'Mobile Money (Zamtel)', mtn: 'Mobile Money (MTN)' };
+
+  const displayOrders = useMemo(() => orders.map(o => ({
+    id: o.id, item: orderItemSummary(o), date: o.submittedAt.slice(0, 10),
+    status: ORDER_STATUS_LABELS[o.status] || o.status, amount: fmtK(o.total),
+  })), [orders]);
+
+  const displayInvoices = useMemo(() => orders.map(o => ({
+    id: `INV-${o.id.replace(/^order_/, '').toUpperCase()}`, desc: orderItemSummary(o),
+    date: o.submittedAt.slice(0, 10), amount: fmtK(o.total),
+    paid: o.status !== 'pending' && o.status !== 'cancelled',
+  })), [orders]);
+
+  const displayPayments = useMemo(() => {
+    const orderById = new Map(orders.map(o => [o.id, o]));
+    return payments.filter(p => p.status === 'confirmed').map(p => ({
+      date: (p.confirmedAt || p.initiatedAt).slice(0, 10),
+      desc: orderById.has(p.orderId) ? orderItemSummary(orderById.get(p.orderId)!) : `Order ${p.orderId}`,
+      method: METHOD_LABELS[p.method] || p.method,
+      amount: fmtK(p.amount),
+    }));
+  }, [orders, payments]);
 
   const navTo = (key: SectionKey) => { setActiveSection(key); };
 
@@ -282,7 +312,7 @@ export default function MemberDashboard() {
               {[
                 { label: 'MEMBERSHIP', value: profile.status, color: '#10b981' },
                 { label: 'MEMBER NO.', value: profile.membershipNumber, color: A },
-                { label: 'ORDERS', value: '3', color: '#f59e0b' },
+                { label: 'ORDERS', value: String(orders.length), color: '#f59e0b' },
                 { label: 'WARD', value: profile.ward, color: '#8b5cf6' },
               ].map(s => (
                 <div key={s.label} className="rounded-2xl p-4" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -414,36 +444,51 @@ export default function MemberDashboard() {
       case 'orders':
         return (
           <DashCard title="MY ORDERS">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                    {['Order ID', 'Item', 'Date', 'Status', 'Amount'].map(h => (
-                      <th key={h} className="py-3 px-4 text-left" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '11px' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {ORDERS.map(o => (
-                    <tr key={o.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                      <td className="py-3 px-4" style={{ color: A, fontFamily: 'Oswald, sans-serif' }}>{o.id}</td>
-                      <td className="py-3 px-4" style={{ color: 'rgba(255,255,255,0.85)' }}>{o.item}</td>
-                      <td className="py-3 px-4" style={{ color: 'rgba(255,255,255,0.45)' }}>{o.date}</td>
-                      <td className="py-3 px-4"><StatusBadge status={o.status} /></td>
-                      <td className="py-3 px-4" style={{ color: NAVY, fontFamily: 'Oswald, sans-serif' }}>{o.amount}</td>
+            {ordersLoading ? (
+              <p className="text-sm py-8 text-center" style={{ color: 'rgba(255,255,255,0.4)' }}>Loading your orders…</p>
+            ) : displayOrders.length === 0 ? (
+              <div className="text-center py-12">
+                <Package className="w-16 h-16 mx-auto mb-4" style={{ color: '#e5e7eb' }} />
+                <p style={{ color: '#9ca3af' }}>No orders yet</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                      {['Order ID', 'Item', 'Date', 'Status', 'Amount'].map(h => (
+                        <th key={h} className="py-3 px-4 text-left" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '11px' }}>{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {displayOrders.map(o => (
+                      <tr key={o.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <td className="py-3 px-4" style={{ color: A, fontFamily: 'Oswald, sans-serif' }}>{o.id}</td>
+                        <td className="py-3 px-4" style={{ color: 'rgba(255,255,255,0.85)' }}>{o.item}</td>
+                        <td className="py-3 px-4" style={{ color: 'rgba(255,255,255,0.45)' }}>{o.date}</td>
+                        <td className="py-3 px-4"><StatusBadge status={o.status} /></td>
+                        <td className="py-3 px-4" style={{ color: NAVY, fontFamily: 'Oswald, sans-serif' }}>{o.amount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </DashCard>
         );
 
       case 'invoices':
         return (
           <DashCard title="INVOICES">
+            {displayInvoices.length === 0 ? (
+              <div className="text-center py-12">
+                <Receipt className="w-16 h-16 mx-auto mb-4" style={{ color: '#e5e7eb' }} />
+                <p style={{ color: '#9ca3af' }}>No invoices yet</p>
+              </div>
+            ) : (
             <div className="space-y-3">
-              {INVOICES.map(inv => (
+              {displayInvoices.map(inv => (
                 <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div className="flex items-center gap-4">
                     <Receipt className="w-8 h-8" style={{ color: A }} />
@@ -460,6 +505,7 @@ export default function MemberDashboard() {
                 </div>
               ))}
             </div>
+            )}
           </DashCard>
         );
 
@@ -480,8 +526,14 @@ export default function MemberDashboard() {
       case 'reviews':
         return (
           <DashCard title="PRODUCT REVIEWS">
+            {displayOrders.filter(o => o.status === 'Delivered').length === 0 ? (
+              <div className="text-center py-12">
+                <Star className="w-16 h-16 mx-auto mb-4" style={{ color: '#e5e7eb' }} />
+                <p style={{ color: '#9ca3af' }}>No delivered orders to review yet</p>
+              </div>
+            ) : (
             <div className="space-y-4">
-              {ORDERS.filter(o => o.status === 'Delivered').map(o => (
+              {displayOrders.filter(o => o.status === 'Delivered').map(o => (
                 <div key={o.id} className="p-4 rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div className="flex items-center justify-between mb-3">
                     <p style={{ color: NAVY, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.04em', fontSize: '0.9rem' }}>{o.item}</p>
@@ -494,6 +546,7 @@ export default function MemberDashboard() {
                 </div>
               ))}
             </div>
+            )}
           </DashCard>
         );
 
@@ -572,6 +625,12 @@ export default function MemberDashboard() {
       case 'payment-history':
         return (
           <DashCard title="PAYMENT HISTORY">
+            {displayPayments.length === 0 ? (
+              <div className="text-center py-12">
+                <Wallet className="w-16 h-16 mx-auto mb-4" style={{ color: '#e5e7eb' }} />
+                <p style={{ color: '#9ca3af' }}>No payments on record yet</p>
+              </div>
+            ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -582,7 +641,7 @@ export default function MemberDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {PAYMENT_HISTORY.map((p, i) => (
+                  {displayPayments.map((p, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                       <td className="py-3 px-4" style={{ color: 'rgba(255,255,255,0.45)' }}>{p.date}</td>
                       <td className="py-3 px-4" style={{ color: 'rgba(255,255,255,0.85)' }}>{p.desc}</td>
@@ -593,6 +652,7 @@ export default function MemberDashboard() {
                 </tbody>
               </table>
             </div>
+            )}
           </DashCard>
         );
 

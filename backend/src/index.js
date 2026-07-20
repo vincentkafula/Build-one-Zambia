@@ -260,6 +260,18 @@ app.get(`${BASE}/membership/my-profile`, auth.requireAuth, (req, res) => {
   const { pendingPassword, ...safeMember } = member;
   res.json({ member: safeMember });
 });
+
+app.get(`${BASE}/shop/my-orders`, auth.requireAuth, (req, res) => {
+  const fullUser = auth.getUser(req.user.username);
+  if (!fullUser || fullUser.registrationType !== 'member' || !fullUser.registrationId) {
+    return res.status(404).json({ error: 'No member profile linked to this account' });
+  }
+  const member = registrations.getMember(fullUser.registrationId);
+  if (!member?.email) return res.json({ orders: [], payments: [] });
+  const orders = shop.listOrders({ customerEmail: member.email });
+  const payments = shop.listPayments({ orderIds: orders.map(o => o.id) });
+  res.json({ orders, payments });
+});
 app.post(`${BASE}/membership/register`, (req, res) => { try { const member = registrations.registerMember(req.body); setImmediate(() => notifyNewApplication('member', member)); res.json({ member }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/membership/me`, auth.requireAuth, (req, res) => { const m = registrations.getMemberByMembershipNumber(req.query.membershipNumber); if (!m) return res.status(404).json({ error: 'Member not found' }); res.json({ member: m }); });
 app.get(`${BASE}/membership/members`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ members: registrations.listMembers() }));
