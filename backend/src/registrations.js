@@ -114,10 +114,20 @@ export function listInterns(filters = {}) {
   return interns.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }
 
+export function getIntern(id) { return kv.get(`boz:reg:intern:${id}`); }
+
 export function updateInternStatus(id, status) {
   const i = kv.get(`boz:reg:intern:${id}`);
   if (!i) return null;
   const updated = { ...i, status, updatedAt: new Date().toISOString() };
+  kv.set(`boz:reg:intern:${id}`, updated);
+  return updated;
+}
+
+export function updateIntern(id, patch) {
+  const i = kv.get(`boz:reg:intern:${id}`);
+  if (!i) return null;
+  const updated = { ...i, ...patch, updatedAt: new Date().toISOString() };
   kv.set(`boz:reg:intern:${id}`, updated);
   return updated;
 }
@@ -171,6 +181,25 @@ export function registerCoop(input) {
 }
 
 export function listCoops(filters = {}) {
-  return getCoopIndex().map(id => kv.get(`boz:reg:coop:${id}`)).filter(Boolean)
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  let coops = getCoopIndex().map(id => kv.get(`boz:reg:coop:${id}`)).filter(Boolean);
+  if (filters.status) coops = coops.filter(c => c.status === filters.status);
+  return coops.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+export function getCoop(id) { return kv.get(`boz:reg:coop:${id}`); }
+
+export function updateCoopStatus(id, status, note) {
+  const c = kv.get(`boz:reg:coop:${id}`);
+  if (!c) return null;
+  const updated = { ...c, status, statusNote: note, updatedAt: new Date().toISOString() };
+  kv.set(`boz:reg:coop:${id}`, updated);
+  return updated;
+}
+
+export function updateCoop(id, patch) {
+  const c = kv.get(`boz:reg:coop:${id}`);
+  if (!c) return null;
+  const updated = { ...c, ...patch, updatedAt: new Date().toISOString() };
+  kv.set(`boz:reg:coop:${id}`, updated);
+  return updated;
 }

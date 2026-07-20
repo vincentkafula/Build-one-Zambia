@@ -614,9 +614,10 @@ app.patch(`${BASE}/events/:id`, auth.requireAuth, (req, res) => { const idx = ev
 app.delete(`${BASE}/events/:id`, auth.requireAuth, (req, res) => { eventsStore.events = eventsStore.events.filter(e => e.id !== req.params.id); kv.del && kv.del(`events:photo:${req.params.id}`); saveEvents(); res.json({ success: true }); });
 
 // ─── Registrations (new /registrations/* routes) ─────────────────────────────
-// regStore still backs cooperative/agent/internship (not yet consolidated
-// onto registrations.js the way member was — see note above regRoutes calls).
-const regStore = { cooperative: kv.get('reg:cooperative') || [], agent: kv.get('reg:agent') || [], internship: kv.get('reg:internship') || [] };
+// regStore still backs agent only (member, cooperative, and internship are
+// now consolidated onto registrations.js's boz:reg:* stores — see the
+// dedicated route blocks below).
+const regStore = { agent: kv.get('reg:agent') || [] };
 function saveReg(type) { kv.set(`reg:${type}`, regStore[type]); }
 
 // Grant Login helper
@@ -752,9 +753,125 @@ function regRoutes(type, noun) {
   });
 }
 
-regRoutes('cooperative', 'Cooperative');
 regRoutes('agent', 'Agent');
-regRoutes('internship', 'Internship');
+
+// ─── Cooperative & Internship registrations — consolidated onto the ───────────
+// canonical store, same treatment as member. There isn't a second live UI
+// depending on registrations.js's registerCoop/registerIntern today the way
+// MembershipAdmin.tsx depended on registerMember, so this wasn't an active
+// user-facing bug for these two — but it was the same latent trap: a
+// disconnected duplicate store that any future admin panel built against
+// registrations.js (the natural place to build one, since it already has
+// the list/status functions) would silently miss all real registrants.
+// Consolidating now closes that off before it becomes a real bug.
+
+function consolidatedRegRoutes(type, noun, api) {
+  // api = { register, list, getOne, updateStatus, update }
+  app.post(`${BASE}/registrations/${type}`, (req, res) => {
+    try {
+      const reg = api.register(req.body);
+      setImmediate(() => notifyNewApplication(type, reg));
+      res.json({ success: true, message: `${noun} registration submitted`, registration: reg });
+    } catch (err) { res.status(400).json({ error: err.message }); }
+  });
+
+  app.get(`${BASE}/registrations/${type}`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+    const regs = api.list({ status: req.query.status });
+    res.json({ registrations: regs, count: regs.length });
+  });
+
+  app.patch(`${BASE}/registrations/${type}/:id/status`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
+    const { status, notes } = req.body;
+    let reg = api.updateStatus(req.params.id, status, notes);
+    if (!reg) return res.status(404).json({ error: 'Registration not found' });
+    reg = api.update(req.params.id, { reviewedAt: new Date().toISOString(), reviewedBy: req.user?.username });
+
+    let credentials = null;
+    if (status === 'approved') {
+      try {
+        if (!reg.loginGranted) {
+          const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
+          const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
+          const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
+          const username = `${type}_${safeName}_${suffix}`;
+          const password = generatePassword();
+          const role = TYPE_ROLES[type] || 'polling_agent';
+          if (!auth.getUser(username)) {
+            await auth.registerUser({ username, role, name, email: reg.email || '', phone: reg.phone || reg.cellNumber || '', scopeName: reg.pollingStation || reg.ward || reg.constituency || reg.district || reg.province || 'National', active: true, registrationId: reg.id, registrationType: type }, password);
+          }
+          credentials = { username, password, role, generatedAt: new Date().toISOString(), name };
+          reg = api.update(req.params.id, { username, loginGranted: true, loginCreatedAt: new Date().toISOString(), pendingPassword: password });
+          console.log(`[auto-grant] Created login for ${type}/${reg.id}: ${username}`);
+        }
+      } catch (e) { console.error(`[auto-grant] Failed for ${type}/${req.params.id}:`, e.message); }
+    }
+    res.json({ success: true, registration: reg, credentials });
+  });
+
+  app.post(`${BASE}/registrations/${type}/:id/grant-login`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
+    try {
+      const id = req.params.id;
+      const reg = api.getOne(id);
+      if (!reg) return res.status(404).json({ error: `Registration ${id} not found` });
+      const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
+      const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
+      const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
+      const username = req.body.username || `${type}_${safeName}_${suffix}`;
+      const password = req.body.password || generatePassword();
+      const role = TYPE_ROLES[type] || 'polling_agent';
+      const existingUser = auth.getUser(username);
+      if (existingUser) { await auth.resetPassword(existingUser.id, password); }
+      else { await auth.registerUser({ username, role, name, email: reg.email || '', phone: reg.phone || reg.cellNumber || '', scopeName: reg.pollingStation || reg.ward || reg.constituency || reg.district || reg.province || 'National', active: true, registrationId: reg.id, registrationType: type }, password); }
+      api.update(id, { status: reg.status === 'pending' ? 'approved' : reg.status, username, loginGranted: true, loginCreatedAt: new Date().toISOString(), loginGrantedBy: req.user?.username, pendingPassword: password });
+      res.json({ success: true, credentials: { username, password, role, generatedAt: new Date().toISOString(), name, alreadyExists: !!existingUser }, message: `Login granted for ${name}` });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.get(`${BASE}/registrations/${type}/:id/selfie`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+    const reg = api.getOne(req.params.id);
+    if (!reg) return res.status(404).json({ error: 'Not found' });
+    res.json({ dataUrl: reg.selfieDataUrl || reg.selfie || null, hasSelfie: !!(reg.selfieDataUrl || reg.selfie) });
+  });
+
+  app.get(`${BASE}/registrations/${type}/:id/documents`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+    const reg = api.getOne(req.params.id);
+    if (!reg) return res.status(404).json({ error: `Registration ${req.params.id} not found` });
+    const documents = { ...(reg.documents || reg.uploads || reg.docs || {}) };
+    if (reg.selfieDataUrl && !documents.selfie) documents.selfie = reg.selfieDataUrl;
+    res.json({ documents, documentsMeta: reg.documentsMeta || {}, hasDocuments: Object.keys(documents).length > 0 });
+  });
+
+  app.get(`${BASE}/registrations/${type}/:id/credentials`, (req, res) => {
+    const reg = api.getOne(req.params.id);
+    if (!reg) return res.status(404).json({ success: false, credentials: null, error: 'Registration not found' });
+    if (!reg.loginGranted || !reg.username) {
+      return res.json({ success: false, credentials: null, message: 'Not approved yet — check back after an admin reviews your application.' });
+    }
+    if (!reg.pendingPassword) {
+      return res.json({ success: false, credentials: null, message: 'Your credentials have already been collected. If you lost your password, ask an admin to reset it.' });
+    }
+    const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
+    const credentials = { username: reg.username, password: reg.pendingPassword };
+    api.update(req.params.id, { pendingPassword: null });
+    res.json({ success: true, credentials, fullName: name });
+  });
+}
+
+consolidatedRegRoutes('cooperative', 'Cooperative', {
+  register: registrations.registerCoop,
+  list: registrations.listCoops,
+  getOne: registrations.getCoop,
+  updateStatus: registrations.updateCoopStatus,
+  update: registrations.updateCoop,
+});
+
+consolidatedRegRoutes('internship', 'Internship', {
+  register: registrations.registerIntern,
+  list: registrations.listInterns,
+  getOne: registrations.getIntern,
+  updateStatus: (id, status) => registrations.updateInternStatus(id, status),
+  update: registrations.updateIntern,
+});
 
 // ─── Member registrations — consolidated onto the canonical store ─────────────
 // Previously /registrations/member (used by the live public registration
