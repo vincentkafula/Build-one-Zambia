@@ -1185,6 +1185,19 @@ export interface Member {
   adoptionDistrict?: string;
   adoptionConstituency?: string;
   adoptionWard?: string;
+  appointmentGranted?: boolean;
+  appointmentGrantedAt?: string;
+  appointmentGrantedBy?: string;
+  appointmentGrantedByTitle?: string;
+  appointmentNumber?: string;
+  appointmentPosition?: string;
+  appointmentLevel?: 'national' | 'provincial' | 'district' | 'constituency' | 'ward';
+  appointmentProvince?: string;
+  appointmentDistrict?: string;
+  appointmentConstituency?: string;
+  appointmentWard?: string;
+  appointmentTermYears?: number;
+  appointmentEffectiveDate?: string;
   shopOrderIds: string[];
   memberDiscountPct: number;
   createdAt: string;
@@ -1239,6 +1252,27 @@ export interface AdoptionCert {
   issuedAt?: string;
 }
 
+export interface AppointmentCert {
+  eligible: boolean;
+  reason?: string;
+  certificateType?: 'appointment';
+  membershipNumber?: string;
+  appointmentNumber?: string;
+  fullName?: string;
+  appointmentPosition?: string;
+  appointmentLevel?: 'national' | 'provincial' | 'district' | 'constituency' | 'ward';
+  appointmentProvince?: string;
+  appointmentDistrict?: string;
+  appointmentConstituency?: string;
+  appointmentWard?: string;
+  appointmentTermYears?: number;
+  appointmentEffectiveDate?: string;
+  appointmentGrantedAt?: string;
+  appointmentGrantedBy?: string;
+  appointmentGrantedByTitle?: string;
+  issuedAt?: string;
+}
+
 export const membershipApi = {
   register: (data: Partial<Member>) =>
     request<{ success: boolean; member: Member }>('POST', '/membership/register', data),
@@ -1283,6 +1317,23 @@ export const membershipApi = {
   revokeAdoption: (id: string) =>
     request<{ success: boolean; member: Member }>('POST', `/membership/members/${id}/revoke-adoption`, {}, true),
 
+  grantAppointment: (id: string, data: {
+    grantedBy: string;
+    grantedByTitle?: string;
+    appointmentPosition: string;
+    appointmentLevel: 'national' | 'provincial' | 'district' | 'constituency' | 'ward';
+    appointmentProvince?: string;
+    appointmentDistrict?: string;
+    appointmentConstituency?: string;
+    appointmentWard?: string;
+    appointmentTermYears: number;
+    appointmentEffectiveDate: string;
+  }) =>
+    request<{ success: boolean; member: Member }>('POST', `/membership/members/${id}/grant-appointment`, data, true),
+
+  revokeAppointment: (id: string) =>
+    request<{ success: boolean; member: Member }>('POST', `/membership/members/${id}/revoke-appointment`, {}, true),
+
   linkOrder: (id: string, orderId: string) =>
     request<{ success: boolean }>('POST', `/membership/members/${id}/link-order`, { orderId }, true),
 
@@ -1299,9 +1350,16 @@ export const membershipApi = {
     return request<AdoptionCert>('GET', `/membership/certificate/adoption?${qs}`);
   },
 
+  getAppointmentCert: (emailOrNumber: string, byNumber = false) => {
+    const qs = byNumber ? `number=${encodeURIComponent(emailOrNumber)}` : `email=${encodeURIComponent(emailOrNumber)}`;
+    return request<AppointmentCert>('GET', `/membership/certificate/appointment?${qs}`);
+  },
+
   getCertificatePdfUrl: (memberId: string) => `${BASE}/membership/members/${memberId}/certificate.pdf`,
 
   getAdoptionCertificatePdfUrl: (memberId: string) => `${BASE}/membership/members/${memberId}/adoption-certificate.pdf`,
+
+  getAppointmentCertificatePdfUrl: (memberId: string) => `${BASE}/membership/members/${memberId}/appointment-certificate.pdf`,
 };
 
 // ─── Leadership ───────────────────────────────────────────────────────────────

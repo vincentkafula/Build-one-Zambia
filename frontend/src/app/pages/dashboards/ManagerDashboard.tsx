@@ -26,6 +26,7 @@ const SecurityDashboard       = lazy(() => import('../../components/SecurityDash
 const PressStatementsAdmin    = lazy(() => import('../../components/PressStatementsAdmin').then(m => ({ default: m.PressStatementsAdmin })));
 const EmailAdmin              = lazy(() => import('../../components/EmailAdmin').then(m => ({ default: m.EmailAdmin })));
 const AdoptionCertAdmin       = lazy(() => import('../../components/AdoptionCertAdmin').then(m => ({ default: m.AdoptionCertAdmin })));
+const AppointmentCertAdmin    = lazy(() => import('../../components/AppointmentCertAdmin').then(m => ({ default: m.AppointmentCertAdmin })));
 const BallotScanSystem        = lazy(() => import('../../components/BallotScanSystem').then(m => ({ default: m.BallotScanSystem })));
 const VoterVerification       = lazy(() => import('../../components/VoterVerification').then(m => ({ default: m.VoterVerification })));
 const ResultsApprovalQueue    = lazy(() => import('../../components/ResultsApprovalQueue').then(m => ({ default: m.ResultsApprovalQueue })));
@@ -50,7 +51,7 @@ type SectionKey = 'overview' | 'notice-board' | 'system-setup' | 'election-users
   'ecz-figures' | 'results-by-province' | 'admin' | 'candidates' | 'ecz-comparison' |
   'results-approval' | 'live-results' | 'voter-verify' | 'voter-roll-upload' |
   'voter-turnout' | 'ballot-scan' | 'registrations' | 'security-centre' |
-  'events' | 'shop' | 'news' | 'leadership' | 'membership-admin' | 'adoption-certs' |
+  'events' | 'shop' | 'news' | 'leadership' | 'membership-admin' | 'adoption-certs' | 'appointment-certs' |
   'press-statements' | 'email' | 'chamber-amendments' | 'live-streams' | 'documents' |
   'personal-details' | 'security';
 
@@ -269,7 +270,7 @@ export default function ManagerDashboard() {
 
   const ADMIN_ONLY_SECTIONS = new Set<SectionKey>([
     'system-setup', 'election-users', 'candidates', 'shadow-cabinet', 'shop', 'news', 'leadership',
-    'membership-admin', 'registrations', 'press-statements', 'email', 'adoption-certs',
+    'membership-admin', 'registrations', 'press-statements', 'email', 'adoption-certs', 'appointment-certs',
     'chamber-amendments', 'security-centre', 'live-streams', 'documents', 'events',
     'voter-roll-upload',
   ]);
@@ -359,6 +360,7 @@ export default function ManagerDashboard() {
       case 'press-statements':   return <Suspense fallback={<SectionLoader />}><PressStatementsAdmin /></Suspense>;
       case 'email':              return <Suspense fallback={<SectionLoader />}><EmailAdmin /></Suspense>;
       case 'adoption-certs':     return <Suspense fallback={<SectionLoader />}><AdoptionCertAdmin /></Suspense>;
+      case 'appointment-certs':  return <Suspense fallback={<SectionLoader />}><AppointmentCertAdmin /></Suspense>;
       case 'ballot-scan':        return <Suspense fallback={<SectionLoader />}><BallotScanSystem /></Suspense>;
       case 'chamber-amendments': return <Suspense fallback={<SectionLoader />}><ChamberAmendmentsAdmin /></Suspense>;
       case 'security-centre':    return <Suspense fallback={<SectionLoader />}><SecurityDashboard /></Suspense>;
@@ -472,6 +474,7 @@ export default function ManagerDashboard() {
                   { key: 'email',             label: 'Email Settings',        desc: 'Configure Resend email service.',                                   icon: <Mail size={18} />,        color: '#64748b' },
                   { key: 'security-centre',   label: 'Security Centre',       desc: 'Monitor system security and access logs.',                          icon: <ShieldCheck size={18} />, color: '#dc2626' },
                   { key: 'adoption-certs',    label: 'Adoption Certificates', desc: 'Issue and manage adoption certificates.',                           icon: <Award size={18} />,       color: '#14b8a6' },
+                  { key: 'appointment-certs', label: 'Appointment Certificates', desc: 'Appoint members to national, provincial, district, constituency, or ward offices.', icon: <Shield size={18} />,      color: '#c9a84c' },
                   { key: 'chamber-amendments',label: 'Chamber Amendments',    desc: 'Manage chamber amendment submissions.',                             icon: <Building2 size={18} />,   color: '#f43f5e' },
                 ].map(card => (
                   <button key={card.key} onClick={() => setActive(card.key as SectionKey)}

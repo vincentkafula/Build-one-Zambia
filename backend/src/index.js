@@ -24,6 +24,7 @@ import * as voterRoll from './voterRoll.js';
 import * as voterRegister from './voterRegister.js';
 import * as memberCert from './membershipCertificate.js';
 import * as adoptionCert from './adoptionCertificate.js';
+import * as appointmentCert from './appointmentCertificate.js';
 import { kv } from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -261,6 +262,9 @@ app.patch(`${BASE}/membership/members/:id`, auth.requireAuth, auth.requireRole('
 });
 app.post(`${BASE}/membership/members/:id/grant-adoption`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const certNumber = `BOZ-ADOPT-${req.body.electionYear || new Date().getFullYear()}-${req.params.id.slice(-6).toUpperCase()}`; const member = registrations.updateMember(req.params.id, { adoptionGranted: true, adoptionGrantedAt: new Date().toISOString(), adoptionGrantedBy: req.user?.username, ...req.body, adoptionCertNumber: certNumber }); if (!member) return res.status(404).json({ error: 'Not found' }); res.json({ success: true, member }); });
 app.post(`${BASE}/membership/members/:id/revoke-adoption`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const member = registrations.updateMember(req.params.id, { adoptionGranted: false, adoptionRevokedAt: new Date().toISOString(), adoptionRevokedBy: req.user?.username }); if (!member) return res.status(404).json({ error: 'Not found' }); res.json({ success: true, member }); });
+
+app.post(`${BASE}/membership/members/:id/grant-appointment`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const appointmentNumber = `BOZ-APPT-${new Date().getFullYear()}-${req.params.id.slice(-6).toUpperCase()}`; const member = registrations.updateMember(req.params.id, { appointmentGranted: true, appointmentGrantedAt: new Date().toISOString(), appointmentGrantedBy: req.user?.username, ...req.body, appointmentNumber }); if (!member) return res.status(404).json({ error: 'Not found' }); res.json({ success: true, member }); });
+app.post(`${BASE}/membership/members/:id/revoke-appointment`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const member = registrations.updateMember(req.params.id, { appointmentGranted: false, appointmentRevokedAt: new Date().toISOString(), appointmentRevokedBy: req.user?.username }); if (!member) return res.status(404).json({ error: 'Not found' }); res.json({ success: true, member }); });
 app.post(`${BASE}/membership/members/:id/link-order`, auth.requireAuth, (req, res) => { const member = registrations.updateMember(req.params.id, { orderId: req.body.orderId }); if (!member) return res.status(404).json({ error: 'Not found' }); res.json({ success: true, member }); });
 
 // ─── Membership certificates ────────────────────────────────────────────────
@@ -316,6 +320,30 @@ app.get(`${BASE}/membership/certificate/adoption`, (req, res) => {
   });
 });
 
+app.get(`${BASE}/membership/certificate/appointment`, (req, res) => {
+  const member = findMemberByEmailOrNumber(req.query);
+  if (!member) return res.status(404).json({ error: 'Member not found' });
+  if (!member.appointmentGranted) {
+    return res.status(403).json({ error: 'No active appointment — an appointment has not been granted by the admin.' });
+  }
+  res.json({
+    eligible: true,
+    certificateType: 'appointment',
+    membershipNumber: member.membershipNumber,
+    appointmentNumber: member.appointmentNumber,
+    fullName: `${member.firstName || ''} ${member.lastName || ''}`.trim(),
+    appointmentPosition: member.appointmentPosition,
+    appointmentLevel: member.appointmentLevel,
+    appointmentProvince: member.appointmentProvince, appointmentDistrict: member.appointmentDistrict,
+    appointmentConstituency: member.appointmentConstituency, appointmentWard: member.appointmentWard,
+    appointmentTermYears: member.appointmentTermYears,
+    appointmentEffectiveDate: member.appointmentEffectiveDate,
+    appointmentGrantedAt: member.appointmentGrantedAt, appointmentGrantedBy: member.appointmentGrantedBy,
+    appointmentGrantedByTitle: member.appointmentGrantedByTitle,
+    issuedAt: member.appointmentGrantedAt,
+  });
+});
+
 app.get(`${BASE}/membership/members/:id/certificate.pdf`, auth.requireAuth, async (req, res) => {
   try {
     const member = registrations.getMember(req.params.id);
@@ -336,8 +364,9 @@ app.get(`${BASE}/membership/members/:id/certificate.pdf`, auth.requireAuth, asyn
 
 app.get(`${BASE}/membership/verify/:code`, (req, res) => {
   const code = req.params.code;
-  // Membership certificate numbers look like BOZ-YYYY-XXXXXX; adoption ones
-  // look like BOZ-ADOPT-YYYY-XXXXXX. Try membership first, then adoption.
+  // Membership numbers look like BOZ-YYYY-XXXXXX; adoption ones look like
+  // BOZ-ADOPT-YYYY-XXXXXX; appointment ones look like BOZ-APPT-YYYY-XXXXXX.
+  // Try each in turn.
   const member = registrations.getMemberByMembershipNumber(code);
   if (member && member.status === 'active') {
     return res.json({
@@ -362,6 +391,18 @@ app.get(`${BASE}/membership/verify/:code`, (req, res) => {
       issuedAt: adoptedMember.adoptionGrantedAt,
     });
   }
+  const appointedMember = registrations.listMembers().find(m => m.appointmentNumber === code);
+  if (appointedMember && appointedMember.appointmentGranted) {
+    return res.json({
+      valid: true,
+      type: 'appointment',
+      fullName: `${appointedMember.firstName || ''} ${appointedMember.lastName || ''}`.trim(),
+      appointmentNumber: appointedMember.appointmentNumber,
+      position: appointedMember.appointmentPosition,
+      district: appointedMember.appointmentDistrict,
+      issuedAt: appointedMember.appointmentGrantedAt,
+    });
+  }
   res.json({ valid: false });
 });
 app.get(`${BASE}/membership/members/:id/adoption-certificate.pdf`, auth.requireAuth, async (req, res) => {
@@ -379,6 +420,24 @@ app.get(`${BASE}/membership/members/:id/adoption-certificate.pdf`, auth.requireA
   } catch (err) {
     console.error('Adoption certificate PDF generation failed:', err);
     res.status(500).json({ error: 'Failed to generate adoption certificate' });
+  }
+});
+
+app.get(`${BASE}/membership/members/:id/appointment-certificate.pdf`, auth.requireAuth, async (req, res) => {
+  try {
+    const member = registrations.getMember(req.params.id);
+    if (!member) return res.status(404).json({ error: 'Not found' });
+    if (!member.appointmentGranted || !member.appointmentNumber) {
+      return res.status(403).json({ error: 'Appointment certificate not yet issued' });
+    }
+    const dataUrl = await appointmentCert.getOrCreateAppointmentCertificatePdf(member, VERIFY_BASE_URL);
+    const [, b64] = dataUrl.split(',');
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${member.appointmentNumber}.pdf"`);
+    res.send(Buffer.from(b64, 'base64'));
+  } catch (err) {
+    console.error('Appointment certificate PDF generation failed:', err);
+    res.status(500).json({ error: 'Failed to generate appointment certificate' });
   }
 });
 

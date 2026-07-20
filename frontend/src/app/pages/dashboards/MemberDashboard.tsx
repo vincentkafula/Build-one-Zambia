@@ -8,7 +8,7 @@ import {
   Repeat, Wallet
 } from 'lucide-react';
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
-import { MembershipCertSection, AdoptionCertSection } from '../../components/MemberCertificates';
+import { MembershipCertSection, AdoptionCertSection, AppointmentCertSection } from '../../components/MemberCertificates';
 
 const A = '#3b82f6';
 const NAVY = '#1e2d4a';
@@ -63,7 +63,7 @@ const SHOP_ITEMS = [
 ];
 
 type SectionKey =
-  | 'overview' | 'shop' | 'membership-status' | 'adoption-cert'
+  | 'overview' | 'shop' | 'membership-status' | 'adoption-cert' | 'appointment-cert'
   | 'election-presidential' | 'election-mayoral' | 'election-mp' | 'election-councillor'
   | 'orders' | 'invoices' | 'returns' | 'reviews'
   | 'coupons' | 'credit' | 'gift-voucher'
@@ -81,6 +81,7 @@ const NAV: NavGroup[] = [
       { key: 'shop', label: 'Purchase from Shop', icon: ShoppingBag },
       { key: 'membership-status', label: 'Membership Status', icon: Award },
       { key: 'adoption-cert', label: 'Adoption Certificate', icon: FileText },
+      { key: 'appointment-cert', label: 'Appointment Certificate', icon: FileText },
     ],
   },
   {
@@ -242,6 +243,7 @@ export default function MemberDashboard() {
                   { label: 'My Orders', key: 'orders' as SectionKey, icon: Package },
                   { label: 'Membership', key: 'membership-status' as SectionKey, icon: Award },
                   { label: 'Certificate', key: 'adoption-cert' as SectionKey, icon: FileText },
+                  { label: 'Appointment', key: 'appointment-cert' as SectionKey, icon: FileText },
                   { label: 'Invoices', key: 'invoices' as SectionKey, icon: Receipt },
                   { label: 'Payment History', key: 'payment-history' as SectionKey, icon: Wallet },
                   { label: 'Subscription', key: 'subscription' as SectionKey, icon: Repeat },
@@ -323,6 +325,13 @@ export default function MemberDashboard() {
         return (
           <DashCard title="ADOPTION CERTIFICATE">
             <AdoptionCertSection member={profile} />
+          </DashCard>
+        );
+
+      case 'appointment-cert':
+        return (
+          <DashCard title="APPOINTMENT CERTIFICATE">
+            <AppointmentCertSection member={profile} />
           </DashCard>
         );
 

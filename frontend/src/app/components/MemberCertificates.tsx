@@ -3,7 +3,7 @@ import {
   Download, Share2, Award, Shield, CheckCircle, XCircle,
   Loader, Star, Lock,
 } from 'lucide-react';
-import { membershipApi, Member, MembershipCert, AdoptionCert, getToken } from '../lib/api';
+import { membershipApi, Member, MembershipCert, AdoptionCert, AppointmentCert, getToken } from '../lib/api';
 
 const A    = '#3b82f6';
 const NAVY = '#1e2d4a';
@@ -273,6 +273,119 @@ function NotQualifiedYet({ reason }: { reason: string }) {
   );
 }
 
+function NotAppointedYet({ reason }: { reason: string }) {
+  return (
+    <div style={{ textAlign: 'center', padding: '48px 32px', border: '2px dashed #e5e7eb', borderRadius: '16px', backgroundColor: '#fafafa' }}>
+      <div style={{ width: '72px', height: '72px', borderRadius: '50%', backgroundColor: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+        <Lock size={32} color="#d97706" />
+      </div>
+      <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.06em', color: NAVY, margin: '0 0 12px' }}>NO APPOINTMENT YET</h3>
+      <p style={{ color: '#6b7280', fontSize: '0.95rem', maxWidth: '420px', margin: '0 auto 20px', lineHeight: 1.7 }}>{reason}</p>
+      <div style={{ padding: '12px 20px', backgroundColor: '#fffbeb', border: '1px solid #fde68a', borderRadius: '10px', display: 'inline-block', maxWidth: '380px' }}>
+        <p style={{ fontSize: '12px', color: '#92400e', margin: 0, lineHeight: 1.6 }}>
+          <strong>How this works:</strong> Appointment certificates are issued when a superadmin appoints a member to a party office (e.g. District, Constituency, or Ward Chairperson). Contact your provincial or district leadership if you believe you should have one.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Appointment Certificate Visual ──────────────────────────────────────────
+
+function AppointmentCertVisual({ cert }: { cert: AppointmentCert & { eligible: true } }) {
+  const effective = cert.appointmentEffectiveDate ? new Date(cert.appointmentEffectiveDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+  const issued    = cert.issuedAt ? new Date(cert.issuedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+  const location  = [cert.appointmentDistrict, cert.appointmentConstituency, cert.appointmentWard, cert.appointmentProvince].filter(Boolean)[0] || 'National';
+
+  return (
+    <div id="appointment-cert-print" style={{
+      width: '100%', maxWidth: '820px', margin: '0 auto',
+      background: 'linear-gradient(145deg, #0a1628 0%, #0f2040 50%, #0a1628 100%)',
+      borderRadius: '16px', overflow: 'hidden', position: 'relative', color: '#fff',
+      boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+    }}>
+      <div style={{ position: 'absolute', inset: '12px', border: '2px solid #c9a84c', borderRadius: '8px', pointerEvents: 'none', zIndex: 1 }} />
+      <div style={{ position: 'absolute', inset: '16px', border: '1px solid #c9a84c44', borderRadius: '6px', pointerEvents: 'none', zIndex: 1 }} />
+
+      {[{ top: '8px', left: '8px' }, { top: '8px', right: '8px' }, { bottom: '8px', left: '8px' }, { bottom: '8px', right: '8px' }].map((pos, i) => (
+        <div key={i} style={{ position: 'absolute', ...pos, width: '28px', height: '28px', zIndex: 2 }}>
+          <svg viewBox="0 0 28 28" fill="none"><path d="M4 4 L14 4 L14 8 L8 8 L8 14 L4 14 Z" fill="#c9a84c" /></svg>
+        </div>
+      ))}
+
+      <div style={{ position: 'relative', zIndex: 3, padding: '48px 60px', textAlign: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '16px' }}>
+          <div style={{ width: '2px', flex: 1, background: 'linear-gradient(to right, transparent, #c9a84c)' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+            <Shield size={44} color="#c9a84c" />
+            <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.3em', color: '#c9a84c', textTransform: 'uppercase' }}>Build One Zambia</span>
+          </div>
+          <div style={{ width: '2px', flex: 1, background: 'linear-gradient(to left, transparent, #c9a84c)' }} />
+        </div>
+
+        <h1 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '2.2rem', letterSpacing: '0.12em', color: '#fff', marginBottom: '8px', textTransform: 'uppercase' }}>
+          Appointment Certificate
+        </h1>
+
+        <div style={{ display: 'inline-block', padding: '6px 28px', backgroundColor: '#c9a84c', borderRadius: '4px', marginBottom: '28px' }}>
+          <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.18em', color: '#0a1628', margin: 0, textTransform: 'uppercase' }}>
+            {cert.appointmentPosition || 'Party Officer'} · {location}
+          </p>
+        </div>
+
+        <p style={{ fontFamily: 'EB Garamond, Georgia, serif', fontStyle: 'italic', color: '#c9a84c88', fontSize: '0.95rem', marginBottom: '20px', letterSpacing: '0.05em' }}>
+          This is to certify that
+        </p>
+
+        <div style={{ padding: '12px 40px', margin: '0 auto 20px', display: 'inline-block', borderTop: '1px solid #c9a84c66', borderBottom: '1px solid #c9a84c66' }}>
+          <p style={{ fontFamily: 'EB Garamond, Georgia, serif', fontSize: '2.8rem', color: '#fff', fontWeight: 600, margin: 0, lineHeight: 1.2 }}>{cert.fullName}</p>
+        </div>
+
+        <p style={{ color: '#9eb3cc', fontSize: '0.92rem', marginBottom: '20px', lineHeight: 1.9 }}>
+          has been <strong style={{ color: '#c9a84c' }}>appointed</strong> as<br />
+          <strong style={{ color: '#fff' }}>{cert.appointmentPosition || 'Party Officer'}</strong> for Build One Zambia<br />
+          effective <strong style={{ color: '#c9a84c' }}>{effective}</strong>, for a term of{' '}
+          <strong style={{ color: '#fff' }}>{cert.appointmentTermYears || 3} year{(cert.appointmentTermYears || 3) === 1 ? '' : 's'}</strong>
+        </p>
+
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', marginBottom: '32px', flexWrap: 'wrap' }}>
+          {[
+            ['Appointment No.', cert.appointmentNumber || cert.membershipNumber!],
+            ['Effective From',  effective],
+            ['Membership No.',  cert.membershipNumber!],
+          ].map(([label, val]) => (
+            <div key={label} style={{ textAlign: 'center' }}>
+              <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10px', letterSpacing: '0.15em', color: '#c9a84c', marginBottom: '4px' }}>{label}</p>
+              <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.85rem', color: '#fff' }}>{val}</p>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ borderTop: '1px solid #c9a84c33', paddingTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ width: '140px', height: '1px', backgroundColor: '#c9a84c', marginBottom: '6px' }} />
+            <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10px', letterSpacing: '0.1em', color: '#c9a84c88' }}>
+              {cert.appointmentGrantedBy || 'NATIONAL SECRETARY'}
+            </p>
+            <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '9px', color: '#4a5568', marginTop: '2px' }}>
+              {cert.appointmentGrantedByTitle || 'NATIONAL SECRETARY'}
+            </p>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '9px', letterSpacing: '0.08em', color: '#3a4a5e' }}>
+              ISSUED: {issued}<br />bozplans.org · Lusaka, Zambia
+            </p>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ width: '140px', height: '1px', backgroundColor: '#c9a84c', marginBottom: '6px', marginLeft: 'auto' }} />
+            <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10px', letterSpacing: '0.1em', color: '#c9a84c88' }}>NATIONAL PRESIDENT</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Exported Components ──────────────────────────────────────────────────────
 
 export function MembershipCertSection({ member }: { member: typeof memberData }) {
@@ -439,3 +552,78 @@ const memberData = {} as {
   lastName: string;
   membershipNumber: string;
 };
+
+export function AppointmentCertSection({ member }: { member: typeof memberData }) {
+  const [cert, setCert]     = useState<AppointmentCert | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]   = useState('');
+  const [shown, setShown]   = useState(false);
+
+  const fetchCert = async () => {
+    setLoading(true); setError('');
+    try {
+      const data = await membershipApi.getAppointmentCert(member.email);
+      setCert(data);
+      setShown(true);
+    } catch (e: unknown) {
+      setCert({ eligible: false, reason: 'No active appointment — an appointment has not been granted by the admin.' });
+      setShown(true);
+    }
+    setLoading(false);
+  };
+
+  if (!shown) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+        <div style={{ width: '72px', height: '72px', borderRadius: '50%', backgroundColor: `${GREEN}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+          <Shield size={36} color={GREEN} />
+        </div>
+        <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', color: NAVY, letterSpacing: '0.06em', margin: '0 0 8px' }}>APPOINTMENT CERTIFICATE</h3>
+        <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '20px', maxWidth: '380px', margin: '0 auto 20px', lineHeight: 1.6 }}>
+          Issued when a superadmin appoints a member to a party office — e.g. District, Constituency, or Ward Chairperson.
+        </p>
+        {error && <p style={{ color: '#dc2626', fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
+        <button onClick={fetchCert} disabled={loading}
+          style={{ padding: '12px 28px', backgroundColor: GREEN, color: '#fff', border: 'none', borderRadius: '8px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '14px', cursor: loading ? 'not-allowed' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', opacity: loading ? 0.7 : 1 }}>
+          {loading ? <><Loader size={15} /> Checking…</> : <><Shield size={15} /> CHECK STATUS</>}
+        </button>
+      </div>
+    );
+  }
+
+  if (cert && !cert.eligible) {
+    return <NotAppointedYet reason={cert.reason || 'No active appointment — an appointment has not been granted by the admin.'} />;
+  }
+
+  return (
+    <div>
+      {cert && cert.eligible && <AppointmentCertVisual cert={cert as AppointmentCert & { eligible: true }} />}
+      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '20px' }}>
+        <button onClick={() => printElement('appointment-cert-print')}
+          style={{ padding: '12px 24px', backgroundColor: GREEN, color: '#fff', border: 'none', borderRadius: '8px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+          <Download size={15} /> DOWNLOAD / PRINT
+        </button>
+        <button onClick={() => { navigator.share?.({ title: 'My BOZ Appointment Certificate', text: `${member.firstName} ${member.lastName} — BOZ Appointed Officer` }).catch(() => {}); }}
+          style={{ padding: '12px 24px', border: `1px solid ${GREEN}`, color: GREEN, backgroundColor: 'transparent', borderRadius: '8px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+          <Share2 size={15} /> SHARE
+        </button>
+        <button onClick={async () => {
+            const res = await fetch(membershipApi.getAppointmentCertificatePdfUrl(member.id), {
+              headers: { Authorization: `Bearer ${getToken()}` },
+            });
+            if (!res.ok) return;
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${(cert as any)?.appointmentNumber || 'appointment-certificate'}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+          style={{ padding: '12px 24px', border: `1px solid ${GREEN}`, color: GREEN, backgroundColor: 'transparent', borderRadius: '8px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+          <Download size={15} /> OFFICIAL PDF (with QR)
+        </button>
+      </div>
+    </div>
+  );
+}
