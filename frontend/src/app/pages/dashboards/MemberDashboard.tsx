@@ -9,7 +9,8 @@ import {
 } from 'lucide-react';
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
 import { MembershipCertSection, MembershipCardSection, AdoptionCertSection, AppointmentCertSection } from '../../components/MemberCertificates';
-import { membershipApi, shopApi, ShopOrder, ShopPayment } from '../../lib/api';
+import { ShopCheckout, CartItem } from '../../components/ShopCheckout';
+import { membershipApi, shopApi, ShopOrder, ShopPayment, ShopProduct } from '../../lib/api';
 
 const A = '#3b82f6';
 const NAVY = '#1e2d4a';
@@ -41,14 +42,8 @@ const memberData = {
 // actual shop orders + payments (fetched in the component), not hardcoded.
 
 
-const SHOP_ITEMS = [
-  { name: 'BOZ Branded T-Shirt', price: 'K 150', img: '👕', stock: 'In Stock' },
-  { name: 'Build One Zambia Cap', price: 'K 80', img: '🧢', stock: 'In Stock' },
-  { name: 'Campaign Poster Set', price: 'K 200', img: '📋', stock: 'In Stock' },
-  { name: 'BOZ Wristband', price: 'K 30', img: '🎽', stock: 'Limited' },
-  { name: 'Party Flag (Medium)', price: 'K 120', img: '🚩', stock: 'In Stock' },
-  { name: 'Sticker Pack (20pcs)', price: 'K 50', img: '🏷️', stock: 'In Stock' },
-];
+// SHOP_ITEMS removed -- the shop section now fetches real products from
+// the backend catalog (shopApi.listProducts) instead of a hardcoded list.
 
 type SectionKey =
   | 'overview' | 'shop' | 'membership-status' | 'membership-card' | 'adoption-cert' | 'appointment-cert'
@@ -182,6 +177,10 @@ export default function MemberDashboard() {
   const [orders, setOrders] = useState<ShopOrder[]>([]);
   const [payments, setPayments] = useState<ShopPayment[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
+  const [products, setProducts] = useState<ShopProduct[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   // The dashboard used to always show static placeholder data ("John
   // Banda") regardless of who logged in. Replace it with the real
@@ -239,6 +238,41 @@ export default function MemberDashboard() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { products: p } = await shopApi.listProducts();
+        if (!cancelled) setProducts(p);
+      } catch {
+        // Shop temporarily unavailable — leave empty, not fatal.
+      } finally {
+        if (!cancelled) setProductsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Real product images are only served when an admin has uploaded one
+  // (404 otherwise) — fall back to a plain placeholder graphic rather
+  // than a broken <img>.
+  const PLACEHOLDER_IMG = 'data:image/svg+xml,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#e5e7eb"/><text x="100" y="105" font-family="sans-serif" font-size="14" fill="#9ca3af" text-anchor="middle">No image</text></svg>`
+  );
+  const productImgSrc = (p: ShopProduct) => p.hasCustomImage ? shopApi.productImageUrl(p.id) : PLACEHOLDER_IMG;
+
+  // CartItem.id (shared with the public shop's checkout) is numeric; real
+  // product ids are strings (prod_xxx), so map each product's position in
+  // the fetched list to a stable numeric surrogate for cart purposes only.
+  const addToCart = (product: ShopProduct, index: number) => {
+    setCart(prev => {
+      const existing = prev.find(i => i.id === index);
+      if (existing) return prev.map(i => i.id === index ? { ...i, qty: i.qty + 1 } : i);
+      return [...prev, { id: index, name: product.name, price: product.price, priceNum: product.priceNum, img: productImgSrc(product), tag: product.category, qty: 1 }];
+    });
+  };
+  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
   const fmtK = (n: number) => `K ${n.toLocaleString()}`;
   const orderItemSummary = (o: ShopOrder) => o.items.map(it => `${it.name}${it.qty > 1 ? ` x${it.qty}` : ''}`).join(', ') || 'Order';
@@ -354,23 +388,62 @@ export default function MemberDashboard() {
       case 'shop':
         return (
           <DashCard title="PURCHASE FROM SHOP">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {SHOP_ITEMS.map(item => (
-                <div key={item.name} className="rounded-xl p-5 border flex flex-col gap-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-                  <div className="text-4xl">{item.img}</div>
-                  <div>
-                    <h4 style={{ color: NAVY, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.04em' }}>{item.name}</h4>
-                    <div className="flex items-center justify-between mt-1">
-                      <span style={{ color: A, fontFamily: 'Oswald, sans-serif', fontSize: '1.1rem' }}>{item.price}</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: item.stock === 'Limited' ? '#fef3c7' : '#d1fae5', color: item.stock === 'Limited' ? '#92400e' : '#065f46' }}>{item.stock}</span>
+            {cartCount > 0 && (
+              <div className="flex items-center justify-between p-4 rounded-xl mb-5" style={{ backgroundColor: `${A}12`, border: `1px solid ${A}30` }}>
+                <span style={{ color: NAVY, fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem' }}>
+                  {cartCount} item{cartCount > 1 ? 's' : ''} in cart · K{cart.reduce((s, i) => s + i.priceNum * i.qty, 0).toLocaleString()}
+                </span>
+                <button onClick={() => setShowCheckout(true)}
+                  className="px-5 py-2 rounded-lg text-sm" style={{ backgroundColor: A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
+                  VIEW CART & CHECKOUT
+                </button>
+              </div>
+            )}
+            {productsLoading ? (
+              <p className="text-sm py-8 text-center" style={{ color: 'rgba(255,255,255,0.4)' }}>Loading shop…</p>
+            ) : products.length === 0 ? (
+              <div className="text-center py-12">
+                <ShoppingBag className="w-16 h-16 mx-auto mb-4" style={{ color: '#e5e7eb' }} />
+                <p style={{ color: '#9ca3af' }}>Nothing in the shop right now — check back soon.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {products.map((product, index) => {
+                  const inCartQty = cart.find(i => i.id === index)?.qty || 0;
+                  const outOfStock = !product.inStock || (product.stockQty != null && product.stockQty <= 0);
+                  return (
+                    <div key={product.id} className="rounded-xl p-5 border flex flex-col gap-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+                      <img src={productImgSrc(product)} alt={product.name} className="w-full rounded-lg" style={{ height: '140px', objectFit: 'cover', backgroundColor: '#f3f4f6' }} />
+                      <div>
+                        <h4 style={{ color: NAVY, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.04em' }}>{product.name}</h4>
+                        {product.description && <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>{product.description}</p>}
+                        <div className="flex items-center justify-between mt-2">
+                          <span style={{ color: A, fontFamily: 'Oswald, sans-serif', fontSize: '1.1rem' }}>{product.price}</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full" style={{
+                            backgroundColor: outOfStock ? '#fee2e2' : (product.stockQty != null && product.stockQty <= 5) ? '#fef3c7' : '#d1fae5',
+                            color: outOfStock ? '#991b1b' : (product.stockQty != null && product.stockQty <= 5) ? '#92400e' : '#065f46',
+                          }}>
+                            {outOfStock ? 'Out of Stock' : product.stockQty != null ? `${product.stockQty} left` : 'In Stock'}
+                          </span>
+                        </div>
+                      </div>
+                      <button onClick={() => addToCart(product, index)} disabled={outOfStock}
+                        className="w-full py-2 rounded-lg text-sm mt-auto" style={{ backgroundColor: outOfStock ? '#9ca3af' : A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', cursor: outOfStock ? 'not-allowed' : 'pointer' }}>
+                        {inCartQty > 0 ? `IN CART (${inCartQty}) · ADD ANOTHER` : 'ADD TO CART'}
+                      </button>
                     </div>
-                  </div>
-                  <button className="w-full py-2 rounded-lg text-sm mt-auto" style={{ backgroundColor: A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
-                    ADD TO CART
-                  </button>
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
+            )}
+            {showCheckout && (
+              <ShopCheckout
+                cart={cart}
+                onClose={() => setShowCheckout(false)}
+                onUpdateQty={(id, qty) => setCart(prev => prev.map(i => i.id === id ? { ...i, qty } : i))}
+                onRemove={(id) => setCart(prev => prev.filter(i => i.id !== id))}
+              />
+            )}
           </DashCard>
         );
 
