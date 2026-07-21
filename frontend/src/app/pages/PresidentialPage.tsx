@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { LiveResultsPanel } from '../components/LiveResultsPanel';
 import { DrillDownFilters } from '../components/DrillDownFilters';
 import { CandidateCard } from '../components/CandidateCard';
+import { CandidateCardCompact } from '../components/CandidateCardCompact';
 import { StatCard } from '../components/StatCard';
 import { DownloadButton } from '../components/DownloadButton';
 import {
@@ -222,7 +223,7 @@ export function PresidentialPage() {
         {/* Results Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Candidate Results */}
-          <div className="lg:col-span-2 space-y-5">
+          <div className={showAllCandidates ? 'lg:col-span-2 space-y-5' : 'lg:col-span-3 space-y-5'}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 <div className="w-1 h-8 bg-gradient-to-b from-[#198754] to-[#DC2626] rounded-full"></div>
@@ -240,16 +241,32 @@ export function PresidentialPage() {
                 </button>
               )}
             </div>
-            {(showAllCandidates ? candidateResults : candidateResults.slice(0, 4)).map((result, index) => (
-              <CandidateCard
-                key={result.candidate.id}
-                candidate={result.candidate}
-                votes={result.votes}
-                totalVotes={totalValidVotes}
-                rank={index + 1}
-                isLeading={index === 0}
-              />
-            ))}
+            {showAllCandidates ? (
+              <div className="space-y-3">
+                {candidateResults.map((result, index) => (
+                  <CandidateCard
+                    key={result.candidate.id}
+                    candidate={result.candidate}
+                    votes={result.votes}
+                    totalVotes={totalValidVotes}
+                    rank={index + 1}
+                    isLeading={index === 0}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                {candidateResults.slice(0, 4).map((result) => (
+                  <CandidateCardCompact
+                    key={result.candidate.id}
+                    candidate={result.candidate}
+                    votes={result.votes}
+                    totalVotes={totalValidVotes}
+                    isLeading={result === candidateResults[0]}
+                  />
+                ))}
+              </div>
+            )}
             {!showAllCandidates && candidateResults.length > 4 && (
               <button
                 onClick={() => setShowAllCandidates(true)}
@@ -262,7 +279,7 @@ export function PresidentialPage() {
           </div>
 
           {/* Chart */}
-          <div className="lg:col-span-1">
+          <div className={showAllCandidates ? 'lg:col-span-1' : 'lg:col-span-3'}>
             <div className="bg-gradient-to-br from-card to-card/80 border-2 border-border rounded-2xl p-6 sticky top-20 shadow-xl">
               <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
                 <div className="w-1 h-6 bg-gradient-to-b from-[#198754] to-[#DC2626] rounded-full"></div>
