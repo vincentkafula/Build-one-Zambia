@@ -113,8 +113,8 @@ const NAV: NavGroup[] = [
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    Active: '#10b981', Delivered: '#10b981', Processing: '#f59e0b',
-    Pending: '#f59e0b', Paid: '#10b981', Unpaid: '#ef4444', Gold: '#f59e0b',
+    Active: '#00712B', Delivered: '#00712B', Processing: '#f59e0b',
+    Pending: '#f59e0b', Paid: '#00712B', Unpaid: '#ef4444', Gold: '#f59e0b',
   };
   const c = colors[status] || A;
   return (
@@ -388,7 +388,7 @@ export default function MemberDashboard() {
             {/* Stat cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { label: 'MEMBERSHIP', value: profile.status, color: '#10b981' },
+                { label: 'MEMBERSHIP', value: profile.status, color: '#00712B' },
                 { label: 'MEMBER NO.', value: profile.membershipNumber, color: A },
                 { label: 'ORDERS', value: String(orders.length), color: '#f59e0b' },
                 { label: 'WARD', value: profile.ward, color: '#8b5cf6' },
@@ -464,7 +464,7 @@ export default function MemberDashboard() {
                         <div className="flex items-center justify-between mt-2">
                           <span style={{ color: A, fontFamily: 'Oswald, sans-serif', fontSize: '1.1rem' }}>{product.price}</span>
                           <span className="text-xs px-2 py-0.5 rounded-full" style={{
-                            backgroundColor: outOfStock ? '#fee2e2' : (product.stockQty != null && product.stockQty <= 5) ? '#fef3c7' : '#d1fae5',
+                            backgroundColor: outOfStock ? '#fee2e2' : (product.stockQty != null && product.stockQty <= 5) ? '#fef3c7' : '#E0EEE6',
                             color: outOfStock ? '#991b1b' : (product.stockQty != null && product.stockQty <= 5) ? '#92400e' : '#065f46',
                           }}>
                             {outOfStock ? 'Out of Stock' : product.stockQty != null ? `${product.stockQty} left` : 'In Stock'}
@@ -518,7 +518,7 @@ export default function MemberDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {['Voting rights in party primaries', 'Access to party events & rallies', 'BOZ merchandise discounts (20%)', 'Adoption certificate', 'Direct line to ward representative', 'Monthly policy newsletter'].map(b => (
                   <div key={b} className="flex items-center gap-2 text-sm" style={{ color: '#4b5563' }}>
-                    <CheckCircle className="w-4 h-4 shrink-0" style={{ color: '#10b981' }} /> {b}
+                    <CheckCircle className="w-4 h-4 shrink-0" style={{ color: '#00712B' }} /> {b}
                   </div>
                 ))}
               </div>
@@ -770,7 +770,7 @@ export default function MemberDashboard() {
                     <h4 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.1rem', color: NAVY, letterSpacing: '0.04em' }}>{plan.name}</h4>
                     <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.8rem', color: isCurrent ? A : NAVY }}>{plan.price}<span className="text-xs" style={{ color: '#9ca3af' }}>{plan.period}</span></p>
                     <div className="mt-3 space-y-2">
-                      {plan.features.map(f => <div key={f} className="flex items-center gap-2 text-xs" style={{ color: '#4b5563' }}><CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: '#10b981' }} />{f}</div>)}
+                      {plan.features.map(f => <div key={f} className="flex items-center gap-2 text-xs" style={{ color: '#4b5563' }}><CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: '#00712B' }} />{f}</div>)}
                     </div>
                   </div>
                 );
@@ -804,7 +804,7 @@ export default function MemberDashboard() {
                       <td className="py-3 px-4" style={{ color: 'rgba(255,255,255,0.45)' }}>{p.date}</td>
                       <td className="py-3 px-4" style={{ color: 'rgba(255,255,255,0.85)' }}>{p.desc}</td>
                       <td className="py-3 px-4" style={{ color: 'rgba(255,255,255,0.45)' }}>{p.method}</td>
-                      <td className="py-3 px-4" style={{ color: '#10b981', fontFamily: 'Oswald, sans-serif' }}>{p.amount}</td>
+                      <td className="py-3 px-4" style={{ color: '#00712B', fontFamily: 'Oswald, sans-serif' }}>{p.amount}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -873,7 +873,7 @@ export default function MemberDashboard() {
                 <input type="password" className="w-full p-3 rounded-lg text-sm" style={{ border: `1px solid #e5e7eb`, color: NAVY }} placeholder="••••••••" value={pwConfirm} onChange={e => setPwConfirm(e.target.value)} />
               </div>
               {pwMessage && (
-                <p className="text-sm" style={{ color: pwMessage.type === 'success' ? '#059669' : '#dc2626' }}>{pwMessage.text}</p>
+                <p className="text-sm" style={{ color: pwMessage.type === 'success' ? '#005D23' : '#dc2626' }}>{pwMessage.text}</p>
               )}
               <button onClick={submitPasswordChange} disabled={pwSaving} className="px-6 py-3 rounded-lg" style={{ backgroundColor: A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', opacity: pwSaving ? 0.6 : 1 }}>
                 {pwSaving ? 'UPDATING…' : 'UPDATE PASSWORD'}

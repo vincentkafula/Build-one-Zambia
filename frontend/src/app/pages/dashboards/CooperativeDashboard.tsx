@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
 
-const A = '#10b981';
+const A = '#00712B';
 const NAVY = '#1e2d4a';
 
 type SectionKey = 'overview' | 'equip-approved' | 'equip-applied' | 'exports' | 'investors' | 'personal-details' | 'security' | 'address-book';
@@ -79,7 +79,7 @@ const INVESTORS = [
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    Approved: '#10b981', Active: '#10b981', Delivered: '#10b981',
+    Approved: '#00712B', Active: '#00712B', Delivered: '#00712B',
     Pending: '#f59e0b', 'Under Review': A, Negotiating: A,
     'In Transit': '#f97316', Processing: '#f97316', Interested: '#8b5cf6',
   };
@@ -307,7 +307,7 @@ export default function CooperativeDashboard() {
                       {inv.email}
                     </div>
                   </div>
-                  <div className="rounded-lg px-3 py-2 text-sm" style={{backgroundColor:"#0a1f12",color:"#34d399"}}>
+                  <div className="rounded-lg px-3 py-2 text-sm" style={{backgroundColor:"#0a1f12",color:"#479966"}}>
                     <span className="text-green-600 mr-1">Interest:</span>{inv.investmentInterest}
                   </div>
                 </div>

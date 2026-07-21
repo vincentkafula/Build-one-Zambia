@@ -243,7 +243,7 @@ export function SystemSetupDashboard() {
         <div className="h-3 bg-muted rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${progress}%`, background: progress === 100 ? '#16a34a' : '#F47920' }}
+            style={{ width: `${progress}%`, background: progress === 100 ? '#005D23' : '#F47920' }}
           />
         </div>
         {progress === 100 && (

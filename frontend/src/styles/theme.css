@@ -1,5 +1,22 @@
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  /* Override Tailwind's default green palette with BOZ's pure green
+     (hex 00712B), so every bg-green, text-green, and border-green
+     utility used across the dashboards resolves to this brand green. */
+  --color-green-50: #F0F6F2;
+  --color-green-100: #E0EEE6;
+  --color-green-200: #B8D7C4;
+  --color-green-300: #85BB99;
+  --color-green-400: #479966;
+  --color-green-500: #1A7F40;
+  --color-green-600: #00712B;
+  --color-green-700: #005D23;
+  --color-green-800: #004D1D;
+  --color-green-900: #003D17;
+  --color-green-950: #002D11;
+}
+
 :root {
   --font-size: 16px;
   --background: #ffffff;

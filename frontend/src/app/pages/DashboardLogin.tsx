@@ -66,7 +66,7 @@ const DASHBOARD_TYPES = [
     title: 'Cooperative',
     description: 'Equipment, exports, investors & cooperative data',
     icon: Building2,
-    color: '#10b981',
+    color: '#00712B',
     route: '/dashboard/cooperative',
   },
   {
@@ -282,7 +282,7 @@ export default function DashboardLogin() {
         {/* Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 mb-5 px-4 py-2 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <Zap size={13} style={{ color: '#22c55e' }} />
+            <Zap size={13} style={{ color: '#00712B' }} />
             <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.7rem', letterSpacing: '0.18em', color: 'rgba(255,255,255,0.5)' }}>
               BUILD ONE ZAMBIA — SECURE ACCESS
             </span>
@@ -297,7 +297,7 @@ export default function DashboardLogin() {
             }}
           >
             PORTAL{' '}
-            <span style={{ background: 'linear-gradient(90deg, #22c55e, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <span style={{ background: 'linear-gradient(90deg, #00712B, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               DASHBOARD
             </span>
           </h1>

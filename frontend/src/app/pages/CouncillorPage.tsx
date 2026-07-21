@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { provinces, PollingStation, calculateTurnout, resolveCandidate } from '../data/mockData';
 import { DrillDownFilters } from '../components/DrillDownFilters';
+import { ResultsStatusBar, ResultStage } from '../components/ResultsStatusBar';
 import { useElectionResults } from '../hooks/useElectionResults';
 import { MapPin, Clock, Wifi, WifiOff } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -12,6 +13,7 @@ export function CouncillorPage() {
   const [selectedWard, setSelectedWard] = useState('');
   const [selectedPollingStation, setSelectedPollingStation] = useState('');
   const [showAllCandidates, setShowAllCandidates] = useState(false);
+  const [resultStage, setResultStage] = useState<ResultStage>('provisional');
 
   const currentProvince = provinces.find(p => p.id === selectedProvince);
   const currentDistrict = currentProvince?.districts.find(d => d.id === selectedDistrict);
@@ -107,6 +109,7 @@ export function CouncillorPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        <ResultsStatusBar title="Councillor" stage={resultStage} onStageChange={setResultStage} />
         <div className="mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-[#F59E0B] to-[#D97706] bg-clip-text text-transparent mb-2">
             Ward Councillor Elections

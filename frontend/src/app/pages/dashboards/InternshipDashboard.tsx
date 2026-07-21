@@ -156,7 +156,7 @@ export default function InternshipDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               {[
                 { label: 'Ward Assigned', value: intern.ward, icon: <MapPin size={20} />, color: A },
-                { label: 'Cooperatives in Ward', value: COOPERATIVES.length, icon: <Users size={20} />, color: '#10b981' },
+                { label: 'Cooperatives in Ward', value: COOPERATIVES.length, icon: <Users size={20} />, color: '#00712B' },
                 { label: 'Chamber Contact', value: 'Available', icon: <Building2 size={20} />, color: '#f59e0b' },
               ].map(s => (
                 <div key={s.label} className="rounded-xl p-4 flex items-center gap-3" style={{backgroundColor: "#123322", border: "1px solid rgba(255,255,255,0.07)"}}>
@@ -214,7 +214,7 @@ export default function InternshipDashboard() {
               <p className="text-sm text-white/40 mb-4">Loading chamber from server…</p>
             )}
             {backendChamber !== undefined && (
-              <div className="mb-3 text-xs px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5" style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0' }}>
+              <div className="mb-3 text-xs px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5" style={{ background: '#f0fdf4', color: '#005D23', border: '1px solid #E0EEE6' }}>
                 <Building2 size={11} /> Loaded from BOZ server
               </div>
             )}

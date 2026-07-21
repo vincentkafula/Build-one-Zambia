@@ -44,7 +44,7 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
   agent:                { label:'Polling Station Agent',  color:'#dc2626', eczLevel:'polling_station', canEnterPollingResults:true,  sections:['overview','data-entry','voter-validation','ecz-entry','comparison','personal-details','security'], comparisonTitle:'Your Results vs ECZ Results', eczEntryTitle:'ECZ Official Figures' },
   polling_agent:        { label:'Polling Station Agent',  color:'#dc2626', eczLevel:'polling_station', canEnterPollingResults:true,  sections:['overview','data-entry','voter-validation','ecz-entry','comparison','personal-details','security'], comparisonTitle:'Your Results vs ECZ Results', eczEntryTitle:'ECZ Official Figures' },
   election_agent:       { label:'Election Agent',         color:'#dc2626', eczLevel:'polling_station', canEnterPollingResults:true,  sections:['overview','data-entry','voter-validation','ecz-entry','comparison','personal-details','security'], comparisonTitle:'Your Results vs ECZ Results', eczEntryTitle:'ECZ Official Figures' },
-  ward_manager:         { label:'Ward Manager',           color:'#16a34a', eczLevel:'ward',            canEnterPollingResults:false, sections:['overview','polling-agents','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (Ward)', eczEntryTitle:'ECZ Announced Figures — Ward Level' },
+  ward_manager:         { label:'Ward Manager',           color:'#005D23', eczLevel:'ward',            canEnterPollingResults:false, sections:['overview','polling-agents','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (Ward)', eczEntryTitle:'ECZ Announced Figures — Ward Level' },
   constituency_manager: { label:'Constituency Manager',   color:'#0ea5e9', eczLevel:'constituency',    canEnterPollingResults:false, sections:['overview','ward-managers','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (Constituency)', eczEntryTitle:'ECZ Announced Figures — Constituency Level' },
   district_manager:     { label:'District Manager',       color:'#f59e0b', eczLevel:'district',        canEnterPollingResults:false, sections:['overview','constituency-managers','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (District)', eczEntryTitle:'ECZ Announced Figures — District Level' },
   provincial_manager:   { label:'Provincial Manager',     color:'#8b5cf6', eczLevel:'province',        canEnterPollingResults:false, sections:['overview','district-managers','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (Province)', eczEntryTitle:'ECZ Announced Figures — Province Level' },
@@ -214,7 +214,7 @@ export default function ElectionDashboard() {
               <Stat label="Role" value={conf.label.split(' ')[0]} color={conf.color}/>
               <Stat label="Area" value={profile.scopeName.split(' ').slice(0,2).join(' ')||'—'} color={conf.color}/>
               <Stat label="ECZ Level" value={conf.eczLevel.charAt(0).toUpperCase()+conf.eczLevel.slice(1)} color={conf.color}/>
-              <Stat label="Status" value="Active" color="#10b981"/>
+              <Stat label="Status" value="Active" color="#00712B"/>
               {(role === 'agent' || role === 'polling_agent' || role === 'election_agent') && (
                 <Suspense fallback={null}><AgentOverviewStats color={conf.color}/></Suspense>
               )}
@@ -400,7 +400,7 @@ export default function ElectionDashboard() {
             </div>
             <Card title="Active Discrepancy Alerts">
               <div className="flex flex-col items-center py-10 gap-3 text-center">
-                <CheckCircle2 size={36} style={{color:'#10b981'}}/>
+                <CheckCircle2 size={36} style={{color:'#00712B'}}/>
                 <p style={{color:'#fff',fontFamily:'Oswald, sans-serif',fontSize:'1rem'}}>No discrepancies detected</p>
                 <p style={{color:'rgba(255,255,255,0.4)',fontSize:'0.82rem',maxWidth:400}}>
                   Discrepancy notices appear here automatically when BOZ agent results differ from ECZ official figures.
@@ -418,7 +418,7 @@ export default function ElectionDashboard() {
             <div className="flex items-center justify-between mb-5">
               <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.4rem',letterSpacing:'0.04em',color:'#fff'}}>Personal Details</h2>
               <button onClick={()=>setEditing(e=>!e)} className="px-4 py-2 rounded-xl text-sm"
-                style={{background:editing?'#10b981':conf.color,color:'#fff',fontFamily:'Oswald, sans-serif',letterSpacing:'0.06em'}}>
+                style={{background:editing?'#00712B':conf.color,color:'#fff',fontFamily:'Oswald, sans-serif',letterSpacing:'0.06em'}}>
                 {editing?'DONE':'EDIT'}
               </button>
             </div>
@@ -459,7 +459,7 @@ export default function ElectionDashboard() {
                       style={{backgroundColor:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',color:'#fff',outline:'none'}}/>
                   </div>
                 ))}
-                {pwMsg&&<p className="text-sm" style={{color:pwMsg.startsWith('✓')?'#10b981':'#f87171'}}>{pwMsg}</p>}
+                {pwMsg&&<p className="text-sm" style={{color:pwMsg.startsWith('✓')?'#00712B':'#f87171'}}>{pwMsg}</p>}
                 <button type="submit" disabled={pwSaving} className="px-5 py-2.5 rounded-xl text-sm"
                   style={{background:pwSaving?`${conf.color}60`:conf.color,color:'#fff',fontFamily:'Oswald, sans-serif',letterSpacing:'0.06em',cursor:pwSaving?'not-allowed':'pointer'}}>
                   {pwSaving?'UPDATING...':'UPDATE PASSWORD'}

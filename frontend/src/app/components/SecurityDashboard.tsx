@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { securityApi, AuditEvent, BlockedIP, ActiveSession, SecurityStats } from '../lib/api';
 
-const A    = '#16a34a';
+const A    = '#005D23';
 const NAVY = '#1e2d4a';
 const RED  = '#dc2626';
 const AMBER= '#d97706';
@@ -15,7 +15,7 @@ const AMBER= '#d97706';
 
 function SeverityBadge({ severity }: { severity: AuditEvent['severity'] }) {
   const cfg = {
-    info:     { bg: '#f0fdf4', color: '#16a34a', label: 'INFO' },
+    info:     { bg: '#f0fdf4', color: '#005D23', label: 'INFO' },
     warn:     { bg: '#fef3c7', color: '#d97706', label: 'WARN' },
     critical: { bg: '#fef2f2', color: '#dc2626', label: 'CRIT' },
   }[severity];
