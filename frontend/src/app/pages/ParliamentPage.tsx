@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { provinces, PollingStation, calculateTurnout, resolveCandidate } from '../data/mockData';
 import { CandidateCard } from '../components/CandidateCard';
+import { ResultsStatusBar, ResultStage } from '../components/ResultsStatusBar';
 import { DrillDownFilters } from '../components/DrillDownFilters';
 import { useElectionResults } from '../hooks/useElectionResults';
 import { Users, MapPin, Clock, Wifi, WifiOff } from 'lucide-react';
@@ -13,6 +14,7 @@ export function ParliamentPage() {
   const [selectedWard, setSelectedWard] = useState('');
   const [selectedPollingStation, setSelectedPollingStation] = useState('');
   const [showAllCandidates, setShowAllCandidates] = useState(false);
+  const [resultStage, setResultStage] = useState<ResultStage>('provisional');
 
   const currentProvince = provinces.find(p => p.id === selectedProvince);
   const currentDistrict = currentProvince?.districts.find(d => d.id === selectedDistrict);
@@ -108,6 +110,7 @@ export function ParliamentPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        <ResultsStatusBar title="Parliament" stage={resultStage} onStageChange={setResultStage} />
         <div className="mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-[#DC2626] to-[#B91C1C] bg-clip-text text-transparent mb-2">
             National Assembly Elections

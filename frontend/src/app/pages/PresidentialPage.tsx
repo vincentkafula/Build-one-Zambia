@@ -3,6 +3,7 @@ import { LiveResultsPanel } from '../components/LiveResultsPanel';
 import { DrillDownFilters } from '../components/DrillDownFilters';
 import { CandidateCard } from '../components/CandidateCard';
 import { CandidateCardCompact } from '../components/CandidateCardCompact';
+import { ResultsStatusBar, ResultStage } from '../components/ResultsStatusBar';
 import { StatCard } from '../components/StatCard';
 import { DownloadButton } from '../components/DownloadButton';
 import {
@@ -22,6 +23,7 @@ export function PresidentialPage() {
   const [selectedWard, setSelectedWard] = useState('');
   const [selectedPollingStation, setSelectedPollingStation] = useState('');
   const [showAllCandidates, setShowAllCandidates] = useState(false);
+  const [resultStage, setResultStage] = useState<ResultStage>('provisional');
 
   // Get filtered polling stations
   const getFilteredStations = (): PollingStation[] => {
@@ -152,6 +154,7 @@ export function PresidentialPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        <ResultsStatusBar title="Presidential" stage={resultStage} onStageChange={setResultStage} />
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-[#198754] to-[#DC2626] bg-clip-text text-transparent mb-2">
