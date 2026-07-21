@@ -226,6 +226,20 @@ export function updateOrderStatus(id, status, paymentRef) {
   return updateOrder(id, { status, ...(paymentRef ? { paymentRef } : {}) });
 }
 
+const RETURN_WINDOW_DAYS = 7;
+
+export function requestReturn(id, reason) {
+  const o = getOrder(id);
+  if (!o) return { error: 'Order not found' };
+  if (o.status !== 'delivered') return { error: 'Only delivered orders can be returned' };
+  if (o.returnStatus) return { error: 'A return has already been requested for this order' };
+  const deliveredAt = new Date(o.updatedAt);
+  const daysSince = (Date.now() - deliveredAt.getTime()) / (1000 * 60 * 60 * 24);
+  if (daysSince > RETURN_WINDOW_DAYS) return { error: `The ${RETURN_WINDOW_DAYS}-day return window for this order has passed` };
+  const updated = updateOrder(id, { returnStatus: 'requested', returnReason: reason || '', returnRequestedAt: new Date().toISOString() });
+  return { order: updated };
+}
+
 export function listOrders(filters = {}) {
   let orders = getOrderIndex().map(id => kv.get(`boz:shop:order:${id}`)).filter(Boolean);
   if (filters.status) orders = orders.filter(o => o.status === filters.status);

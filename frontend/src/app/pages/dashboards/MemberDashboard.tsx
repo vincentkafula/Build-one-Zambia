@@ -10,7 +10,7 @@ import {
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
 import { MembershipCertSection, MembershipCardSection, AdoptionCertSection, AppointmentCertSection } from '../../components/MemberCertificates';
 import { ShopCheckout, CartItem } from '../../components/ShopCheckout';
-import { membershipApi, shopApi, ShopOrder, ShopPayment, ShopProduct } from '../../lib/api';
+import { membershipApi, shopApi, securityApi, ShopOrder, ShopPayment, ShopProduct } from '../../lib/api';
 
 const A = '#3b82f6';
 const NAVY = '#1e2d4a';
@@ -224,17 +224,20 @@ export default function MemberDashboard() {
     return () => { cancelled = true; };
   }, []);
 
+  const refreshOrders = async () => {
+    try {
+      const { orders: o, payments: p } = await shopApi.myOrders();
+      setOrders(o); setPayments(p);
+    } catch {
+      // No orders yet, or not a member account — leave as-is, not fatal.
+    }
+  };
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      try {
-        const { orders: o, payments: p } = await shopApi.myOrders();
-        if (!cancelled) { setOrders(o); setPayments(p); }
-      } catch {
-        // No orders yet, or not a member account — leave empty, not fatal.
-      } finally {
-        if (!cancelled) setOrdersLoading(false);
-      }
+      await refreshOrders();
+      if (!cancelled) setOrdersLoading(false);
     })();
     return () => { cancelled = true; };
   }, []);
@@ -273,6 +276,47 @@ export default function MemberDashboard() {
     });
   };
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+
+  const [returnDrafts, setReturnDrafts] = useState<Record<string, string>>({});
+  const [returnSubmitting, setReturnSubmitting] = useState<string | null>(null);
+  const [returnError, setReturnError] = useState<Record<string, string>>({});
+
+  const [pwCurrent, setPwCurrent] = useState('');
+  const [pwNew, setPwNew] = useState('');
+  const [pwConfirm, setPwConfirm] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMessage, setPwMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const submitPasswordChange = async () => {
+    setPwMessage(null);
+    if (!pwCurrent || !pwNew) { setPwMessage({ type: 'error', text: 'Enter your current and new password.' }); return; }
+    if (pwNew !== pwConfirm) { setPwMessage({ type: 'error', text: "New passwords don't match." }); return; }
+    if (pwNew.length < 8) { setPwMessage({ type: 'error', text: 'New password must be at least 8 characters.' }); return; }
+    setPwSaving(true);
+    try {
+      await securityApi.changePassword(pwCurrent, pwNew);
+      setPwMessage({ type: 'success', text: 'Password updated.' });
+      setPwCurrent(''); setPwNew(''); setPwConfirm('');
+    } catch (e) {
+      setPwMessage({ type: 'error', text: e instanceof Error ? e.message : 'Failed to update password' });
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
+  const submitReturn = async (orderId: string) => {
+    setReturnSubmitting(orderId);
+    setReturnError(e => ({ ...e, [orderId]: '' }));
+    try {
+      await shopApi.requestReturn(orderId, returnDrafts[orderId] || '');
+      await refreshOrders();
+      setReturnDrafts(d => { const next = { ...d }; delete next[orderId]; return next; });
+    } catch (e) {
+      setReturnError(err => ({ ...err, [orderId]: e instanceof Error ? e.message : 'Failed to submit return request' }));
+    } finally {
+      setReturnSubmitting(null);
+    }
+  };
 
   const fmtK = (n: number) => `K ${n.toLocaleString()}`;
   const orderItemSummary = (o: ShopOrder) => o.items.map(it => `${it.name}${it.qty > 1 ? ` x${it.qty}` : ''}`).join(', ') || 'Order';
@@ -439,7 +483,11 @@ export default function MemberDashboard() {
             {showCheckout && (
               <ShopCheckout
                 cart={cart}
-                onClose={() => setShowCheckout(false)}
+                onClose={() => {
+                  setShowCheckout(false);
+                  setCart([]);
+                  refreshOrders();
+                }}
                 onUpdateQty={(id, qty) => setCart(prev => prev.map(i => i.id === id ? { ...i, qty } : i))}
                 onRemove={(id) => setCart(prev => prev.filter(i => i.id !== id))}
               />
@@ -583,16 +631,65 @@ export default function MemberDashboard() {
         );
 
       case 'returns':
+        const eligible = orders.filter(o => o.status === 'delivered' && !o.returnStatus);
+        const requested = orders.filter(o => o.returnStatus);
         return (
           <DashCard title="RETURNS">
-            <div className="text-center py-12">
-              <RotateCcw className="w-16 h-16 mx-auto mb-4" style={{ color: '#e5e7eb' }} />
-              <p style={{ color: '#9ca3af' }}>No returns on record</p>
-              <p className="text-sm mt-2" style={{ color: '#9ca3af' }}>Items can be returned within 7 days of delivery</p>
-              <button className="mt-6 px-6 py-3 rounded-lg text-sm" style={{ border: `1px solid ${A}`, color: A, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
-                REQUEST A RETURN
-              </button>
-            </div>
+            {ordersLoading ? (
+              <p className="text-sm py-8 text-center" style={{ color: 'rgba(255,255,255,0.4)' }}>Loading…</p>
+            ) : eligible.length === 0 && requested.length === 0 ? (
+              <div className="text-center py-12">
+                <RotateCcw className="w-16 h-16 mx-auto mb-4" style={{ color: '#e5e7eb' }} />
+                <p style={{ color: '#9ca3af' }}>No returns on record</p>
+                <p className="text-sm mt-2" style={{ color: '#9ca3af' }}>Delivered items can be returned within 7 days of delivery</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {eligible.length > 0 && (
+                  <div>
+                    <h4 className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em' }}>ELIGIBLE FOR RETURN</h4>
+                    <div className="space-y-3">
+                      {eligible.map(o => (
+                        <div key={o.id} className="p-4 rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+                          <div className="flex items-center justify-between mb-2">
+                            <p style={{ color: NAVY, fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem' }}>{orderItemSummary(o)}</p>
+                            <span style={{ color: NAVY, fontFamily: 'Oswald, sans-serif' }}>{fmtK(o.total)}</span>
+                          </div>
+                          <textarea
+                            className="w-full p-2 rounded-lg text-sm resize-none mb-2" rows={2}
+                            placeholder="Reason for return (optional)"
+                            style={{ border: '1px solid #e5e7eb', color: '#4b5563' }}
+                            value={returnDrafts[o.id] || ''}
+                            onChange={e => setReturnDrafts(d => ({ ...d, [o.id]: e.target.value }))}
+                          />
+                          {returnError[o.id] && <p className="text-xs mb-2" style={{ color: '#dc2626' }}>{returnError[o.id]}</p>}
+                          <button onClick={() => submitReturn(o.id)} disabled={returnSubmitting === o.id}
+                            className="px-5 py-2 rounded-lg text-sm" style={{ border: `1px solid ${A}`, color: A, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', opacity: returnSubmitting === o.id ? 0.6 : 1 }}>
+                            {returnSubmitting === o.id ? 'SUBMITTING…' : 'REQUEST A RETURN'}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {requested.length > 0 && (
+                  <div>
+                    <h4 className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em' }}>RETURN REQUESTS</h4>
+                    <div className="space-y-3">
+                      {requested.map(o => (
+                        <div key={o.id} className="flex items-center justify-between p-4 rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+                          <div>
+                            <p style={{ color: NAVY, fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem' }}>{orderItemSummary(o)}</p>
+                            {o.returnReason && <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>"{o.returnReason}"</p>}
+                          </div>
+                          <StatusBadge status={(o.returnStatus || 'requested').charAt(0).toUpperCase() + (o.returnStatus || 'requested').slice(1)} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </DashCard>
         );
 
@@ -626,25 +723,10 @@ export default function MemberDashboard() {
       case 'coupons':
         return (
           <DashCard title="COUPONS & OFFERS">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                { code: 'BOZ20', desc: '20% off merchandise', expiry: '2026-12-31', used: false },
-                { code: 'WELCOME10', desc: 'K10 off first order', expiry: '2026-06-30', used: true },
-              ].map(c => (
-                <div key={c.code} className="rounded-xl p-5" style={{ border: `2px dashed ${c.used ? '#e5e7eb' : A}`, opacity: c.used ? 0.6 : 1 }}>
-                  <div className="flex items-center gap-3 mb-3">
-                    <Tag className="w-8 h-8" style={{ color: c.used ? '#9ca3af' : A }} />
-                    <div>
-                      <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.2rem', letterSpacing: '0.08em', color: c.used ? '#9ca3af' : NAVY }}>{c.code}</p>
-                      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>{c.desc}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs" style={{ color: '#9ca3af' }}>Expires: {c.expiry}</span>
-                    {c.used ? <span className="text-xs" style={{ color: '#9ca3af' }}>Used</span> : <button className="text-xs px-3 py-1 rounded-full" style={{ backgroundColor: A, color: '#fff' }}>APPLY</button>}
-                  </div>
-                </div>
-              ))}
+            <div className="text-center py-12">
+              <Tag className="w-16 h-16 mx-auto mb-4" style={{ color: '#e5e7eb' }} />
+              <p style={{ color: '#9ca3af' }}>Coupons aren't available yet</p>
+              <p className="text-sm mt-2" style={{ color: '#9ca3af' }}>Check back soon for member discounts and offers.</p>
             </div>
           </DashCard>
         );
@@ -663,11 +745,10 @@ export default function MemberDashboard() {
       case 'gift-voucher':
         return (
           <DashCard title="REDEEM GIFT VOUCHER">
-            <div className="max-w-md mx-auto text-center">
-              <Gift className="w-16 h-16 mx-auto mb-4" style={{ color: A }} />
-              <p className="mb-6" style={{ color: 'rgba(255,255,255,0.45)' }}>Enter your gift voucher code below to redeem your gift.</p>
-              <input className="w-full p-3 rounded-xl mb-4 text-center" style={{ border: `1px solid ${A}40`, fontSize: '1.1rem', letterSpacing: '0.15em', color: NAVY }} placeholder="XXXX-XXXX-XXXX" />
-              <button className="w-full py-3 rounded-xl" style={{ backgroundColor: A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.1em' }}>REDEEM VOUCHER</button>
+            <div className="max-w-md mx-auto text-center py-8">
+              <Gift className="w-16 h-16 mx-auto mb-4" style={{ color: '#e5e7eb' }} />
+              <p style={{ color: '#9ca3af' }}>Gift vouchers aren't available yet</p>
+              <p className="text-sm mt-2" style={{ color: '#9ca3af' }}>Check back soon.</p>
             </div>
           </DashCard>
         );
@@ -677,21 +758,25 @@ export default function MemberDashboard() {
           <DashCard title="SUBSCRIPTION PLAN">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               {[
-                { name: 'Basic', price: 'K 200', period: '/year', features: ['Voting rights', 'Party newsletters', 'Event access'], current: false },
-                { name: 'Annual', price: 'K 500', period: '/year', features: ['All Basic benefits', 'Adoption certificate', '20% shop discount', 'Priority support'], current: true },
-                { name: 'Lifetime', price: 'K 2,000', period: 'one-time', features: ['All Annual benefits', 'Lifetime membership card', 'VIP event access', 'Gold tier status'], current: false },
-              ].map(plan => (
-                <div key={plan.name} className="rounded-xl p-5" style={{ border: `2px solid ${plan.current ? A : '#e5e7eb'}`, backgroundColor: plan.current ? `${A}05` : '#fff' }}>
-                  {plan.current && <span className="text-xs px-2 py-0.5 rounded-full mb-3 inline-block" style={{ backgroundColor: A, color: '#fff', fontFamily: 'Oswald, sans-serif' }}>CURRENT PLAN</span>}
-                  <h4 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.1rem', color: NAVY, letterSpacing: '0.04em' }}>{plan.name}</h4>
-                  <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.8rem', color: plan.current ? A : NAVY }}>{plan.price}<span className="text-xs" style={{ color: '#9ca3af' }}>{plan.period}</span></p>
-                  <div className="mt-3 space-y-2">
-                    {plan.features.map(f => <div key={f} className="flex items-center gap-2 text-xs" style={{ color: '#4b5563' }}><CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: '#10b981' }} />{f}</div>)}
+                { name: 'Basic', price: 'K 200', period: '/year', features: ['Voting rights', 'Party newsletters', 'Event access'] },
+                { name: 'Standard', price: 'K 500', period: '/year', features: ['All Basic benefits', 'Membership certificate', 'Priority support'] },
+                { name: 'Gold', price: 'K 2,000', period: '/year', features: ['All Standard benefits', 'Membership card', 'VIP event access'] },
+                { name: 'Platinum', price: 'K 5,000', period: '/year', features: ['All Gold benefits', 'Lifetime recognition', 'National committee invites'] },
+              ].map(plan => {
+                const isCurrent = plan.name.toLowerCase() === profile.tier.toLowerCase();
+                return (
+                  <div key={plan.name} className="rounded-xl p-5" style={{ border: `2px solid ${isCurrent ? A : '#e5e7eb'}`, backgroundColor: isCurrent ? `${A}05` : '#fff' }}>
+                    {isCurrent && <span className="text-xs px-2 py-0.5 rounded-full mb-3 inline-block" style={{ backgroundColor: A, color: '#fff', fontFamily: 'Oswald, sans-serif' }}>YOUR PLAN</span>}
+                    <h4 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.1rem', color: NAVY, letterSpacing: '0.04em' }}>{plan.name}</h4>
+                    <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.8rem', color: isCurrent ? A : NAVY }}>{plan.price}<span className="text-xs" style={{ color: '#9ca3af' }}>{plan.period}</span></p>
+                    <div className="mt-3 space-y-2">
+                      {plan.features.map(f => <div key={f} className="flex items-center gap-2 text-xs" style={{ color: '#4b5563' }}><CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: '#10b981' }} />{f}</div>)}
+                    </div>
                   </div>
-                  {!plan.current && <button className="w-full mt-4 py-2 rounded-lg text-sm" style={{ border: `1px solid ${A}`, color: A, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>UPGRADE</button>}
-                </div>
-              ))}
+                );
+              })}
             </div>
+            <p className="text-sm text-center" style={{ color: '#9ca3af' }}>To change your membership tier, contact a BOZ administrator.</p>
           </DashCard>
         );
 
@@ -777,29 +862,34 @@ export default function MemberDashboard() {
             <div className="max-w-lg space-y-5">
               <div>
                 <label className="block text-xs mb-1" style={{ color: '#9ca3af', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em' }}>CURRENT PASSWORD</label>
-                <input type="password" className="w-full p-3 rounded-lg text-sm" style={{ border: `1px solid #e5e7eb`, color: NAVY }} placeholder="••••••••" />
+                <input type="password" className="w-full p-3 rounded-lg text-sm" style={{ border: `1px solid #e5e7eb`, color: NAVY }} placeholder="••••••••" value={pwCurrent} onChange={e => setPwCurrent(e.target.value)} />
               </div>
               <div>
                 <label className="block text-xs mb-1" style={{ color: '#9ca3af', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em' }}>NEW PASSWORD</label>
-                <input type="password" className="w-full p-3 rounded-lg text-sm" style={{ border: `1px solid #e5e7eb`, color: NAVY }} placeholder="••••••••" />
+                <input type="password" className="w-full p-3 rounded-lg text-sm" style={{ border: `1px solid #e5e7eb`, color: NAVY }} placeholder="••••••••" value={pwNew} onChange={e => setPwNew(e.target.value)} />
               </div>
               <div>
                 <label className="block text-xs mb-1" style={{ color: '#9ca3af', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em' }}>CONFIRM NEW PASSWORD</label>
-                <input type="password" className="w-full p-3 rounded-lg text-sm" style={{ border: `1px solid #e5e7eb`, color: NAVY }} placeholder="••••••••" />
+                <input type="password" className="w-full p-3 rounded-lg text-sm" style={{ border: `1px solid #e5e7eb`, color: NAVY }} placeholder="••••••••" value={pwConfirm} onChange={e => setPwConfirm(e.target.value)} />
               </div>
-              <button className="px-6 py-3 rounded-lg" style={{ backgroundColor: A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>UPDATE PASSWORD</button>
+              {pwMessage && (
+                <p className="text-sm" style={{ color: pwMessage.type === 'success' ? '#059669' : '#dc2626' }}>{pwMessage.text}</p>
+              )}
+              <button onClick={submitPasswordChange} disabled={pwSaving} className="px-6 py-3 rounded-lg" style={{ backgroundColor: A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', opacity: pwSaving ? 0.6 : 1 }}>
+                {pwSaving ? 'UPDATING…' : 'UPDATE PASSWORD'}
+              </button>
 
               <div className="pt-4 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
                 <h4 className="mb-3" style={{ fontFamily: 'Oswald, sans-serif', color: NAVY, letterSpacing: '0.04em' }}>TWO-FACTOR AUTHENTICATION</h4>
                 <div className="flex items-center justify-between p-4 rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div className="flex items-center gap-3">
-                    <Shield className="w-6 h-6" style={{ color: '#10b981' }} />
+                    <Shield className="w-6 h-6" style={{ color: '#9ca3af' }} />
                     <div>
                       <p className="text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>SMS Authentication</p>
-                      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>+260 97 ****567</p>
+                      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>Not available yet</p>
                     </div>
                   </div>
-                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: '#d1fae5', color: '#065f46' }}>Enabled</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }}>Coming soon</span>
                 </div>
               </div>
             </div>

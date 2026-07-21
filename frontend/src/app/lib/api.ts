@@ -542,6 +542,9 @@ export interface ShopOrder {
   notes?: string;
   submittedAt: string;
   updatedAt: string;
+  returnStatus?: 'requested' | 'approved' | 'rejected' | 'completed';
+  returnReason?: string;
+  returnRequestedAt?: string;
 }
 
 export const shopApi = {
@@ -606,6 +609,9 @@ export const shopApi = {
 
   myOrders: () =>
     request<{ orders: ShopOrder[]; payments: ShopPayment[] }>('GET', '/shop/my-orders', undefined, true),
+
+  requestReturn: (orderId: string, reason: string) =>
+    request<{ success: boolean; order: ShopOrder }>('POST', `/shop/my-orders/${orderId}/request-return`, { reason }, true),
 };
 
 // ─── Orders ───────────────────────────────────────────────────────────────────
