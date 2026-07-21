@@ -28,14 +28,14 @@ export function CandidateCard({ candidate, votes, totalVotes, rank, isLeading }:
       className="relative overflow-hidden rounded-2xl transition-all duration-300 hover:-translate-y-0.5"
       style={{
         background: isLeading
-          ? `linear-gradient(135deg, ${candidate.partyColor}18 0%, #ffffff 40%)`
-          : 'white',
+          ? `linear-gradient(135deg, ${candidate.partyColor}22 0%, #12160F 45%)`
+          : '#12160F',
         border: isLeading
-          ? `2px solid ${candidate.partyColor}`
-          : '1.5px solid #e5e7eb',
+          ? `1.5px solid ${candidate.partyColor}88`
+          : '1px solid #26301F',
         boxShadow: isLeading
-          ? `0 8px 32px ${candidate.partyColor}25, 0 2px 8px rgba(0,0,0,0.06)`
-          : '0 2px 8px rgba(0,0,0,0.06)',
+          ? `0 8px 32px ${candidate.partyColor}22, 0 2px 8px rgba(0,0,0,0.3)`
+          : '0 2px 8px rgba(0,0,0,0.25)',
       }}
     >
       {/* Top accent bar */}
@@ -63,8 +63,8 @@ export function CandidateCard({ candidate, votes, totalVotes, rank, isLeading }:
             <div
               className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-md"
               style={{
-                background: rc ? rc.bg : '#f3f4f6',
-                color: rc ? rc.text : '#6b7280',
+                background: rc ? rc.bg : '#1D2318',
+                color: rc ? rc.text : '#948F80',
                 boxShadow: rc ? rc.shadow : undefined,
               }}
             >
@@ -113,7 +113,7 @@ export function CandidateCard({ candidate, votes, totalVotes, rank, isLeading }:
                 fontSize: '26px',
                 fontWeight: 700,
                 letterSpacing: '0.02em',
-                color: '#1e2d4a',
+                color: '#F3EFE4',
                 lineHeight: 1.15,
               }}
             >
@@ -141,14 +141,14 @@ export function CandidateCard({ candidate, votes, totalVotes, rank, isLeading }:
                 fontFamily: 'Oswald, sans-serif',
                 fontSize: '28px',
                 fontWeight: 700,
-                color: pct > 0 ? candidate.partyColor : '#9ca3af',
+                color: pct > 0 ? candidate.partyColor : '#5C5A4F',
                 lineHeight: 1,
               }}
             >
               {percentage}
-              <span style={{ fontSize: '14px', fontWeight: 400, color: '#9ca3af', marginLeft: '2px' }}>%</span>
+              <span style={{ fontSize: '14px', fontWeight: 400, color: '#948F80', marginLeft: '2px' }}>%</span>
             </div>
-            <div className="text-xs text-gray-400 mt-0.5" style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.05em' }}>
+            <div className="text-xs mt-0.5" style={{ color: '#948F80', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.05em' }}>
               {votes.toLocaleString()} VOTES
             </div>
           </div>
@@ -156,7 +156,7 @@ export function CandidateCard({ candidate, votes, totalVotes, rank, isLeading }:
 
         {/* Progress bar */}
         <div className="mt-4">
-          <div className="w-full rounded-full h-2.5 overflow-hidden" style={{ background: '#f3f4f6' }}>
+          <div className="w-full rounded-full h-2.5 overflow-hidden" style={{ background: '#1D2318' }}>
             <div
               className="h-full rounded-full transition-all duration-700 ease-out"
               style={{

@@ -16,18 +16,18 @@ export function StatCard({ title, value, subtitle, icon: Icon, color = 'primary'
       text: 'text-primary-foreground'
     },
     success: {
-      bg: 'bg-gradient-to-br from-[#198754] to-[#146644]',
-      ring: 'ring-[#198754]/20',
+      bg: 'bg-gradient-to-br from-[#1CAA73] to-[#12855A]',
+      ring: 'ring-[#1CAA73]/20',
       text: 'text-white'
     },
     warning: {
-      bg: 'bg-gradient-to-br from-[#F59E0B] to-[#D97706]',
-      ring: 'ring-[#F59E0B]/20',
-      text: 'text-white'
+      bg: 'bg-gradient-to-br from-[#E89A5C] to-[#C17A3E]',
+      ring: 'ring-[#E89A5C]/20',
+      text: 'text-[#0A0D0B]'
     },
     danger: {
-      bg: 'bg-gradient-to-br from-[#DC2626] to-[#B91C1C]',
-      ring: 'ring-[#DC2626]/20',
+      bg: 'bg-gradient-to-br from-[#D34D4D] to-[#B33A3A]',
+      ring: 'ring-[#D34D4D]/20',
       text: 'text-white'
     },
   };
