@@ -67,7 +67,7 @@ const ROLE_DEFS: Record<string, RoleDef> = {
     sections: ['overview', 'data-entry', 'ecz-entry', 'comparison', 'personal-details', 'security'],
   },
   ward_manager: {
-    label: 'Ward Manager', color: '#16a34a', scopeLabel: 'Ward',
+    label: 'Ward Manager', color: '#005D23', scopeLabel: 'Ward',
     eczLevel: 'Ward', canEnterPS: false,
     sections: ['overview', 'ecz-entry', 'comparison', 'discrepancy', 'personal-details', 'security'],
   },
@@ -111,7 +111,7 @@ const NAV_ITEMS: { key: SectionKey; label: string; icon: React.ReactNode; group:
 // ── Role selector shown BEFORE login ─────────────────────────────────────────
 const SELECTABLE_ROLES: { role: string; label: string; color: string; icon: React.ReactNode }[] = [
   { role: 'polling_agent',        label: 'Polling Station Agent', color: '#ef4444', icon: <MapPin size={18} /> },
-  { role: 'ward_manager',         label: 'Ward Manager',          color: '#16a34a', icon: <Shield size={18} /> },
+  { role: 'ward_manager',         label: 'Ward Manager',          color: '#005D23', icon: <Shield size={18} /> },
   { role: 'constituency_manager', label: 'Constituency Manager',  color: '#0ea5e9', icon: <Shield size={18} /> },
   { role: 'district_manager',     label: 'District Manager',      color: '#f59e0b', icon: <Shield size={18} /> },
   { role: 'provincial_manager',   label: 'Provincial Manager',    color: '#8b5cf6', icon: <Shield size={18} /> },
@@ -450,8 +450,8 @@ function ElectionDashboardMain({ user }: { user: Record<string, string> }) {
               </p>
               {/* Show assigned station banner for polling agents */}
               {(user?.role === 'polling_agent' || user?.role === 'agent' || user?.role === 'election_agent') && (user?.pollingStationName || user?.scopeName) && (
-                <div className="mt-3 px-4 py-3 rounded-xl" style={{ backgroundColor: '#10b98118', border: '1px solid #10b98140' }}>
-                  <p className="text-sm" style={{ color: '#6ee7b7' }}>
+                <div className="mt-3 px-4 py-3 rounded-xl" style={{ backgroundColor: '#00712B18', border: '1px solid #00712B40' }}>
+                  <p className="text-sm" style={{ color: '#85BB99' }}>
                     📍 You are entering results for: <strong style={{ color: '#fff' }}>{user?.pollingStationName || user?.scopeName}</strong>
                   </p>
                 </div>

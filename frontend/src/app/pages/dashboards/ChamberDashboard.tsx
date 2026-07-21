@@ -103,7 +103,7 @@ const INTERN = {
 };
 
 function StatusBadge({ status }: { status: string }) {
-  const colors: Record<string, string> = { Confirmed: '#10b981', Active: '#10b981', Pending: '#f59e0b', 'Under Review': A };
+  const colors: Record<string, string> = { Confirmed: '#00712B', Active: '#00712B', Pending: '#f59e0b', 'Under Review': A };
   const c = colors[status] || 'rgba(255,255,255,0.4)';
   return <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: `${c}18`, color: c, border: `1px solid ${c}30`, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>{status}</span>;
 }
@@ -205,7 +205,7 @@ export default function ChamberDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               {[
                 { label: 'Companies to Invest', value: INVESTORS.length, icon: <Globe size={20} />, color: A },
-                { label: 'Zambian Cooperatives', value: COOPERATIVES.length, icon: <Users size={20} />, color: '#10b981' },
+                { label: 'Zambian Cooperatives', value: COOPERATIVES.length, icon: <Users size={20} />, color: '#00712B' },
                 { label: 'Intern Coordinator', value: '1 Assigned', icon: <GraduationCap size={20} />, color: '#8b5cf6' },
                 { label: 'Pending Amendments', value: pendingCount, icon: <FilePenLine size={20} />, color: '#f97316' },
               ].map(s => (
@@ -332,7 +332,7 @@ export default function ChamberDashboard() {
             </div>
 
             {amendMsg && (
-              <div className="mb-4 p-3 rounded-lg text-sm" style={amendMsg.includes('success') ? {backgroundColor:'#0a1f12',color:'#34d399',border:'1px solid #34d39930'} : {backgroundColor:'#200a0a',color:'#f87171',border:'1px solid #f8717130'}}>
+              <div className="mb-4 p-3 rounded-lg text-sm" style={amendMsg.includes('success') ? {backgroundColor:'#0a1f12',color:'#479966',border:'1px solid #47996630'} : {backgroundColor:'#200a0a',color:'#f87171',border:'1px solid #f8717130'}}>
                 {amendMsg}
               </div>
             )}
@@ -409,7 +409,7 @@ export default function ChamberDashboard() {
                   const isOpen = expandedAmend === a.id;
                   const statusConfig = {
                     pending:  { icon: <Clock size={13} />,        color: '#d97706', bg: '#fef3c7' },
-                    approved: { icon: <CheckCircle size={13} />,  color: '#16a34a', bg: '#f0fdf4' },
+                    approved: { icon: <CheckCircle size={13} />,  color: '#005D23', bg: '#f0fdf4' },
                     rejected: { icon: <XCircle size={13} />,      color: '#dc2626', bg: '#fef2f2' },
                   }[a.status];
                   return (

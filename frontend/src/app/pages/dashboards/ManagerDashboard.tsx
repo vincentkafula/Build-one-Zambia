@@ -88,7 +88,7 @@ const PROVINCES_TURNOUT = [
 ];
 
 function turnoutColor(pct: number) {
-  if (pct >= 70) return '#10b981';
+  if (pct >= 70) return '#00712B';
   if (pct >= 50) return '#f59e0b';
   return '#ef4444';
 }
@@ -101,7 +101,7 @@ function turnoutLabel(pct: number) {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const colors: Record<string, string> = { Final: '#10b981', Partial: '#f59e0b', Counting: A };
+  const colors: Record<string, string> = { Final: '#00712B', Partial: '#f59e0b', Counting: A };
   const c = colors[status] || 'rgba(255,255,255,0.4)';
   return (
     <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: `${c}18`, color: c, border: `1px solid ${c}30`, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
@@ -139,7 +139,7 @@ function VoterTurnoutSection() {
         <button
           onClick={() => setEditMode(v => !v)}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm"
-          style={{ background: editMode ? '#10b981' : '#0ea5e9', color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.05em' }}
+          style={{ background: editMode ? '#00712B' : '#0ea5e9', color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.05em' }}
         >
           {editMode ? <><Save size={13} /> SAVE</> : <><Edit2 size={13} /> EDIT VOTES</>}
         </button>
@@ -147,7 +147,7 @@ function VoterTurnoutSection() {
       <div className="grid grid-cols-3 gap-4 mb-6 mt-4">
         {[
           { label: 'Total Registered', value: totalRegistered.toLocaleString(), color: '#0ea5e9' },
-          { label: 'Total Votes Cast', value: totalVotes.toLocaleString(), color: '#10b981' },
+          { label: 'Total Votes Cast', value: totalVotes.toLocaleString(), color: '#00712B' },
           { label: 'National Turnout', value: `${overallPct.toFixed(1)}%`, color: turnoutColor(overallPct) },
         ].map(s => (
           <div key={s.label} className="rounded-2xl p-4" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -219,8 +219,8 @@ const ROLE_COLORS: Record<string, string> = {
   super_admin:          '#7c3aed',
   national_manager:     '#0ea5e9',
   provincial_manager:   '#0891b2',
-  district_manager:     '#059669',
-  constituency_manager: '#16a34a',
+  district_manager:     '#005D23',
+  constituency_manager: '#005D23',
   ward_manager:         '#65a30d',
   admin:                '#6b7280',
 };
@@ -461,14 +461,14 @@ export default function ManagerDashboard() {
                   { key: 'shadow-cabinet',    label: 'Shadow Cabinet',        desc: 'Edit Shadow Ministers — names, roles, bios & photos for male & female pages.', icon: <Users size={18} />, color: '#c084fc' },
                   { key: 'candidates',        label: 'Candidates',            desc: 'Add, edit & remove presidential, MP, mayoral & councillor candidates.', icon: <Shield size={18} />, color: '#f59e0b' },
                   { key: 'leadership',        label: 'Party Leadership',      desc: 'Add or remove party leaders and officials.',                        icon: <Crown size={18} />,       color: '#a855f7' },
-                  { key: 'news',              label: 'News & Posts',          desc: 'Publish, edit and remove news articles.',                           icon: <Newspaper size={18} />,   color: '#10b981' },
+                  { key: 'news',              label: 'News & Posts',          desc: 'Publish, edit and remove news articles.',                           icon: <Newspaper size={18} />,   color: '#00712B' },
                   { key: 'shop',              label: 'Shop Manager',          desc: 'Add, edit and remove products in the BOZ shop.',                    icon: <ShoppingBag size={18} />, color: '#ec4899' },
                   { key: 'documents',         label: 'Documents & Letters',   desc: 'Upload official letters and documents.',                            icon: <FileText size={18} />,    color: '#f97316' },
                   { key: 'press-statements',  label: 'Press Statements',      desc: 'Upload and manage press releases.',                                 icon: <Newspaper size={18} />,   color: '#06b6d4' },
                   { key: 'live-streams',      label: 'Live Streaming',        desc: 'Go live and manage stream sessions.',                               icon: <Radio size={18} />,       color: A },
                   { key: 'events',            label: 'Events Manager',        desc: 'Create and manage party events.',                                   icon: <Calendar size={18} />,    color: '#84cc16' },
                   { key: 'membership-admin',  label: 'Membership',            desc: 'View and manage party members.',                                    icon: <Users size={18} />,       color: '#8b5cf6' },
-                  { key: 'registrations',     label: 'Registrations',         desc: 'Approve or reject member registrations.',                           icon: <CheckCircle size={18} />, color: '#22c55e' },
+                  { key: 'registrations',     label: 'Registrations',         desc: 'Approve or reject member registrations.',                           icon: <CheckCircle size={18} />, color: '#00712B' },
                   { key: 'results-approval',  label: 'Results Approval',      desc: 'Verify and approve polling station results.',                       icon: <CheckCircle size={18} />, color: '#f59e0b' },
                   { key: 'voter-roll-upload', label: 'Voter Roll Upload',     desc: 'Upload the official ECZ voter roll CSV.',                           icon: <FileText size={18} />,    color: '#0891b2' },
                   { key: 'email',             label: 'Email Settings',        desc: 'Configure Resend email service.',                                   icon: <Mail size={18} />,        color: '#64748b' },

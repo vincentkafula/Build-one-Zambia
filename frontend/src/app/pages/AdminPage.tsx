@@ -28,18 +28,18 @@ import { toast } from 'sonner';
 type AdminTab = 'dashboard' | 'results' | 'verifications' | 'users' | 'audit' | 'sync' | 'notifications';
 
 const STATUS_COLORS: Record<string, string> = {
-  submitted: '#22c55e',
+  submitted: '#00712B',
   draft: '#f59e0b',
   verified: '#3b82f6',
   rejected: '#ef4444',
   pending: '#f59e0b',
-  signed: '#22c55e',
-  completed: '#22c55e',
+  signed: '#00712B',
+  completed: '#00712B',
   failed: '#ef4444',
   in_progress: '#3b82f6',
 };
 
-function StatCard({ icon: Icon, label, value, sub, color = '#22c55e' }: {
+function StatCard({ icon: Icon, label, value, sub, color = '#00712B' }: {
   icon: React.ElementType; label: string; value: string | number; sub?: string; color?: string;
 }) {
   return (
@@ -305,7 +305,7 @@ export default function AdminPage() {
           {activeTab === 'dashboard' && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard icon={Database} label="Total Results" value={resultStats?.total ?? 0} sub="Across all stations" color="#22c55e" />
+                <StatCard icon={Database} label="Total Results" value={resultStats?.total ?? 0} sub="Across all stations" color="#00712B" />
                 <StatCard icon={ClipboardCheck} label="Verifications" value={verifStats?.total ?? 0} sub={`${verifStats?.completionRate ?? 0}% complete`} color="#3b82f6" />
                 <StatCard icon={AlertTriangle} label="Discrepancies" value={verifStats?.withDiscrepancies ?? 0} sub="Requires review" color="#f59e0b" />
                 <StatCard icon={RefreshCw} label="Sync Queue" value={syncStats?.pending ?? 0} sub={`${syncStats?.completed ?? 0} completed`} color="#a855f7" />
@@ -343,7 +343,7 @@ export default function AdminPage() {
                         <XAxis dataKey="name" tick={{ fill: '#9ca3af', fontSize: 12 }} />
                         <YAxis tick={{ fill: '#9ca3af', fontSize: 12 }} />
                         <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px', color: '#fff' }} />
-                        <Bar dataKey="value" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="value" fill="#00712B" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
@@ -384,7 +384,7 @@ export default function AdminPage() {
               {/* System info */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
-                  { label: 'Database', value: 'IndexedDB v1', icon: Server, color: '#22c55e', sub: '8 object stores' },
+                  { label: 'Database', value: 'IndexedDB v1', icon: Server, color: '#00712B', sub: '8 object stores' },
                   { label: 'Auth System', value: 'Session-based', icon: Lock, color: '#3b82f6', sub: '8-hour sessions' },
                   { label: 'Sync Status', value: syncStats?.lastSyncAt ? 'Active' : 'Idle', icon: Globe, color: '#a855f7', sub: syncStats?.lastSyncAt ? `Last: ${new Date(syncStats.lastSyncAt).toLocaleTimeString()}` : 'Never synced' },
                 ].map((info) => (
@@ -566,7 +566,7 @@ export default function AdminPage() {
               {syncStats && (
                 <div className="grid grid-cols-3 gap-4">
                   <StatCard icon={Clock} label="Pending" value={syncStats.pending} color="#f59e0b" />
-                  <StatCard icon={CheckCircle2} label="Completed" value={syncStats.completed} color="#22c55e" />
+                  <StatCard icon={CheckCircle2} label="Completed" value={syncStats.completed} color="#00712B" />
                   <StatCard icon={XCircle} label="Failed" value={syncStats.failed} color="#ef4444" />
                 </div>
               )}
