@@ -11,8 +11,14 @@ function StatCard({ label, value, color }: { label: string; value: string | numb
   );
 }
 
-/** Sum registeredVoters for every polling station under a given scope. */
-function sumRegisteredVoters(role: string, scopeId: string): { total: number; stations: number } | null {
+/** Sum registeredVoters for every polling station under a given scope.
+ *  District ids are only unique *within* a province (ECZ reuses the same
+ *  3-digit code across provinces, e.g. '006' is both Lusaka district and
+ *  Kapiri Mposhi district) — so matching a district_manager's scopeId
+ *  alone silently pulls in every same-numbered district nationwide and
+ *  inflates the total. Disambiguate with scopeName (the district's name,
+ *  unique nationally) the same way DistrictECZEntryPage already does. */
+function sumRegisteredVoters(role: string, scopeId: string, scopeName: string): { total: number; stations: number } | null {
   let total = 0;
   let stations = 0;
 
@@ -24,10 +30,35 @@ function sumRegisteredVoters(role: string, scopeId: string): { total: number; st
 
   if (!isNational && !scopeId) return null;
 
+  const normName = (s: string) => s.trim().toLowerCase();
+
+  // Resolve which single district this scope actually refers to, up front,
+  // so a colliding id elsewhere can never leak into the sum below.
+  let targetDistrictKey: string | null = null;
+  if (isDistrict) {
+    const matches: string[] = [];
+    for (const p of provinces) {
+      for (const d of p.districts) {
+        if (d.id === scopeId) matches.push(`${p.id}|${d.id}`);
+      }
+    }
+    if (matches.length <= 1) {
+      targetDistrictKey = matches[0] ?? null;
+    } else {
+      let found: string | null = null;
+      for (const p of provinces) {
+        for (const d of p.districts) {
+          if (d.id === scopeId && normName(d.name) === normName(scopeName)) found = `${p.id}|${d.id}`;
+        }
+      }
+      targetDistrictKey = found ?? matches[0];
+    }
+  }
+
   for (const p of provinces) {
     if (isProvince && p.id !== scopeId) continue;
     for (const d of p.districts) {
-      if (isDistrict && d.id !== scopeId) continue;
+      if (isDistrict && `${p.id}|${d.id}` !== targetDistrictKey) continue;
       for (const c of d.constituencies) {
         if (isConstituency && c.id !== scopeId) continue;
         for (const w of c.wards) {
@@ -50,11 +81,12 @@ export function TotalRegisteredVotersStat({ color }: { color: string }) {
   const user = rawUser ? JSON.parse(rawUser) : null;
   const role: string = user?.role || '';
   const scopeId: string = user?.scopeId || '';
+  const scopeName: string = user?.scopeName || '';
 
   if (!SCOPE_ROLES.includes(role)) return null;
   if (role !== 'national_manager' && !scopeId) return null;
 
-  const result = sumRegisteredVoters(role, scopeId);
+  const result = sumRegisteredVoters(role, scopeId, scopeName);
   if (!result) return null;
 
   const label = role === 'national_manager' ? 'Total Registered Voters — Nation'

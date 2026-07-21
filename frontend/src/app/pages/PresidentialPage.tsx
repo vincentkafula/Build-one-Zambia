@@ -136,8 +136,10 @@ export function PresidentialPage() {
         if (c.id === selectedConstituency) return c.name;
     }
     if (selectedDistrict) {
-      for (const p of provinces) for (const d of p.districts)
-        if (d.id === selectedDistrict) return d.name;
+      for (const p of provinces) {
+        if (selectedProvince && p.id !== selectedProvince) continue;
+        for (const d of p.districts) if (d.id === selectedDistrict) return d.name;
+      }
     }
     if (selectedProvince) {
       const prov = provinces.find(p => p.id === selectedProvince);
