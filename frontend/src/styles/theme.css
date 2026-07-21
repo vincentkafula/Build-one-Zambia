@@ -1,100 +1,100 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  /* Copperbelt identity: deep charcoal-green base with a lit-copper
-     accent, replacing the old light BOZ orange/green palette. Every
-     bg-green, text-green, border-green utility now resolves here. */
-  --color-green-50: #EAF3EE;
-  --color-green-100: #CFE6DA;
-  --color-green-200: #9FCDB6;
-  --color-green-300: #63AE8B;
-  --color-green-400: #2E8F67;
-  --color-green-500: #12855A;
-  --color-green-600: #0F6B49;
-  --color-green-700: #0C563B;
-  --color-green-800: #0A452F;
-  --color-green-900: #073323;
-  --color-green-950: #051F16;
+  /* Override Tailwind's default green palette with BOZ's pure green
+     (hex 00712B), so every bg-green, text-green, and border-green
+     utility used across the dashboards resolves to this brand green. */
+  --color-green-50: #F0F6F2;
+  --color-green-100: #E0EEE6;
+  --color-green-200: #B8D7C4;
+  --color-green-300: #85BB99;
+  --color-green-400: #479966;
+  --color-green-500: #1A7F40;
+  --color-green-600: #00712B;
+  --color-green-700: #005D23;
+  --color-green-800: #004D1D;
+  --color-green-900: #003D17;
+  --color-green-950: #002D11;
 }
 
 :root {
   --font-size: 16px;
-  --background: #0A0D0B;
-  --foreground: #F3EFE4;
-  --card: #12160F;
-  --card-foreground: #F3EFE4;
-  --popover: #12160F;
-  --popover-foreground: #F3EFE4;
-  --primary: #C17A3E;
-  --primary-foreground: #0A0D0B;
-  --secondary: #171C14;
-  --secondary-foreground: #E89A5C;
-  --muted: #171C14;
-  --muted-foreground: #948F80;
-  --accent: #1B2216;
-  --accent-foreground: #E89A5C;
-  --destructive: #D34D4D;
+  --background: #ffffff;
+  --foreground: #0d1f14;
+  --card: #ffffff;
+  --card-foreground: #0d1f14;
+  --popover: #ffffff;
+  --popover-foreground: #0d1f14;
+  --primary: #F47920;
+  --primary-foreground: #ffffff;
+  --secondary: #f0fdf4;
+  --secondary-foreground: #15803d;
+  --muted: #f0fdf4;
+  --muted-foreground: #52796a;
+  --accent: #fff7ed;
+  --accent-foreground: #9a3412;
+  --destructive: #DC2626;
   --destructive-foreground: #ffffff;
-  --border: #26301F;
-  --input: #171C14;
-  --input-background: #171C14;
-  --switch-background: #2E8F67;
+  --border: #d1fae5;
+  --input: #ffffff;
+  --input-background: #ffffff;
+  --switch-background: #6ee7b7;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #C17A3E;
-  --chart-1: #C17A3E;
-  --chart-2: #12855A;
-  --chart-3: #E89A5C;
-  --chart-4: #1CAA73;
-  --chart-5: #D34D4D;
-  --radius: 0.75rem;
-  --sidebar: #0A0D0B;
-  --sidebar-foreground: #F3EFE4;
-  --sidebar-primary: #C17A3E;
-  --sidebar-primary-foreground: #0A0D0B;
-  --sidebar-accent: rgba(255,255,255,0.06);
-  --sidebar-accent-foreground: #F3EFE4;
-  --sidebar-border: rgba(255,255,255,0.08);
-  --sidebar-ring: #C17A3E;
+  --ring: #F47920;
+  --chart-1: #F47920;
+  --chart-2: #16a34a;
+  --chart-3: #F59E0B;
+  --chart-4: #10b981;
+  --chart-5: #f43f5e;
+  --radius: 0.625rem;
+  --sidebar: #0a2016;
+  --sidebar-foreground: #f0fdf4;
+  --sidebar-primary: #F47920;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(255,255,255,0.08);
+  --sidebar-accent-foreground: #f0fdf4;
+  --sidebar-border: rgba(255,255,255,0.1);
+  --sidebar-ring: #F47920;
 }
 
 .dark {
-  --background: #0A0D0B;
-  --foreground: #F3EFE4;
-  --card: #12160F;
-  --card-foreground: #F3EFE4;
-  --popover: #12160F;
-  --popover-foreground: #F3EFE4;
-  --primary: #C17A3E;
-  --primary-foreground: #0A0D0B;
-  --secondary: #171C14;
-  --secondary-foreground: #E89A5C;
-  --muted: #171C14;
-  --muted-foreground: #948F80;
-  --accent: #1B2216;
-  --accent-foreground: #E89A5C;
-  --destructive: #D34D4D;
+  --background: #ffffff;
+  --foreground: #0d1f14;
+  --card: #ffffff;
+  --card-foreground: #0d1f14;
+  --popover: #ffffff;
+  --popover-foreground: #0d1f14;
+  --primary: #F47920;
+  --primary-foreground: #ffffff;
+  --secondary: #f0fdf4;
+  --secondary-foreground: #15803d;
+  --muted: #f0fdf4;
+  --muted-foreground: #52796a;
+  --accent: #fff7ed;
+  --accent-foreground: #9a3412;
+  --destructive: #DC2626;
   --destructive-foreground: #ffffff;
-  --border: #26301F;
-  --input: #171C14;
-  --input-background: #171C14;
-  --switch-background: #2E8F67;
-  --ring: #C17A3E;
+  --border: #d1fae5;
+  --input: #ffffff;
+  --input-background: #ffffff;
+  --switch-background: #6ee7b7;
+  --ring: #F47920;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --chart-1: #C17A3E;
-  --chart-2: #12855A;
-  --chart-3: #E89A5C;
-  --chart-4: #1CAA73;
-  --chart-5: #D34D4D;
-  --sidebar: #0A0D0B;
-  --sidebar-foreground: #F3EFE4;
-  --sidebar-primary: #C17A3E;
-  --sidebar-primary-foreground: #0A0D0B;
-  --sidebar-accent: rgba(255,255,255,0.06);
-  --sidebar-accent-foreground: #F3EFE4;
-  --sidebar-border: rgba(255,255,255,0.08);
-  --sidebar-ring: #C17A3E;
+  --chart-1: #F47920;
+  --chart-2: #16a34a;
+  --chart-3: #F59E0B;
+  --chart-4: #10b981;
+  --chart-5: #f43f5e;
+  --sidebar: #0a2016;
+  --sidebar-foreground: #f0fdf4;
+  --sidebar-primary: #F47920;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(255,255,255,0.08);
+  --sidebar-accent-foreground: #f0fdf4;
+  --sidebar-border: rgba(255,255,255,0.1);
+  --sidebar-ring: #F47920;
 }
 
 @theme inline {

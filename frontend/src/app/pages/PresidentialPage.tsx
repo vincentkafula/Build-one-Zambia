@@ -153,17 +153,12 @@ export function PresidentialPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#E89A5C] to-[#12855A] bg-clip-text text-transparent mb-2">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#198754] to-[#DC2626] bg-clip-text text-transparent mb-2">
               Presidential Election Results
             </h1>
             <div className="flex items-center gap-2 flex-wrap">
               <p className="text-muted-foreground">Real-time results from polling stations across Zambia</p>
-              <span
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
-                style={usingLive
-                  ? { background: 'rgba(28,170,115,0.12)', color: '#1CAA73', border: '1px solid rgba(28,170,115,0.35)' }
-                  : { background: 'rgba(232,154,92,0.12)', color: '#E89A5C', border: '1px solid rgba(232,154,92,0.35)' }}
-              >
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${usingLive ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                 {usingLive ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
                 {usingLive ? `Live · ${live.stationsReporting} stations` : 'Preview data'}
               </span>
@@ -230,7 +225,7 @@ export function PresidentialPage() {
           <div className="lg:col-span-2 space-y-5">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
-                <div className="w-1 h-8 bg-gradient-to-b from-[#E89A5C] to-[#12855A] rounded-full"></div>
+                <div className="w-1 h-8 bg-gradient-to-b from-[#198754] to-[#DC2626] rounded-full"></div>
                 <h2 className="text-xl font-bold text-foreground">
                   {showAllCandidates ? 'All Candidates' : 'Top 4 Candidates'}
                 </h2>
@@ -239,7 +234,7 @@ export function PresidentialPage() {
                 <button
                   onClick={() => setShowAllCandidates(v => !v)}
                   className="text-sm px-4 py-1.5 rounded-full border transition-colors"
-                  style={{ borderColor: '#E89A5C', color: showAllCandidates ? '#0A0D0B' : '#E89A5C', background: showAllCandidates ? '#E89A5C' : 'transparent' }}
+                  style={{ borderColor: '#DC2626', color: showAllCandidates ? '#fff' : '#DC2626', background: showAllCandidates ? '#DC2626' : 'transparent' }}
                 >
                   {showAllCandidates ? 'Show Top 4' : 'View Full Results'}
                 </button>
@@ -259,7 +254,7 @@ export function PresidentialPage() {
               <button
                 onClick={() => setShowAllCandidates(true)}
                 className="w-full py-3 rounded-xl border-2 border-dashed text-sm font-semibold transition-colors"
-                style={{ borderColor: '#E89A5C', color: '#E89A5C' }}
+                style={{ borderColor: '#DC2626', color: '#DC2626' }}
               >
                 View Full Results — {candidateResults.length - 4} more candidate{candidateResults.length - 4 !== 1 ? 's' : ''}
               </button>
@@ -270,7 +265,7 @@ export function PresidentialPage() {
           <div className="lg:col-span-1">
             <div className="bg-gradient-to-br from-card to-card/80 border-2 border-border rounded-2xl p-6 sticky top-20 shadow-xl">
               <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
-                <div className="w-1 h-6 bg-gradient-to-b from-[#E89A5C] to-[#12855A] rounded-full"></div>
+                <div className="w-1 h-6 bg-gradient-to-b from-[#198754] to-[#DC2626] rounded-full"></div>
                 Vote Distribution
               </h3>
               {totalValidVotes > 0 ? (
@@ -348,7 +343,7 @@ export function PresidentialPage() {
                 <div key={station.id} className="bg-card border border-border rounded-lg p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-[#1CAA73]" />
+                      <MapPin className="w-4 h-4 text-[#198754]" />
                       <h3 className="font-semibold text-foreground">{station.name}</h3>
                     </div>
                     {station.timestamp && (
