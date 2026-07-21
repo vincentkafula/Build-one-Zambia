@@ -12,7 +12,7 @@ import { MembershipCertSection, MembershipCardSection, AdoptionCertSection, Appo
 import { ShopCheckout, CartItem } from '../../components/ShopCheckout';
 import { membershipApi, shopApi, securityApi, ShopOrder, ShopPayment, ShopProduct } from '../../lib/api';
 
-const A = '#3b82f6';
+const A = '#00712B';
 const NAVY = '#1e2d4a';
 
 const memberData = {
@@ -390,8 +390,8 @@ export default function MemberDashboard() {
               {[
                 { label: 'MEMBERSHIP', value: profile.status, color: '#00712B' },
                 { label: 'MEMBER NO.', value: profile.membershipNumber, color: A },
-                { label: 'ORDERS', value: String(orders.length), color: '#f59e0b' },
-                { label: 'WARD', value: profile.ward, color: '#8b5cf6' },
+                { label: 'ORDERS', value: String(orders.length), color: '#00712B' },
+                { label: 'WARD', value: profile.ward, color: '#00712B' },
               ].map(s => (
                 <div key={s.label} className="rounded-2xl p-4" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
                   <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.65rem', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.35)', marginBottom: 6 }}>{s.label}</p>

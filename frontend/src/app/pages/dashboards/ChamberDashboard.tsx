@@ -8,7 +8,7 @@ import {
 import { chambersApi, ChamberAmendment, AmendmentField } from '../../lib/api';
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
 
-const A = '#f59e0b';
+const A = '#00712B';
 const NAVY = '#1e2d4a';
 
 type SectionKey = 'overview' | 'investors' | 'cooperatives' | 'intern-coordinator' | 'amendments' | 'personal-details' | 'security' | 'address-book';
@@ -206,8 +206,8 @@ export default function ChamberDashboard() {
               {[
                 { label: 'Companies to Invest', value: INVESTORS.length, icon: <Globe size={20} />, color: A },
                 { label: 'Zambian Cooperatives', value: COOPERATIVES.length, icon: <Users size={20} />, color: '#00712B' },
-                { label: 'Intern Coordinator', value: '1 Assigned', icon: <GraduationCap size={20} />, color: '#8b5cf6' },
-                { label: 'Pending Amendments', value: pendingCount, icon: <FilePenLine size={20} />, color: '#f97316' },
+                { label: 'Intern Coordinator', value: '1 Assigned', icon: <GraduationCap size={20} />, color: '#00712B' },
+                { label: 'Pending Amendments', value: pendingCount, icon: <FilePenLine size={20} />, color: '#00712B' },
               ].map(s => (
                 <div key={s.label} className="rounded-xl p-4 flex items-center gap-3" style={{backgroundColor: "#123322", border: "1px solid rgba(255,255,255,0.07)"}}>
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white" style={{ background: s.color }}>{s.icon}</div>

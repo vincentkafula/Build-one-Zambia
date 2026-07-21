@@ -44,7 +44,7 @@ function SectionLoader() {
   );
 }
 
-const A = '#0ea5e9';
+const A = '#00712B';
 const NAVY = '#1e2d4a';
 
 type SectionKey = 'overview' | 'notice-board' | 'system-setup' | 'election-users' |
@@ -146,7 +146,7 @@ function VoterTurnoutSection() {
       </div>
       <div className="grid grid-cols-3 gap-4 mb-6 mt-4">
         {[
-          { label: 'Total Registered', value: totalRegistered.toLocaleString(), color: '#0ea5e9' },
+          { label: 'Total Registered', value: totalRegistered.toLocaleString(), color: '#00712B' },
           { label: 'Total Votes Cast', value: totalVotes.toLocaleString(), color: '#00712B' },
           { label: 'National Turnout', value: `${overallPct.toFixed(1)}%`, color: turnoutColor(overallPct) },
         ].map(s => (
@@ -456,26 +456,26 @@ export default function ManagerDashboard() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {[
-                  { key: 'system-setup',      label: 'System Setup',         desc: 'Configure backend, check service health.',                          icon: <Server size={18} />,      color: '#6366f1' },
-                  { key: 'election-users',    label: 'Election Users',        desc: 'Create & manage all 7 tiers of election staff.',                    icon: <Users size={18} />,       color: '#0ea5e9' },
-                  { key: 'shadow-cabinet',    label: 'Shadow Cabinet',        desc: 'Edit Shadow Ministers — names, roles, bios & photos for male & female pages.', icon: <Users size={18} />, color: '#c084fc' },
-                  { key: 'candidates',        label: 'Candidates',            desc: 'Add, edit & remove presidential, MP, mayoral & councillor candidates.', icon: <Shield size={18} />, color: '#f59e0b' },
-                  { key: 'leadership',        label: 'Party Leadership',      desc: 'Add or remove party leaders and officials.',                        icon: <Crown size={18} />,       color: '#a855f7' },
+                  { key: 'system-setup',      label: 'System Setup',         desc: 'Configure backend, check service health.',                          icon: <Server size={18} />,      color: '#00712B' },
+                  { key: 'election-users',    label: 'Election Users',        desc: 'Create & manage all 7 tiers of election staff.',                    icon: <Users size={18} />,       color: '#00712B' },
+                  { key: 'shadow-cabinet',    label: 'Shadow Cabinet',        desc: 'Edit Shadow Ministers — names, roles, bios & photos for male & female pages.', icon: <Users size={18} />, color: '#00712B' },
+                  { key: 'candidates',        label: 'Candidates',            desc: 'Add, edit & remove presidential, MP, mayoral & councillor candidates.', icon: <Shield size={18} />, color: '#00712B' },
+                  { key: 'leadership',        label: 'Party Leadership',      desc: 'Add or remove party leaders and officials.',                        icon: <Crown size={18} />,       color: '#00712B' },
                   { key: 'news',              label: 'News & Posts',          desc: 'Publish, edit and remove news articles.',                           icon: <Newspaper size={18} />,   color: '#00712B' },
-                  { key: 'shop',              label: 'Shop Manager',          desc: 'Add, edit and remove products in the BOZ shop.',                    icon: <ShoppingBag size={18} />, color: '#ec4899' },
-                  { key: 'documents',         label: 'Documents & Letters',   desc: 'Upload official letters and documents.',                            icon: <FileText size={18} />,    color: '#f97316' },
-                  { key: 'press-statements',  label: 'Press Statements',      desc: 'Upload and manage press releases.',                                 icon: <Newspaper size={18} />,   color: '#06b6d4' },
+                  { key: 'shop',              label: 'Shop Manager',          desc: 'Add, edit and remove products in the BOZ shop.',                    icon: <ShoppingBag size={18} />, color: '#00712B' },
+                  { key: 'documents',         label: 'Documents & Letters',   desc: 'Upload official letters and documents.',                            icon: <FileText size={18} />,    color: '#00712B' },
+                  { key: 'press-statements',  label: 'Press Statements',      desc: 'Upload and manage press releases.',                                 icon: <Newspaper size={18} />,   color: '#00712B' },
                   { key: 'live-streams',      label: 'Live Streaming',        desc: 'Go live and manage stream sessions.',                               icon: <Radio size={18} />,       color: A },
-                  { key: 'events',            label: 'Events Manager',        desc: 'Create and manage party events.',                                   icon: <Calendar size={18} />,    color: '#84cc16' },
-                  { key: 'membership-admin',  label: 'Membership',            desc: 'View and manage party members.',                                    icon: <Users size={18} />,       color: '#8b5cf6' },
+                  { key: 'events',            label: 'Events Manager',        desc: 'Create and manage party events.',                                   icon: <Calendar size={18} />,    color: '#00712B' },
+                  { key: 'membership-admin',  label: 'Membership',            desc: 'View and manage party members.',                                    icon: <Users size={18} />,       color: '#00712B' },
                   { key: 'registrations',     label: 'Registrations',         desc: 'Approve or reject member registrations.',                           icon: <CheckCircle size={18} />, color: '#00712B' },
-                  { key: 'results-approval',  label: 'Results Approval',      desc: 'Verify and approve polling station results.',                       icon: <CheckCircle size={18} />, color: '#f59e0b' },
-                  { key: 'voter-roll-upload', label: 'Voter Roll Upload',     desc: 'Upload the official ECZ voter roll CSV.',                           icon: <FileText size={18} />,    color: '#0891b2' },
-                  { key: 'email',             label: 'Email Settings',        desc: 'Configure Resend email service.',                                   icon: <Mail size={18} />,        color: '#64748b' },
-                  { key: 'security-centre',   label: 'Security Centre',       desc: 'Monitor system security and access logs.',                          icon: <ShieldCheck size={18} />, color: '#dc2626' },
-                  { key: 'adoption-certs',    label: 'Adoption Certificates', desc: 'Issue and manage adoption certificates.',                           icon: <Award size={18} />,       color: '#14b8a6' },
-                  { key: 'appointment-certs', label: 'Appointment Certificates', desc: 'Appoint members to national, provincial, district, constituency, or ward offices.', icon: <Shield size={18} />,      color: '#c9a84c' },
-                  { key: 'chamber-amendments',label: 'Chamber Amendments',    desc: 'Manage chamber amendment submissions.',                             icon: <Building2 size={18} />,   color: '#f43f5e' },
+                  { key: 'results-approval',  label: 'Results Approval',      desc: 'Verify and approve polling station results.',                       icon: <CheckCircle size={18} />, color: '#00712B' },
+                  { key: 'voter-roll-upload', label: 'Voter Roll Upload',     desc: 'Upload the official ECZ voter roll CSV.',                           icon: <FileText size={18} />,    color: '#00712B' },
+                  { key: 'email',             label: 'Email Settings',        desc: 'Configure Resend email service.',                                   icon: <Mail size={18} />,        color: '#00712B' },
+                  { key: 'security-centre',   label: 'Security Centre',       desc: 'Monitor system security and access logs.',                          icon: <ShieldCheck size={18} />, color: '#00712B' },
+                  { key: 'adoption-certs',    label: 'Adoption Certificates', desc: 'Issue and manage adoption certificates.',                           icon: <Award size={18} />,       color: '#00712B' },
+                  { key: 'appointment-certs', label: 'Appointment Certificates', desc: 'Appoint members to national, provincial, district, constituency, or ward offices.', icon: <Shield size={18} />,      color: '#00712B' },
+                  { key: 'chamber-amendments',label: 'Chamber Amendments',    desc: 'Manage chamber amendment submissions.',                             icon: <Building2 size={18} />,   color: '#00712B' },
                 ].map(card => (
                   <button key={card.key} onClick={() => setActive(card.key as SectionKey)}
                     className="flex items-start gap-3 p-4 rounded-2xl text-left w-full transition-all hover:scale-[1.02]"

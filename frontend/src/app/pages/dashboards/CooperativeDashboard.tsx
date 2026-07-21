@@ -127,9 +127,9 @@ export default function CooperativeDashboard() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               {[
                 { label: 'Equipment Approved', value: EQUIPMENT_APPROVED.length, icon: <Package size={20} />, color: A },
-                { label: 'Equipment Applied', value: EQUIPMENT_APPLIED.length, icon: <PackagePlus size={20} />, color: '#f59e0b' },
-                { label: 'Products Exported', value: EXPORTS.length, icon: <Globe size={20} />, color: '#6366f1' },
-                { label: 'Investors', value: INVESTORS.length, icon: <Users size={20} />, color: '#ec4899' },
+                { label: 'Equipment Applied', value: EQUIPMENT_APPLIED.length, icon: <PackagePlus size={20} />, color: '#00712B' },
+                { label: 'Products Exported', value: EXPORTS.length, icon: <Globe size={20} />, color: '#00712B' },
+                { label: 'Investors', value: INVESTORS.length, icon: <Users size={20} />, color: '#00712B' },
               ].map(s => (
                 <div key={s.label} className="rounded-xl p-4 flex items-center gap-3" style={{backgroundColor: "#123322", border: "1px solid rgba(255,255,255,0.07)"}}>
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white" style={{ background: s.color }}>

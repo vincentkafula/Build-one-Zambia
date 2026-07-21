@@ -385,8 +385,8 @@ export default function AdminPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
                   { label: 'Database', value: 'IndexedDB v1', icon: Server, color: '#00712B', sub: '8 object stores' },
-                  { label: 'Auth System', value: 'Session-based', icon: Lock, color: '#3b82f6', sub: '8-hour sessions' },
-                  { label: 'Sync Status', value: syncStats?.lastSyncAt ? 'Active' : 'Idle', icon: Globe, color: '#a855f7', sub: syncStats?.lastSyncAt ? `Last: ${new Date(syncStats.lastSyncAt).toLocaleTimeString()}` : 'Never synced' },
+                  { label: 'Auth System', value: 'Session-based', icon: Lock, color: '#00712B', sub: '8-hour sessions' },
+                  { label: 'Sync Status', value: syncStats?.lastSyncAt ? 'Active' : 'Idle', icon: Globe, color: '#00712B', sub: syncStats?.lastSyncAt ? `Last: ${new Date(syncStats.lastSyncAt).toLocaleTimeString()}` : 'Never synced' },
                 ].map((info) => (
                   <div key={info.label} className="bg-gray-800/40 border border-gray-700/50 rounded-xl p-4 flex items-center gap-4">
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${info.color}20` }}>

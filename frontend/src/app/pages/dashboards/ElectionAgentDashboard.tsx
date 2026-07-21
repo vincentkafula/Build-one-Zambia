@@ -52,47 +52,47 @@ type SectionKey =
 
 const ROLE_DEFS: Record<string, RoleDef> = {
   polling_agent: {
-    label: 'Polling Station Agent', color: '#ef4444', scopeLabel: 'Polling Station',
+    label: 'Polling Station Agent', color: '#00712B', scopeLabel: 'Polling Station',
     eczLevel: 'Polling Station', canEnterPS: true,
     sections: ['overview', 'data-entry', 'ecz-entry', 'comparison', 'personal-details', 'security'],
   },
   agent: {
-    label: 'Polling Station Agent', color: '#ef4444', scopeLabel: 'Polling Station',
+    label: 'Polling Station Agent', color: '#00712B', scopeLabel: 'Polling Station',
     eczLevel: 'Polling Station', canEnterPS: true,
     sections: ['overview', 'data-entry', 'ecz-entry', 'comparison', 'personal-details', 'security'],
   },
   election_agent: {
-    label: 'Polling Station Agent', color: '#ef4444', scopeLabel: 'Polling Station',
+    label: 'Polling Station Agent', color: '#00712B', scopeLabel: 'Polling Station',
     eczLevel: 'Polling Station', canEnterPS: true,
     sections: ['overview', 'data-entry', 'ecz-entry', 'comparison', 'personal-details', 'security'],
   },
   ward_manager: {
-    label: 'Ward Manager', color: '#005D23', scopeLabel: 'Ward',
+    label: 'Ward Manager', color: '#00712B', scopeLabel: 'Ward',
     eczLevel: 'Ward', canEnterPS: false,
     sections: ['overview', 'ecz-entry', 'comparison', 'discrepancy', 'personal-details', 'security'],
   },
   constituency_manager: {
-    label: 'Constituency Manager', color: '#0ea5e9', scopeLabel: 'Constituency',
+    label: 'Constituency Manager', color: '#00712B', scopeLabel: 'Constituency',
     eczLevel: 'Constituency', canEnterPS: false,
     sections: ['overview', 'ecz-entry', 'comparison', 'discrepancy', 'personal-details', 'security'],
   },
   district_manager: {
-    label: 'District Manager', color: '#f59e0b', scopeLabel: 'District',
+    label: 'District Manager', color: '#00712B', scopeLabel: 'District',
     eczLevel: 'District', canEnterPS: false,
     sections: ['overview', 'ecz-entry', 'comparison', 'discrepancy', 'personal-details', 'security'],
   },
   provincial_manager: {
-    label: 'Provincial Manager', color: '#8b5cf6', scopeLabel: 'Province',
+    label: 'Provincial Manager', color: '#00712B', scopeLabel: 'Province',
     eczLevel: 'Province', canEnterPS: false,
     sections: ['overview', 'ecz-entry', 'comparison', 'discrepancy', 'personal-details', 'security'],
   },
   national_manager: {
-    label: 'National Manager', color: '#0ea5e9', scopeLabel: 'National',
+    label: 'National Manager', color: '#00712B', scopeLabel: 'National',
     eczLevel: 'National', canEnterPS: false,
     sections: ['overview', 'ecz-entry', 'comparison', 'discrepancy', 'personal-details', 'security'],
   },
   super_admin: {
-    label: 'Super Administrator', color: '#7c3aed', scopeLabel: 'National',
+    label: 'Super Administrator', color: '#00712B', scopeLabel: 'National',
     eczLevel: 'National', canEnterPS: false,
     sections: ['overview', 'ecz-entry', 'comparison', 'discrepancy', 'personal-details', 'security'],
   },
@@ -110,12 +110,12 @@ const NAV_ITEMS: { key: SectionKey; label: string; icon: React.ReactNode; group:
 
 // ── Role selector shown BEFORE login ─────────────────────────────────────────
 const SELECTABLE_ROLES: { role: string; label: string; color: string; icon: React.ReactNode }[] = [
-  { role: 'polling_agent',        label: 'Polling Station Agent', color: '#ef4444', icon: <MapPin size={18} /> },
-  { role: 'ward_manager',         label: 'Ward Manager',          color: '#005D23', icon: <Shield size={18} /> },
-  { role: 'constituency_manager', label: 'Constituency Manager',  color: '#0ea5e9', icon: <Shield size={18} /> },
-  { role: 'district_manager',     label: 'District Manager',      color: '#f59e0b', icon: <Shield size={18} /> },
-  { role: 'provincial_manager',   label: 'Provincial Manager',    color: '#8b5cf6', icon: <Shield size={18} /> },
-  { role: 'national_manager',     label: 'National Manager',      color: '#0ea5e9', icon: <Shield size={18} /> },
+  { role: 'polling_agent',        label: 'Polling Station Agent', color: '#00712B', icon: <MapPin size={18} /> },
+  { role: 'ward_manager',         label: 'Ward Manager',          color: '#00712B', icon: <Shield size={18} /> },
+  { role: 'constituency_manager', label: 'Constituency Manager',  color: '#00712B', icon: <Shield size={18} /> },
+  { role: 'district_manager',     label: 'District Manager',      color: '#00712B', icon: <Shield size={18} /> },
+  { role: 'provincial_manager',   label: 'Provincial Manager',    color: '#00712B', icon: <Shield size={18} /> },
+  { role: 'national_manager',     label: 'National Manager',      color: '#00712B', icon: <Shield size={18} /> },
 ];
 
 // ── Login gate shown when no session ─────────────────────────────────────────
