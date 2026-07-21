@@ -42,12 +42,13 @@ function findProvinceChain(provinceId: string) {
   return null;
 }
 
-function resolveCandidateList(electionType: ElectionType, provinceId: string, districtId: string): Candidate[] {
+function resolveCandidateList(electionType: ElectionType, provinceId: string, districtId: string, districtName: string): Candidate[] {
   if (electionType === 'presidential') return presidentialCandidates;
   const chain = findProvinceChain(provinceId);
   if (!chain) return [];
   if (electionType === 'mayoral') {
-    const d = chain.province.districts.find(d => d.id === districtId);
+    const matches = chain.province.districts.filter(d => d.id === districtId);
+    const d = matches.length <= 1 ? matches[0] : matches.find(m => m.name === districtName) ?? matches[0];
     return d?.mayoralCandidates ?? [];
   }
   return []; // parliament (per constituency) & councillor (per ward) not resolvable at this level
@@ -76,7 +77,9 @@ export function DistrictManagerFiguresPage() {
   const districts = chain?.province.districts ?? [];
 
   const [electionType, setElectionType] = useState<ElectionType>('presidential');
-  const [districtId, setDistrictId] = useState('');
+  const [districtName, setDistrictName] = useState('');
+  const selectedDistrict = districts.find(d => d.name === districtName);
+  const districtId = selectedDistrict?.id || '';
   const [figures, setFigures] = useState<DistrictFigure[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -127,14 +130,13 @@ export function DistrictManagerFiguresPage() {
     return { perCandidate, rejectedBallots, totalVotesCast, registeredVoters, districtsApproved: approvedFigs.length };
   }, [figures]);
 
-  const selected = useMemo(() => figures.find(f => f.levelId === districtId) || null, [figures, districtId]);
-  const selectedDistrict = districts.find(d => d.id === districtId);
+  const selected = useMemo(() => figures.find(f => f.levelId === districtId && (f.levelName === districtName || !f.levelName)) || null, [figures, districtId, districtName]);
 
   async function handleDecision(status: 'approved' | 'rejected', notes?: string) {
     if (!districtId) return;
     setActioning(true);
     try {
-      await dataEntryApi.updateECZFigureStatus('district', districtId, eczElectionType, status, notes);
+      await dataEntryApi.updateECZFigureStatus('district', districtId, eczElectionType, status, notes, districtName);
       await load();
       setRejecting(false);
       setRejectNote('');
@@ -158,7 +160,7 @@ export function DistrictManagerFiguresPage() {
   }
 
   const badge = selected ? statusBadge(selected.status) : null;
-  const candList = selected ? resolveCandidateList(electionType, provinceId, selected.levelId) : [];
+  const candList = selected ? resolveCandidateList(electionType, provinceId, selected.levelId, districtName) : [];
   const rejected = selected?.rejectedBallots ?? 0;
   const totalCast = selected?.totalVotesCast ?? selected?.totalVotes ?? 0;
   const registered = selected?.registeredVoters ?? 0;
@@ -171,7 +173,7 @@ export function DistrictManagerFiguresPage() {
           {ELECTION_OPTIONS.map(opt => (
             <button
               key={opt.value}
-              onClick={() => { setElectionType(opt.value); setDistrictId(''); }}
+              onClick={() => { setElectionType(opt.value); setDistrictName(''); }}
               className="px-3 py-2 rounded-xl text-sm transition-all"
               style={{
                 fontFamily: 'Oswald, sans-serif', letterSpacing: '0.03em',
@@ -219,17 +221,17 @@ export function DistrictManagerFiguresPage() {
         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem', marginBottom: 14 }}>
           Choose a district in {provinceName} to see whether its district manager has entered figures.
         </p>
-        <select className="w-full px-3 py-2.5 rounded-lg text-sm" style={selectStyle} value={districtId} onChange={e => setDistrictId(e.target.value)}>
+        <select className="w-full px-3 py-2.5 rounded-lg text-sm" style={selectStyle} value={districtName} onChange={e => setDistrictName(e.target.value)}>
           <option value="">Select District</option>
           {districts.map(d => {
-            const fig = figures.find(x => x.levelId === d.id);
+            const fig = figures.find(x => x.levelId === d.id && (x.levelName === d.name || !x.levelName));
             const tag = fig ? (fig.status === 'approved' ? ' — Approved' : fig.status === 'rejected' ? ' — Not Approved' : ' — Pending Review') : ' — Not yet submitted';
-            return <option key={d.id} value={d.id}>{d.name}{tag}</option>;
+            return <option key={d.id + d.name} value={d.name}>{d.name}{tag}</option>;
           })}
         </select>
       </div>
 
-      {districtId && (
+      {districtName && (
         !selected ? (
           <div className="flex items-start gap-3 px-4 py-4 rounded-xl" style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
             <AlertTriangle size={18} style={{ color: '#f59e0b', marginTop: 2, flexShrink: 0 }} />

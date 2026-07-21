@@ -12,12 +12,15 @@ function StatCard({ label, value, color }: { label: string; value: string | numb
 }
 
 /** Sum registeredVoters for every polling station under a given scope.
- *  District ids are only unique *within* a province (ECZ reuses the same
- *  3-digit code across provinces, e.g. '006' is both Lusaka district and
- *  Kapiri Mposhi district) — so matching a district_manager's scopeId
- *  alone silently pulls in every same-numbered district nationwide and
- *  inflates the total. Disambiguate with scopeName (the district's name,
- *  unique nationally) the same way DistrictECZEntryPage already does. */
+ *  District ids are not even unique within their own province -- ECZ's
+ *  3-digit codes repeat both across provinces (e.g. '006' is Lusaka
+ *  district AND Kapiri Mposhi district) *and* within the same province
+ *  (Eastern province alone has two districts coded '001': Chadiza and
+ *  Chama). Matching a district_manager's scopeId alone silently pulls in
+ *  every same-numbered district and inflates the total. District names
+ *  are unique nationally (verified against the full list), so resolve
+ *  the exact district object by filtering id-matches down by name,
+ *  rather than reconstructing a composite key that can itself collide. */
 function sumRegisteredVoters(role: string, scopeId: string, scopeName: string): { total: number; stations: number } | null {
   let total = 0;
   let stations = 0;
@@ -32,33 +35,24 @@ function sumRegisteredVoters(role: string, scopeId: string, scopeName: string): 
 
   const normName = (s: string) => s.trim().toLowerCase();
 
-  // Resolve which single district this scope actually refers to, up front,
-  // so a colliding id elsewhere can never leak into the sum below.
-  let targetDistrictKey: string | null = null;
+  // Resolve the exact district object this scope refers to, up front, so
+  // no colliding id (within or across provinces) can leak into the sum.
+  let targetDistrict: (typeof provinces)[number]['districts'][number] | null = null;
   if (isDistrict) {
-    const matches: string[] = [];
-    for (const p of provinces) {
-      for (const d of p.districts) {
-        if (d.id === scopeId) matches.push(`${p.id}|${d.id}`);
-      }
-    }
+    const matches: (typeof provinces)[number]['districts'][number][] = [];
+    for (const p of provinces) for (const d of p.districts) if (d.id === scopeId) matches.push(d);
     if (matches.length <= 1) {
-      targetDistrictKey = matches[0] ?? null;
+      targetDistrict = matches[0] ?? null;
     } else {
-      let found: string | null = null;
-      for (const p of provinces) {
-        for (const d of p.districts) {
-          if (d.id === scopeId && normName(d.name) === normName(scopeName)) found = `${p.id}|${d.id}`;
-        }
-      }
-      targetDistrictKey = found ?? matches[0];
+      const target = normName(scopeName);
+      targetDistrict = matches.find(d => normName(d.name) === target) ?? matches[0];
     }
   }
 
   for (const p of provinces) {
     if (isProvince && p.id !== scopeId) continue;
     for (const d of p.districts) {
-      if (isDistrict && `${p.id}|${d.id}` !== targetDistrictKey) continue;
+      if (isDistrict && d !== targetDistrict) continue;
       for (const c of d.constituencies) {
         if (isConstituency && c.id !== scopeId) continue;
         for (const w of c.wards) {

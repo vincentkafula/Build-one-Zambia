@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { MovingStars } from '../components/MovingStars';
 import { StatCard } from '../components/StatCard';
 import { CandidateCard } from '../components/CandidateCard';
+import { ResultsStatusBar, ResultStage } from '../components/ResultsStatusBar';
 import {
   presidentialCandidates,
   getAllPollingStations,
@@ -112,6 +113,7 @@ function getMockStats() {
 
 export function HomePage() {
   const [showAllCandidates, setShowAllCandidates] = useState(false);
+  const [resultStage, setResultStage] = useState<ResultStage>('provisional');
 
   const live = useElectionResults('presidential');
 
@@ -148,6 +150,8 @@ export function HomePage() {
     <div className="min-h-screen bg-background">
       <MovingStars />
       <div className="max-w-7xl mx-auto px-4 py-8">
+
+        <ResultsStatusBar title="Dashboard" stage={resultStage} onStageChange={setResultStage} />
 
         {/* Header */}
         <div className="mb-10 text-center">

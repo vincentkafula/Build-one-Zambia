@@ -783,19 +783,19 @@ export const dataEntryApi = {
     provinceId?: string;
   }) => request<{ success: boolean; figure: unknown }>('POST', '/data-entry/ecz-figures', data as unknown as Record<string, unknown>, true),
 
-  getECZFigure: (levelType: string, levelId: string, electionType: string) =>
-    request<{ exists: boolean; figure: unknown }>('GET', `/data-entry/ecz-figures/${levelType}/${encodeURIComponent(levelId)}/${electionType}`, undefined, true),
+  getECZFigure: (levelType: string, levelId: string, electionType: string, levelName?: string) =>
+    request<{ exists: boolean; figure: unknown }>('GET', `/data-entry/ecz-figures/${levelType}/${encodeURIComponent(levelId)}/${electionType}${levelName ? `?levelName=${encodeURIComponent(levelName)}` : ''}`, undefined, true),
 
-  updateECZFigureStatus: (levelType: string, levelId: string, electionType: string, status: string, notes?: string) =>
-    request<{ success: boolean; figure: unknown }>('PATCH', `/data-entry/ecz-figures/${levelType}/${encodeURIComponent(levelId)}/${electionType}/status`, { status, notes }, true),
+  updateECZFigureStatus: (levelType: string, levelId: string, electionType: string, status: string, notes?: string, levelName?: string) =>
+    request<{ success: boolean; figure: unknown }>('PATCH', `/data-entry/ecz-figures/${levelType}/${encodeURIComponent(levelId)}/${electionType}/status`, { status, notes, levelName }, true),
 
   listECZFigures: (filters?: Record<string, string>) => {
     const qs = filters ? '?' + new URLSearchParams(filters).toString() : '';
     return request<{ figures: unknown[]; count: number }>('GET', `/data-entry/ecz-figures${qs}`, undefined, true);
   },
 
-  deleteECZFigure: (levelType: string, levelId: string, electionType: string) =>
-    request<{ success: boolean }>('DELETE', `/data-entry/ecz-figures/${levelType}/${encodeURIComponent(levelId)}/${electionType}`, undefined, true),
+  deleteECZFigure: (levelType: string, levelId: string, electionType: string, levelName?: string) =>
+    request<{ success: boolean }>('DELETE', `/data-entry/ecz-figures/${levelType}/${encodeURIComponent(levelId)}/${electionType}${levelName ? `?levelName=${encodeURIComponent(levelName)}` : ''}`, undefined, true),
 
   getAuditLog: (limit = 200) =>
     request<{ entries: unknown[]; count: number }>('GET', `/data-entry/audit-log?limit=${limit}`, undefined, true),
