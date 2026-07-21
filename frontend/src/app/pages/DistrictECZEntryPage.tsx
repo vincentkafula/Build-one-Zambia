@@ -84,13 +84,19 @@ export function DistrictECZEntryPage() {
     dataEntryApi.listECZFigures({ electionType: eczElectionType, levelType: 'constituency', districtId })
       .then(res => {
         let figs = (res.figures as ConstituencyFigure[]) || [];
-        figs = figs.filter(f => f.districtId === districtId);
+        // districtId on a constituency figure is ECZ's raw code, which
+        // collides (both across and within provinces) -- filter by actual
+        // constituency membership instead, since constituency ids are
+        // globally unique and every constituency belongs to exactly one
+        // real district.
+        const myConstituencyIds = new Set((chain?.district.constituencies ?? []).map(c => c.id));
+        figs = figs.filter(f => myConstituencyIds.has(f.levelId));
         setConstituencyFigures(figs);
       })
       .catch(() => setConstituencyFigures([]))
       .finally(() => setLoadingConstituencies(false));
 
-    dataEntryApi.getECZFigure('district', districtId, eczElectionType)
+    dataEntryApi.getECZFigure('district', districtId, eczElectionType, resolvedDistrictName)
       .then(res => {
         if (res.exists && res.figure) {
           const data = res.figure as { enteredBy?: string; savedAt?: string; rejectedBallots?: number; figures?: ECZFigureCandidate[] };
