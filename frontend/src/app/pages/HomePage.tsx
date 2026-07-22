@@ -154,6 +154,8 @@ export function HomePage() {
 
         <ResultsStatusBar title="Dashboard" stage={resultStage} onStageChange={setResultStage} />
 
+        {showAllCandidates && (
+        <>
         {/* Header */}
         <div className="mb-10 text-center">
           <div className="mb-4 flex flex-col items-center gap-2">
@@ -194,9 +196,12 @@ export function HomePage() {
           />
           <StatCard title="Rejected Ballots" value={totalRejected.toLocaleString()} icon={FileX} color="danger" />
         </div>
+        </>
+        )}
 
         {/* Presidential Results Preview */}
         <div className="bg-gradient-to-br from-card via-card to-card/80 border-2 border-border rounded-2xl p-8 mb-8 shadow-xl">
+          {showAllCandidates && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
             <div>
               <h2 className="text-2xl font-bold text-foreground mb-1 flex items-center gap-2">
@@ -212,6 +217,7 @@ export function HomePage() {
               View Full Results <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Candidate list */}
