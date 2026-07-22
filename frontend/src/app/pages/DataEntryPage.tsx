@@ -355,12 +355,12 @@ export function DataEntryPage() {
                 onChange={(e) => {
                   setElectionType(e.target.value as ElectionType);
                   setFormData({
-                    province: '',
-                    district: '',
-                    constituency: '',
-                    ward: '',
-                    pollingStation: '',
-                    registeredVoters: '',
+                    province:        isPollingAgent ? locked.provinceId      : '',
+                    district:        isPollingAgent ? locked.districtId      : '',
+                    constituency:    isPollingAgent ? locked.constituencyId  : '',
+                    ward:            isPollingAgent ? locked.wardId          : '',
+                    pollingStation:  isPollingAgent ? locked.pollingStationId : '',
+                    registeredVoters: isPollingAgent && locked.registeredVoters ? String(locked.registeredVoters) : '',
                     rejectedBallots: '',
                     candidateVotes: {},
                   });
@@ -394,11 +394,6 @@ export function DataEntryPage() {
                       {resolvedLocation && (
                         <p className="text-green-700 text-xs mt-1">
                           {[resolvedLocation.provinceName, resolvedLocation.districtName, resolvedLocation.constituencyName, resolvedLocation.wardName].filter(Boolean).join(' → ')}
-                        </p>
-                      )}
-                      {locked.registeredVoters > 0 && (
-                        <p className="text-green-700 text-xs mt-1">
-                          Registered Voters: <strong>{locked.registeredVoters.toLocaleString()}</strong>
                         </p>
                       )}
                     </>
