@@ -197,4 +197,15 @@
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
   }
+
+  /* Native <select> dropdown popups ignore most custom background styling
+     in Chrome/Firefox/Safari and fall back to a plain white popup list --
+     but the text color set on the <select> itself (often white, for dark
+     dashboard panels) still gets inherited by <option>, producing white
+     text on a white popup. Force every option to a readable dark-on-light
+     combination regardless of the parent select's own styling. */
+  select option {
+    color: #111827;
+    background-color: #ffffff;
+  }
 }
