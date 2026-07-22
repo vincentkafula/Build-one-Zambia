@@ -167,27 +167,6 @@ export function PresidentialPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <ResultsStatusBar title="Presidential" stage={resultStage} onStageChange={setResultStage} />
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <StatCard
-            title="Registered Voters"
-            value={totalRegistered.toLocaleString()}
-          />
-          <StatCard
-            title="Votes Cast"
-            value={totalVotes.toLocaleString()}
-          />
-          <StatCard
-            title="Voter Turnout"
-            value={`${turnout.toFixed(1)}%`}
-            subtitle={`${filteredStations.length} stations`}
-          />
-          <StatCard
-            title="Rejected Ballots"
-            value={totalRejected.toLocaleString()}
-          />
-        </div>
-
         {/* Results Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Candidate Results */}
@@ -244,6 +223,27 @@ export function PresidentialPage() {
                 View Full Results — {candidateResults.length - 4} more candidate{candidateResults.length - 4 !== 1 ? 's' : ''}
               </button>
             )}
+
+            {/* Stats — sit directly below the candidate percentages */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard
+                title="Registered Voters"
+                value={totalRegistered.toLocaleString()}
+              />
+              <StatCard
+                title="Votes Cast"
+                value={totalVotes.toLocaleString()}
+              />
+              <StatCard
+                title="Voter Turnout"
+                value={`${turnout.toFixed(1)}%`}
+                subtitle={`${filteredStations.length} stations`}
+              />
+              <StatCard
+                title="Rejected Ballots"
+                value={totalRejected.toLocaleString()}
+              />
+            </div>
 
             {/* Constitutional threshold note */}
             <p className="text-sm text-muted-foreground text-center sm:text-left">
