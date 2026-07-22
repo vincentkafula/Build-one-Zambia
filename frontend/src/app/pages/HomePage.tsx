@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { MovingStars } from '../components/MovingStars';
 import { StatCard } from '../components/StatCard';
 import { CandidateCard } from '../components/CandidateCard';
+import { CandidateCardCompact } from '../components/CandidateCardCompact';
 import { ResultsStatusBar, ResultStage } from '../components/ResultsStatusBar';
 import {
   presidentialCandidates,
@@ -212,9 +213,9 @@ export function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Candidate list */}
-            <div className="space-y-3">
+            <div className={showAllCandidates ? 'lg:col-span-2 space-y-3' : 'lg:col-span-3 space-y-3'}>
               <div className="flex items-center justify-between mb-1">
                 <h3 className="text-sm font-semibold text-foreground">
                   {showAllCandidates ? 'All Candidates' : 'Top 4 Candidates'}
@@ -229,18 +230,32 @@ export function HomePage() {
                   </button>
                 )}
               </div>
-              <div className="space-y-3">
-                {(showAllCandidates ? displayResults : displayResults.slice(0, 4)).map((result, index) => (
-                  <CandidateCard
-                    key={result.candidate.id}
-                    candidate={result.candidate}
-                    votes={result.votes}
-                    totalVotes={totalValidVotes}
-                    rank={index + 1}
-                    isLeading={index === 0}
-                  />
-                ))}
-              </div>
+              {showAllCandidates ? (
+                <div className="space-y-3">
+                  {displayResults.map((result, index) => (
+                    <CandidateCard
+                      key={result.candidate.id}
+                      candidate={result.candidate}
+                      votes={result.votes}
+                      totalVotes={totalValidVotes}
+                      rank={index + 1}
+                      isLeading={index === 0}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                  {displayResults.slice(0, 4).map((result) => (
+                    <CandidateCardCompact
+                      key={result.candidate.id}
+                      candidate={result.candidate}
+                      votes={result.votes}
+                      totalVotes={totalValidVotes}
+                      isLeading={result === displayResults[0]}
+                    />
+                  ))}
+                </div>
+              )}
               {!showAllCandidates && displayResults.length > 4 && (
                 <button
                   onClick={() => setShowAllCandidates(true)}
@@ -250,19 +265,22 @@ export function HomePage() {
                   View Full Results — {displayResults.length - 4} more candidate{displayResults.length - 4 !== 1 ? 's' : ''}
                 </button>
               )}
-              <div className="grid grid-cols-2 gap-2 pt-3 border-t border-border">
-                <div className="bg-muted/50 rounded-lg p-3 border border-border">
-                  <div className="text-xs text-muted-foreground mb-1">Total Valid Votes</div>
-                  <div className="font-bold text-lg">{totalValidVotes.toLocaleString()}</div>
+              {showAllCandidates && (
+                <div className="grid grid-cols-2 gap-2 pt-3 border-t border-border">
+                  <div className="bg-muted/50 rounded-lg p-3 border border-border">
+                    <div className="text-xs text-muted-foreground mb-1">Total Valid Votes</div>
+                    <div className="font-bold text-lg">{totalValidVotes.toLocaleString()}</div>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3 border border-border">
+                    <div className="text-xs text-muted-foreground mb-1">Rejected Ballots</div>
+                    <div className="font-bold text-lg">{totalRejected.toLocaleString()}</div>
+                  </div>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-3 border border-border">
-                  <div className="text-xs text-muted-foreground mb-1">Rejected Ballots</div>
-                  <div className="font-bold text-lg">{totalRejected.toLocaleString()}</div>
-                </div>
-              </div>
+              )}
             </div>
 
-            {/* Pie chart */}
+            {/* Pie chart — only shown in the full 'All Candidates' view, matching the Presidential page */}
+            {showAllCandidates && (
             <div className="flex flex-col items-center justify-center">
               <ResponsiveContainer width="100%" height={320}>
                 <PieChart>
@@ -298,6 +316,7 @@ export function HomePage() {
                 ))}
               </div>
             </div>
+            )}
           </div>
         </div>
 
