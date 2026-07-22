@@ -58,7 +58,7 @@ const DASHBOARD_TYPES = [
     title: 'Member Portal',
     description: 'Access your BOZ membership, elections & benefits',
     icon: User,
-    color: '#3b82f6',
+    color: '#00712B',
     route: '/dashboard/member',
   },
   {
@@ -74,7 +74,7 @@ const DASHBOARD_TYPES = [
     title: 'Chamber of Commerce',
     description: 'Ward chamber, investments & cooperative directory',
     icon: Building,
-    color: '#f59e0b',
+    color: '#00712B',
     route: '/dashboard/chamber',
   },
   {
@@ -82,7 +82,7 @@ const DASHBOARD_TYPES = [
     title: 'Internship Portal',
     description: 'Zambia–US partnership internship management',
     icon: GraduationCap,
-    color: '#8b5cf6',
+    color: '#00712B',
     route: '/dashboard/internship',
   },
   {
@@ -90,7 +90,7 @@ const DASHBOARD_TYPES = [
     title: 'Election Dashboard',
     description: 'Polling agents & all levels of election managers — role detected automatically',
     icon: BarChart2,
-    color: '#dc2626',
+    color: '#00712B',
     route: '/dashboard/election',
   },
   {
@@ -98,7 +98,7 @@ const DASHBOARD_TYPES = [
     title: 'Management Dashboard',
     description: 'Super admin — full system, content & election control',
     icon: ShieldCheck,
-    color: '#0ea5e9',
+    color: '#00712B',
     route: '/dashboard/manager',
   },
 ] as const;

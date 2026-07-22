@@ -9,7 +9,7 @@ import { getAllChambers, getInternshipsByChamberId, getOpenInternships } from '.
 import { suggestUSPartners, USChamber } from '../../data/usChambers';
 import { chambersApi, ChamberInfo } from '../../lib/api';
 
-const A = '#8b5cf6';
+const A = '#00712B';
 const NAVY = '#1e2d4a';
 
 type SectionKey = 'overview' | 'chamber' | 'us-chambers' | 'internships' | 'cooperatives' | 'personal-details' | 'security' | 'address-book';
@@ -157,7 +157,7 @@ export default function InternshipDashboard() {
               {[
                 { label: 'Ward Assigned', value: intern.ward, icon: <MapPin size={20} />, color: A },
                 { label: 'Cooperatives in Ward', value: COOPERATIVES.length, icon: <Users size={20} />, color: '#00712B' },
-                { label: 'Chamber Contact', value: 'Available', icon: <Building2 size={20} />, color: '#f59e0b' },
+                { label: 'Chamber Contact', value: 'Available', icon: <Building2 size={20} />, color: '#00712B' },
               ].map(s => (
                 <div key={s.label} className="rounded-xl p-4 flex items-center gap-3" style={{backgroundColor: "#123322", border: "1px solid rgba(255,255,255,0.07)"}}>
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white" style={{ background: s.color }}>

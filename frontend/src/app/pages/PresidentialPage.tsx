@@ -14,7 +14,7 @@ import {
   PollingStation, resolveCandidate } from '../data/mockData';
 import { useElectionResults } from '../hooks/useElectionResults';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { MapPin, Clock, Wifi, WifiOff } from 'lucide-react';
+import { MapPin, Clock } from 'lucide-react';
 
 export function PresidentialPage() {
   const [selectedProvince, setSelectedProvince] = useState('');
@@ -90,6 +90,17 @@ export function PresidentialPage() {
     value: r.votes,
     color: r.candidate.partyColor }));
 
+  // Provinces reporting: a province counts as "reporting" once at least
+  // one of its polling stations has a result entered.
+  const totalProvincesCount = provinces.length;
+  const provincesReportingCount = provinces.filter(p =>
+    p.districts.some(d =>
+      d.constituencies.some(c =>
+        c.wards.some(w => w.pollingStations.some(s => s.totalVotes !== undefined))
+      )
+    )
+  ).length;
+
   const handleProvinceChange = (value: string) => {
     setSelectedProvince(value);
     setSelectedDistrict('');
@@ -155,73 +166,6 @@ export function PresidentialPage() {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <ResultsStatusBar title="Presidential" stage={resultStage} onStageChange={setResultStage} />
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#198754] to-[#DC2626] bg-clip-text text-transparent mb-2">
-              Presidential Election Results
-            </h1>
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-muted-foreground">Real-time results from polling stations across Zambia</p>
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${usingLive ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                {usingLive ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-                {usingLive ? `Live · ${live.stationsReporting} stations` : 'Preview data'}
-              </span>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <DownloadButton
-              format="pdf"
-              data={candidateResults}
-              title="Presidential Election Results"
-              locationLabel={eczLevelName}
-              totals={{ registered: totalRegistered, cast: totalVotes, valid: totalValidVotes, rejected: totalRejected, turnout }}
-            />
-            <DownloadButton
-              format="excel"
-              data={candidateResults}
-              title="Presidential Election Results"
-              locationLabel={eczLevelName}
-              totals={{ registered: totalRegistered, cast: totalVotes, valid: totalValidVotes, rejected: totalRejected, turnout }}
-            />
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="mb-6">
-          <DrillDownFilters
-            selectedProvince={selectedProvince}
-            selectedDistrict={selectedDistrict}
-            selectedConstituency={selectedConstituency}
-            selectedWard={selectedWard}
-            selectedPollingStation={selectedPollingStation}
-            onProvinceChange={handleProvinceChange}
-            onDistrictChange={handleDistrictChange}
-            onConstituencyChange={handleConstituencyChange}
-            onWardChange={handleWardChange}
-            onPollingStationChange={setSelectedPollingStation}
-          />
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <StatCard
-            title="Registered Voters"
-            value={totalRegistered.toLocaleString()}
-          />
-          <StatCard
-            title="Votes Cast"
-            value={totalVotes.toLocaleString()}
-          />
-          <StatCard
-            title="Voter Turnout"
-            value={`${turnout.toFixed(1)}%`}
-            subtitle={`${filteredStations.length} stations`}
-          />
-          <StatCard
-            title="Rejected Ballots"
-            value={totalRejected.toLocaleString()}
-          />
-        </div>
 
         {/* Results Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -279,10 +223,78 @@ export function PresidentialPage() {
                 View Full Results — {candidateResults.length - 4} more candidate{candidateResults.length - 4 !== 1 ? 's' : ''}
               </button>
             )}
+
+            {/* Stats — sit directly below the candidate percentages */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard
+                title="Registered Voters"
+                value={totalRegistered.toLocaleString()}
+              />
+              <StatCard
+                title="Votes Cast"
+                value={totalVotes.toLocaleString()}
+              />
+              <StatCard
+                title="Voter Turnout"
+                value={`${turnout.toFixed(1)}%`}
+                subtitle={`${filteredStations.length} stations`}
+              />
+              <StatCard
+                title="Rejected Ballots"
+                value={totalRejected.toLocaleString()}
+              />
+            </div>
+
+            {/* Constitutional threshold note */}
+            <p className="text-sm text-muted-foreground text-center sm:text-left">
+              The winner of the presidential election needs more than 50% of the valid votes cast, per Article 101 of the Constitution.
+            </p>
+
+            {/* Provinces Reporting */}
+            <div className="bg-gradient-to-br from-card to-card/80 border-2 border-border rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-foreground">Provinces Reporting</h3>
+                <span className="text-sm font-semibold text-muted-foreground">
+                  {provincesReportingCount} of {totalProvincesCount}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {provinces.map(p => {
+                  const reporting = p.districts.some(d =>
+                    d.constituencies.some(c => c.wards.some(w => w.pollingStations.some(s => s.totalVotes !== undefined)))
+                  );
+                  return (
+                    <span
+                      key={p.id}
+                      title={p.name}
+                      className="w-3 h-3 rounded-full"
+                      style={{ background: reporting ? '#198754' : 'var(--muted)', border: reporting ? 'none' : '1px solid var(--border)' }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
-          {/* Chart */}
-          <div className={showAllCandidates ? 'lg:col-span-1' : 'lg:col-span-3'}>
+          {/* Filters */}
+          <div className="lg:col-span-3">
+            <DrillDownFilters
+              selectedProvince={selectedProvince}
+              selectedDistrict={selectedDistrict}
+              selectedConstituency={selectedConstituency}
+              selectedWard={selectedWard}
+              selectedPollingStation={selectedPollingStation}
+              onProvinceChange={handleProvinceChange}
+              onDistrictChange={handleDistrictChange}
+              onConstituencyChange={handleConstituencyChange}
+              onWardChange={handleWardChange}
+              onPollingStationChange={setSelectedPollingStation}
+            />
+          </div>
+
+          {/* Chart — only shown in the full 'All Candidates' view to keep the page shorter by default */}
+          {showAllCandidates && (
+          <div className="lg:col-span-1">
             <div className="bg-gradient-to-br from-card to-card/80 border-2 border-border rounded-2xl p-6 sticky top-20 shadow-xl">
               <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
                 <div className="w-1 h-6 bg-gradient-to-b from-[#198754] to-[#DC2626] rounded-full"></div>
@@ -339,9 +351,11 @@ export function PresidentialPage() {
               </div>
             </div>
           </div>
+          )}
         </div>
 
-        {/* Live Backend Results */}
+        {/* Live Backend Results — also only shown in the full 'All Candidates' view */}
+        {showAllCandidates && (
         <div className="mt-8 bg-card border border-border rounded-2xl p-6">
           <LiveResultsPanel
             electionType="presidential"
@@ -352,6 +366,7 @@ export function PresidentialPage() {
             showFeed={true}
           />
         </div>
+        )}
 
 
         {/* Polling Station Details */}
@@ -421,6 +436,24 @@ export function PresidentialPage() {
             </div>
           </div>
         )}
+
+        {/* Downloads */}
+        <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-center gap-3">
+          <DownloadButton
+            format="pdf"
+            data={candidateResults}
+            title="Presidential Election Results"
+            locationLabel={eczLevelName}
+            totals={{ registered: totalRegistered, cast: totalVotes, valid: totalValidVotes, rejected: totalRejected, turnout }}
+          />
+          <DownloadButton
+            format="excel"
+            data={candidateResults}
+            title="Presidential Election Results"
+            locationLabel={eczLevelName}
+            totals={{ registered: totalRegistered, cast: totalVotes, valid: totalValidVotes, rejected: totalRejected, turnout }}
+          />
+        </div>
       </div>
     </div>
   );
