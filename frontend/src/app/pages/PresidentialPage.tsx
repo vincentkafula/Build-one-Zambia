@@ -292,8 +292,9 @@ export function PresidentialPage() {
             />
           </div>
 
-          {/* Chart */}
-          <div className={showAllCandidates ? 'lg:col-span-1' : 'lg:col-span-3'}>
+          {/* Chart — only shown in the full 'All Candidates' view to keep the page shorter by default */}
+          {showAllCandidates && (
+          <div className="lg:col-span-1">
             <div className="bg-gradient-to-br from-card to-card/80 border-2 border-border rounded-2xl p-6 sticky top-20 shadow-xl">
               <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
                 <div className="w-1 h-6 bg-gradient-to-b from-[#198754] to-[#DC2626] rounded-full"></div>
@@ -350,9 +351,11 @@ export function PresidentialPage() {
               </div>
             </div>
           </div>
+          )}
         </div>
 
-        {/* Live Backend Results */}
+        {/* Live Backend Results — also only shown in the full 'All Candidates' view */}
+        {showAllCandidates && (
         <div className="mt-8 bg-card border border-border rounded-2xl p-6">
           <LiveResultsPanel
             electionType="presidential"
@@ -363,6 +366,7 @@ export function PresidentialPage() {
             showFeed={true}
           />
         </div>
+        )}
 
 
         {/* Polling Station Details */}
