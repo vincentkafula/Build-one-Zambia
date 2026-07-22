@@ -90,6 +90,17 @@ export function PresidentialPage() {
     value: r.votes,
     color: r.candidate.partyColor }));
 
+  // Provinces reporting: a province counts as "reporting" once at least
+  // one of its polling stations has a result entered.
+  const totalProvincesCount = provinces.length;
+  const provincesReportingCount = provinces.filter(p =>
+    p.districts.some(d =>
+      d.constituencies.some(c =>
+        c.wards.some(w => w.pollingStations.some(s => s.totalVotes !== undefined))
+      )
+    )
+  ).length;
+
   const handleProvinceChange = (value: string) => {
     setSelectedProvince(value);
     setSelectedDistrict('');
@@ -186,22 +197,6 @@ export function PresidentialPage() {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="mb-6">
-          <DrillDownFilters
-            selectedProvince={selectedProvince}
-            selectedDistrict={selectedDistrict}
-            selectedConstituency={selectedConstituency}
-            selectedWard={selectedWard}
-            selectedPollingStation={selectedPollingStation}
-            onProvinceChange={handleProvinceChange}
-            onDistrictChange={handleDistrictChange}
-            onConstituencyChange={handleConstituencyChange}
-            onWardChange={handleWardChange}
-            onPollingStationChange={setSelectedPollingStation}
-          />
-        </div>
-
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <StatCard
@@ -279,6 +274,52 @@ export function PresidentialPage() {
                 View Full Results — {candidateResults.length - 4} more candidate{candidateResults.length - 4 !== 1 ? 's' : ''}
               </button>
             )}
+
+            {/* Constitutional threshold note */}
+            <p className="text-sm text-muted-foreground text-center sm:text-left">
+              The winner of the presidential election needs more than 50% of the valid votes cast, per Article 101 of the Constitution.
+            </p>
+
+            {/* Provinces Reporting */}
+            <div className="bg-gradient-to-br from-card to-card/80 border-2 border-border rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-foreground">Provinces Reporting</h3>
+                <span className="text-sm font-semibold text-muted-foreground">
+                  {provincesReportingCount} of {totalProvincesCount}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {provinces.map(p => {
+                  const reporting = p.districts.some(d =>
+                    d.constituencies.some(c => c.wards.some(w => w.pollingStations.some(s => s.totalVotes !== undefined)))
+                  );
+                  return (
+                    <span
+                      key={p.id}
+                      title={p.name}
+                      className="w-3 h-3 rounded-full"
+                      style={{ background: reporting ? '#198754' : 'var(--muted)', border: reporting ? 'none' : '1px solid var(--border)' }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="lg:col-span-3">
+            <DrillDownFilters
+              selectedProvince={selectedProvince}
+              selectedDistrict={selectedDistrict}
+              selectedConstituency={selectedConstituency}
+              selectedWard={selectedWard}
+              selectedPollingStation={selectedPollingStation}
+              onProvinceChange={handleProvinceChange}
+              onDistrictChange={handleDistrictChange}
+              onConstituencyChange={handleConstituencyChange}
+              onWardChange={handleWardChange}
+              onPollingStationChange={setSelectedPollingStation}
+            />
           </div>
 
           {/* Chart */}
