@@ -14,7 +14,7 @@ import {
   PollingStation, resolveCandidate } from '../data/mockData';
 import { useElectionResults } from '../hooks/useElectionResults';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { MapPin, Clock, Wifi, WifiOff } from 'lucide-react';
+import { MapPin, Clock } from 'lucide-react';
 
 export function PresidentialPage() {
   const [selectedProvince, setSelectedProvince] = useState('');
@@ -166,36 +166,6 @@ export function PresidentialPage() {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <ResultsStatusBar title="Presidential" stage={resultStage} onStageChange={setResultStage} />
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#198754] to-[#DC2626] bg-clip-text text-transparent mb-2">
-              Presidential Election Results
-            </h1>
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-muted-foreground">Real-time results from polling stations across Zambia</p>
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${usingLive ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                {usingLive ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-                {usingLive ? `Live · ${live.stationsReporting} stations` : 'Preview data'}
-              </span>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <DownloadButton
-              format="pdf"
-              data={candidateResults}
-              title="Presidential Election Results"
-              locationLabel={eczLevelName}
-              totals={{ registered: totalRegistered, cast: totalVotes, valid: totalValidVotes, rejected: totalRejected, turnout }}
-            />
-            <DownloadButton
-              format="excel"
-              data={candidateResults}
-              title="Presidential Election Results"
-              locationLabel={eczLevelName}
-              totals={{ registered: totalRegistered, cast: totalVotes, valid: totalValidVotes, rejected: totalRejected, turnout }}
-            />
-          </div>
-        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -462,6 +432,24 @@ export function PresidentialPage() {
             </div>
           </div>
         )}
+
+        {/* Downloads */}
+        <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-center gap-3">
+          <DownloadButton
+            format="pdf"
+            data={candidateResults}
+            title="Presidential Election Results"
+            locationLabel={eczLevelName}
+            totals={{ registered: totalRegistered, cast: totalVotes, valid: totalValidVotes, rejected: totalRejected, turnout }}
+          />
+          <DownloadButton
+            format="excel"
+            data={candidateResults}
+            title="Presidential Election Results"
+            locationLabel={eczLevelName}
+            totals={{ registered: totalRegistered, cast: totalVotes, valid: totalValidVotes, rejected: totalRejected, turnout }}
+          />
+        </div>
       </div>
     </div>
   );
