@@ -68,12 +68,16 @@ function toCandidate(bc: BackendCandidate): Candidate {
 /**
  * Fetches live election results from the backend.
  * When levelType is 'national' or levelId is empty, fetches national aggregates.
+ * `stage` controls whether every submitted figure counts ('provisional') or
+ * only submissions that have cleared the full ward→constituency→district→
+ * province→national verification chain ('official').
  * Falls back to usingMockData=true when backend is unavailable.
  */
 export function useElectionResults(
   electionType: ElectionCategory,
   levelType: LevelType = 'national',
   levelId: string = '',
+  stage: 'provisional' | 'official' = 'provisional',
 ): UseElectionResultsReturn {
   const [result, setResult] = useState<LevelResult | null>(null);
   const [candidateMap, setCandidateMap] = useState<Map<string, Candidate>>(new Map());
@@ -94,8 +98,8 @@ export function useElectionResults(
       try {
         const [resData, candsData] = await Promise.all([
           isNational
-            ? resultsApi.national(electionType)
-            : resultsApi.level(electionType, levelType, levelId),
+            ? resultsApi.national(electionType, stage)
+            : resultsApi.level(electionType, levelType, levelId, stage),
           candidatesApi.list({ electionType, active: true }),
         ]);
         if (cancelled) return;
@@ -116,7 +120,7 @@ export function useElectionResults(
 
     run();
     return () => { cancelled = true; };
-  }, [electionType, levelType, levelId, isNational]);
+  }, [electionType, levelType, levelId, isNational, stage]);
 
   const liveResults: LiveCandidateResult[] = result
     ? result.candidates

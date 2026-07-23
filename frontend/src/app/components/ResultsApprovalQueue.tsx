@@ -2,9 +2,9 @@ import { API_BASE } from '@/app/lib/apiBase';
 import { useState, useEffect, useCallback } from 'react';
 import {
   CheckCircle2, XCircle, Eye, RefreshCw, AlertCircle, Loader2,
-  Clock, MapPin, User, Vote, Filter, ChevronDown, ChevronUp,
+  MapPin, User, Vote, ChevronDown, ChevronUp, Circle, ShieldCheck,
 } from 'lucide-react';
-import { dataEntryApi, getToken } from '../lib/api';
+import { getToken } from '../lib/api';
 
 // Safe fetch wrapper — handles non-JSON responses (e.g. rate limit plain text)
 async function safeFetch(url: string, options?: RequestInit) {
@@ -34,12 +34,22 @@ async function apiFetch<T>(method: string, path: string, body?: unknown): Promis
   return data as T;
 }
 
+// ── The five-step chain of custody every submission must clear in order ──────
+type VerificationLevel = 'ward' | 'constituency' | 'district' | 'province' | 'national';
+const CHAIN: VerificationLevel[] = ['ward', 'constituency', 'district', 'province', 'national'];
+const CHAIN_LABELS: Record<VerificationLevel, string> = {
+  ward: 'Ward', constituency: 'Constituency', district: 'District', province: 'Provincial', national: 'National',
+};
+
+interface ChainEntry { status: 'pending' | 'approved' | 'rejected' | 'queried'; by: string | null; at: string | null; notes?: string | null }
+type VerificationChain = Record<VerificationLevel, ChainEntry>;
+
 interface Submission {
   id: string;
   pollingStationId: string;
   pollingStationName: string;
   electionType: string;
-  status: 'pending' | 'verified' | 'queried' | 'rejected';
+  status: 'pending' | 'verified' | 'approved' | 'queried' | 'rejected';
   enteredBy: string;
   submittedAt: string;
   totalVotesCast: number;
@@ -49,6 +59,12 @@ interface Submission {
   notes?: string;
   province?: string;
   district?: string;
+  wardId?: string;
+  constituencyId?: string;
+  districtId?: string;
+  provinceId?: string;
+  verificationChain?: VerificationChain;
+  isOfficial?: boolean;
 }
 
 const ELECTION_LABELS: Record<string, string> = {
@@ -60,95 +76,96 @@ const ELECTION_LABELS: Record<string, string> = {
 
 const STATUS_CONFIG = {
   pending:  { label: 'Pending Review', color: 'bg-amber-100 text-amber-800 border-amber-300', dot: 'bg-amber-400' },
-  verified: { label: 'Verified',       color: 'bg-green-100  text-green-800  border-green-300',  dot: 'bg-green-400' },
-  queried:  { label: 'Queried',        color: 'bg-blue-100   text-blue-800   border-blue-300',   dot: 'bg-blue-400' },
+  verified: { label: 'Partly Verified', color: 'bg-blue-100 text-blue-800 border-blue-300', dot: 'bg-blue-400' },
+  approved: { label: 'Official',       color: 'bg-green-100  text-green-800  border-green-300',  dot: 'bg-green-400' },
+  queried:  { label: 'Queried',        color: 'bg-sky-100   text-sky-800   border-sky-300',   dot: 'bg-sky-400' },
   rejected: { label: 'Rejected',       color: 'bg-red-100    text-red-800    border-red-300',    dot: 'bg-red-400' },
 };
 
+// Session written at manager login (see DashboardLogin.tsx) — same key used
+// by ManagerDashboard.tsx to know who's signed in.
+interface ElectionUserSession { username: string; role: string; scopeId?: string; scopeName?: string; name?: string }
 
-// ── Editable Rejected Ballots ─────────────────────────────────────────────────
-function EditableRejectedBallots({ sub, onUpdated }: { sub: Submission; onUpdated: (v: number) => void }) {
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(String(sub.rejectedBallots ?? 0));
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+function getElectionUser(): ElectionUserSession | null {
+  try { return JSON.parse(sessionStorage.getItem('boz_election_user') ?? 'null'); } catch { return null; }
+}
 
-  async function handleSave() {
-    setSaving(true);
-    try {
-      await apiFetch('PATCH', `/data-entry/submissions/${sub.id}/rejected-ballots`, {
-        rejectedBallots: Number(value),
-      });
-      onUpdated(Number(value));
-      sub.rejectedBallots = Number(value);
-      setSaved(true);
-      setEditing(false);
-      setTimeout(() => setSaved(false), 2000);
-    } catch (e) {
-      alert('Failed to update: ' + (e instanceof Error ? e.message : 'Unknown error'));
-    }
-    setSaving(false);
-  }
+const ROLE_TO_LEVEL: Record<string, VerificationLevel> = {
+  ward_manager: 'ward',
+  constituency_manager: 'constituency',
+  district_manager: 'district',
+  provincial_manager: 'province',
+  national_manager: 'national',
+};
 
+const LEVEL_SCOPE_QUERY_PARAM: Record<VerificationLevel, string | null> = {
+  ward: 'wardId', constituency: 'constituencyId', district: 'districtId', province: 'provinceId', national: null,
+};
+
+// ── Chain-of-custody strip — five dots showing where a submission sits ───────
+function VerificationChainStrip({ chain }: { chain?: VerificationChain }) {
   return (
-    <div className="bg-card rounded-lg p-3 border border-border">
-      <p className="text-xs text-muted-foreground mb-1">Rejected Ballots</p>
-      {editing ? (
-        <div className="flex items-center gap-1">
-          <input
-            type="number"
-            min={0}
-            value={value}
-            onChange={e => setValue(e.target.value)}
-            className="w-20 px-2 py-1 text-sm border border-blue-400 rounded focus:outline-none"
-            autoFocus
-          />
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="text-xs px-2 py-1 rounded bg-green-600 text-white disabled:opacity-50"
-          >
-            {saving ? '…' : '✓'}
-          </button>
-          <button
-            onClick={() => { setEditing(false); setValue(String(sub.rejectedBallots ?? 0)); }}
-            className="text-xs px-2 py-1 rounded bg-gray-200 text-gray-700"
-          >
-            ✕
-          </button>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2">
-          <p className={`text-sm font-semibold ${saved ? 'text-green-600' : 'text-foreground'}`}>
-            {saved ? '✓ Saved' : (sub.rejectedBallots ?? 0).toLocaleString()}
-          </p>
-          <button
-            onClick={() => setEditing(true)}
-            className="text-xs text-blue-500 hover:text-blue-700 underline"
-          >
-            edit
-          </button>
-        </div>
-      )}
+    <div className="flex items-center gap-1.5 flex-wrap">
+      {CHAIN.map((level, i) => {
+        const entry = chain?.[level];
+        const status = entry?.status ?? 'pending';
+        const icon = status === 'approved'
+          ? <CheckCircle2 className="w-3.5 h-3.5" />
+          : status === 'rejected'
+          ? <XCircle className="w-3.5 h-3.5" />
+          : status === 'queried'
+          ? <Eye className="w-3.5 h-3.5" />
+          : <Circle className="w-3 h-3" />;
+        const colorClass = status === 'approved' ? 'text-green-600 bg-green-50 border-green-300'
+          : status === 'rejected' ? 'text-red-600 bg-red-50 border-red-300'
+          : status === 'queried' ? 'text-sky-600 bg-sky-50 border-sky-300'
+          : 'text-muted-foreground bg-muted border-border';
+        return (
+          <span key={level} className="flex items-center gap-1.5">
+            <span
+              title={`${CHAIN_LABELS[level]}: ${status}${entry?.by ? ` — ${entry.by}` : ''}`}
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold ${colorClass}`}
+            >
+              {icon}
+              {CHAIN_LABELS[level]}
+            </span>
+            {i < CHAIN.length - 1 && <span className="text-muted-foreground text-xs">→</span>}
+          </span>
+        );
+      })}
     </div>
   );
 }
 
 function SubmissionRow({
-  sub, onStatusChange,
+  sub, myLevel, isOverride, onStatusChange,
 }: {
   sub: Submission;
+  myLevel: VerificationLevel | null;
+  isOverride: boolean;
   onStatusChange: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [notes, setNotes] = useState('');
+  const [overrideLevel, setOverrideLevel] = useState<VerificationLevel>('ward');
   const cfg = STATUS_CONFIG[sub.status] ?? STATUS_CONFIG.pending;
 
-  const updateStatus = async (newStatus: 'verified' | 'queried' | 'rejected') => {
+  const chain = sub.verificationChain;
+  const acceptingLevel = isOverride ? overrideLevel : myLevel;
+
+  // Can this viewer act right now? Every level before theirs must already be approved.
+  const priorLevelsApproved = acceptingLevel
+    ? CHAIN.slice(0, CHAIN.indexOf(acceptingLevel)).every(l => chain?.[l]?.status === 'approved')
+    : false;
+  const alreadyDecidedAtMyLevel = acceptingLevel ? chain?.[acceptingLevel]?.status !== 'pending' : true;
+  const canActNow = !!acceptingLevel && priorLevelsApproved && (isOverride || !alreadyDecidedAtMyLevel) && sub.status !== 'rejected';
+
+  const verifyLevel = async (decision: 'approved' | 'queried' | 'rejected') => {
+    if (!acceptingLevel) return;
     setLoading(true);
     try {
-      await apiFetch('PATCH', `/data-entry/submissions/${sub.id}/status`, { status: newStatus, notes });
+      await apiFetch('PATCH', `/data-entry/submissions/${sub.id}/verify-level`, { level: acceptingLevel, decision, notes });
       onStatusChange();
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Failed to update status');
@@ -162,7 +179,7 @@ function SubmissionRow({
     : '—';
 
   return (
-    <div className={`rounded-xl border overflow-hidden ${sub.status === 'pending' ? 'border-amber-300' : sub.status === 'verified' ? 'border-green-300' : sub.status === 'rejected' ? 'border-red-300' : 'border-blue-300'}`}>
+    <div className={`rounded-xl border overflow-hidden ${sub.status === 'pending' ? 'border-amber-300' : sub.status === 'approved' ? 'border-green-300' : sub.status === 'rejected' ? 'border-red-300' : 'border-blue-300'}`}>
       {/* Summary row */}
       <div
         className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:/20 transition-colors" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }}
@@ -186,57 +203,55 @@ function SubmissionRow({
           <div>
             <p className="text-xs text-muted-foreground">Votes Cast / Turnout</p>
             <p className="text-sm font-mono font-semibold text-foreground">
-              {(sub.totalVotesCast ?? 0).toLocaleString()} <span className="text-muted-foreground font-normal">({turnout}%)</span>
+              {sub.totalVotesCast?.toLocaleString() ?? 0} / {turnout}%
             </p>
           </div>
-          <div className="flex items-center gap-2 justify-end sm:justify-start">
-            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border ${cfg.color}`}>
+          <div className="flex items-center justify-between gap-2">
+            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${cfg.color}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-              {cfg.label}
+              {sub.isOfficial ? 'Official' : cfg.label}
             </span>
+            {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
           </div>
         </div>
-        {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
       </div>
 
-      {/* Expanded detail */}
       {expanded && (
-        <div className="border-t  px-4 py-4 space-y-4 /10" style={{ backgroundColor: "#0f2d4a", color: "#7dd3fc", border: "1px solid #3b82f6" }}>
-          {/* Stats row */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { label: 'Registered Voters', value: (sub.registeredVoters ?? 0).toLocaleString() },
-              { label: 'Total Votes Cast',  value: (sub.totalVotesCast ?? 0).toLocaleString() },
-              { label: 'Submitted',         value: sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : '—' },
-            ].map(({ label, value }) => (
-              <div key={label} className="bg-card rounded-lg p-3 border border-border">
-                <p className="text-xs text-muted-foreground">{label}</p>
-                <p className="text-sm font-semibold text-foreground">{value}</p>
-              </div>
-            ))}
-            {/* Rejected Ballots — editable by admin */}
-            <EditableRejectedBallots sub={sub} onUpdated={(v) => { sub.rejectedBallots = v; }} />
+        <div className="p-4 space-y-4 border-t border-border" style={{ backgroundColor: "#0b2136" }}>
+          {/* Chain of custody */}
+          <div>
+            <p className="text-xs text-muted-foreground mb-2">Chain of custody</p>
+            <VerificationChainStrip chain={chain} />
           </div>
 
-          {/* Candidate results */}
-          {(sub.candidateResults ?? sub.candidateVotes ?? []).length > 0 && (
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Candidate Results</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {(sub.candidateResults ?? sub.candidateVotes ?? []).map(cr => (
-                  <div key={cr.candidateId} className="bg-card rounded-lg px-3 py-2 border border-border">
-                    <p className="text-xs text-muted-foreground truncate">{cr.candidateId}</p>
-                    <p className="text-sm font-mono font-bold text-foreground">{(cr.votes ?? 0).toLocaleString()}</p>
-                  </div>
-                ))}
+          {/* Candidate votes */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {sub.candidateResults?.map(c => (
+              <div key={c.candidateId} className="bg-card rounded-lg p-2 border border-border text-center">
+                <p className="text-xs text-muted-foreground truncate">{c.candidateId}</p>
+                <p className="text-sm font-bold text-foreground">{c.votes.toLocaleString()}</p>
               </div>
+            ))}
+          </div>
+
+          {/* Override level selector — admins/super_admins only */}
+          {isOverride && (
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-muted-foreground">Act as level:</label>
+              <select
+                value={overrideLevel}
+                onChange={e => setOverrideLevel(e.target.value as VerificationLevel)}
+                className="px-2 py-1 text-sm rounded border"
+                style={{ backgroundColor: "#1e3a5f", color: "#ffffff", border: "1px solid #3b82f6" }}
+              >
+                {CHAIN.map(l => <option key={l} value={l}>{CHAIN_LABELS[l]}</option>)}
+              </select>
             </div>
           )}
 
           {/* Notes input */}
-          {sub.status === 'pending' && (
+          {canActNow && (
             <div>
-              <label className="text-xs font-semibold text-muted-foreground block mb-1">Notes (optional — shown to agent if queried/rejected)</label>
               <textarea
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
@@ -247,19 +262,19 @@ function SubmissionRow({
             </div>
           )}
 
-          {/* Action buttons */}
-          {sub.status === 'pending' && (
+          {/* Action buttons — only for the manager whose turn it currently is */}
+          {canActNow ? (
             <div className="flex flex-wrap gap-2">
               <button
-                onClick={() => updateStatus('verified')}
+                onClick={() => verifyLevel('approved')}
                 disabled={loading}
                 className="flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                Approve & Verify
+                Approve at {CHAIN_LABELS[acceptingLevel!]} level
               </button>
               <button
-                onClick={() => updateStatus('queried')}
+                onClick={() => verifyLevel('queried')}
                 disabled={loading}
                 className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
               >
@@ -267,7 +282,7 @@ function SubmissionRow({
                 Query (needs clarification)
               </button>
               <button
-                onClick={() => updateStatus('rejected')}
+                onClick={() => verifyLevel('rejected')}
                 disabled={loading}
                 className="flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
               >
@@ -275,10 +290,27 @@ function SubmissionRow({
                 Reject
               </button>
             </div>
+          ) : sub.status === 'rejected' ? (
+            <div className="text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-red-800">
+              This submission was rejected in the chain and needs a corrected resubmission from the polling agent.
+            </div>
+          ) : !myLevel ? (
+            <div className="text-sm bg-muted border border-border rounded-lg px-3 py-2 text-muted-foreground">
+              Your account isn't assigned a ward/constituency/district/province manager role, so you can't act on this chain.
+            </div>
+          ) : !priorLevelsApproved ? (
+            <div className="text-sm bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-amber-800">
+              Awaiting {CHAIN_LABELS[CHAIN.find(l => chain?.[l]?.status !== 'approved') ?? 'ward']} approval before this reaches your ({CHAIN_LABELS[myLevel]}) level.
+            </div>
+          ) : (
+            <div className="text-sm bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-green-800">
+              You've already recorded a decision at the {CHAIN_LABELS[myLevel!]} level for this submission.
+            </div>
           )}
-          {sub.status !== 'pending' && sub.notes && (
+
+          {sub.notes && (
             <div className="text-sm bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-blue-800">
-              <span className="font-semibold">Notes: </span>{sub.notes}
+              <span className="font-semibold">Agent notes: </span>{sub.notes}
             </div>
           )}
         </div>
@@ -291,9 +323,13 @@ export function ResultsApprovalQueue() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'verified' | 'queried' | 'rejected'>('pending');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'verified' | 'approved' | 'queried' | 'rejected'>('pending');
   const [filterElection, setFilterElection] = useState('');
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  const electionUser = getElectionUser();
+  const isOverride = ['super_admin', 'admin'].includes(electionUser?.role ?? '');
+  const myLevel = electionUser?.role ? (ROLE_TO_LEVEL[electionUser.role] ?? null) : null;
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
@@ -301,6 +337,12 @@ export function ResultsApprovalQueue() {
       const qs = new URLSearchParams();
       if (filterStatus !== 'all') qs.set('status', filterStatus);
       if (filterElection) qs.set('electionType', filterElection);
+      // Managers only ever see submissions inside their own assigned scope
+      // (national managers and admins see everything).
+      if (!isOverride && myLevel) {
+        const scopeParam = LEVEL_SCOPE_QUERY_PARAM[myLevel];
+        if (scopeParam && electionUser?.scopeId) qs.set(scopeParam, electionUser.scopeId);
+      }
       const data = await apiFetch<{ submissions: Submission[] }>('GET', `/data-entry/submissions?${qs}`);
       setSubmissions(data.submissions ?? []);
       setLastRefresh(new Date());
@@ -309,12 +351,14 @@ export function ResultsApprovalQueue() {
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterStatus, filterElection]);
 
   useEffect(() => { load(); }, [load]);
 
   const pending  = submissions.filter(s => s.status === 'pending').length;
   const verified = submissions.filter(s => s.status === 'verified').length;
+  const approved = submissions.filter(s => s.status === 'approved').length;
   const queried  = submissions.filter(s => s.status === 'queried').length;
   const rejected = submissions.filter(s => s.status === 'rejected').length;
 
@@ -328,8 +372,26 @@ export function ResultsApprovalQueue() {
             <h2 className="text-xl font-bold text-foreground">Results Approval Queue</h2>
           </div>
           <p className="text-sm text-muted-foreground">
-            Review and verify polling station results submitted by field agents before they count toward official totals.
+            Review polling station results submitted by field agents. Each submission must clear ward → constituency →
+            district → provincial → national approval in order before it counts toward Official Results.
           </p>
+          {myLevel && !isOverride && (
+            <p className="text-xs mt-1 flex items-center gap-1.5" style={{ color: '#7dd3fc' }}>
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Signed in as {CHAIN_LABELS[myLevel]} Manager{electionUser?.scopeName ? ` — ${electionUser.scopeName}` : ''}
+            </p>
+          )}
+          {isOverride && (
+            <p className="text-xs mt-1 flex items-center gap-1.5" style={{ color: '#7dd3fc' }}>
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Admin override — you can act at any level on any submission
+            </p>
+          )}
+          {!myLevel && !isOverride && (
+            <p className="text-xs mt-1 text-amber-400">
+              Your account has no manager scope assigned, so you can view this queue but can't approve or reject.
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {lastRefresh && <span className="text-xs text-muted-foreground">Updated {lastRefresh.toLocaleTimeString()}</span>}
@@ -340,11 +402,12 @@ export function ResultsApprovalQueue() {
       </div>
 
       {/* Summary pills */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
           { label: 'Pending Review', count: pending,  bg: 'bg-amber-50 border-amber-200',  text: 'text-amber-800' },
-          { label: 'Verified',       count: verified, bg: 'bg-green-50  border-green-200',  text: 'text-green-800' },
-          { label: 'Queried',        count: queried,  bg: 'bg-blue-50   border-blue-200',   text: 'text-blue-800' },
+          { label: 'Partly Verified', count: verified, bg: 'bg-blue-50  border-blue-200',  text: 'text-blue-800' },
+          { label: 'Official',        count: approved, bg: 'bg-green-50  border-green-200',  text: 'text-green-800' },
+          { label: 'Queried',        count: queried,  bg: 'bg-sky-50   border-sky-200',   text: 'text-sky-800' },
           { label: 'Rejected',       count: rejected, bg: 'bg-red-50    border-red-200',    text: 'text-red-800' },
         ].map(({ label, count, bg, text }) => (
           <div key={label} className={`rounded-xl border p-4 ${bg}`}>
@@ -363,7 +426,7 @@ export function ResultsApprovalQueue() {
       {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="flex gap-1 rounded-lg overflow-hidden border border-border">
-          {(['all','pending','verified','queried','rejected'] as const).map(s => (
+          {(['all','pending','verified','approved','queried','rejected'] as const).map(s => (
             <button
               key={s}
               onClick={() => setFilterStatus(s)}
@@ -415,7 +478,7 @@ export function ResultsApprovalQueue() {
       ) : (
         <div className="space-y-3">
           {submissions.map(sub => (
-            <SubmissionRow key={sub.id} sub={sub} onStatusChange={load} />
+            <SubmissionRow key={sub.id} sub={sub} myLevel={myLevel} isOverride={isOverride} onStatusChange={load} />
           ))}
         </div>
       )}

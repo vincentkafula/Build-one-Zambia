@@ -63,7 +63,7 @@ export function PresidentialPage() {
     : 'national';
   const levelId = selectedWard || selectedConstituency || selectedDistrict || selectedProvince || '';
 
-  const live = useElectionResults('presidential', levelType as any, levelId);
+  const live = useElectionResults('presidential', levelType as any, levelId, resultStage);
 
   // ── Mock data fallback ────────────────────────────────────────────────────
   const filteredStations = getFilteredStations();

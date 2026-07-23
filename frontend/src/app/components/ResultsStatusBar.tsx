@@ -13,10 +13,13 @@ interface ResultsStatusBarProps {
 // Parliament, Mayoral, Councillor) — mirrors the "Provisional / Official"
 // toggle from the reference dashboard.
 //
-// NOTE: there is currently one live results feed. Until ECZ-certified
-// figures are wired in separately, "Official Results" shows the same
-// underlying numbers as "Provisional", labelled honestly as not yet
-// certified rather than faking a second data set.
+// Provisional Results shows every polling-station figure agents have
+// submitted so far, exactly as entered. Official Results only shows
+// figures that have cleared the full chain of custody — approved in
+// sequence by the ward, constituency, district, provincial, and national
+// managers — so it will typically show fewer stations reporting (and can
+// legitimately show nothing at all early in the count) until that
+// verification chain catches up.
 export function ResultsStatusBar({ title, stage, onStageChange }: ResultsStatusBarProps) {
   const now = new Date();
   const updatedLabel = now.toLocaleString('en-ZM', {
@@ -37,13 +40,13 @@ export function ResultsStatusBar({ title, stage, onStageChange }: ResultsStatusB
             <p className="text-sm text-muted-foreground flex items-center gap-1.5">
               <Radio className="w-3.5 h-3.5" style={{ color: '#198754' }} />
               <span className="font-semibold text-foreground">Provisional Results</span>
-              — Last updated {updatedLabel}
+              — as submitted by polling agents, not yet verified — last updated {updatedLabel}
             </p>
           ) : (
             <p className="text-sm text-muted-foreground flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5" style={{ color: '#F59E0B' }} />
-              <span className="font-semibold text-foreground">Official Results (ECZ Certified)</span>
-              — not yet certified; showing latest available figures
+              <span className="font-semibold text-foreground">Official Results</span>
+              — verified and approved by ward, constituency, district, provincial and national managers
             </p>
           )}
         </div>

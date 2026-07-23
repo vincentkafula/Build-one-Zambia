@@ -1034,11 +1034,21 @@ export const resultsApi = {
   dashboard: () =>
     request<{ summary: DashboardSummary }>('GET', '/results/dashboard'),
 
-  national: (electionType: ElectionCategory, statuses?: string) =>
-    request<{ result: LevelResult }>('GET', `/results/national/${electionType}${statuses ? `?statuses=${statuses}` : ''}`),
+  national: (electionType: ElectionCategory, stage?: 'provisional' | 'official', statuses?: string) => {
+    const qs = new URLSearchParams();
+    if (stage) qs.set('stage', stage);
+    if (statuses) qs.set('statuses', statuses);
+    const q = qs.toString();
+    return request<{ result: LevelResult }>('GET', `/results/national/${electionType}${q ? `?${q}` : ''}`);
+  },
 
-  level: (electionType: ElectionCategory, levelType: LevelType, levelId: string, statuses?: string) =>
-    request<{ result: LevelResult }>('GET', `/results/level/${electionType}/${levelType}/${encodeURIComponent(levelId)}${statuses ? `?statuses=${statuses}` : ''}`),
+  level: (electionType: ElectionCategory, levelType: LevelType, levelId: string, stage?: 'provisional' | 'official', statuses?: string) => {
+    const qs = new URLSearchParams();
+    if (stage) qs.set('stage', stage);
+    if (statuses) qs.set('statuses', statuses);
+    const q = qs.toString();
+    return request<{ result: LevelResult }>('GET', `/results/level/${electionType}/${levelType}/${encodeURIComponent(levelId)}${q ? `?${q}` : ''}`);
+  },
 
   breakdownProvince: (electionType: ElectionCategory) =>
     request<{ breakdown: Record<string, LevelResult> }>('GET', `/results/breakdown/${electionType}/province`),

@@ -579,8 +579,8 @@ app.post(`${BASE}/election-users/bulk`, auth.requireAuth, auth.requireRole('supe
 
 // ─── Results Engine ────────────────────────────────────────────────────────────
 app.get(`${BASE}/results/dashboard`, (req, res) => res.json({ summary: results.getDashboard() }));
-app.get(`${BASE}/results/national/:electionType`, (req, res) => res.json({ result: results.getNational(req.params.electionType) }));
-app.get(`${BASE}/results/level/:electionType/:levelType/:levelId`, (req, res) => res.json({ result: results.getLevel(req.params.electionType, req.params.levelType, decodeURIComponent(req.params.levelId)) }));
+app.get(`${BASE}/results/national/:electionType`, (req, res) => res.json({ result: results.getNational(req.params.electionType, req.query.stage) }));
+app.get(`${BASE}/results/level/:electionType/:levelType/:levelId`, (req, res) => res.json({ result: results.getLevel(req.params.electionType, req.params.levelType, decodeURIComponent(req.params.levelId), req.query.stage) }));
 app.get(`${BASE}/results/breakdown/:electionType/province`, (req, res) => res.json({ breakdown: results.getBreakdown(req.params.electionType, 'provinceId', null, null) }));
 app.get(`${BASE}/results/breakdown/:electionType/district/:provinceId`, (req, res) => res.json({ breakdown: results.getBreakdown(req.params.electionType, 'districtId', 'provinceId', decodeURIComponent(req.params.provinceId)) }));
 app.get(`${BASE}/results/breakdown/:electionType/constituency/:districtId`, (req, res) => res.json({ breakdown: results.getBreakdown(req.params.electionType, 'constituencyId', 'districtId', decodeURIComponent(req.params.districtId)) }));
@@ -639,7 +639,14 @@ app.post(`${BASE}/data-entry/result`, auth.requireAuth, async (req, res) => {
     const registeredNum = Number(registeredVoters || 0);
     const id = `sub-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const now = new Date().toISOString();
-    let submission = { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, totalRejectedBallots: rejectedNum, rejectedBallots: rejectedNum, registeredVoters: registeredNum, agentId, agentName: agentName || enteredBy, notes, status: 'pending', submittedAt: now };
+    const emptyVerificationChain = () => ({
+      ward: { status: 'pending', by: null, at: null, notes: null },
+      constituency: { status: 'pending', by: null, at: null, notes: null },
+      district: { status: 'pending', by: null, at: null, notes: null },
+      province: { status: 'pending', by: null, at: null, notes: null },
+      national: { status: 'pending', by: null, at: null, notes: null },
+    });
+    let submission = { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, totalRejectedBallots: rejectedNum, rejectedBallots: rejectedNum, registeredVoters: registeredNum, agentId, agentName: agentName || enteredBy, notes, status: 'pending', verificationChain: emptyVerificationChain(), isOfficial: false, submittedAt: now };
     // Check if station already submitted — update instead of duplicate
     const existingIdx = dataEntryStore.submissions.findIndex(
       s => s.pollingStationId === pollingStationId && s.electionType === electionType
@@ -654,7 +661,7 @@ app.post(`${BASE}/data-entry/result`, auth.requireAuth, async (req, res) => {
     saveDataEntry();
     // Write to results KV for immediate dashboard display
     const category = electionType === 'parliament' ? 'parliamentary' : electionType;
-    kv.set(`boz:results:${category}:station:${pollingStationId}`, { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, category, electionType, candidateVotes: normCandidates, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, rejectedBallots: rejectedNum, registeredVoters: registeredNum, status: 'pending', verified: false, submittedBy: agentName || enteredBy || agentId || 'agent', submittedAt: now, updatedAt: now });
+    kv.set(`boz:results:${category}:station:${pollingStationId}`, { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, category, electionType, candidateVotes: normCandidates, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, rejectedBallots: rejectedNum, registeredVoters: registeredNum, status: 'pending', verified: false, verificationChain: submission.verificationChain, isOfficial: false, submittedBy: agentName || enteredBy || agentId || 'agent', submittedAt: now, updatedAt: now });
     res.json({ success: true, message: 'Result submitted successfully', submission: { id, submittedAt: now, status: 'pending' } });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -703,6 +710,81 @@ app.post(`${BASE}/admin/reset-votes`, auth.requireAuth, auth.requireRole('super_
 app.get(`${BASE}/data-entry/submissions/:id`, auth.requireAuth, (req, res) => { const sub = dataEntryStore.submissions.find(s => s.id === req.params.id); if (!sub) return res.status(404).json({ error: 'Not found' }); res.json({ submission: sub }); });
 app.patch(`${BASE}/data-entry/submissions/:id/status`, auth.requireAuth, (req, res) => { const idx = dataEntryStore.submissions.findIndex(s => s.id === req.params.id); if (idx < 0) return res.status(404).json({ error: 'Not found' }); const now = new Date().toISOString(); const updated = { ...dataEntryStore.submissions[idx], status: req.body.status, notes: req.body.notes, reviewedAt: now, reviewedBy: req.user?.username }; dataEntryStore.submissions[idx] = updated; saveDataEntry(); const category = updated.electionType === 'parliament' ? 'parliamentary' : updated.electionType; const key = `boz:results:${category}:station:${updated.pollingStationId}`; const existing = kv.get(key); if (existing) kv.set(key, { ...existing, status: req.body.status, verified: req.body.status === 'approved' || req.body.status === 'verified', verifiedBy: req.user?.username, updatedAt: now }); res.json({ success: true, submission: updated }); });
 app.get(`${BASE}/data-entry/stats`, auth.requireAuth, (req, res) => { const subs = dataEntryStore.submissions; res.json({ stats: { total: subs.length, pending: subs.filter(s => s.status === 'pending').length, approved: subs.filter(s => s.status === 'approved').length, rejected: subs.filter(s => s.status === 'rejected').length } }); });
+
+// ─── Chain-of-custody verification (ward → constituency → district → province → national) ──
+// A polling-station submission only counts toward "Official Results" once it
+// has been approved sequentially at every level. Provisional results show
+// every submission regardless of where it sits in this chain.
+const VERIFICATION_LEVELS = ['ward', 'constituency', 'district', 'province', 'national'];
+const VERIFICATION_LEVEL_ROLE = { ward: 'ward_manager', constituency: 'constituency_manager', district: 'district_manager', province: 'provincial_manager', national: 'national_manager' };
+const VERIFICATION_LEVEL_SCOPE_FIELD = { ward: 'wardId', constituency: 'constituencyId', district: 'districtId', province: 'provinceId', national: null };
+
+app.patch(`${BASE}/data-entry/submissions/:id/verify-level`, auth.requireAuth, (req, res) => {
+  const { level, decision, notes } = req.body || {};
+  if (!VERIFICATION_LEVELS.includes(level)) {
+    return res.status(400).json({ error: `level must be one of: ${VERIFICATION_LEVELS.join(', ')}` });
+  }
+  if (!['approved', 'rejected', 'queried'].includes(decision)) {
+    return res.status(400).json({ error: 'decision must be approved, rejected, or queried' });
+  }
+
+  const idx = dataEntryStore.submissions.findIndex(s => s.id === req.params.id);
+  if (idx < 0) return res.status(404).json({ error: 'Not found' });
+  const sub = dataEntryStore.submissions[idx];
+
+  // Only the manager for this exact level (or an admin, as an override) may act here.
+  const role = req.user.role;
+  const isOverride = ['super_admin', 'admin'].includes(role);
+  if (!isOverride && role !== VERIFICATION_LEVEL_ROLE[level]) {
+    return res.status(403).json({ error: `Only a ${VERIFICATION_LEVEL_ROLE[level]} (or an admin) can verify at the ${level} level.` });
+  }
+
+  // The manager can only act on submissions within their own assigned scope.
+  const scopeField = VERIFICATION_LEVEL_SCOPE_FIELD[level];
+  if (!isOverride && scopeField) {
+    const user = auth.getUser(req.user.username);
+    if (user?.scopeId && sub[scopeField] && user.scopeId !== sub[scopeField]) {
+      return res.status(403).json({ error: `This submission is outside your assigned ${level}.` });
+    }
+  }
+
+  // Sequential gating: every level below this one must already be approved.
+  const levelIndex = VERIFICATION_LEVELS.indexOf(level);
+  if (decision === 'approved') {
+    for (let i = 0; i < levelIndex; i++) {
+      const priorLevel = VERIFICATION_LEVELS[i];
+      if (sub.verificationChain?.[priorLevel]?.status !== 'approved') {
+        return res.status(409).json({ error: `Cannot approve at ${level} level — this submission is still awaiting ${priorLevel} approval.` });
+      }
+    }
+  }
+
+  const now = new Date().toISOString();
+  const chain = { ...(sub.verificationChain || {}) };
+  chain[level] = { status: decision, by: req.user.username, at: now, notes: notes || null };
+  const nowOfficial = VERIFICATION_LEVELS.every(l => chain[l]?.status === 'approved');
+
+  // Overall status mirrors where the submission sits: rejected/queried short-
+  // circuit the chain; 'verified' means at least the ward level has signed
+  // off but it isn't fully official yet; 'approved' means it cleared every level.
+  const overallStatus = decision === 'rejected' ? 'rejected'
+    : decision === 'queried' ? 'queried'
+    : nowOfficial ? 'approved'
+    : 'verified';
+
+  const updated = { ...sub, verificationChain: chain, isOfficial: nowOfficial, status: overallStatus, reviewedAt: now, reviewedBy: req.user.username };
+  dataEntryStore.submissions[idx] = updated;
+  saveDataEntry();
+
+  const category = updated.electionType === 'parliament' ? 'parliamentary' : updated.electionType;
+  const key = `boz:results:${category}:station:${updated.pollingStationId}`;
+  const existing = kv.get(key);
+  if (existing) {
+    kv.set(key, { ...existing, verificationChain: chain, isOfficial: nowOfficial, status: overallStatus, verified: overallStatus === 'approved' || overallStatus === 'verified', verifiedBy: req.user.username, updatedAt: now });
+  }
+
+  res.json({ success: true, submission: updated });
+});
 // District-level `levelId` is ECZ's raw 3-digit code, which is NOT
 // globally unique -- it repeats both across provinces (Lusaka and Kapiri
 // Mposhi are both '006') and even within the same province (Eastern has

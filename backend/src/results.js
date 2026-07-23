@@ -7,12 +7,28 @@ import { kv } from './db.js';
 
 const ELECTION_TYPES = ['presidential', 'parliament', 'mayoral', 'councillor'];
 
-function getAllSubmissions(electionType) {
+// The five-step chain of custody every polling-station submission must pass
+// through, in order, before it counts as "official". Provisional results show
+// every submission regardless of where it sits in this chain (i.e. whatever
+// agents have entered so far); official results only show submissions that
+// have been approved at every single level.
+const VERIFICATION_LEVELS = ['ward', 'constituency', 'district', 'province', 'national'];
+
+function isOfficial(submission) {
+  const chain = submission.verificationChain;
+  if (!chain) return false;
+  return VERIFICATION_LEVELS.every(level => chain[level]?.status === 'approved');
+}
+
+function getAllSubmissions(electionType, stage) {
   const all = kv.getByPrefix('boz:results:');
-  const filtered = all.filter(s => !electionType || s.electionType === electionType);
+  let filtered = all.filter(s => !electionType || s.electionType === electionType);
+  if (stage === 'official') {
+    filtered = filtered.filter(s => s.isOfficial === true || isOfficial(s));
+  }
   // Debug log — remove after confirming
   if (all.length > 0 || filtered.length > 0) {
-    console.log(`[results] getAllSubmissions(${electionType}): ${all.length} total, ${filtered.length} matching`);
+    console.log(`[results] getAllSubmissions(${electionType}, ${stage || 'provisional'}): ${all.length} total, ${filtered.length} matching`);
     if (all.length > 0) console.log(`[results] Sample fields:`, JSON.stringify({ rejectedBallots: all[0]?.rejectedBallots, totalRejected: all[0]?.totalRejected, electionType: all[0]?.electionType }));
   }
   return filtered;
@@ -62,14 +78,14 @@ function buildResult(electionType, levelType, levelId, submissions) {
   return { electionType, levelType, levelId, stationsReporting: submissions.length, registeredVoters, totalVotesCast, validVotes, rejectedBallots, turnoutPercent, candidates, leadingCandidateId, margin, marginPercent, submissionBreakdown: breakdown, computedAt: now };
 }
 
-export function getNational(electionType) {
-  return buildResult(electionType, 'national', 'national', getAllSubmissions(electionType));
+export function getNational(electionType, stage) {
+  return buildResult(electionType, 'national', 'national', getAllSubmissions(electionType, stage));
 }
 
-export function getLevel(electionType, levelType, levelId) {
+export function getLevel(electionType, levelType, levelId, stage) {
   const fieldMap = { province: 'provinceId', district: 'districtId', constituency: 'constituencyId', ward: 'wardId', station: 'pollingStationId' };
   const field = fieldMap[levelType];
-  const filtered = getAllSubmissions(electionType).filter(s => !field || s[field] === levelId);
+  const filtered = getAllSubmissions(electionType, stage).filter(s => !field || s[field] === levelId);
   return buildResult(electionType, levelType, levelId, filtered);
 }
 
