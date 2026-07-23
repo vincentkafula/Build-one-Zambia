@@ -44,8 +44,8 @@ export default defineConfig(({ mode }) => ({
       },
       output: {
         assetFileNames: 'assets/[name]-[hash][extname]',
-        chunkFileNames: 'js/[name]-[hash]-v2.js',
-        entryFileNames: 'js/[name]-[hash]-v2.js',
+        chunkFileNames: 'js/[name]-[hash]-v3.js',
+        entryFileNames: 'js/[name]-[hash]-v3.js',
       },
     },
   },

@@ -11,4 +11,4 @@ cmds = ["npm run build"]
 cmd = "node server.js"
 
 [variables]
-NIXPACKS_CACHE_KEY = "redeploy-after-limit-raise-20260709"
+NIXPACKS_CACHE_KEY = "redeploy-candidate-cards-fix-20260723"
