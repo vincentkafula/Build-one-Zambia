@@ -128,27 +128,11 @@ export function MayoralPage() {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="mb-6">
-          <DrillDownFilters
-            selectedProvince={selectedProvince}
-            selectedDistrict={selectedDistrict}
-            selectedConstituency={selectedConstituency}
-            selectedWard={selectedWard}
-            selectedPollingStation={selectedPollingStation}
-            onProvinceChange={handleProvinceChange}
-            onDistrictChange={handleDistrictChange}
-            onConstituencyChange={handleConstituencyChange}
-            onWardChange={handleWardChange}
-            onPollingStationChange={setSelectedPollingStation}
-          />
-        </div>
-
         {!selectedDistrict && (
           <div className="text-center py-12">
             <Building2 className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-xl font-semibold text-foreground mb-2">Select a District</h3>
-            <p className="text-muted-foreground">Please select a district from the filters above to view mayoral results</p>
+            <p className="text-muted-foreground">Please select a district from the filters below to view mayoral results</p>
           </div>
         )}
 
@@ -315,6 +299,21 @@ export function MayoralPage() {
           </>
         )}
 
+        {/* Filters */}
+        <div className="mb-6 mt-8">
+          <DrillDownFilters
+            selectedProvince={selectedProvince}
+            selectedDistrict={selectedDistrict}
+            selectedConstituency={selectedConstituency}
+            selectedWard={selectedWard}
+            selectedPollingStation={selectedPollingStation}
+            onProvinceChange={handleProvinceChange}
+            onDistrictChange={handleDistrictChange}
+            onConstituencyChange={handleConstituencyChange}
+            onWardChange={handleWardChange}
+            onPollingStationChange={setSelectedPollingStation}
+          />
+        </div>
 
         {/* Polling Station Details - shown when ward is selected */}
         {selectedWard && pollingStations.length > 0 && (
