@@ -12,6 +12,17 @@ const mpCandidatesByConstituency = mpCandidatesByConstituencyRaw as Record<
   { id: string; name: string; party: string; partyColor: string }[]
 >;
 
+// 2026 Mayoral/Chairperson candidates, from the same ECZ 22 July 2026 Notice
+// of Validly Nominated Candidates. Keyed by district `name` rather than
+// district `id`, because district ids only number 001-016 within each
+// province (they are not globally unique the way constituency ids are) —
+// all 116 district names, however, are unique nationwide.
+import mayoralCandidatesByDistrictRaw from './mayoralCandidatesByDistrict.json';
+const mayoralCandidatesByDistrict = mayoralCandidatesByDistrictRaw as Record<
+  string,
+  { id: string; name: string; party: string; partyColor: string }[]
+>;
+
 export interface CandidateResult {
   candidateId: string;
   votes: number;
@@ -182,6 +193,16 @@ for (const province of provinces) {
     for (const constituency of district.constituencies) {
       constituency.mpCandidates = mpCandidatesByConstituency[constituency.id] || [];
     }
+  }
+}
+
+// Populate 2026 mayoral/chairperson candidates onto every district, keyed
+// by its `name` (district ids are only unique within a province, so name
+// is used as the join key here — all 116 district names are globally
+// unique). See docs/ecz-2026-nominations/README.md.
+for (const province of provinces) {
+  for (const district of province.districts) {
+    district.mayoralCandidates = mayoralCandidatesByDistrict[district.name] || [];
   }
 }
 
