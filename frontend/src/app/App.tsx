@@ -5,6 +5,7 @@ import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
 import { MainNavigation } from './components/MainNavigation';
 import { MainFooter } from './components/MainFooter';
+import { ScrollToTop } from './components/ScrollToTop';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { DevDisclaimer } from './components/DevDisclaimer';
 import { PageLoader } from './components/PageLoader';
@@ -200,6 +201,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
+        <ScrollToTop />
         <AuthProvider>
           <NotificationProvider>
             <AppRoutes />
