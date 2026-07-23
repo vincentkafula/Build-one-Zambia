@@ -29,6 +29,9 @@ const SITE_SECTIONS = [
         sub: [
           { label: 'Leadership Team', path: '/about#leadership' },
           { label: 'Events', path: '/about/events' },
+          { label: 'Male Candidates', path: '/home/male' },
+          { label: 'Female Candidates', path: '/home/female' },
+          { label: 'Opportunities', path: '/home/opportunities' },
         ],
       },
       {

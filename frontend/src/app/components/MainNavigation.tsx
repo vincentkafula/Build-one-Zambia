@@ -5,8 +5,11 @@ import bozLogo from '../../imports/One_Zambia_Logo.png';
 import { SiteSearch } from './SiteSearch';
 
 const ABOUT_DROPDOWN = [
-  { label: 'Leadership', path: '/about#leadership', desc: 'Our national, provincial, district & branch leaders' },
-  { label: 'Events',     path: '/about/events',     desc: 'Upcoming rallies, forums, summits & past activities' },
+  { label: 'Leadership',        path: '/about#leadership',   desc: 'Our national, provincial, district & branch leaders' },
+  { label: 'Events',            path: '/about/events',       desc: 'Upcoming rallies, forums, summits & past activities' },
+  { label: 'Male Candidates',   path: '/home/male',          desc: 'Meet our shadow cabinet male candidates' },
+  { label: 'Female Candidates', path: '/home/female',        desc: 'Meet our shadow cabinet female candidates' },
+  { label: 'Opportunities',     path: '/home/opportunities', desc: 'Membership, cooperatives & internships' },
 ];
 
 const NEWS_DROPDOWN = [
