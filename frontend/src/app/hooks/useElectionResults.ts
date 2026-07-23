@@ -78,6 +78,7 @@ export function useElectionResults(
   levelType: LevelType = 'national',
   levelId: string = '',
   stage: 'provisional' | 'official' = 'provisional',
+  round: 'round1' | 'runoff' = 'round1',
 ): UseElectionResultsReturn {
   const [result, setResult] = useState<LevelResult | null>(null);
   const [candidateMap, setCandidateMap] = useState<Map<string, Candidate>>(new Map());
@@ -98,8 +99,8 @@ export function useElectionResults(
       try {
         const [resData, candsData] = await Promise.all([
           isNational
-            ? resultsApi.national(electionType, stage)
-            : resultsApi.level(electionType, levelType, levelId, stage),
+            ? resultsApi.national(electionType, stage, round)
+            : resultsApi.level(electionType, levelType, levelId, stage, round),
           candidatesApi.list({ electionType, active: true }),
         ]);
         if (cancelled) return;
@@ -120,7 +121,7 @@ export function useElectionResults(
 
     run();
     return () => { cancelled = true; };
-  }, [electionType, levelType, levelId, isNational, stage]);
+  }, [electionType, levelType, levelId, isNational, stage, round]);
 
   const liveResults: LiveCandidateResult[] = result
     ? result.candidates

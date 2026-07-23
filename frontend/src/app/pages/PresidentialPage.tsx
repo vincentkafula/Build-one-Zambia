@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { LiveResultsPanel } from '../components/LiveResultsPanel';
 import { DrillDownFilters } from '../components/DrillDownFilters';
 import { CandidateCard } from '../components/CandidateCard';
@@ -13,8 +13,9 @@ import {
   calculateTurnout,
   PollingStation, resolveCandidate } from '../data/mockData';
 import { useElectionResults } from '../hooks/useElectionResults';
+import { presidentialElectionApi, electionArchiveApi, type PresidentialElectionConfig, type ArchiveEntrySummary, type ArchiveEntryDetail } from '../lib/api';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { MapPin, Clock } from 'lucide-react';
+import { MapPin, Clock, AlertTriangle, Archive, ChevronDown } from 'lucide-react';
 
 export function PresidentialPage() {
   const [selectedProvince, setSelectedProvince] = useState('');
@@ -24,6 +25,63 @@ export function PresidentialPage() {
   const [selectedPollingStation, setSelectedPollingStation] = useState('');
   const [showAllCandidates, setShowAllCandidates] = useState(false);
   const [resultStage, setResultStage] = useState<ResultStage>('provisional');
+
+  // ── Article 101 runoff ────────────────────────────────────────────────────
+  const [presConfig, setPresConfig] = useState<PresidentialElectionConfig | null>(null);
+  const [viewRound, setViewRound] = useState<'round1' | 'runoff'>('round1');
+
+  useEffect(() => {
+    presidentialElectionApi.getConfig()
+      .then(({ config }) => { setPresConfig(config); setViewRound(config.round); })
+      .catch(() => setPresConfig(null));
+  }, []);
+
+  // Always watch round-1 official results (regardless of what's being viewed)
+  // so the "runoff required" banner can be sensed automatically, independent
+  // of whichever round the viewer currently has selected.
+  const round1Official = useElectionResults('presidential', 'national', '', 'official', 'round1');
+  const round1Leader = round1Official.liveResults[0];
+  const round1RunnerUp = round1Official.liveResults[1];
+  const needsRunoff = round1Official.backendConnected
+    && round1Official.validVotes > 0
+    && !!round1Leader
+    && round1Leader.percentage <= 50
+    && (!presConfig || presConfig.round === 'round1');
+
+  // ── Concluded results archive ─────────────────────────────────────────────
+  const [showArchive, setShowArchive] = useState(false);
+  const [archiveEntries, setArchiveEntries] = useState<ArchiveEntrySummary[]>([]);
+  const [archiveYear, setArchiveYear] = useState('');
+  const [archiveRound, setArchiveRound] = useState<'round1' | 'runoff'>('round1');
+  const [archiveDetail, setArchiveDetail] = useState<ArchiveEntryDetail | null>(null);
+  const [archiveLoading, setArchiveLoading] = useState(false);
+
+  useEffect(() => {
+    if (!showArchive) return;
+    electionArchiveApi.list('presidential').then(({ entries }) => {
+      setArchiveEntries(entries);
+      if (entries.length > 0 && !archiveYear) {
+        setArchiveYear(String(entries[0].year));
+        setArchiveRound(entries[0].round);
+      }
+    }).catch(() => setArchiveEntries([]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showArchive]);
+
+  const archiveYears = Array.from(new Set(archiveEntries.map(e => e.year))).sort((a, b) => b - a);
+  const roundsForSelectedYear = archiveEntries.filter(e => String(e.year) === archiveYear);
+  const hasRunoffForYear = roundsForSelectedYear.some(e => e.round === 'runoff');
+
+  useEffect(() => {
+    if (!archiveYear) return;
+    const match = archiveEntries.find(e => String(e.year) === archiveYear && e.round === archiveRound);
+    if (!match) { setArchiveDetail(null); return; }
+    setArchiveLoading(true);
+    electionArchiveApi.get('presidential', match.id)
+      .then(({ entry }) => setArchiveDetail(entry))
+      .catch(() => setArchiveDetail(null))
+      .finally(() => setArchiveLoading(false));
+  }, [archiveYear, archiveRound, archiveEntries]);
 
   // Get filtered polling stations
   const getFilteredStations = (): PollingStation[] => {
@@ -63,12 +121,15 @@ export function PresidentialPage() {
     : 'national';
   const levelId = selectedWard || selectedConstituency || selectedDistrict || selectedProvince || '';
 
-  const live = useElectionResults('presidential', levelType as any, levelId, resultStage);
+  const live = useElectionResults('presidential', levelType as any, levelId, resultStage, viewRound);
 
   // ── Mock data fallback ────────────────────────────────────────────────────
   const filteredStations = getFilteredStations();
   const resultTotals = aggregateResults(filteredStations);
-  const mockResults = presidentialCandidates
+  const rosterForRound = viewRound === 'runoff' && presConfig?.runoffCandidateIds?.length === 2
+    ? presidentialCandidates.filter(c => presConfig.runoffCandidateIds.includes(c.id))
+    : presidentialCandidates;
+  const mockResults = rosterForRound
     .map(c => ({ candidate: c, votes: resultTotals.get(c.id) || 0, percentage: 0, rank: 0 }))
     .sort((a, b) => b.votes - a.votes)
     .map((r, i) => ({ ...r, rank: i + 1 }));
@@ -166,6 +227,46 @@ export function PresidentialPage() {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <ResultsStatusBar title="Presidential" stage={resultStage} onStageChange={setResultStage} />
+
+        {/* Article 101 — 50%+1 majority check, sensed automatically from official round-1 results */}
+        {needsRunoff && (
+          <div className="mb-6 rounded-2xl border-2 border-amber-400 bg-amber-50 dark:bg-amber-950/30 p-5 flex items-start gap-4">
+            <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-bold text-amber-900 dark:text-amber-200">Runoff Required — Article 101 of the Constitution</h3>
+              <p className="text-sm text-amber-800 dark:text-amber-300 mt-1">
+                No candidate has passed 50% of valid votes cast in Round 1
+                {round1Leader ? <> — <strong>{round1Leader.candidate.name}</strong> leads with {round1Leader.percentage.toFixed(2)}%</> : null}
+                {round1RunnerUp ? <>, followed by <strong>{round1RunnerUp.candidate.name}</strong> ({round1RunnerUp.percentage.toFixed(2)}%)</> : null}.
+                A runoff between the top two candidates is required once Round 1 is fully certified.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {presConfig?.round === 'runoff' && (
+          <div className="mb-6 rounded-2xl border-2 border-[#198754] bg-green-50 dark:bg-green-950/20 p-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="px-3 py-1 rounded-full bg-[#198754] text-white text-xs font-bold uppercase tracking-wide">Runoff — Round 2</div>
+              <p className="text-sm text-foreground">
+                Voting is between the top two Round 1 finishers
+                {round1Leader ? <> — <strong>{round1Leader.candidate.name}</strong></> : null}
+                {round1RunnerUp ? <> and <strong>{round1RunnerUp.candidate.name}</strong></> : null}.
+              </p>
+            </div>
+            <div className="flex gap-1 rounded-lg overflow-hidden border border-border">
+              {(['round1', 'runoff'] as const).map(r => (
+                <button
+                  key={r}
+                  onClick={() => setViewRound(r)}
+                  className={`px-3 py-1.5 text-xs font-semibold transition-colors ${viewRound === r ? 'bg-[#198754] text-white' : 'bg-card hover:bg-muted text-foreground'}`}
+                >
+                  {r === 'round1' ? 'View Round 1' : 'View Runoff'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Results Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -436,6 +537,85 @@ export function PresidentialPage() {
             </div>
           </div>
         )}
+
+        {/* Concluded Results Archive */}
+        <div className="mt-10 pt-6 border-t border-border">
+          <button
+            onClick={() => setShowArchive(v => !v)}
+            className="flex items-center gap-2 text-lg font-bold text-foreground mb-4"
+          >
+            <Archive className="w-5 h-5 text-[#198754]" />
+            Concluded Results Archive
+            <ChevronDown className={`w-4 h-4 transition-transform ${showArchive ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showArchive && (
+            <div className="bg-card border border-border rounded-2xl p-6">
+              {archiveEntries.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No concluded elections have been archived yet. A national manager or admin can archive a certified
+                  result once it's official.
+                </p>
+              ) : (
+                <>
+                  <div className="flex flex-wrap gap-4 mb-6">
+                    <div>
+                      <label className="block text-xs font-semibold text-muted-foreground mb-1">Year</label>
+                      <select
+                        value={archiveYear}
+                        onChange={e => { setArchiveYear(e.target.value); setArchiveRound('round1'); }}
+                        className="px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                      >
+                        {archiveYears.map(y => <option key={y} value={y}>{y}</option>)}
+                      </select>
+                    </div>
+                    {hasRunoffForYear && (
+                      <div>
+                        <label className="block text-xs font-semibold text-muted-foreground mb-1">Round</label>
+                        <select
+                          value={archiveRound}
+                          onChange={e => setArchiveRound(e.target.value as 'round1' | 'runoff')}
+                          className="px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                        >
+                          <option value="round1">Round 1 (General)</option>
+                          <option value="runoff">Runoff</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
+
+                  {archiveLoading ? (
+                    <p className="text-sm text-muted-foreground">Loading archived result…</p>
+                  ) : archiveDetail ? (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-4">{archiveDetail.label} · Archived {new Date(archiveDetail.archivedAt).toLocaleDateString()}</p>
+                      <div className="space-y-2">
+                        {archiveDetail.result.candidates.map(c => {
+                          const candidate = resolveCandidate(c.candidateId);
+                          return (
+                            <div key={c.candidateId} className="flex items-center gap-3 p-3 rounded-lg border border-border">
+                              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: candidate.partyColor }} />
+                              <span className="flex-1 text-sm font-medium text-foreground">{candidate.name}</span>
+                              <span className="text-xs text-muted-foreground">{candidate.party}</span>
+                              <span className="text-sm font-bold text-foreground w-16 text-right">{c.percentage.toFixed(2)}%</span>
+                              <span className="text-xs text-muted-foreground w-24 text-right">{c.votes.toLocaleString()} votes</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-4">
+                        Turnout {archiveDetail.result.turnoutPercent.toFixed(1)}% · {archiveDetail.result.registeredVoters.toLocaleString()} registered voters
+                        · {archiveDetail.result.stationsReporting.toLocaleString()} stations reporting
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No archived result found for this selection.</p>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Downloads */}
         <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-center gap-3">

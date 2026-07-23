@@ -579,8 +579,63 @@ app.post(`${BASE}/election-users/bulk`, auth.requireAuth, auth.requireRole('supe
 
 // ─── Results Engine ────────────────────────────────────────────────────────────
 app.get(`${BASE}/results/dashboard`, (req, res) => res.json({ summary: results.getDashboard() }));
-app.get(`${BASE}/results/national/:electionType`, (req, res) => res.json({ result: results.getNational(req.params.electionType, req.query.stage) }));
-app.get(`${BASE}/results/level/:electionType/:levelType/:levelId`, (req, res) => res.json({ result: results.getLevel(req.params.electionType, req.params.levelType, decodeURIComponent(req.params.levelId), req.query.stage) }));
+app.get(`${BASE}/results/national/:electionType`, (req, res) => res.json({ result: results.getNational(req.params.electionType, req.query.stage, req.query.round) }));
+app.get(`${BASE}/results/level/:electionType/:levelType/:levelId`, (req, res) => res.json({ result: results.getLevel(req.params.electionType, req.params.levelType, decodeURIComponent(req.params.levelId), req.query.stage, req.query.round) }));
+
+// ─── Presidential runoff config (public read, admin write) ──────────────────
+app.get(`${BASE}/elections/presidential/config`, (req, res) => res.json({ config: electionConfigStore.presidential }));
+
+app.patch(`${BASE}/elections/presidential/config`, auth.requireAuth, auth.requireRole('national_manager', 'admin', 'super_admin'), (req, res) => {
+  const { round, runoffCandidateIds, year } = req.body || {};
+  if (round && !['round1', 'runoff'].includes(round)) return res.status(400).json({ error: "round must be 'round1' or 'runoff'" });
+  if (round === 'runoff' && (!Array.isArray(runoffCandidateIds) || runoffCandidateIds.length !== 2)) {
+    return res.status(400).json({ error: 'Declaring a runoff requires exactly two runoffCandidateIds.' });
+  }
+  const now = new Date().toISOString();
+  electionConfigStore.presidential = {
+    ...electionConfigStore.presidential,
+    ...(round ? { round } : {}),
+    ...(Array.isArray(runoffCandidateIds) ? { runoffCandidateIds } : {}),
+    ...(year ? { year: Number(year) } : {}),
+    updatedAt: now,
+    updatedBy: req.user.username,
+  };
+  saveElectionConfig();
+  res.json({ success: true, config: electionConfigStore.presidential });
+});
+
+// ─── Concluded election archive ──────────────────────────────────────────────
+app.get(`${BASE}/elections/:electionType/archive`, (req, res) => {
+  const entries = electionArchiveStore.entries
+    .filter(e => e.electionType === req.params.electionType)
+    .map(({ id, electionType, year, round, label, archivedAt, archivedBy }) => ({ id, electionType, year, round, label, archivedAt, archivedBy }))
+    .sort((a, b) => b.year - a.year || (a.round === 'round1' ? -1 : 1));
+  res.json({ entries });
+});
+
+app.get(`${BASE}/elections/:electionType/archive/:id`, (req, res) => {
+  const entry = electionArchiveStore.entries.find(e => e.id === req.params.id && e.electionType === req.params.electionType);
+  if (!entry) return res.status(404).json({ error: 'Archive entry not found' });
+  res.json({ entry });
+});
+
+app.post(`${BASE}/elections/:electionType/archive`, auth.requireAuth, auth.requireRole('national_manager', 'admin', 'super_admin'), (req, res) => {
+  const { year, round, label } = req.body || {};
+  if (!year) return res.status(400).json({ error: 'year is required' });
+  const electionType = req.params.electionType;
+  const resolvedRound = electionType === 'presidential' && round === 'runoff' ? 'runoff' : 'round1';
+  const snapshot = results.getNational(electionType, 'official', resolvedRound);
+  const now = new Date().toISOString();
+  const id = `arc-${electionType}-${year}-${resolvedRound}-${Date.now()}`;
+  // Replace any prior archive for the same electionType+year+round (re-archiving overwrites, doesn't duplicate)
+  electionArchiveStore.entries = electionArchiveStore.entries.filter(
+    e => !(e.electionType === electionType && e.year === Number(year) && e.round === resolvedRound)
+  );
+  const entry = { id, electionType, year: Number(year), round: resolvedRound, label: label || `${year} ${resolvedRound === 'runoff' ? 'Runoff' : 'General Election'}`, result: snapshot, archivedAt: now, archivedBy: req.user.username };
+  electionArchiveStore.entries.push(entry);
+  saveElectionArchive();
+  res.json({ success: true, entry });
+});
 app.get(`${BASE}/results/breakdown/:electionType/province`, (req, res) => res.json({ breakdown: results.getBreakdown(req.params.electionType, 'provinceId', null, null) }));
 app.get(`${BASE}/results/breakdown/:electionType/district/:provinceId`, (req, res) => res.json({ breakdown: results.getBreakdown(req.params.electionType, 'districtId', 'provinceId', decodeURIComponent(req.params.provinceId)) }));
 app.get(`${BASE}/results/breakdown/:electionType/constituency/:districtId`, (req, res) => res.json({ breakdown: results.getBreakdown(req.params.electionType, 'constituencyId', 'districtId', decodeURIComponent(req.params.districtId)) }));
@@ -615,10 +670,27 @@ app.get(`${BASE}/voter/stats/:pollingStationId`, auth.requireAuth, (req, res) =>
 const dataEntryStore = { submissions: kv.get('data-entry:submissions') || [], eczFigures: kv.get('data-entry:ecz-figures') || [], auditLog: kv.get('data-entry:audit-log') || [] };
 function saveDataEntry() { kv.set('data-entry:submissions', dataEntryStore.submissions); kv.set('data-entry:ecz-figures', dataEntryStore.eczFigures); kv.set('data-entry:audit-log', dataEntryStore.auditLog); }
 
+// ─── Presidential runoff config (Article 101) ────────────────────────────────
+// round: 'round1' | 'runoff'. runoffCandidateIds: the two candidates carried
+// into round 2 once round 1 fails to produce a 50%+1 majority. Declared
+// explicitly by a national_manager/admin — never auto-switched — so a
+// still-counting round 1 can't trip into runoff mode prematurely.
+const electionConfigStore = { presidential: kv.get('boz:election-config:presidential') || { round: 'round1', runoffCandidateIds: [], year: 2026, updatedAt: null, updatedBy: null } };
+function saveElectionConfig() { kv.set('boz:election-config:presidential', electionConfigStore.presidential); }
+
+// ─── Concluded election archive ──────────────────────────────────────────────
+// A permanent, point-in-time snapshot of a result (taken when a
+// national_manager/admin formally archives a concluded round), so past years
+// and past rounds stay viewable even after the live data is reset for the
+// next contest.
+const electionArchiveStore = { entries: kv.get('boz:election-archive') || [] };
+function saveElectionArchive() { kv.set('boz:election-archive', electionArchiveStore.entries); }
+
 app.post(`${BASE}/data-entry/result`, auth.requireAuth, async (req, res) => {
   try {
     const { pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, candidates: rawCands, candidateResults, candidateVotes, totalVotesCast, totalVotes, totalRejectedBallots, totalRejected, rejectedBallots, registeredVoters, agentId, agentName, enteredBy, notes } = req.body;
     if (!pollingStationId || !electionType) return res.status(400).json({ error: 'pollingStationId and electionType required' });
+    const electionRound = req.body.electionRound === 'runoff' ? 'runoff' : 'round1';
 
     // Enforce: polling agents can only submit for their assigned station
     const isAgent = ['polling_agent', 'agent', 'election_agent'].includes(req.user?.role || '');
@@ -634,6 +706,18 @@ app.post(`${BASE}/data-entry/result`, auth.requireAuth, async (req, res) => {
     }
     const rawList = candidateVotes || candidateResults || rawCands || [];
     const normCandidates = rawList.map(c => ({ candidateId: c.candidateId || c.id || '', name: c.name || c.candidateName || '', party: c.party || c.partyName || '', votes: Number(c.votes || c.voteCount || 0) }));
+
+    // Presidential runoff: only the two candidates declared for the runoff may
+    // receive votes — reject anything else so a stale/round-1 form can't leak
+    // extra candidates into round-2 figures.
+    if (electionType === 'presidential' && electionRound === 'runoff') {
+      const runoffIds = electionConfigStore.presidential.runoffCandidateIds || [];
+      const invalid = normCandidates.filter(c => c.candidateId && !runoffIds.includes(c.candidateId));
+      if (runoffIds.length === 2 && invalid.length > 0) {
+        return res.status(400).json({ error: `Runoff round only accepts votes for the two declared runoff candidates.` });
+      }
+    }
+
     const totalVotesNum = normCandidates.reduce((s, c) => s + c.votes, 0) || Number(totalVotesCast || totalVotes || 0);
     const rejectedNum = Number(rejectedBallots || totalRejectedBallots || totalRejected || 0);
     const registeredNum = Number(registeredVoters || 0);
@@ -646,10 +730,12 @@ app.post(`${BASE}/data-entry/result`, auth.requireAuth, async (req, res) => {
       province: { status: 'pending', by: null, at: null, notes: null },
       national: { status: 'pending', by: null, at: null, notes: null },
     });
-    let submission = { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, totalRejectedBallots: rejectedNum, rejectedBallots: rejectedNum, registeredVoters: registeredNum, agentId, agentName: agentName || enteredBy, notes, status: 'pending', verificationChain: emptyVerificationChain(), isOfficial: false, submittedAt: now };
-    // Check if station already submitted — update instead of duplicate
+    let submission = { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, electionRound, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, totalRejectedBallots: rejectedNum, rejectedBallots: rejectedNum, registeredVoters: registeredNum, agentId, agentName: agentName || enteredBy, notes, status: 'pending', verificationChain: emptyVerificationChain(), isOfficial: false, submittedAt: now };
+    // Check if station already submitted (for this round) — update instead of duplicate.
+    // Round is part of the match key so a runoff submission never clobbers the
+    // station's round-1 figures (and vice versa) — both stay available for the archive.
     const existingIdx = dataEntryStore.submissions.findIndex(
-      s => s.pollingStationId === pollingStationId && s.electionType === electionType
+      s => s.pollingStationId === pollingStationId && s.electionType === electionType && (s.electionRound || 'round1') === electionRound
     );
     if (existingIdx >= 0) {
       // UPDATE existing submission (allows correction of rejected ballots)
@@ -659,14 +745,19 @@ app.post(`${BASE}/data-entry/result`, auth.requireAuth, async (req, res) => {
       dataEntryStore.submissions.push(submission);
     }
     saveDataEntry();
-    // Write to results KV for immediate dashboard display
+    // Write to results KV for immediate dashboard display. Round1 keeps the
+    // original (unsuffixed) key for backward compatibility; runoff submissions
+    // use a distinct key so they never overwrite the round-1 record.
     const category = electionType === 'parliament' ? 'parliamentary' : electionType;
-    kv.set(`boz:results:${category}:station:${pollingStationId}`, { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, category, electionType, candidateVotes: normCandidates, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, rejectedBallots: rejectedNum, registeredVoters: registeredNum, status: 'pending', verified: false, verificationChain: submission.verificationChain, isOfficial: false, submittedBy: agentName || enteredBy || agentId || 'agent', submittedAt: now, updatedAt: now });
+    const stationKey = electionRound === 'runoff'
+      ? `boz:results:${category}:station:${pollingStationId}:runoff`
+      : `boz:results:${category}:station:${pollingStationId}`;
+    kv.set(stationKey, { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, category, electionType, electionRound, candidateVotes: normCandidates, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, rejectedBallots: rejectedNum, registeredVoters: registeredNum, status: 'pending', verified: false, verificationChain: submission.verificationChain, isOfficial: false, submittedBy: agentName || enteredBy || agentId || 'agent', submittedAt: now, updatedAt: now });
     res.json({ success: true, message: 'Result submitted successfully', submission: { id, submittedAt: now, status: 'pending' } });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 app.get(`${BASE}/data-entry/turnout`, (req, res) => res.json({ stats: { totalStations: 0, reportingStations: dataEntryStore.submissions.length, totalVotesCast: 0 } }));
-app.get(`${BASE}/data-entry/result/:pollingStationId/:electionType`, (req, res) => { const sub = dataEntryStore.submissions.find(s => s.pollingStationId === decodeURIComponent(req.params.pollingStationId) && s.electionType === req.params.electionType); res.json({ submitted: !!sub, submittedAt: sub?.submittedAt, status: sub?.status, id: sub?.id }); });
+app.get(`${BASE}/data-entry/result/:pollingStationId/:electionType`, (req, res) => { const round = req.query.round === 'runoff' ? 'runoff' : 'round1'; const sub = dataEntryStore.submissions.find(s => s.pollingStationId === decodeURIComponent(req.params.pollingStationId) && s.electionType === req.params.electionType && (s.electionRound || 'round1') === round); res.json({ submitted: !!sub, submittedAt: sub?.submittedAt, status: sub?.status, id: sub?.id }); });
 app.get(`${BASE}/data-entry/submissions`, auth.requireAuth, (req, res) => {
   let subs = [...dataEntryStore.submissions];
   const { status, electionType, wardId, constituencyId, districtId, provinceId, pollingStationId, agentId } = req.query;

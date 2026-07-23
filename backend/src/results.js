@@ -20,15 +20,20 @@ function isOfficial(submission) {
   return VERIFICATION_LEVELS.every(level => chain[level]?.status === 'approved');
 }
 
-function getAllSubmissions(electionType, stage) {
+function getAllSubmissions(electionType, stage, round) {
   const all = kv.getByPrefix('boz:results:');
   let filtered = all.filter(s => !electionType || s.electionType === electionType);
   if (stage === 'official') {
     filtered = filtered.filter(s => s.isOfficial === true || isOfficial(s));
   }
+  // Submissions predate the runoff feature and have no electionRound field —
+  // treat those (and anything explicitly tagged 'round1') as first-round.
+  if (round) {
+    filtered = filtered.filter(s => (s.electionRound || 'round1') === round);
+  }
   // Debug log — remove after confirming
   if (all.length > 0 || filtered.length > 0) {
-    console.log(`[results] getAllSubmissions(${electionType}, ${stage || 'provisional'}): ${all.length} total, ${filtered.length} matching`);
+    console.log(`[results] getAllSubmissions(${electionType}, ${stage || 'provisional'}, ${round || 'any round'}): ${all.length} total, ${filtered.length} matching`);
     if (all.length > 0) console.log(`[results] Sample fields:`, JSON.stringify({ rejectedBallots: all[0]?.rejectedBallots, totalRejected: all[0]?.totalRejected, electionType: all[0]?.electionType }));
   }
   return filtered;
@@ -78,14 +83,14 @@ function buildResult(electionType, levelType, levelId, submissions) {
   return { electionType, levelType, levelId, stationsReporting: submissions.length, registeredVoters, totalVotesCast, validVotes, rejectedBallots, turnoutPercent, candidates, leadingCandidateId, margin, marginPercent, submissionBreakdown: breakdown, computedAt: now };
 }
 
-export function getNational(electionType, stage) {
-  return buildResult(electionType, 'national', 'national', getAllSubmissions(electionType, stage));
+export function getNational(electionType, stage, round) {
+  return buildResult(electionType, 'national', 'national', getAllSubmissions(electionType, stage, round));
 }
 
-export function getLevel(electionType, levelType, levelId, stage) {
+export function getLevel(electionType, levelType, levelId, stage, round) {
   const fieldMap = { province: 'provinceId', district: 'districtId', constituency: 'constituencyId', ward: 'wardId', station: 'pollingStationId' };
   const field = fieldMap[levelType];
-  const filtered = getAllSubmissions(electionType, stage).filter(s => !field || s[field] === levelId);
+  const filtered = getAllSubmissions(electionType, stage, round).filter(s => !field || s[field] === levelId);
   return buildResult(electionType, levelType, levelId, filtered);
 }
 

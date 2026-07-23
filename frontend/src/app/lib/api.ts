@@ -751,8 +751,8 @@ export const dataEntryApi = {
     return request<{ stats: unknown }>('GET', `/data-entry/turnout${qs}`);
   },
 
-  checkSubmission: (pollingStationId: string, electionType: string) =>
-    request<{ submitted: boolean; submittedAt?: string; status?: string; id?: string }>('GET', `/data-entry/result/${encodeURIComponent(pollingStationId)}/${electionType}`),
+  checkSubmission: (pollingStationId: string, electionType: string, round?: 'round1' | 'runoff') =>
+    request<{ submitted: boolean; submittedAt?: string; status?: string; id?: string }>('GET', `/data-entry/result/${encodeURIComponent(pollingStationId)}/${electionType}${round ? `?round=${round}` : ''}`),
 
   listSubmissions: (filters?: Record<string, string>) => {
     const qs = filters ? '?' + new URLSearchParams(filters).toString() : '';
@@ -1034,17 +1034,19 @@ export const resultsApi = {
   dashboard: () =>
     request<{ summary: DashboardSummary }>('GET', '/results/dashboard'),
 
-  national: (electionType: ElectionCategory, stage?: 'provisional' | 'official', statuses?: string) => {
+  national: (electionType: ElectionCategory, stage?: 'provisional' | 'official', round?: 'round1' | 'runoff', statuses?: string) => {
     const qs = new URLSearchParams();
     if (stage) qs.set('stage', stage);
+    if (round) qs.set('round', round);
     if (statuses) qs.set('statuses', statuses);
     const q = qs.toString();
     return request<{ result: LevelResult }>('GET', `/results/national/${electionType}${q ? `?${q}` : ''}`);
   },
 
-  level: (electionType: ElectionCategory, levelType: LevelType, levelId: string, stage?: 'provisional' | 'official', statuses?: string) => {
+  level: (electionType: ElectionCategory, levelType: LevelType, levelId: string, stage?: 'provisional' | 'official', round?: 'round1' | 'runoff', statuses?: string) => {
     const qs = new URLSearchParams();
     if (stage) qs.set('stage', stage);
+    if (round) qs.set('round', round);
     if (statuses) qs.set('statuses', statuses);
     const q = qs.toString();
     return request<{ result: LevelResult }>('GET', `/results/level/${electionType}/${levelType}/${encodeURIComponent(levelId)}${q ? `?${q}` : ''}`);
@@ -1087,6 +1089,47 @@ export const resultsApi = {
 
   invalidateCache: (pattern?: string) =>
     request<{ success: boolean }>('POST', '/results/cache/invalidate', { pattern }, true),
+};
+
+// ─── Presidential runoff config + concluded-election archive ────────────────
+export interface PresidentialElectionConfig {
+  round: 'round1' | 'runoff';
+  runoffCandidateIds: string[];
+  year: number;
+  updatedAt: string | null;
+  updatedBy: string | null;
+}
+
+export interface ArchiveEntrySummary {
+  id: string;
+  electionType: ElectionCategory;
+  year: number;
+  round: 'round1' | 'runoff';
+  label: string;
+  archivedAt: string;
+  archivedBy: string;
+}
+
+export interface ArchiveEntryDetail extends ArchiveEntrySummary {
+  result: LevelResult;
+}
+
+export const presidentialElectionApi = {
+  getConfig: () => request<{ config: PresidentialElectionConfig }>('GET', '/elections/presidential/config'),
+
+  updateConfig: (patch: { round?: 'round1' | 'runoff'; runoffCandidateIds?: string[]; year?: number }) =>
+    request<{ success: boolean; config: PresidentialElectionConfig }>('PATCH', '/elections/presidential/config', patch, true),
+};
+
+export const electionArchiveApi = {
+  list: (electionType: ElectionCategory) =>
+    request<{ entries: ArchiveEntrySummary[] }>('GET', `/elections/${electionType}/archive`),
+
+  get: (electionType: ElectionCategory, id: string) =>
+    request<{ entry: ArchiveEntryDetail }>('GET', `/elections/${electionType}/archive/${id}`),
+
+  archiveNow: (electionType: ElectionCategory, payload: { year: number; round?: 'round1' | 'runoff'; label?: string }) =>
+    request<{ success: boolean; entry: ArchiveEntryDetail }>('POST', `/elections/${electionType}/archive`, payload, true),
 };
 
 // ─── News & Posts ─────────────────────────────────────────────────────────────

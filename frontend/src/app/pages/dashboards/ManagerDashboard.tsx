@@ -30,6 +30,7 @@ const AppointmentCertAdmin    = lazy(() => import('../../components/AppointmentC
 const BallotScanSystem        = lazy(() => import('../../components/BallotScanSystem').then(m => ({ default: m.BallotScanSystem })));
 const VoterVerification       = lazy(() => import('../../components/VoterVerification').then(m => ({ default: m.VoterVerification })));
 const ResultsApprovalQueue    = lazy(() => import('../../components/ResultsApprovalQueue').then(m => ({ default: m.ResultsApprovalQueue })));
+const PresidentialRunoffAdmin = lazy(() => import('../../components/PresidentialRunoffAdmin').then(m => ({ default: m.PresidentialRunoffAdmin })));
 const SystemSetupDashboard    = lazy(() => import('../../components/SystemSetupDashboard').then(m => ({ default: m.SystemSetupDashboard })));
 const VoterRollUpload         = lazy(() => import('../../components/VoterRollUpload').then(m => ({ default: m.VoterRollUpload })));
 const ElectionUserManager     = lazy(() => import('../../components/ElectionUserManager').then(m => ({ default: m.ElectionUserManager })));
@@ -53,7 +54,7 @@ type SectionKey = 'overview' | 'notice-board' | 'system-setup' | 'election-users
   'voter-turnout' | 'ballot-scan' | 'registrations' | 'security-centre' |
   'events' | 'shop' | 'news' | 'leadership' | 'membership-admin' | 'adoption-certs' | 'appointment-certs' |
   'press-statements' | 'email' | 'chamber-amendments' | 'live-streams' | 'documents' |
-  'personal-details' | 'security';
+  'personal-details' | 'security' | 'presidential-runoff';
 
 const NAV: { group: string; items: { key: SectionKey; label: string; icon: React.ReactNode }[] }[] = [
   {
@@ -348,6 +349,7 @@ export default function ManagerDashboard() {
       case 'shadow-cabinet':     return <Suspense fallback={<SectionLoader />}><ShadowCabinetManager /></Suspense>;
       case 'ecz-comparison':     return <Suspense fallback={<SectionLoader />}><ECZComparisonDashboard /></Suspense>;
       case 'results-approval':   return <Suspense fallback={<SectionLoader />}><ResultsApprovalQueue /></Suspense>;
+      case 'presidential-runoff': return <Suspense fallback={<SectionLoader />}><PresidentialRunoffAdmin /></Suspense>;
       case 'system-setup':       return <Suspense fallback={<SectionLoader />}><SystemSetupDashboard /></Suspense>;
       case 'voter-roll-upload':  return <Suspense fallback={<SectionLoader />}><VoterRollUpload /></Suspense>;
       case 'election-users':     return <Suspense fallback={<SectionLoader />}><ElectionUserManager /></Suspense>;
@@ -470,6 +472,7 @@ export default function ManagerDashboard() {
                   { key: 'membership-admin',  label: 'Membership',            desc: 'View and manage party members.',                                    icon: <Users size={18} />,       color: '#00712B' },
                   { key: 'registrations',     label: 'Registrations',         desc: 'Approve or reject member registrations.',                           icon: <CheckCircle size={18} />, color: '#00712B' },
                   { key: 'results-approval',  label: 'Results Approval',      desc: 'Verify and approve polling station results.',                       icon: <CheckCircle size={18} />, color: '#00712B' },
+                  { key: 'presidential-runoff', label: 'Presidential Runoff', desc: 'Declare an Article 101 runoff & archive concluded election years.', icon: <Shield size={18} />,      color: '#00712B' },
                   { key: 'voter-roll-upload', label: 'Voter Roll Upload',     desc: 'Upload the official ECZ voter roll CSV.',                           icon: <FileText size={18} />,    color: '#00712B' },
                   { key: 'email',             label: 'Email Settings',        desc: 'Configure Resend email service.',                                   icon: <Mail size={18} />,        color: '#00712B' },
                   { key: 'security-centre',   label: 'Security Centre',       desc: 'Monitor system security and access logs.',                          icon: <ShieldCheck size={18} />, color: '#00712B' },

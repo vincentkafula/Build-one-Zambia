@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { provinces, presidentialCandidates, Candidate } from '../data/mockData';
 import { candidatePhotos } from '../data/candidatePhotos';
 import { Save, CheckCircle2, AlertCircle, Upload, X, FileText, Loader2, WifiOff, CloudUpload } from 'lucide-react';
-import { dataEntryApi, DocumentPayload, getToken } from '../lib/api';
+import { dataEntryApi, DocumentPayload, getToken, presidentialElectionApi, type PresidentialElectionConfig } from '../lib/api';
 import { useOfflineQueue } from '../hooks/useOfflineQueue';
 
 const BASE_URL = API_BASE;
@@ -79,6 +79,11 @@ export function DataEntryPage() {
   };
 
   const [electionType, setElectionType] = useState<ElectionType>('');
+  const [presConfig, setPresConfig] = useState<PresidentialElectionConfig | null>(null);
+
+  useEffect(() => {
+    presidentialElectionApi.getConfig().then(({ config }) => setPresConfig(config)).catch(() => setPresConfig(null));
+  }, []);
   const [formData, setFormData] = useState({
     province:        isPollingAgent ? locked.provinceId      : '',
     district:        isPollingAgent ? locked.districtId      : '',
@@ -106,10 +111,13 @@ export function DataEntryPage() {
   const currentWard = currentConstituency?.wards.find(w => w.id === formData.ward);
 
   // Get candidates based on election type
+  const isPresidentialRunoff = electionType === 'presidential' && presConfig?.round === 'runoff' && (presConfig.runoffCandidateIds?.length ?? 0) === 2;
   const getCandidates = (): Candidate[] => {
     switch (electionType) {
       case 'presidential':
-        return presidentialCandidates;
+        return isPresidentialRunoff
+          ? presidentialCandidates.filter(c => presConfig!.runoffCandidateIds.includes(c.id))
+          : presidentialCandidates;
       case 'parliament':
         return currentConstituency?.mpCandidates || [];
       case 'mayoral':
@@ -137,13 +145,13 @@ export function DataEntryPage() {
       ? (locked.pollingStationId || formData.pollingStation)
       : formData.pollingStation;
     if (!stationToCheck || !electionType) { setAlreadySubmitted(null); return; }
-    dataEntryApi.checkSubmission(stationToCheck, electionType)
+    dataEntryApi.checkSubmission(stationToCheck, electionType, isPresidentialRunoff ? 'runoff' : 'round1')
       .then(res => {
         if (res.submitted) setAlreadySubmitted({ submittedAt: res.submittedAt!, status: res.status! });
         else setAlreadySubmitted(null);
       })
       .catch(() => setAlreadySubmitted(null));
-  }, [formData.pollingStation, electionType, locked.pollingStationId]);
+  }, [formData.pollingStation, electionType, locked.pollingStationId, isPresidentialRunoff]);
 
   // Auto-computed totals
   const totalCandidateVotes = Object.values(formData.candidateVotes).reduce(
@@ -191,6 +199,7 @@ export function DataEntryPage() {
 
       const payload = {
         electionType,
+        electionRound: isPresidentialRunoff ? 'runoff' : 'round1',
         provinceId:        isPollingAgent ? locked.provinceId      : formData.province,
         districtId:        isPollingAgent ? locked.districtId      : formData.district,
         constituencyId:    isPollingAgent ? locked.constituencyId  : formData.constituency,
@@ -540,8 +549,14 @@ export function DataEntryPage() {
           {/* Candidate Votes - Only show if election type is selected and candidates are available */}
           {electionType && candidates.length > 0 && (
             <div className="mb-6 pt-6 border-t border-border">
+              {isPresidentialRunoff && (
+                <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 border border-green-300 text-green-800 text-sm font-medium">
+                  <span className="px-2 py-0.5 rounded-full bg-[#198754] text-white text-xs font-bold uppercase">Runoff — Round 2</span>
+                  Only the two runoff candidates are shown below.
+                </div>
+              )}
               <h3 className="font-semibold text-foreground mb-4">
-                {electionType === 'presidential' && 'Presidential Candidate Votes'}
+                {electionType === 'presidential' && (isPresidentialRunoff ? 'Presidential Runoff Candidate Votes' : 'Presidential Candidate Votes')}
                 {electionType === 'parliament' && 'MP Candidate Votes'}
                 {electionType === 'mayoral' && 'Mayoral Candidate Votes'}
                 {electionType === 'councillor' && 'Councillor Candidate Votes'}
