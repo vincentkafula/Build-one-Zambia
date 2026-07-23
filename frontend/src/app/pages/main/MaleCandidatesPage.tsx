@@ -446,7 +446,12 @@ export function MaleCandidatesPage() {
 
   useEffect(() => {
     candidatesApi.list({ gender: 'male', active: true })
-      .then(res => setLiveCandidates(res.candidates))
+      // "MORE MALE CANDIDATES" is for Build One Zambia's own candidates
+      // (mayoral/MP/councillor entries added via the Candidate Manager).
+      // The presidential race is a shared national ECZ nomination roster
+      // covering every party's candidate — those belong on the public
+      // Election Results Portal only, never on BOZ's own Shadow Cabinet page.
+      .then(res => setLiveCandidates(res.candidates.filter(c => c.electionType !== 'presidential')))
       .catch(() => setLiveCandidates([]));
     shadowCabinetApi.list('male')
       .then(res => setShadowMembers(res.members))

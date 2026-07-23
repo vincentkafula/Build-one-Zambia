@@ -258,7 +258,10 @@ export function FemaleCandidatesPage() {
 
   useEffect(() => {
     candidatesApi.list({ gender: 'female', active: true })
-      .then(res => setLiveCandidates(res.candidates))
+      // Same fix as MaleCandidatesPage: exclude the shared national
+      // presidential ECZ roster (all parties) — this section is BOZ's own
+      // candidates only; presidential candidates belong on the Results Portal.
+      .then(res => setLiveCandidates(res.candidates.filter(c => c.electionType !== 'presidential')))
       .catch(() => setLiveCandidates([]));
     shadowCabinetApi.list('female')
       .then(res => setShadowMembers(res.members))
