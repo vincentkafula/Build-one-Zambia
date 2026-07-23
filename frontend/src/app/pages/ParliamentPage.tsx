@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { provinces, PollingStation, calculateTurnout, resolveCandidate } from '../data/mockData';
 import { CandidateCard } from '../components/CandidateCard';
+import { CandidateCardCompact } from '../components/CandidateCardCompact';
 import { ResultsStatusBar, ResultStage } from '../components/ResultsStatusBar';
 import { DrillDownFilters } from '../components/DrillDownFilters';
 import { useElectionResults } from '../hooks/useElectionResults';
@@ -179,91 +180,116 @@ export function ParliamentPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Candidates List */}
-                <div className="lg:col-span-2 space-y-3">
-                  {(() => {
-                    const mockSorted = [...currentConstituency.mpCandidates]
-                      .map(c => ({ candidate: c, votes: aggregatedResults.voteTotals.get(c.id) || 0 }))
-                      .sort((a, b) => b.votes - a.votes);
-                    const sorted = usingLive ? live.liveResults : mockSorted;
-                    const totalValidVotes = usingLive ? live.validVotes : (aggregatedResults.totalVotes - aggregatedResults.totalRejected);
-                    const displayed = showAllCandidates ? sorted : sorted.slice(0, 4);
-                    return (
-                      <>
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-sm font-semibold text-foreground">
-                            {showAllCandidates ? 'All Candidates' : 'Top 4 Candidates'}
-                          </p>
-                          {sorted.length > 4 && (
-                            <button
-                              onClick={() => setShowAllCandidates(v => !v)}
-                              className="text-xs px-3 py-1 rounded-full border transition-colors"
-                              style={{ borderColor: '#198754', color: showAllCandidates ? '#fff' : '#198754', background: showAllCandidates ? '#198754' : 'transparent' }}
-                            >
-                              {showAllCandidates ? 'Show Top 4' : 'View Full Results'}
-                            </button>
-                          )}
-                        </div>
-                        {displayed.map((r, i) => (
-                          <CandidateCard
+              {(() => {
+                const mockSorted = [...currentConstituency.mpCandidates]
+                  .map(c => ({ candidate: c, votes: aggregatedResults.voteTotals.get(c.id) || 0 }))
+                  .sort((a, b) => b.votes - a.votes);
+                const sorted = usingLive ? live.liveResults : mockSorted;
+                const totalValidVotes = usingLive ? live.validVotes : (aggregatedResults.totalVotes - aggregatedResults.totalRejected);
+                const displayed = showAllCandidates ? sorted : sorted.slice(0, 4);
+
+                const header = (
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-semibold text-foreground">
+                      {showAllCandidates ? 'All Candidates' : 'Top 4 Candidates'}
+                    </p>
+                    {sorted.length > 4 && (
+                      <button
+                        onClick={() => setShowAllCandidates(v => !v)}
+                        className="text-xs px-3 py-1 rounded-full border transition-colors"
+                        style={{ borderColor: '#198754', color: showAllCandidates ? '#fff' : '#198754', background: showAllCandidates ? '#198754' : 'transparent' }}
+                      >
+                        {showAllCandidates ? 'Show Top 4' : 'View Full Results'}
+                      </button>
+                    )}
+                  </div>
+                );
+
+                const viewMoreButton = !showAllCandidates && sorted.length > 4 && (
+                  <button
+                    onClick={() => setShowAllCandidates(true)}
+                    className="w-full py-3 rounded-xl border-2 border-dashed text-sm font-semibold transition-colors"
+                    style={{ borderColor: '#198754', color: '#198754' }}
+                  >
+                    View Full Results — {sorted.length - 4} more candidate{sorted.length - 4 !== 1 ? 's' : ''}
+                  </button>
+                );
+
+                if (!showAllCandidates) {
+                  // Top-4 view: same compact card grid used on the Presidential dashboard
+                  return (
+                    <div className="space-y-3">
+                      {header}
+                      <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                        {displayed.map((r) => (
+                          <CandidateCardCompact
                             key={r.candidate.id}
                             candidate={r.candidate}
                             votes={r.votes}
                             totalVotes={totalValidVotes}
-                            rank={i + 1}
-                            isLeading={i === 0}
+                            isLeading={r === sorted[0]}
                           />
                         ))}
-                        {!showAllCandidates && sorted.length > 4 && (
-                          <button
-                            onClick={() => setShowAllCandidates(true)}
-                            className="w-full py-3 rounded-xl border-2 border-dashed text-sm font-semibold transition-colors"
-                            style={{ borderColor: '#198754', color: '#198754' }}
-                          >
-                            View Full Results — {sorted.length - 4} more candidate{sorted.length - 4 !== 1 ? 's' : ''}
-                          </button>
-                        )}
-                      </>
-                    );
-                  })()}
-                </div>
+                      </div>
+                      {viewMoreButton}
+                    </div>
+                  );
+                }
 
-                {/* Pie Chart */}
-                <div className="lg:col-span-1">
-                  <div className="bg-gradient-to-br from-card to-card/80 border border-border rounded-xl p-4">
-                    <h3 className="text-sm font-bold text-foreground mb-4">Vote Distribution</h3>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <PieChart>
-                        <Pie
-                          data={currentConstituency.mpCandidates.map(c => ({
-                            name: c.id,
-                            label: c.party,
-                            value: aggregatedResults.voteTotals.get(c.id) || 0,
-                            color: c.partyColor }))}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ percent }) => percent > 0 ? `${(percent * 100).toFixed(0)}%` : ''}
-                          outerRadius={60}
-                          fill="#8884d8"
-                          dataKey="value"
-                          nameKey="name"
-                        >
-                          {currentConstituency.mpCandidates.map((c) => (
-                            <Cell key={c.id} fill={c.partyColor} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value, name) => [value, currentConstituency.mpCandidates.find(c => c.id === name)?.party ?? name]} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="mt-4 pt-4 border-t border-border text-center">
-                      <p className="text-xs text-muted-foreground">Total Votes</p>
-                      <p className="text-lg font-bold text-foreground">{(aggregatedResults.totalVotes - aggregatedResults.totalRejected).toLocaleString()}</p>
+                return (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Candidates List */}
+                    <div className="lg:col-span-2 space-y-3">
+                      {header}
+                      {displayed.map((r, i) => (
+                        <CandidateCard
+                          key={r.candidate.id}
+                          candidate={r.candidate}
+                          votes={r.votes}
+                          totalVotes={totalValidVotes}
+                          rank={i + 1}
+                          isLeading={i === 0}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Pie Chart */}
+                    <div className="lg:col-span-1">
+                      <div className="bg-gradient-to-br from-card to-card/80 border border-border rounded-xl p-4">
+                        <h3 className="text-sm font-bold text-foreground mb-4">Vote Distribution</h3>
+                        <ResponsiveContainer width="100%" height={200}>
+                          <PieChart>
+                            <Pie
+                              data={currentConstituency.mpCandidates.map(c => ({
+                                name: c.id,
+                                label: c.party,
+                                value: aggregatedResults.voteTotals.get(c.id) || 0,
+                                color: c.partyColor }))}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={({ percent }) => percent > 0 ? `${(percent * 100).toFixed(0)}%` : ''}
+                              outerRadius={60}
+                              fill="#8884d8"
+                              dataKey="value"
+                              nameKey="name"
+                            >
+                              {currentConstituency.mpCandidates.map((c) => (
+                                <Cell key={c.id} fill={c.partyColor} />
+                              ))}
+                            </Pie>
+                            <Tooltip formatter={(value, name) => [value, currentConstituency.mpCandidates.find(c => c.id === name)?.party ?? name]} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div className="mt-4 pt-4 border-t border-border text-center">
+                          <p className="text-xs text-muted-foreground">Total Votes</p>
+                          <p className="text-lg font-bold text-foreground">{(aggregatedResults.totalVotes - aggregatedResults.totalRejected).toLocaleString()}</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                );
+              })()}
 
               <div className="mt-4 pt-4 border-t border-border">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">

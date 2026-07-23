@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { provinces, PollingStation, calculateTurnout, resolveCandidate } from '../data/mockData';
 import { DrillDownFilters } from '../components/DrillDownFilters';
+import { CandidateCard } from '../components/CandidateCard';
+import { CandidateCardCompact } from '../components/CandidateCardCompact';
 import { ResultsStatusBar, ResultStage } from '../components/ResultsStatusBar';
 import { useElectionResults } from '../hooks/useElectionResults';
 import { MapPin, Clock, Wifi, WifiOff } from 'lucide-react';
@@ -178,111 +180,115 @@ export function CouncillorPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Candidates List */}
-                <div className="lg:col-span-2 space-y-3">
-                  {(() => {
-                    const totalValidVotes = aggregatedResults.totalVotes - aggregatedResults.totalRejected;
-                    const sorted = [...councillorCandidates]
-                      .map(c => ({ candidate: c, votes: aggregatedResults.voteTotals.get(c.id) || 0 }))
-                      .sort((a, b) => b.votes - a.votes);
-                    const displayed = showAllCandidates ? sorted : sorted.slice(0, 4);
-                    return (
-                      <>
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-sm font-semibold text-foreground">
-                            {showAllCandidates ? 'All Candidates' : 'Top 4 Candidates'}
-                          </p>
-                          {sorted.length > 4 && (
-                            <button
-                              onClick={() => setShowAllCandidates(v => !v)}
-                              className="text-xs px-3 py-1 rounded-full border transition-colors"
-                              style={{ borderColor: '#F59E0B', color: showAllCandidates ? '#fff' : '#F59E0B', background: showAllCandidates ? '#F59E0B' : 'transparent' }}
-                            >
-                              {showAllCandidates ? 'Show Top 4' : 'View Full Results'}
-                            </button>
-                          )}
-                        </div>
-                        {displayed.map(({ candidate, votes }, i) => {
-                          const percentage = totalValidVotes > 0 ? ((votes / totalValidVotes) * 100).toFixed(2) : '0.00';
-                          return (
-                            <div
-                              key={candidate.id}
-                              className={`border rounded-lg p-4 ${i === 0 ? 'border-[#198754] border-2' : 'border-border'}`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold"
-                                  style={{ backgroundColor: candidate.partyColor }}
-                                >
-                                  {candidate.name.split(' ').map(n => n[0]).join('')}
-                                </div>
-                                <div className="flex-1">
-                                  <h3 className="font-semibold text-foreground">{candidate.name}</h3>
-                                  <p className="text-sm text-muted-foreground">{candidate.party}</p>
-                                </div>
-                                <div className="text-right">
-                                  <p className="text-lg font-bold text-foreground">{percentage}%</p>
-                                  <p className="text-sm text-muted-foreground">{votes.toLocaleString()} votes</p>
-                                </div>
-                              </div>
-                              <div className="mt-3">
-                                <div className="w-full bg-muted rounded-full h-2">
-                                  <div className="h-2 rounded-full transition-all" style={{ width: `${percentage}%`, backgroundColor: candidate.partyColor }} />
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                        {!showAllCandidates && sorted.length > 4 && (
-                          <button
-                            onClick={() => setShowAllCandidates(true)}
-                            className="w-full py-3 rounded-xl border-2 border-dashed text-sm font-semibold transition-colors"
-                            style={{ borderColor: '#F59E0B', color: '#F59E0B' }}
-                          >
-                            View Full Results — {sorted.length - 4} more candidate{sorted.length - 4 !== 1 ? 's' : ''}
-                          </button>
-                        )}
-                      </>
-                    );
-                  })()}
-                </div>
+              {(() => {
+                const totalValidVotes = aggregatedResults.totalVotes - aggregatedResults.totalRejected;
+                const sorted = [...councillorCandidates]
+                  .map(c => ({ candidate: c, votes: aggregatedResults.voteTotals.get(c.id) || 0 }))
+                  .sort((a, b) => b.votes - a.votes);
+                const displayed = showAllCandidates ? sorted : sorted.slice(0, 4);
 
-                {/* Pie Chart */}
-                <div className="lg:col-span-1">
-                  <div className="bg-gradient-to-br from-card to-card/80 border border-border rounded-xl p-4">
-                    <h3 className="text-sm font-bold text-foreground mb-4">Vote Distribution</h3>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <PieChart>
-                        <Pie
-                          data={councillorCandidates.map(c => ({
-                            name: c.id,
-                            label: c.party,
-                            value: aggregatedResults.voteTotals.get(c.id) || 0,
-                            color: c.partyColor }))}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ percent }) => percent > 0 ? `${(percent * 100).toFixed(0)}%` : ''}
-                          outerRadius={60}
-                          fill="#8884d8"
-                          dataKey="value"
-                          nameKey="name"
-                        >
-                          {councillorCandidates.map((c) => (
-                            <Cell key={c.id} fill={c.partyColor} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value, name) => [value, councillorCandidates.find(c => c.id === name)?.party ?? name]} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="mt-4 pt-4 border-t border-border text-center">
-                      <p className="text-xs text-muted-foreground">Total Votes</p>
-                      <p className="text-lg font-bold text-foreground">{(aggregatedResults.totalVotes - aggregatedResults.totalRejected).toLocaleString()}</p>
+                const header = (
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-semibold text-foreground">
+                      {showAllCandidates ? 'All Candidates' : 'Top 4 Candidates'}
+                    </p>
+                    {sorted.length > 4 && (
+                      <button
+                        onClick={() => setShowAllCandidates(v => !v)}
+                        className="text-xs px-3 py-1 rounded-full border transition-colors"
+                        style={{ borderColor: '#F59E0B', color: showAllCandidates ? '#fff' : '#F59E0B', background: showAllCandidates ? '#F59E0B' : 'transparent' }}
+                      >
+                        {showAllCandidates ? 'Show Top 4' : 'View Full Results'}
+                      </button>
+                    )}
+                  </div>
+                );
+
+                const viewMoreButton = !showAllCandidates && sorted.length > 4 && (
+                  <button
+                    onClick={() => setShowAllCandidates(true)}
+                    className="w-full py-3 rounded-xl border-2 border-dashed text-sm font-semibold transition-colors"
+                    style={{ borderColor: '#F59E0B', color: '#F59E0B' }}
+                  >
+                    View Full Results — {sorted.length - 4} more candidate{sorted.length - 4 !== 1 ? 's' : ''}
+                  </button>
+                );
+
+                if (!showAllCandidates) {
+                  // Top-4 view: same compact card grid used on the Presidential dashboard
+                  return (
+                    <div className="space-y-3">
+                      {header}
+                      <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                        {displayed.map((r) => (
+                          <CandidateCardCompact
+                            key={r.candidate.id}
+                            candidate={r.candidate}
+                            votes={r.votes}
+                            totalVotes={totalValidVotes}
+                            isLeading={r === sorted[0]}
+                          />
+                        ))}
+                      </div>
+                      {viewMoreButton}
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Candidates List */}
+                    <div className="lg:col-span-2 space-y-3">
+                      {header}
+                      {displayed.map((r, i) => (
+                        <CandidateCard
+                          key={r.candidate.id}
+                          candidate={r.candidate}
+                          votes={r.votes}
+                          totalVotes={totalValidVotes}
+                          rank={i + 1}
+                          isLeading={i === 0}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Pie Chart */}
+                    <div className="lg:col-span-1">
+                      <div className="bg-gradient-to-br from-card to-card/80 border border-border rounded-xl p-4">
+                        <h3 className="text-sm font-bold text-foreground mb-4">Vote Distribution</h3>
+                        <ResponsiveContainer width="100%" height={200}>
+                          <PieChart>
+                            <Pie
+                              data={councillorCandidates.map(c => ({
+                                name: c.id,
+                                label: c.party,
+                                value: aggregatedResults.voteTotals.get(c.id) || 0,
+                                color: c.partyColor }))}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={({ percent }) => percent > 0 ? `${(percent * 100).toFixed(0)}%` : ''}
+                              outerRadius={60}
+                              fill="#8884d8"
+                              dataKey="value"
+                              nameKey="name"
+                            >
+                              {councillorCandidates.map((c) => (
+                                <Cell key={c.id} fill={c.partyColor} />
+                              ))}
+                            </Pie>
+                            <Tooltip formatter={(value, name) => [value, councillorCandidates.find(c => c.id === name)?.party ?? name]} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div className="mt-4 pt-4 border-t border-border text-center">
+                          <p className="text-xs text-muted-foreground">Total Votes</p>
+                          <p className="text-lg font-bold text-foreground">{(aggregatedResults.totalVotes - aggregatedResults.totalRejected).toLocaleString()}</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                );
+              })()}
 
               <div className="mt-4 pt-4 border-t border-border">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
