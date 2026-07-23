@@ -111,6 +111,22 @@ export function MayoralPage() {
 
   const aggregatedResults = getAggregatedResults();
 
+  // Prefer live backend results (from actual agent submissions) when available;
+  // fall back to the local sample-data aggregation only when the backend has
+  // no submissions yet for this level — mirrors PresidentialPage's data flow.
+  const localCandidateResults = aggregatedResults && currentDistrict?.mayoralCandidates
+    ? [...currentDistrict.mayoralCandidates]
+        .map(c => ({ candidate: c, votes: aggregatedResults.voteTotals.get(c.id) || 0 }))
+        .sort((a, b) => b.votes - a.votes)
+    : [];
+  const candidateResults = usingLive ? live.liveResults : localCandidateResults;
+  const displayRegistered = hasLiveStats ? live.totalRegistered : (aggregatedResults?.totalRegistered ?? 0);
+  const displayVotesCast = hasLiveStats ? live.totalVotes : (aggregatedResults?.totalVotes ?? 0);
+  const displayRejected = hasLiveStats ? live.rejectedBallots : (aggregatedResults?.totalRejected ?? 0);
+  const displayTurnout = hasLiveStats ? live.turnoutPercent : (aggregatedResults?.turnout ?? 0);
+  const displayStations = hasLiveStats ? live.stationsReporting : (aggregatedResults?.stationCount ?? 0);
+  const totalValidVotesForDisplay = hasLiveStats ? live.validVotes : (displayVotesCast - displayRejected);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -142,19 +158,19 @@ export function MayoralPage() {
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
               <div className="bg-card border border-border rounded-lg p-6">
                 <p className="text-sm text-muted-foreground mb-1">Registered Voters</p>
-                <p className="text-3xl font-semibold text-foreground">{aggregatedResults.totalRegistered.toLocaleString()}</p>
+                <p className="text-3xl font-semibold text-foreground">{displayRegistered.toLocaleString()}</p>
               </div>
               <div className="bg-card border border-border rounded-lg p-6">
                 <p className="text-sm text-muted-foreground mb-1">Votes Cast</p>
-                <p className="text-3xl font-semibold text-foreground">{aggregatedResults.totalVotes.toLocaleString()}</p>
+                <p className="text-3xl font-semibold text-foreground">{displayVotesCast.toLocaleString()}</p>
               </div>
               <div className="bg-card border border-border rounded-lg p-6">
                 <p className="text-sm text-muted-foreground mb-1">Voter Turnout</p>
-                <p className="text-3xl font-semibold text-foreground">{aggregatedResults.turnout.toFixed(1)}%</p>
+                <p className="text-3xl font-semibold text-foreground">{displayTurnout.toFixed(1)}%</p>
               </div>
               <div className="bg-card border border-border rounded-lg p-6">
                 <p className="text-sm text-muted-foreground mb-1">Polling Stations</p>
-                <p className="text-3xl font-semibold text-foreground">{aggregatedResults.stationCount}</p>
+                <p className="text-3xl font-semibold text-foreground">{displayStations}</p>
               </div>
             </div>
 
@@ -166,10 +182,8 @@ export function MayoralPage() {
               </div>
 
               {(() => {
-                const totalValidVotes = aggregatedResults.totalVotes - aggregatedResults.totalRejected;
-                const sorted = [...currentDistrict.mayoralCandidates]
-                  .map(c => ({ candidate: c, votes: aggregatedResults.voteTotals.get(c.id) || 0 }))
-                  .sort((a, b) => b.votes - a.votes);
+                const totalValidVotes = totalValidVotesForDisplay;
+                const sorted = candidateResults;
                 const displayed = showAllCandidates ? sorted : sorted.slice(0, 4);
 
                 const header = (
@@ -244,11 +258,11 @@ export function MayoralPage() {
                         <ResponsiveContainer width="100%" height={200}>
                           <PieChart>
                             <Pie
-                              data={currentDistrict.mayoralCandidates.map(c => ({
-                                name: c.id,
-                                label: c.party,
-                                value: aggregatedResults.voteTotals.get(c.id) || 0,
-                                color: c.partyColor }))}
+                              data={sorted.map(r => ({
+                                name: r.candidate.id,
+                                label: r.candidate.party,
+                                value: r.votes,
+                                color: r.candidate.partyColor }))}
                               cx="50%"
                               cy="50%"
                               labelLine={false}
@@ -258,16 +272,16 @@ export function MayoralPage() {
                               dataKey="value"
                               nameKey="name"
                             >
-                              {currentDistrict.mayoralCandidates.map((c) => (
-                                <Cell key={c.id} fill={c.partyColor} />
+                              {sorted.map((r) => (
+                                <Cell key={r.candidate.id} fill={r.candidate.partyColor} />
                               ))}
                             </Pie>
-                            <Tooltip formatter={(value, name) => [value, currentDistrict.mayoralCandidates.find(c => c.id === name)?.party ?? name]} />
+                            <Tooltip formatter={(value, name) => [value, sorted.find(r => r.candidate.id === name)?.candidate.party ?? name]} />
                           </PieChart>
                         </ResponsiveContainer>
                         <div className="mt-4 pt-4 border-t border-border text-center">
-                          <p className="text-xs text-muted-foreground">Total Votes</p>
-                          <p className="text-lg font-bold text-foreground">{(aggregatedResults.totalVotes - aggregatedResults.totalRejected).toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground">Total Valid Votes</p>
+                          <p className="text-lg font-bold text-foreground">{totalValidVotes.toLocaleString()}</p>
                         </div>
                       </div>
                     </div>
@@ -279,19 +293,19 @@ export function MayoralPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Registered Voters:</span>
-                    <span className="ml-2 font-semibold">{aggregatedResults.totalRegistered.toLocaleString()}</span>
+                    <span className="ml-2 font-semibold">{displayRegistered.toLocaleString()}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Votes Cast:</span>
-                    <span className="ml-2 font-semibold">{aggregatedResults.totalVotes.toLocaleString()}</span>
+                    <span className="ml-2 font-semibold">{displayVotesCast.toLocaleString()}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Turnout:</span>
-                    <span className="ml-2 font-semibold">{aggregatedResults.turnout.toFixed(1)}%</span>
+                    <span className="ml-2 font-semibold">{displayTurnout.toFixed(1)}%</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Rejected:</span>
-                    <span className="ml-2 font-semibold">{aggregatedResults.totalRejected.toLocaleString()}</span>
+                    <span className="ml-2 font-semibold">{displayRejected.toLocaleString()}</span>
                   </div>
                 </div>
               </div>

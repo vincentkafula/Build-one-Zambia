@@ -117,6 +117,30 @@ async function autoSeedParliamentaryCandidates() {
 }
 autoSeedParliamentaryCandidates().catch(e => console.error('[auto-seed]', e.message));
 
+// ─── Auto-seed 2026 mayoral/chairperson candidates (from ECZ nomination notice) ──
+async function autoSeedMayoralCandidates() {
+  const existing = candidates.listCandidates({ electionType: 'mayoral' });
+  if (existing.length > 0) return;
+  let list = [];
+  try {
+    const dataPath = path.join(__dirname, '..', 'seed', 'mayoral_candidates_2026.json');
+    list = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+  } catch (e) {
+    console.warn('[auto-seed] Could not load mayoral_candidates_2026.json:', e.message);
+    return;
+  }
+  const ids = [];
+  const now = new Date().toISOString();
+  for (const c of list) {
+    kv.set(`boz:candidates:cand:${c.id}`, { ...c, active: true, hasPhoto: false, addedBy: 'system', addedAt: now, updatedAt: now });
+    ids.push(c.id);
+  }
+  const existing2 = kv.get('boz:candidates:index') || [];
+  kv.set('boz:candidates:index', [...new Set([...existing2, ...ids])]);
+  console.log(`[auto-seed] Seeded ${list.length} mayoral/chairperson candidates (2026, ECZ nomination notice)`);
+}
+autoSeedMayoralCandidates().catch(e => console.error('[auto-seed]', e.message));
+
 // ─── Health ───────────────────────────────────────────────────────────────────
 app.get(`${BASE}/health`, (req, res) => res.json({ name: 'Build One Zambia API', status: 'ok', server: 'node-express', version: '2.2.0', timestamp: new Date().toISOString() }));
 app.get('/ping', (req, res) => res.json({ status: 'ok', service: 'boz-backend', port: PORT, timestamp: new Date().toISOString() }));
