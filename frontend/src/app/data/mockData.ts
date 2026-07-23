@@ -2,6 +2,16 @@
 // Provinces: 10, Districts: 116, Constituencies: 226, Wards: 1858, Polling Stations: 13529
 // Total Registered Voters: 8,786,300
 
+// 2026 Parliamentary (MP) candidates, from ECZ's 22 July 2026 Notice of
+// Validly Nominated Candidates. Keyed by constituency id (matches the
+// numeric `id` used on Constituency objects below, e.g. "1" for Katuba,
+// "79" for Lusaka Central). See docs/ecz-2026-nominations/README.md.
+import mpCandidatesByConstituencyRaw from './mpCandidatesByConstituency.json';
+const mpCandidatesByConstituency = mpCandidatesByConstituencyRaw as Record<
+  string,
+  { id: string; name: string; party: string; partyColor: string }[]
+>;
+
 export interface CandidateResult {
   candidateId: string;
   votes: number;
@@ -165,6 +175,16 @@ export const provinces: Province[] = [
 
 export default provinces;
 
+// Populate 2026 parliamentary (MP) candidates onto every constituency, keyed
+// by its numeric `id` (e.g. constituency id '79' -> Lusaka Central candidates).
+for (const province of provinces) {
+  for (const district of province.districts) {
+    for (const constituency of district.constituencies) {
+      constituency.mpCandidates = mpCandidatesByConstituency[constituency.id] || [];
+    }
+  }
+}
+
 // ── Universal candidate lookup ────────────────────────────────────────────────
 // Use this everywhere instead of presidentialCandidates.find() to avoid
 // "Candidate hh" fallback names on the results dashboard.
@@ -185,14 +205,23 @@ const ALL_KNOWN_CANDIDATES: Record<string, { name: string; party: string; partyC
   aan:    { name: 'Mr Ackim Antony Njobvu',          party: 'DU',          partyColor: '#92400e' },
 };
 
+// Flat lookup of all 2026 MP candidates by id, built once from the
+// constituency-keyed map (avoids re-flattening on every call).
+const MP_CANDIDATES_BY_ID: Record<string, { id: string; name: string; party: string; partyColor: string }> = {};
+for (const list of Object.values(mpCandidatesByConstituency)) {
+  for (const c of list) MP_CANDIDATES_BY_ID[c.id] = c;
+}
+
 export function resolveCandidateName(id: string): string {
   return presidentialCandidates.find(c => c.id === id)?.name
     || ALL_KNOWN_CANDIDATES[id]?.name
+    || MP_CANDIDATES_BY_ID[id]?.name
     || id;
 }
 
 export function resolveCandidate(id: string): { id: string; name: string; party: string; partyColor: string } {
   const known = presidentialCandidates.find(c => c.id === id)
-    || (ALL_KNOWN_CANDIDATES[id] ? { id, ...ALL_KNOWN_CANDIDATES[id] } as Candidate : null);
+    || (ALL_KNOWN_CANDIDATES[id] ? { id, ...ALL_KNOWN_CANDIDATES[id] } as Candidate : null)
+    || (MP_CANDIDATES_BY_ID[id] ? MP_CANDIDATES_BY_ID[id] as Candidate : null);
   return known || { id, name: id, party: '—', partyColor: '#6b7280' };
 }
