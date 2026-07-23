@@ -1654,9 +1654,9 @@ export const registrationApi = {
     return request<{ registrations: MemberReg[]; count: number }>('GET', `/registrations/member${q}`, undefined, true);
   },
   approveMember: (id: string, status: RegStatus, notes?: string) =>
-    request<{ success: boolean; registration: MemberReg; credentials: GeneratedCredentials | null }>('PATCH', `/registrations/member/${id}/status`, { status, notes }, true),
+    request<{ success: boolean; registration: MemberReg; credentials: GeneratedCredentials | null; activated?: boolean }>('PATCH', `/registrations/member/${id}/status`, { status, notes }, true),
   getMemberCredentials: (id: string) =>
-    request<{ success: boolean; credentials: GeneratedCredentials; fullName: string }>('GET', `/registrations/member/${id}/credentials`),
+    request<{ success: boolean; credentials: GeneratedCredentials | null; fullName?: string; activated?: boolean; username?: string; message?: string }>('GET', `/registrations/member/${id}/credentials`),
 
   // Cooperative
   listCoops: (status?: RegStatus) => {
@@ -1664,9 +1664,9 @@ export const registrationApi = {
     return request<{ registrations: CoopReg[]; count: number }>('GET', `/registrations/cooperative${q}`, undefined, true);
   },
   approveCoop: (id: string, status: RegStatus, notes?: string) =>
-    request<{ success: boolean; registration: CoopReg; credentials: GeneratedCredentials | null }>('PATCH', `/registrations/cooperative/${id}/status`, { status, notes }, true),
+    request<{ success: boolean; registration: CoopReg; credentials: GeneratedCredentials | null; activated?: boolean }>('PATCH', `/registrations/cooperative/${id}/status`, { status, notes }, true),
   getCoopCredentials: (id: string) =>
-    request<{ success: boolean; credentials: GeneratedCredentials; fullName: string }>('GET', `/registrations/cooperative/${id}/credentials`),
+    request<{ success: boolean; credentials: GeneratedCredentials | null; fullName?: string; activated?: boolean; username?: string; message?: string }>('GET', `/registrations/cooperative/${id}/credentials`),
 
   // Internship
   listInterns: (status?: RegStatus) => {
@@ -1676,7 +1676,7 @@ export const registrationApi = {
   approveIntern: (id: string, status: RegStatus, notes?: string) =>
     request<{ success: boolean; application: InternshipReg; credentials: GeneratedCredentials | null }>('PATCH', `/registrations/internship/${id}/status`, { status, notes }, true),
   getInternCredentials: (id: string) =>
-    request<{ success: boolean; credentials: GeneratedCredentials; fullName: string }>('GET', `/registrations/internship/${id}/credentials`),
+    request<{ success: boolean; credentials: GeneratedCredentials | null; fullName?: string; activated?: boolean; username?: string; message?: string }>('GET', `/registrations/internship/${id}/credentials`),
 
   // Agent
   listAgents: (status?: RegStatus) => {
@@ -1684,9 +1684,9 @@ export const registrationApi = {
     return request<{ applications: AgentReg[]; count: number }>('GET', `/registrations/agent${q}`, undefined, true);
   },
   approveAgent: (id: string, status: RegStatus, notes?: string) =>
-    request<{ success: boolean; application: AgentReg; credentials: GeneratedCredentials | null }>('PATCH', `/registrations/agent/${id}/status`, { status, notes }, true),
+    request<{ success: boolean; application: AgentReg; credentials: GeneratedCredentials | null; activated?: boolean }>('PATCH', `/registrations/agent/${id}/status`, { status, notes }, true),
   getAgentCredentials: (id: string) =>
-    request<{ success: boolean; credentials: GeneratedCredentials; fullName: string }>('GET', `/registrations/agent/${id}/credentials`),
+    request<{ success: boolean; credentials: GeneratedCredentials | null; fullName?: string; activated?: boolean; username?: string; message?: string }>('GET', `/registrations/agent/${id}/credentials`),
 
   // Grant / revoke login access
   grantLogin: (type: 'member' | 'cooperative' | 'internship' | 'agent', id: string, opts?: { username?: string; password?: string }) =>

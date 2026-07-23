@@ -3,7 +3,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import {
   Phone, User, MapPin, FileText, CheckCircle2, ArrowRight, ArrowLeft,
-  Upload, X, Eye, Loader2, ShieldCheck, AlertCircle, ChevronDown, Bell,
+  Upload, X, Eye, EyeOff, Lock, Loader2, ShieldCheck, AlertCircle, ChevronDown, Bell,
   Briefcase, Users,
 } from 'lucide-react';
 import { provinces } from '../../data/mockData';
@@ -311,6 +311,13 @@ export default function PollingAgentRegistration() {
 
   // Track whether backend is reachable
   const [devCode, setDevCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [pin, setPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [showPass, setShowPass] = useState(false);
+  const [showPin, setShowPin] = useState(false);
+  const [securityError, setSecurityError] = useState('');
 
   // ── OTP via Firebase Phone Authentication ─────────────────────────────────
   // ── Validation ────────────────────────────────────────────────────────────
@@ -341,6 +348,27 @@ export default function PollingAgentRegistration() {
   }
 
   // ── Submit ────────────────────────────────────────────────────────────────
+
+  const onSubmitClick = () => {
+    setSecurityError('');
+    if (!password || password.length < 8) {
+      setSecurityError('Password must be at least 8 characters.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setSecurityError('Passwords do not match.');
+      return;
+    }
+    if (!/^\d{4,6}$/.test(pin)) {
+      setSecurityError('PIN must be 4–6 digits.');
+      return;
+    }
+    if (pin !== confirmPin) {
+      setSecurityError('PINs do not match.');
+      return;
+    }
+    handleSubmit();
+  };
 
   const handleSubmit = async () => {
     // Bot detection: honeypot filled or form completed impossibly fast
@@ -406,6 +434,10 @@ export default function PollingAgentRegistration() {
         availability:       'election-day',
         // Documents (base64)
         documents: uploads,
+        // Applicant-chosen login credentials — account is created now but
+        // stays inactive until an admin approves the application.
+        password,
+        pin,
       };
 
       try {
@@ -454,6 +486,10 @@ export default function PollingAgentRegistration() {
               {selWard?.name} · {selConstituency?.name} · {selDistrict?.name} · {selProvince?.name} Province
             </p>
           </div>
+          <p className="text-xs text-gray-500 mb-6">
+            Your login is already created with the password and PIN you set — it stays inactive until an
+            admin approves your application, then you can log in right away.
+          </p>
           <button
             onClick={() => navigate('/')}
             className="w-full py-3 rounded-xl font-bold text-white transition-all"
@@ -876,6 +912,77 @@ export default function PollingAgentRegistration() {
                 </ReviewSection>
               </div>
 
+              {/* Account Security */}
+              <div className="mt-6 p-4 rounded-xl border border-gray-200">
+                <div className="flex items-center gap-2 mb-1">
+                  <Lock className="w-4 h-4" style={{ color: GREEN }} />
+                  <h3 className="text-sm font-bold text-gray-900">Create Your Login</h3>
+                </div>
+                <p className="text-xs text-gray-500 mb-4">
+                  Your account is created now but stays inactive until an admin approves this application —
+                  you'll log in with exactly what you set here.
+                </p>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600">Password</label>
+                    <div className="relative">
+                      <input
+                        type={showPass ? 'text' : 'password'}
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        placeholder="At least 8 characters"
+                        className="w-full px-3 py-2.5 rounded-lg border border-gray-300 pr-10 text-sm"
+                      />
+                      <button type="button" onClick={() => setShowPass(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600">Confirm Password</label>
+                    <input
+                      type={showPass ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      placeholder="Re-enter your password"
+                      className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium mb-1 text-gray-600">PIN (4–6 digits)</label>
+                      <input
+                        type={showPin ? 'text' : 'password'}
+                        inputMode="numeric"
+                        value={pin}
+                        onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="e.g. 4821"
+                        className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium mb-1 text-gray-600">Confirm PIN</label>
+                      <input
+                        type={showPin ? 'text' : 'password'}
+                        inputMode="numeric"
+                        value={confirmPin}
+                        onChange={e => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="Re-enter your PIN"
+                        className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm"
+                      />
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => setShowPin(s => !s)} className="text-xs" style={{ color: GREEN }}>
+                    {showPin ? 'Hide PIN' : 'Show PIN'}
+                  </button>
+                </div>
+                {securityError && (
+                  <div className="flex items-start gap-2 mt-3 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />{securityError}
+                  </div>
+                )}
+              </div>
+
               {error && (
                 <div className="flex items-start gap-2 mt-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />{error}
@@ -883,7 +990,7 @@ export default function PollingAgentRegistration() {
               )}
 
               <button
-                onClick={handleSubmit}
+                onClick={onSubmitClick}
                 disabled={submitting}
                 className="mt-6 w-full py-4 rounded-xl font-bold text-white text-base flex items-center justify-center gap-2 transition-all disabled:opacity-60"
                 style={{ backgroundColor: GREEN }}

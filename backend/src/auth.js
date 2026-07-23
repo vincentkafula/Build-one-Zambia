@@ -37,6 +37,21 @@ export async function verifyPassword(password, stored) {
   });
 }
 
+// ─── PIN (same PBKDF2 scheme as passwords, stored under its own key) ────────
+// Used for a lighter-weight secondary check (e.g. confirming sensitive
+// actions) separate from the login password.
+
+export async function setPin(username, pin) {
+  const hash = await hashPassword(String(pin));
+  kv.set(`pin:${username}`, hash);
+}
+
+export async function verifyPin(username, pin) {
+  const stored = kv.get(`pin:${username}`);
+  if (!stored) return false;
+  return verifyPassword(String(pin), stored);
+}
+
 // ─── Session (JWT) ──────────────────────────────────────────────────────────
 
 export function createToken(username, role) {
@@ -134,6 +149,17 @@ export async function registerUser(userData, password) {
 
 export function getUser(username) {
   return kv.get(`user:${username}`);
+}
+
+// Flip a pre-created (active:false) account on once an admin approves the
+// underlying application. No password change involved — the applicant
+// already chose their own password and PIN at registration time.
+export function activateUser(username) {
+  const user = kv.get(`user:${username}`);
+  if (!user) throw new Error('User not found');
+  const updated = { ...user, active: true, activatedAt: new Date().toISOString() };
+  kv.set(`user:${username}`, updated);
+  return updated;
 }
 
 export function listUsers() {

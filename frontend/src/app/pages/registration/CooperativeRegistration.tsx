@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
-import { ArrowRight, ArrowLeft, CheckCircle, Users, UserCheck, Camera, Loader2, XCircle, BadgeCheck, AlertCircle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle, Users, UserCheck, Camera, Loader2, XCircle, BadgeCheck, AlertCircle, Lock, Eye, EyeOff, Copy } from 'lucide-react';
 import { SelfieCapture } from '../../components/registration/SelfieCapture';
 import { registrationApi } from '../../lib/api';
 
@@ -13,6 +13,10 @@ interface CooperativeFormData {
   villageName: string;
   groupChairperson: string;
   cellNumber: string;
+  password: string;
+  confirmPassword: string;
+  pin: string;
+  confirmPin: string;
   members: {
     membershipNumber: string;
     twoFactorCode: string;
@@ -26,6 +30,12 @@ export default function CooperativeRegistration() {
   const [selfieDataUrl, setSelfieDataUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [securityError, setSecurityError] = useState('');
+  const [showPass, setShowPass] = useState(false);
+  const [showPin, setShowPin] = useState(false);
+  const [copied, setCopied] = useState('');
+  const [registrationId, setRegistrationId] = useState('');
+  const [activatedInfo, setActivatedInfo] = useState<{ username: string } | null>(null);
 
   // Membership batch validation state
   const [validatingMembers, setValidatingMembers] = useState(false);
@@ -77,13 +87,35 @@ export default function CooperativeRegistration() {
     setCurrentStep(3);
   };
 
+  const onStep4Submit = () => {
+    const data = watch();
+    setSecurityError('');
+    if (!data.password || data.password.length < 8) {
+      setSecurityError('Password must be at least 8 characters.');
+      return;
+    }
+    if (data.password !== data.confirmPassword) {
+      setSecurityError('Passwords do not match.');
+      return;
+    }
+    if (!/^\d{4,6}$/.test(data.pin || '')) {
+      setSecurityError('PIN must be 4–6 digits.');
+      return;
+    }
+    if (data.pin !== data.confirmPin) {
+      setSecurityError('PINs do not match.');
+      return;
+    }
+    submitRegistration();
+  };
+
   const submitRegistration = async () => {
     setSubmitting(true);
     setSubmitError('');
     const data = watch();
     try {
       const membershipNumbers = data.members.map(m => m.membershipNumber.trim());
-      await registrationApi.submitCooperative({
+      const res = await registrationApi.submitCooperative({
         cooperativeName: data.cooperativeName,
         contactPerson: data.groupChairperson,
         contactPhone: data.cellNumber || data.phone || "",
@@ -96,7 +128,10 @@ export default function CooperativeRegistration() {
         constituency: '',
         address: `${data.villageName}, Chief ${data.chiefName}`,
         selfieDataUrl: selfieDataUrl ?? undefined,
+        password: data.password,
+        pin: data.pin,
       });
+      if (res.registration?.id) setRegistrationId(res.registration.id);
       setFormComplete(true);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Submission failed. Please try again.');
@@ -104,6 +139,13 @@ export default function CooperativeRegistration() {
       setSubmitting(false);
     }
   };
+
+  function copyText(text: string, key: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(key);
+      setTimeout(() => setCopied(''), 2500);
+    });
+  }
 
 
   if (formComplete) {
@@ -127,12 +169,40 @@ export default function CooperativeRegistration() {
               Your cooperative has been successfully registered with Build One Zambia!
             </p>
 
-            <div className="p-6 rounded-lg mb-6" style={{ backgroundColor: `${ACCENT_COLOR}08`, border: `1px solid ${ACCENT_COLOR}30` }}>
-              <p className="text-sm mb-2" style={{ color: '#6b7280' }}>Cooperative ID</p>
-              <p className="text-2xl" style={{ fontFamily: 'Oswald, sans-serif', color: ACCENT_COLOR, letterSpacing: '0.1em' }}>
-                COOP-{new Date().getFullYear()}-{Math.floor(100000 + Math.random() * 900000)}
-              </p>
+            <div className="p-6 rounded-lg mb-6 text-left" style={{ backgroundColor: `${ACCENT_COLOR}08`, border: `1px solid ${ACCENT_COLOR}30` }}>
+              <p className="text-sm font-semibold mb-2" style={{ color: '#1e2d4a' }}>What happens next?</p>
+              <ul className="text-sm space-y-1 list-disc list-inside" style={{ color: '#4b5563' }}>
+                <li>An admin will review the cooperative and its 20 members</li>
+                <li>The chairperson's login is already created with the password and PIN you set — it just stays inactive until approved</li>
+                {registrationId && <li>Reference: <span className="font-mono">{registrationId}</span></li>}
+              </ul>
             </div>
+
+            {activatedInfo ? (
+              <div className="p-4 rounded-lg mb-6 text-left" style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                <p className="text-sm font-semibold text-green-800 mb-1">Approved — account active</p>
+                <div className="flex items-center justify-between">
+                  <code className="text-sm font-mono text-gray-900">{activatedInfo.username}</code>
+                  <button onClick={() => copyText(activatedInfo.username, 'u')} className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border" style={{ color: ACCENT_COLOR, borderColor: ACCENT_COLOR }}>
+                    <Copy size={12} /> {copied === 'u' ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">Log in with the password and PIN you created when you applied.</p>
+              </div>
+            ) : registrationId && (
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await registrationApi.getCoopCredentials(registrationId);
+                    if (res.activated) setActivatedInfo({ username: res.username || '' });
+                  } catch { /* not yet approved */ }
+                }}
+                className="w-full py-3 rounded-lg text-white font-semibold mb-4"
+                style={{ backgroundColor: ACCENT_COLOR }}
+              >
+                Check Application Status
+              </button>
+            )}
 
             <p className="text-sm" style={{ color: '#9ca3af' }}>
               Redirecting to home page...
@@ -166,6 +236,7 @@ export default function CooperativeRegistration() {
               { num: 1, label: 'Coop Details', icon: Users },
               { num: 2, label: '20 Members', icon: UserCheck },
               { num: 3, label: 'Selfie', icon: Camera },
+              { num: 4, label: 'Security', icon: Lock },
             ].map((step, idx) => (
               <div key={step.num} className="flex items-center">
                 <div className="flex flex-col items-center">
@@ -182,7 +253,7 @@ export default function CooperativeRegistration() {
                     {step.label}
                   </span>
                 </div>
-                {idx < 2 && (
+                {idx < 3 && (
                   <div className="w-20 h-1 mx-3 rounded" style={{ backgroundColor: currentStep > step.num ? ACCENT_COLOR : '#e5e7eb' }} />
                 )}
               </div>
@@ -423,14 +494,109 @@ export default function CooperativeRegistration() {
                   </button>
                   <button
                     type="button"
-                    onClick={submitRegistration}
-                    disabled={submitting}
+                    onClick={() => setCurrentStep(4)}
                     className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-white disabled:opacity-50"
                     style={{ backgroundColor: ACCENT_COLOR, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '14px' }}
                     onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                     onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                   >
-                    {submitting ? 'SUBMITTING…' : selfieDataUrl ? 'SUBMIT COOPERATIVE' : 'SKIP & SUBMIT'} <ArrowRight className="w-4 h-4" />
+                    {selfieDataUrl ? 'CONTINUE' : 'SKIP & CONTINUE'} <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 4: Account Security */}
+            {currentStep === 4 && (
+              <div>
+                <h2 className="mb-2" style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.5rem', letterSpacing: '0.03em', color: '#1e2d4a' }}>
+                  Step 4: Create the Chairperson Login
+                </h2>
+                <p className="text-sm text-gray-500 mb-6">
+                  Choose the password and PIN the group chairperson will use to log in and manage this
+                  cooperative. The account is created now but stays inactive until an admin approves the
+                  registration — you'll be able to log in as soon as that happens.
+                </p>
+
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5" style={{ color: '#374151' }}>Password</label>
+                    <div className="relative">
+                      <input
+                        type={showPass ? 'text' : 'password'}
+                        {...register('password', { required: true, minLength: 8 })}
+                        className="w-full px-4 py-3 rounded-lg pr-11"
+                        style={{ border: '1px solid #d1d5db' }}
+                        placeholder="At least 8 characters"
+                      />
+                      <button type="button" onClick={() => setShowPass(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5" style={{ color: '#374151' }}>Confirm Password</label>
+                    <input
+                      type={showPass ? 'text' : 'password'}
+                      {...register('confirmPassword', { required: true })}
+                      className="w-full px-4 py-3 rounded-lg"
+                      style={{ border: '1px solid #d1d5db' }}
+                      placeholder="Re-enter your password"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5" style={{ color: '#374151' }}>PIN (4–6 digits)</label>
+                      <input
+                        type={showPin ? 'text' : 'password'}
+                        inputMode="numeric"
+                        {...register('pin', { required: true, pattern: /^\d{4,6}$/ })}
+                        className="w-full px-4 py-3 rounded-lg"
+                        style={{ border: '1px solid #d1d5db' }}
+                        placeholder="e.g. 4821"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5" style={{ color: '#374151' }}>Confirm PIN</label>
+                      <input
+                        type={showPin ? 'text' : 'password'}
+                        inputMode="numeric"
+                        {...register('confirmPin', { required: true })}
+                        className="w-full px-4 py-3 rounded-lg"
+                        style={{ border: '1px solid #d1d5db' }}
+                        placeholder="Re-enter your PIN"
+                      />
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => setShowPin(s => !s)} className="text-xs" style={{ color: ACCENT_COLOR }}>
+                    {showPin ? 'Hide PIN' : 'Show PIN'}
+                  </button>
+                </div>
+
+                {securityError && (
+                  <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{securityError}</div>
+                )}
+                {submitError && (
+                  <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{submitError}</div>
+                )}
+
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(3)}
+                    className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg transition-opacity"
+                    style={{ border: `2px solid ${ACCENT_COLOR}`, color: ACCENT_COLOR, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '14px' }}
+                  >
+                    <ArrowLeft className="w-4 h-4" /> BACK
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onStep4Submit}
+                    disabled={submitting}
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-white disabled:opacity-50"
+                    style={{ backgroundColor: ACCENT_COLOR, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '14px' }}
+                  >
+                    {submitting ? 'SUBMITTING…' : 'SUBMIT COOPERATIVE'} <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>

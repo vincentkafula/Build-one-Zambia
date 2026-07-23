@@ -4,8 +4,50 @@
 
 import { kv } from './db.js';
 import { randomUUID } from 'crypto';
+import * as auth from './auth.js';
 
 function uid(prefix) { return `${prefix}_${Date.now().toString(36)}_${randomUUID().slice(0, 6)}`; }
+
+const TYPE_ROLE = { member: 'member', agent: 'polling_agent', cooperative: 'cooperative' };
+
+// Applicant chose their own password + PIN on the registration form. Create
+// the login account right away, but inactive — auth.loginUser already
+// refuses inactive accounts, so nothing works until an admin approves the
+// application and flips it on with auth.activateUser(). Plaintext
+// password/pin are never written into the registration record itself;
+// only their PBKDF2 hashes (via auth.js) are persisted.
+export async function createPendingAccount(type, reg) {
+  const { password, pin } = reg;
+  if (!password) return reg; // legacy/back-compat: no self-chosen password submitted
+  const name = reg.fullName || reg.name || ((reg.firstName || '') + ' ' + (reg.lastName || '')).trim() || 'user';
+  const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
+  const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
+  const username = `${type}_${safeName}_${suffix}`;
+  const role = TYPE_ROLE[type] || 'member';
+  try {
+    if (!auth.getUser(username)) {
+      await auth.registerUser({
+        username,
+        role,
+        name,
+        email: reg.email || '',
+        phone: reg.phone || reg.cellNumber || '',
+        scopeName: reg.pollingStation || reg.ward || reg.constituency || reg.district || reg.province || 'National',
+        active: false,
+        registrationId: reg.id,
+        registrationType: type,
+      }, password);
+      if (pin) await auth.setPin(username, pin);
+    }
+  } catch (e) {
+    console.error(`[registrations] failed to pre-create account for ${type}/${reg.id}:`, e.message);
+    return reg;
+  }
+  // Strip plaintext credentials before the registration record itself gets
+  // persisted — they now live only as hashes in auth.js's kv store.
+  const { password: _p, pin: _pin, ...rest } = reg;
+  return { ...rest, username, accountPending: true };
+}
 
 // ─── Member Registration ────────────────────────────────────────────────────
 
@@ -13,7 +55,7 @@ function getMemberIndex() { return kv.get('boz:reg:member:index') || []; }
 
 const MEMBER_TIERS = ['basic', 'standard', 'gold', 'platinum'];
 
-export function registerMember(input) {
+export async function registerMember(input) {
   const id = uid('mem');
   const now = new Date().toISOString();
   // The public registration form sends membershipType, not tier — normalize
@@ -23,7 +65,8 @@ export function registerMember(input) {
   const tier = MEMBER_TIERS.includes(input.tier) ? input.tier
     : MEMBER_TIERS.includes(input.membershipType) ? input.membershipType
     : 'standard';
-  const reg = { ...input, id, tier, status: 'pending', createdAt: now, updatedAt: now };
+  let reg = { ...input, id, tier, status: 'pending', createdAt: now, updatedAt: now };
+  reg = await createPendingAccount('member', reg);
   kv.set(`boz:reg:member:${id}`, reg);
   kv.set('boz:reg:member:index', [...getMemberIndex(), id]);
   return reg;
@@ -171,10 +214,11 @@ export function deleteAgent(id) {
 
 function getCoopIndex() { return kv.get('boz:reg:coop:index') || []; }
 
-export function registerCoop(input) {
+export async function registerCoop(input) {
   const id = uid('coop');
   const now = new Date().toISOString();
-  const reg = { id, ...input, status: 'pending', createdAt: now, updatedAt: now };
+  let reg = { id, ...input, status: 'pending', createdAt: now, updatedAt: now };
+  reg = await createPendingAccount('cooperative', reg);
   kv.set(`boz:reg:coop:${id}`, reg);
   kv.set('boz:reg:coop:index', [...getCoopIndex(), id]);
   return reg;

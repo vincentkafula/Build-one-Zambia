@@ -195,7 +195,7 @@ app.post(`${BASE}/streams/:id/comments`, (req, res) => res.json({ success: true,
 app.delete(`${BASE}/streams/:streamId/comments/:commentId`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { streams.deleteComment(req.params.streamId, req.params.commentId); res.json({ success: true }); });
 
 // ─── Register (legacy endpoints) ─────────────────────────────────────────────
-app.post(`${BASE}/register/member`, (req, res) => { try { const registration = registrations.registerMember(req.body); setImmediate(() => notifyNewApplication('member', registration)); res.json({ registration }); } catch (err) { res.status(400).json({ error: err.message }); } });
+app.post(`${BASE}/register/member`, async (req, res) => { try { const registration = await registrations.registerMember(req.body); setImmediate(() => notifyNewApplication('member', registration)); res.json({ registration }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/register/members`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ members: registrations.listMembers({ status: req.query.status }) }));
 app.get(`${BASE}/register/members/stats`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json(registrations.getMemberStats()));
 app.patch(`${BASE}/register/members/:id/status`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const m = registrations.updateMemberStatus(req.params.id, req.body.status, req.body.note); if (!m) return res.status(404).json({ error: 'Not found' }); res.json({ member: m }); });
@@ -290,7 +290,7 @@ app.post(`${BASE}/shop/my-orders/:orderId/request-return`, auth.requireAuth, (re
   if (error) return res.status(400).json({ error });
   res.json({ success: true, order: updated });
 });
-app.post(`${BASE}/membership/register`, (req, res) => { try { const member = registrations.registerMember(req.body); setImmediate(() => notifyNewApplication('member', member)); res.json({ member }); } catch (err) { res.status(400).json({ error: err.message }); } });
+app.post(`${BASE}/membership/register`, async (req, res) => { try { const member = await registrations.registerMember(req.body); setImmediate(() => notifyNewApplication('member', member)); res.json({ member }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/membership/me`, auth.requireAuth, (req, res) => { const m = registrations.getMemberByMembershipNumber(req.query.membershipNumber); if (!m) return res.status(404).json({ error: 'Member not found' }); res.json({ member: m }); });
 app.get(`${BASE}/membership/members`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ members: registrations.listMembers() }));
 app.get(`${BASE}/membership/members/:id`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const m = registrations.getMember(req.params.id); if (!m) return res.status(404).json({ error: 'Not found' }); res.json({ member: m }); });
@@ -713,8 +713,9 @@ function generatePassword() { const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMN
 const TYPE_ROLES = { agent: 'polling_agent', member: 'member', internship: 'internship', cooperative: 'cooperative' };
 
 function regRoutes(type, noun) {
-  app.post(`${BASE}/registrations/${type}`, (req, res) => {
-    const reg = { ...req.body, id: `${type}-${Date.now()}`, status: 'pending', submittedAt: new Date().toISOString() };
+  app.post(`${BASE}/registrations/${type}`, async (req, res) => {
+    let reg = { ...req.body, id: `${type}-${Date.now()}`, status: 'pending', submittedAt: new Date().toISOString() };
+    reg = await registrations.createPendingAccount(type, reg);
     regStore[type].push(reg); saveReg(type);
     setImmediate(() => notifyNewApplication(type, reg));
     res.json({ success: true, message: `${noun} registration submitted`, registration: reg });
@@ -738,10 +739,21 @@ function regRoutes(type, noun) {
     // password was generated but never returned to anyone — the account
     // existed but nobody, including the admin, ever saw its password.
     let credentials = null;
+    let activated = false;
     if (status === 'approved') {
       try {
         const reg = regStore[type][idx];
-        if (!reg.loginGranted) {
+        if (reg.username && !reg.loginGranted) {
+          // Applicant already chose their own password + PIN at
+          // registration time — just switch their account on.
+          auth.activateUser(reg.username);
+          regStore[type][idx] = { ...regStore[type][idx], loginGranted: true, loginActivatedAt: new Date().toISOString() };
+          saveReg(type);
+          activated = true;
+          console.log(`[activate] Enabled login for ${type}/${reg.id}: ${reg.username}`);
+        } else if (!reg.username && !reg.loginGranted) {
+          // Legacy fallback for registrations submitted before applicants
+          // chose their own password (no self-service account to activate).
           const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
           const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
           const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
@@ -762,7 +774,7 @@ function regRoutes(type, noun) {
         }
       } catch (e) { console.error(`[auto-grant] Failed for ${type}/${req.params.id}:`, e.message); }
     }
-    res.json({ success: true, registration: regStore[type][idx], credentials });
+    res.json({ success: true, registration: regStore[type][idx], credentials, activated });
   });
 
   app.post(`${BASE}/registrations/${type}/:id/grant-login`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
@@ -831,7 +843,9 @@ function regRoutes(type, noun) {
       return res.json({ success: false, credentials: null, message: 'Not approved yet — check back after an admin reviews your application.' });
     }
     if (!reg.pendingPassword) {
-      return res.json({ success: false, credentials: null, message: 'Your credentials have already been collected. If you lost your password, ask an admin to reset it.' });
+      // Self-service accounts (applicant chose their own password/PIN at
+      // registration) have nothing to hand back here — just confirm it's live.
+      return res.json({ success: true, credentials: null, activated: true, username: reg.username, message: 'Your application has been approved — your account is now active. Log in with the username above and the password you created when you applied.' });
     }
     const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
     const credentials = { username: reg.username, password: reg.pendingPassword };
@@ -855,9 +869,9 @@ regRoutes('agent', 'Agent');
 
 function consolidatedRegRoutes(type, noun, api) {
   // api = { register, list, getOne, updateStatus, update }
-  app.post(`${BASE}/registrations/${type}`, (req, res) => {
+  app.post(`${BASE}/registrations/${type}`, async (req, res) => {
     try {
-      const reg = api.register(req.body);
+      const reg = await api.register(req.body);
       setImmediate(() => notifyNewApplication(type, reg));
       res.json({ success: true, message: `${noun} registration submitted`, registration: reg });
     } catch (err) { res.status(400).json({ error: err.message }); }
@@ -875,9 +889,19 @@ function consolidatedRegRoutes(type, noun, api) {
     reg = api.update(req.params.id, { reviewedAt: new Date().toISOString(), reviewedBy: req.user?.username });
 
     let credentials = null;
+    let activated = false;
     if (status === 'approved') {
       try {
-        if (!reg.loginGranted) {
+        if (reg.username && !reg.loginGranted) {
+          // Applicant already chose their own password + PIN at
+          // registration time — just switch their account on.
+          auth.activateUser(reg.username);
+          reg = api.update(req.params.id, { loginGranted: true, loginActivatedAt: new Date().toISOString() });
+          activated = true;
+          console.log(`[activate] Enabled login for ${type}/${reg.id}: ${reg.username}`);
+        } else if (!reg.username && !reg.loginGranted) {
+          // Legacy fallback for registrations submitted before applicants
+          // chose their own password.
           const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
           const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
           const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
@@ -893,7 +917,7 @@ function consolidatedRegRoutes(type, noun, api) {
         }
       } catch (e) { console.error(`[auto-grant] Failed for ${type}/${req.params.id}:`, e.message); }
     }
-    res.json({ success: true, registration: reg, credentials });
+    res.json({ success: true, registration: reg, credentials, activated });
   });
 
   app.post(`${BASE}/registrations/${type}/:id/grant-login`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
@@ -936,7 +960,7 @@ function consolidatedRegRoutes(type, noun, api) {
       return res.json({ success: false, credentials: null, message: 'Not approved yet — check back after an admin reviews your application.' });
     }
     if (!reg.pendingPassword) {
-      return res.json({ success: false, credentials: null, message: 'Your credentials have already been collected. If you lost your password, ask an admin to reset it.' });
+      return res.json({ success: true, credentials: null, activated: true, username: reg.username, message: 'Your application has been approved — your account is now active. Log in with the username above and the password you created when you applied.' });
     }
     const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
     const credentials = { username: reg.username, password: reg.pendingPassword };
@@ -974,9 +998,9 @@ consolidatedRegRoutes('internship', 'Internship', {
 // access, and managed for tier/adoption/certificates is the same record
 // throughout.
 
-app.post(`${BASE}/registrations/member`, (req, res) => {
+app.post(`${BASE}/registrations/member`, async (req, res) => {
   try {
-    const reg = registrations.registerMember(req.body);
+    const reg = await registrations.registerMember(req.body);
     setImmediate(() => notifyNewApplication('member', reg));
     res.json({ success: true, message: 'Member registration submitted', registration: reg });
   } catch (err) { res.status(400).json({ error: err.message }); }
@@ -997,9 +1021,19 @@ app.patch(`${BASE}/registrations/member/:id/status`, auth.requireAuth, auth.requ
   // synchronously so credentials are included in this response, not lost
   // the way they were before (see prior commit).
   let credentials = null;
+  let activated = false;
   if (status === 'approved') {
     try {
-      if (!reg.loginGranted) {
+      if (reg.username && !reg.loginGranted) {
+        // Applicant already chose their own password + PIN at registration
+        // time — just switch their account on.
+        auth.activateUser(reg.username);
+        reg = registrations.updateMember(req.params.id, { loginGranted: true, loginActivatedAt: new Date().toISOString() });
+        activated = true;
+        console.log(`[activate] Enabled login for member/${reg.id}: ${reg.username}`);
+      } else if (!reg.username && !reg.loginGranted) {
+        // Legacy fallback for registrations submitted before applicants
+        // chose their own password.
         const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
         const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
         const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
@@ -1016,7 +1050,7 @@ app.patch(`${BASE}/registrations/member/:id/status`, auth.requireAuth, auth.requ
       reg = registrations.assignMembershipNumberIfNeeded(req.params.id) || reg;
     } catch (e) { console.error(`[auto-grant] Failed for member/${req.params.id}:`, e.message); }
   }
-  res.json({ success: true, registration: reg, credentials });
+  res.json({ success: true, registration: reg, credentials, activated });
 });
 
 app.post(`${BASE}/registrations/member/:id/grant-login`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
@@ -1065,7 +1099,7 @@ app.get(`${BASE}/registrations/member/:id/credentials`, (req, res) => {
     return res.json({ success: false, credentials: null, message: 'Not approved yet — check back after an admin reviews your application.' });
   }
   if (!reg.pendingPassword) {
-    return res.json({ success: false, credentials: null, message: 'Your credentials have already been collected. If you lost your password, ask an admin to reset it.' });
+    return res.json({ success: true, credentials: null, activated: true, username: reg.username, message: 'Your application has been approved — your account is now active. Log in with the username above and the password you created when you applied.' });
   }
   const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
   const credentials = { username: reg.username, password: reg.pendingPassword };

@@ -6,7 +6,7 @@ import { SelfieCapture } from '../../components/registration/SelfieCapture';
 import { zambiaLocationData, type Province, type District, type Constituency, type Ward } from '../../data/locationData';
 import {
   ArrowRight, ArrowLeft, CheckCircle, User, MapPin, FileText, Clock,
-  Copy, Eye, EyeOff, Camera,
+  Copy, Eye, EyeOff, Camera, Lock,
 } from 'lucide-react';
 import { memberApi, registrationApi, type GeneratedCredentials } from '../../lib/api';
 
@@ -36,6 +36,10 @@ interface MemberFormData {
   constituency: string;
   ward: string;
   pollingStation: string;
+  password: string;
+  confirmPassword: string;
+  pin: string;
+  confirmPin: string;
 }
 
 async function compressImage(dataUrl: string, maxPx: number, quality: number): Promise<string> {
@@ -59,6 +63,7 @@ const STEPS = [
   { num: 2, label: 'Location', icon: MapPin },
   { num: 3, label: 'Documents', icon: FileText },
   { num: 4, label: 'Selfie', icon: Camera },
+  { num: 5, label: 'Security', icon: Lock },
 ];
 
 export default function MemberRegistration() {
@@ -67,10 +72,13 @@ export default function MemberRegistration() {
   const [formComplete, setFormComplete] = useState(false);
   const [registrationId, setRegistrationId] = useState('');
   const [credentials, setCredentials] = useState<GeneratedCredentials | null>(null);
+  const [activated, setActivated] = useState<{ username: string; message: string } | null>(null);
   const [showPass, setShowPass] = useState(false);
   const [copied, setCopied] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [securityError, setSecurityError] = useState('');
+  const [showPin, setShowPin] = useState(false);
 
   // Documents
   const [idDocument, setIdDocument] = useState<File | null>(null);
@@ -138,6 +146,28 @@ export default function MemberRegistration() {
     setCurrentStep(4);
   };
 
+  const onStep5Submit = () => {
+    const data = watch();
+    setSecurityError('');
+    if (!data.password || data.password.length < 8) {
+      setSecurityError('Password must be at least 8 characters.');
+      return;
+    }
+    if (data.password !== data.confirmPassword) {
+      setSecurityError('Passwords do not match.');
+      return;
+    }
+    if (!/^\d{4,6}$/.test(data.pin || '')) {
+      setSecurityError('PIN must be 4–6 digits.');
+      return;
+    }
+    if (data.pin !== data.confirmPin) {
+      setSecurityError('PINs do not match.');
+      return;
+    }
+    submitRegistration();
+  };
+
   // ─── Final submission ─────────────────────────────────────────────────────────
 
   const submitRegistration = async () => {
@@ -177,6 +207,8 @@ export default function MemberRegistration() {
         documentsUploaded: !!(idDocument && votersCard && proofOfAddress),
         selfieDataUrl: compressedSelfie || null,
         hasSelfie: !!selfieDataUrl,
+        password: data.password,
+        pin: data.pin,
       };
 
       const res = await memberApi.submit(payload);
@@ -206,7 +238,33 @@ export default function MemberRegistration() {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ backgroundColor: '#fafafa' }}>
         <div className="w-full max-w-xl">
-          {!credentials ? (
+          {activated ? (
+            <div className="rounded-2xl overflow-hidden" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}>
+              <div className="py-6 px-8 text-center" style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+                <CheckCircle className="w-12 h-12 text-white mx-auto mb-3" />
+                <h1 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.8rem', color: '#fff', letterSpacing: '0.04em' }}>
+                  MEMBERSHIP APPROVED
+                </h1>
+                <p className="text-green-100 mt-1 text-sm">Welcome to Build One Zambia!</p>
+              </div>
+              <div className="bg-white p-8 space-y-4">
+                <p className="text-sm text-gray-600">{activated.message}</p>
+                <div className="rounded-xl border border-gray-200 p-4">
+                  <p className="text-xs text-gray-400 mb-1">Your Username</p>
+                  <div className="flex items-center justify-between">
+                    <code className="text-lg font-mono font-bold text-gray-900">{activated.username}</code>
+                    <button onClick={() => copyText(activated.username, 'u')} className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border" style={{ color: ACCENT, borderColor: ACCENT }}>
+                      <Copy size={12} /> {copied === 'u' ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">Use the password and PIN you created when you applied.</p>
+                <button onClick={() => navigate('/dashboard-login')} className="w-full py-3 rounded-xl text-white font-semibold" style={{ background: ACCENT }}>
+                  Go to Dashboard Login →
+                </button>
+              </div>
+            </div>
+          ) : !credentials ? (
             <div className="rounded-2xl p-10 text-center" style={{ backgroundColor: '#fff', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
               <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: '#fef3c715', border: '3px solid #d97706' }}>
                 <Clock className="w-10 h-10" style={{ color: '#d97706' }} />
@@ -225,8 +283,8 @@ export default function MemberRegistration() {
                 <p className="text-sm font-semibold text-yellow-800 mb-1">What happens next?</p>
                 <ul className="text-sm text-yellow-700 space-y-1 list-disc list-inside">
                   <li>An admin will review and verify your documents</li>
-                  <li>Once approved, a username &amp; password will be generated</li>
-                  <li>Return here with your reference number to collect credentials</li>
+                  <li>Your account is already created, using the password and PIN you set — it just stays inactive until approved</li>
+                  <li>Return here with your reference number to check your approval status</li>
                 </ul>
               </div>
               {registrationId && (
@@ -235,12 +293,13 @@ export default function MemberRegistration() {
                     try {
                       const res = await registrationApi.getMemberCredentials(registrationId);
                       if (res.credentials) setCredentials(res.credentials as GeneratedCredentials);
+                      else if (res.activated) setActivated({ username: res.username || '', message: res.message || '' });
                     } catch { /* not yet approved */ }
                   }}
                   className="w-full py-3 rounded-xl text-white font-semibold mb-3"
                   style={{ background: ACCENT }}
                 >
-                  Check if My Credentials Are Ready
+                  Check Application Status
                 </button>
               )}
               <button onClick={() => navigate('/')} className="w-full py-2 text-sm text-gray-500 hover:text-gray-700">
@@ -566,27 +625,109 @@ export default function MemberRegistration() {
                   <button type="button" onClick={() => setCurrentStep(3)} className="flex items-center gap-2 px-6 py-3.5 rounded-lg" style={{ border: `2px solid ${ACCENT}`, color: ACCENT, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '14px' }}>
                     <ArrowLeft className="w-4 h-4" /> BACK
                   </button>
-                  {!selfieDataUrl ? (
-                    <button
-                      type="button"
-                      onClick={submitRegistration}
-                      disabled={submitting}
-                      className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-white disabled:opacity-60"
-                      style={{ backgroundColor: '#6b7280', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '14px' }}
-                    >
-                      {submitting ? 'SUBMITTING…' : 'SKIP & SUBMIT APPLICATION'}
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={submitRegistration}
-                      disabled={submitting}
-                      className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-white disabled:opacity-60"
-                      style={{ backgroundColor: '#16a34a', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '14px' }}
-                    >
-                      {submitting ? 'SUBMITTING…' : <><CheckCircle className="w-4 h-4" /> SUBMIT APPLICATION</>}
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(5)}
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-white"
+                    style={{ backgroundColor: selfieDataUrl ? '#16a34a' : '#6b7280', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '14px' }}
+                  >
+                    {selfieDataUrl ? <>CONTINUE <ArrowRight className="w-4 h-4" /></> : 'SKIP & CONTINUE'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ── Step 5: Account Security ── */}
+            {currentStep === 5 && (
+              <div>
+                <h2 className="mb-2" style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.5rem', letterSpacing: '0.03em', color: '#1e2d4a' }}>
+                  Step 5: Create Your Login
+                </h2>
+                <p className="text-sm mb-6" style={{ color: '#6b7280' }}>
+                  Choose the password and PIN you'll use to log in. Your account is created now but stays
+                  inactive until an admin reviews and approves your application — you'll be able to log in
+                  as soon as that happens, using exactly what you set here.
+                </p>
+
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5" style={{ color: '#374151' }}>Password</label>
+                    <div className="relative">
+                      <input
+                        type={showPass ? 'text' : 'password'}
+                        {...register('password', { required: true, minLength: 8 })}
+                        className="w-full px-4 py-3 rounded-lg pr-11"
+                        style={{ border: '1px solid #d1d5db' }}
+                        placeholder="At least 8 characters"
+                      />
+                      <button type="button" onClick={() => setShowPass(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5" style={{ color: '#374151' }}>Confirm Password</label>
+                    <input
+                      type={showPass ? 'text' : 'password'}
+                      {...register('confirmPassword', { required: true })}
+                      className="w-full px-4 py-3 rounded-lg"
+                      style={{ border: '1px solid #d1d5db' }}
+                      placeholder="Re-enter your password"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5" style={{ color: '#374151' }}>PIN (4–6 digits)</label>
+                      <input
+                        type={showPin ? 'text' : 'password'}
+                        inputMode="numeric"
+                        {...register('pin', { required: true, pattern: /^\d{4,6}$/ })}
+                        className="w-full px-4 py-3 rounded-lg"
+                        style={{ border: '1px solid #d1d5db' }}
+                        placeholder="e.g. 4821"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5" style={{ color: '#374151' }}>Confirm PIN</label>
+                      <input
+                        type={showPin ? 'text' : 'password'}
+                        inputMode="numeric"
+                        {...register('confirmPin', { required: true })}
+                        className="w-full px-4 py-3 rounded-lg"
+                        style={{ border: '1px solid #d1d5db' }}
+                        placeholder="Re-enter your PIN"
+                      />
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => setShowPin(s => !s)} className="text-xs" style={{ color: ACCENT }}>
+                    {showPin ? 'Hide PIN' : 'Show PIN'}
+                  </button>
+                </div>
+
+                {securityError && (
+                  <div className="mb-4 p-3 rounded-lg text-sm" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626' }}>
+                    {securityError}
+                  </div>
+                )}
+                {submitError && (
+                  <div className="mb-4 p-3 rounded-lg text-sm" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626' }}>
+                    {submitError}
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setCurrentStep(4)} className="flex items-center gap-2 px-6 py-3.5 rounded-lg" style={{ border: `2px solid ${ACCENT}`, color: ACCENT, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '14px' }}>
+                    <ArrowLeft className="w-4 h-4" /> BACK
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onStep5Submit}
+                    disabled={submitting}
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-white disabled:opacity-60"
+                    style={{ backgroundColor: '#16a34a', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '14px' }}
+                  >
+                    {submitting ? 'SUBMITTING…' : <><CheckCircle className="w-4 h-4" /> SUBMIT APPLICATION</>}
+                  </button>
                 </div>
               </div>
             )}
