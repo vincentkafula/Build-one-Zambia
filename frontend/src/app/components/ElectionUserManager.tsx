@@ -123,7 +123,7 @@ const CREATE_ROLES: { key: RoleKey; label: string; scope: string | null }[] = [
 
 const INP = 'w-full px-3 py-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary';
 
-function CreateUserForm({ onCreated, defaultRole }: { onCreated: () => void; defaultRole?: RoleKey }) {
+function CreateUserForm({ onCreated, defaultRole, users }: { onCreated: () => void; defaultRole?: RoleKey; users: ElectionUser[] }) {
   const [form, setForm] = useState({
     name: '', username: '', password: '', phone: '',
     role: (defaultRole ?? 'agent') as RoleKey,
@@ -175,6 +175,16 @@ function CreateUserForm({ onCreated, defaultRole }: { onCreated: () => void; def
     if (roleScope === 'polling_station')  return { scopeId: pollingStationId, scopeName: selStation?.name ?? '',     scopeType: 'polling_station' };
     return { scopeId: '', scopeName: '', scopeType: null };
   }
+
+  // Live area-lock check — this area/role combination already has an active
+  // account, so creation is blocked until it's removed. Mirrors the same
+  // capacity rule the backend enforces on submit; shown here so the admin
+  // sees it before filling out the whole form.
+  const { scopeId: currentScopeId } = getScopeFields();
+  const occupant = currentScopeId
+    ? users.find(u => u.active !== false && u.role === form.role && (u.scopeId || u.pollingStationId) === currentScopeId)
+    : null;
+  const isLocked = !!occupant;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -341,10 +351,17 @@ function CreateUserForm({ onCreated, defaultRole }: { onCreated: () => void; def
         </div>
       )}
 
+      {isLocked && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-300 rounded-lg text-sm text-amber-800">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          This area already has an active {ROLE_CONFIG[form.role as RoleKey]?.label ?? String(form.role).replace(/_/g, ' ')}
+          {occupant?.name ? <> — <strong>{occupant.name}</strong></> : null}. Remove that account first before creating a new one here.
+        </div>
+      )}
       {error   && <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700"><AlertCircle className="w-4 h-4 shrink-0" />{error}</div>}
       {success && <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700"><CheckCircle2 className="w-4 h-4 shrink-0" />{success}</div>}
 
-      <button type="submit" disabled={saving}
+      <button type="submit" disabled={saving || isLocked}
         className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-sm font-semibold transition-colors disabled:opacity-50">
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
         Create {selRole?.label ?? 'User'}
@@ -736,7 +753,7 @@ export function ElectionUserManager() {
       {activeTab === 'create' && (
         <div className="bg-card border border-border rounded-xl p-6">
           <h3 className="text-sm font-bold text-foreground mb-4">Create New User</h3>
-          <CreateUserForm onCreated={() => { load(); setActiveTab('users'); }} />
+          <CreateUserForm onCreated={() => { load(); setActiveTab('users'); }} users={users} />
         </div>
       )}
     </div>

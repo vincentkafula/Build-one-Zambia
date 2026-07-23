@@ -120,12 +120,44 @@ export async function loginUser(username, password) {
   return user;
 }
 
+// Roles tied to a specific area (polling station / ward / constituency /
+// district / province) — each area may only have one active account per
+// role at a time (configurable via userData.requiredAgents for roles like
+// polling_agent where a station might legitimately need more than one).
+// national_manager, admin, and super_admin are not area-scoped and are
+// exempt from this lock.
+const AREA_SCOPED_ROLES = ['polling_agent', 'agent', 'election_agent', 'ward_manager', 'constituency_manager', 'district_manager', 'provincial_manager'];
+const DEFAULT_AREA_CAPACITY = 1;
+
+function roleLabel(role) {
+  return String(role).replace(/_/g, ' ');
+}
+
 export async function registerUser(userData, password) {
   if (!userData.username) throw new Error('Username is required');
   if (!userData.role) throw new Error('Role is required');
 
   const existing = kv.get(`user:${userData.username}`);
   if (existing) throw new Error('Username already exists');
+
+  // Area lock: block creating (or approving an application into) a new
+  // account for a role+area that's already at capacity. The area frees up
+  // automatically the moment the occupying account is deleted — there's no
+  // separate "slot" record to manage, occupancy is always computed live.
+  const scopeId = userData.scopeId || userData.pollingStationId;
+  if (AREA_SCOPED_ROLES.includes(userData.role) && scopeId) {
+    const capacity = Number(userData.requiredAgents) > 0 ? Number(userData.requiredAgents) : DEFAULT_AREA_CAPACITY;
+    const occupying = listUsers().filter(u =>
+      u.active !== false && u.role === userData.role && (u.scopeId || u.pollingStationId) === scopeId
+    );
+    if (occupying.length >= capacity) {
+      const areaName = userData.scopeName || userData.pollingStationName || 'This area';
+      throw new Error(
+        `${areaName} already has ${occupying.length} active ${roleLabel(userData.role)}${occupying.length === 1 ? '' : 's'} `
+        + `(limit ${capacity}). Remove the existing account before creating a new one here.`
+      );
+    }
+  }
 
   const now = new Date().toISOString();
   const user = {
