@@ -26,7 +26,10 @@ const SITE_SECTIONS = [
       {
         icon: Users, title: 'About Us', path: '/about',
         desc: "Learn about the Build One Zambia movement — our founding story, national leadership structure, provincial leaders, and the vision driving Zambia's renewal.",
-        sub: [{ label: 'Leadership Team', path: '/about#leadership' }],
+        sub: [
+          { label: 'Leadership Team', path: '/about#leadership' },
+          { label: 'Events', path: '/about/events' },
+        ],
       },
       {
         icon: FileText, title: 'Campaign Platform', path: '/campaign',
