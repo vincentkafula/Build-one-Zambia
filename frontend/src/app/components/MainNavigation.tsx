@@ -4,13 +4,6 @@ import { Menu, X, Search, ChevronDown } from 'lucide-react';
 import bozLogo from '../../imports/One_Zambia_Logo.png';
 import { SiteSearch } from './SiteSearch';
 
-const HOME_DROPDOWN = [
-  { label: 'Home Main',            path: '/',                  desc: 'Build One Zambia official home' },
-  { label: 'Male Candidates',      path: '/home/male',         desc: 'Meet our shadow cabinet male candidates' },
-  { label: 'Female Candidates',    path: '/home/female',       desc: 'Meet our shadow cabinet female candidates' },
-  { label: 'Opportunities',        path: '/home/opportunities', desc: 'Membership, cooperatives & internships' },
-];
-
 const ABOUT_DROPDOWN = [
   { label: 'Leadership', path: '/about#leadership', desc: 'Our national, provincial, district & branch leaders' },
   { label: 'Events',     path: '/about/events',     desc: 'Upcoming rallies, forums, summits & past activities' },
@@ -29,11 +22,11 @@ interface NavLink {
   label: string;
   path: string;
   hasDropdown: boolean;
-  dropdownType?: 'home' | 'about' | 'news';
+  dropdownType?: 'about' | 'news';
 }
 
 const NAV_LINKS: NavLink[] = [
-  { label: 'HOME',      path: '/',         hasDropdown: true,  dropdownType: 'home' },
+  { label: 'HOME',      path: '/',         hasDropdown: false },
   { label: 'ABOUT US',  path: '/about',    hasDropdown: true,  dropdownType: 'about' },
   { label: 'CAMPAIGN',  path: '/campaign', hasDropdown: false },
   { label: 'PAGES',     path: '/pages',    hasDropdown: false },
@@ -47,13 +40,10 @@ export function MainNavigation() {
   const [menuOpen, setMenuOpen]       = useState(false);
   const [scrolled, setScrolled]       = useState(false);
   const [searchOpen, setSearchOpen]   = useState(false);
-  const [homeDropOpen, setHomeDropOpen] = useState(false);
   const [aboutDropOpen, setAboutDropOpen] = useState(false);
   const [newsDropOpen, setNewsDropOpen] = useState(false);
-  const [mobileHomeOpen, setMobileHomeOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const [mobileNewsOpen, setMobileNewsOpen] = useState(false);
-  const homeDropRef = useRef<HTMLDivElement>(null);
   const aboutDropRef = useRef<HTMLDivElement>(null);
   const newsDropRef = useRef<HTMLDivElement>(null);
 
@@ -65,7 +55,6 @@ export function MainNavigation() {
 
   useEffect(() => {
     setMenuOpen(false);
-    setHomeDropOpen(false);
     setAboutDropOpen(false);
     setNewsDropOpen(false);
   }, [location.pathname]);
@@ -73,9 +62,6 @@ export function MainNavigation() {
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (homeDropRef.current && !homeDropRef.current.contains(e.target as Node)) {
-        setHomeDropOpen(false);
-      }
       if (aboutDropRef.current && !aboutDropRef.current.contains(e.target as Node)) {
         setAboutDropOpen(false);
       }
@@ -122,12 +108,11 @@ export function MainNavigation() {
               const active = isActive(link.path);
 
               if (link.hasDropdown) {
-                const isHomeDropdown = link.dropdownType === 'home';
                 const isNewsDropdown = link.dropdownType === 'news';
-                const dropOpen = isHomeDropdown ? homeDropOpen : isNewsDropdown ? newsDropOpen : aboutDropOpen;
-                const setDropOpen = isHomeDropdown ? setHomeDropOpen : isNewsDropdown ? setNewsDropOpen : setAboutDropOpen;
-                const dropdownItems = isHomeDropdown ? HOME_DROPDOWN : isNewsDropdown ? NEWS_DROPDOWN : ABOUT_DROPDOWN;
-                const dropRef = isHomeDropdown ? homeDropRef : isNewsDropdown ? newsDropRef : aboutDropRef;
+                const dropOpen = isNewsDropdown ? newsDropOpen : aboutDropOpen;
+                const setDropOpen = isNewsDropdown ? setNewsDropOpen : setAboutDropOpen;
+                const dropdownItems = isNewsDropdown ? NEWS_DROPDOWN : ABOUT_DROPDOWN;
+                const dropRef = isNewsDropdown ? newsDropRef : aboutDropRef;
 
                 return (
                   <div
@@ -287,11 +272,10 @@ export function MainNavigation() {
 
             {/* Render dropdown items */}
             {NAV_LINKS.filter(l => l.hasDropdown).map(link => {
-              const isHome = link.dropdownType === 'home';
               const isNews = link.dropdownType === 'news';
-              const mobileOpen = isHome ? mobileHomeOpen : isNews ? mobileNewsOpen : mobileAboutOpen;
-              const setMobileOpen = isHome ? setMobileHomeOpen : isNews ? setMobileNewsOpen : setMobileAboutOpen;
-              const dropdownItems = isHome ? HOME_DROPDOWN : isNews ? NEWS_DROPDOWN : ABOUT_DROPDOWN;
+              const mobileOpen = isNews ? mobileNewsOpen : mobileAboutOpen;
+              const setMobileOpen = isNews ? setMobileNewsOpen : setMobileAboutOpen;
+              const dropdownItems = isNews ? NEWS_DROPDOWN : ABOUT_DROPDOWN;
 
               return (
                 <div key={link.label}>
