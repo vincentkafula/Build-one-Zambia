@@ -26,7 +26,7 @@ import * as memberCert from './membershipCertificate.js';
 import * as memberCard from './membershipCard.js';
 import * as adoptionCert from './adoptionCertificate.js';
 import * as appointmentCert from './appointmentCertificate.js';
-import { kv } from './db.js';
+import { kv, getPersistenceStatus } from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -142,7 +142,7 @@ async function autoSeedMayoralCandidates() {
 autoSeedMayoralCandidates().catch(e => console.error('[auto-seed]', e.message));
 
 // ─── Health ───────────────────────────────────────────────────────────────────
-app.get(`${BASE}/health`, (req, res) => res.json({ name: 'Build One Zambia API', status: 'ok', server: 'node-express', version: '2.2.0', timestamp: new Date().toISOString() }));
+app.get(`${BASE}/health`, (req, res) => res.json({ name: 'Build One Zambia API', status: 'ok', server: 'node-express', version: '2.2.0', timestamp: new Date().toISOString(), persistence: getPersistenceStatus() }));
 app.get('/ping', (req, res) => res.json({ status: 'ok', service: 'boz-backend', port: PORT, timestamp: new Date().toISOString() }));
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────

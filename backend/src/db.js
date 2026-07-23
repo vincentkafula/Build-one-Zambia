@@ -30,9 +30,25 @@ try {
 // ── PostgreSQL (optional) ─────────────────────────────────────────────────────
 let pgClient = null;
 let pgReady  = false;
+let pgConnectFailed = false;
+// Writes that happen before Postgres finishes connecting used to be silently
+// dropped from durable storage (kept only in memory + the ephemeral file).
+// Queue them instead and flush once the connection is up, so nothing posted
+// in the first second or two after a cold start gets lost on the next deploy.
+const pendingPgWrites = new Map(); // key -> value | '__DELETE__'
 
 async function initPostgres() {
-  if (!process.env.DATABASE_URL) return;
+  if (!process.env.DATABASE_URL) {
+    console.warn('┌──────────────────────────────────────────────────────────────────┐');
+    console.warn('│ [db] WARNING: DATABASE_URL is not set.                             │');
+    console.warn('│ All admin-panel content (news, shop, documents, shadow cabinet,    │');
+    console.warn('│ leadership, live streams, etc.) is being stored ONLY in an          │');
+    console.warn('│ ephemeral file (' + DB_PATH.padEnd(51) + ')│');
+    console.warn('│ This will be WIPED on the next deploy/restart. Add a PostgreSQL     │');
+    console.warn('│ database in Railway and set DATABASE_URL on this service to fix.    │');
+    console.warn('└──────────────────────────────────────────────────────────────────┘');
+    return;
+  }
   try {
     const { default: pg } = await import('pg');
     const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
@@ -47,7 +63,8 @@ async function initPostgres() {
       )
     `);
 
-    // Load all keys from DB into memory
+    // Load all keys from DB into memory (Postgres is the source of truth —
+    // overwrites anything with the same key loaded from the local file)
     const { rows } = await client.query('SELECT key, value FROM boz_kv');
     for (const row of rows) {
       try { store[row.key] = JSON.parse(row.value); } catch { store[row.key] = row.value; }
@@ -55,14 +72,41 @@ async function initPostgres() {
 
     pgClient = client;
     pgReady  = true;
-    console.log('[db] PostgreSQL connected —', rows.length, 'keys loaded');
+    console.log(`[db] PostgreSQL connected — ${rows.length} keys loaded. All writes are now persisted durably.`);
+
+    // Flush anything that was written during the connection handshake
+    if (pendingPgWrites.size > 0) {
+      console.log(`[db] Flushing ${pendingPgWrites.size} write(s) queued during startup...`);
+      for (const [key, value] of pendingPgWrites) {
+        if (value === '__DELETE__') await pgDel(key);
+        else await pgSet(key, value);
+      }
+      pendingPgWrites.clear();
+    }
   } catch (err) {
-    console.warn('[db] PostgreSQL unavailable, using file store:', err.message);
+    pgConnectFailed = true;
+    console.error('┌──────────────────────────────────────────────────────────────────┐');
+    console.error('│ [db] ERROR: DATABASE_URL is set but PostgreSQL connection failed.   │');
+    console.error('│ Falling back to the ephemeral file store — data WILL be lost on     │');
+    console.error('│ the next deploy/restart until this is fixed.                        │');
+    console.error('│ Error: ' + String(err.message).slice(0, 60).padEnd(60) + '│');
+    console.error('└──────────────────────────────────────────────────────────────────┘');
   }
 }
 
 // Start PG init (non-blocking)
 initPostgres();
+
+export function getPersistenceStatus() {
+  return {
+    databaseUrlConfigured: !!process.env.DATABASE_URL,
+    connected: pgReady,
+    connectFailed: pgConnectFailed,
+    mode: pgReady ? 'postgresql' : 'ephemeral-file',
+    dataDir: DATA_DIR,
+    keyCount: Object.keys(store).length,
+  };
+}
 
 // ── Flush helpers ─────────────────────────────────────────────────────────────
 let flushTimer = null;
@@ -75,7 +119,10 @@ function scheduleFlush() {
 }
 
 async function pgSet(key, value) {
-  if (!pgReady) return;
+  if (!pgReady) {
+    if (process.env.DATABASE_URL && !pgConnectFailed) pendingPgWrites.set(key, value);
+    return;
+  }
   try {
     await pgClient.query(
       `INSERT INTO boz_kv (key, value, updated_at) VALUES ($1, $2, NOW())
@@ -86,7 +133,10 @@ async function pgSet(key, value) {
 }
 
 async function pgDel(key) {
-  if (!pgReady) return;
+  if (!pgReady) {
+    if (process.env.DATABASE_URL && !pgConnectFailed) pendingPgWrites.set(key, '__DELETE__');
+    return;
+  }
   try { await pgClient.query('DELETE FROM boz_kv WHERE key = $1', [key]); } catch {}
 }
 

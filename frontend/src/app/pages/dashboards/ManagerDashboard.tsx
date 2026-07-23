@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { DashboardShell, DashCard, StatCard } from '../../components/DashboardShell';
 import { SuperAdminGate, getSuperAdminToken } from '../../components/SuperAdminGate';
+import { PersistenceStatusBanner } from '../../components/PersistenceStatusBanner';
 import { provinces } from '../../data/mockData';
 
 // Lazy-load all heavy components to avoid circular dependency at build time
@@ -569,6 +570,7 @@ export default function ManagerDashboard() {
       onNavigate={(key) => setActive(key as SectionKey)}
       notifications={2}
     >
+      <PersistenceStatusBanner />
       {renderSection()}
     </DashboardShell>
   );
