@@ -631,7 +631,8 @@ export function PresidentialPage() {
         {/* Downloads */}
         <div className="mt-10 pt-6 border-t border-border flex flex-col items-center gap-3">
           <p className="text-xs text-muted-foreground text-center max-w-md">
-            Includes a full breakdown by polling station under the currently selected location, for every candidate.
+            Includes every polling station under the currently selected location — grouped by ward, constituency,
+            district and province — whether or not it has reported yet, for every candidate.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <DownloadButton
@@ -644,6 +645,11 @@ export function PresidentialPage() {
               title="Presidential Election Results"
               stage={resultStage}
               round={viewRound}
+              selectedProvinceId={selectedProvince || undefined}
+              selectedDistrictId={selectedDistrict || undefined}
+              selectedConstituencyId={selectedConstituency || undefined}
+              selectedWardId={selectedWard || undefined}
+              selectedStationId={selectedPollingStation || undefined}
             />
             <DownloadButton
               format="excel"
@@ -655,6 +661,11 @@ export function PresidentialPage() {
               title="Presidential Election Results"
               stage={resultStage}
               round={viewRound}
+              selectedProvinceId={selectedProvince || undefined}
+              selectedDistrictId={selectedDistrict || undefined}
+              selectedConstituencyId={selectedConstituency || undefined}
+              selectedWardId={selectedWard || undefined}
+              selectedStationId={selectedPollingStation || undefined}
             />
           </div>
         </div>

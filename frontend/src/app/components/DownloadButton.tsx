@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { resultsApi, type StationBreakdownRow, type ElectionCategory, type LevelType } from '../lib/api';
+import { provinces } from '../data/mockData';
 
 interface RosterCandidate {
   id: string;
@@ -53,6 +54,63 @@ function rowStats(row: StationBreakdownRow) {
   const totalCast = validVotes + row.rejectedBallots;
   const turnout = row.registeredVoters > 0 ? (totalCast / row.registeredVoters) * 100 : 0;
   return { validVotes, totalCast, turnout };
+}
+
+// Every polling station within the selected scope, whether or not it has
+// reported yet — walks the actual official location hierarchy (not the
+// results database) so non-reporting stations still show up with zeroed
+// figures instead of being silently absent from the report. Each
+// individual selection (province/district/etc.) is only ever matched
+// against its immediate parent's own children, exactly like
+// DrillDownFilters does — district/constituency/ward ids repeat across
+// different parents by design (each province numbers its own districts
+// 001, 002...), so matching an id alone without its parent would be
+// ambiguous.
+function buildFullStationRoster(selection: {
+  provinceId?: string; districtId?: string; constituencyId?: string; wardId?: string; stationId?: string;
+}): Omit<StationBreakdownRow, 'candidateVotes' | 'status'>[] {
+  const roster: Omit<StationBreakdownRow, 'candidateVotes' | 'status'>[] = [];
+  for (const province of provinces) {
+    if (selection.provinceId && province.id !== selection.provinceId) continue;
+    for (const district of province.districts) {
+      if (selection.districtId && district.id !== selection.districtId) continue;
+      for (const constituency of district.constituencies) {
+        if (selection.constituencyId && constituency.id !== selection.constituencyId) continue;
+        for (const ward of constituency.wards) {
+          if (selection.wardId && ward.id !== selection.wardId) continue;
+          for (const station of ward.pollingStations) {
+            if (selection.stationId && station.id !== selection.stationId) continue;
+            roster.push({
+              provinceId: province.id, provinceName: province.name,
+              districtId: district.id, districtName: district.name,
+              constituencyId: constituency.id, constituencyName: constituency.name,
+              wardId: ward.id, wardName: ward.name,
+              pollingStationId: station.id, pollingStationName: station.name,
+              registeredVoters: station.registeredVoters,
+              rejectedBallots: 0,
+            });
+          }
+        }
+      }
+    }
+  }
+  return roster;
+}
+
+// Merges the full roster with whatever's actually been submitted so far —
+// reporting stations get their real figures, everything else stays zeroed
+// (but keeps its real registered-voter count, so turnout correctly reads
+// 0% rather than looking like missing data).
+function mergeRosterWithResults(
+  roster: Omit<StationBreakdownRow, 'candidateVotes' | 'status'>[],
+  submitted: StationBreakdownRow[],
+): StationBreakdownRow[] {
+  const byStation = new Map(submitted.map(r => [r.pollingStationId, r]));
+  return roster.map(stub => {
+    const actual = byStation.get(stub.pollingStationId);
+    if (actual) return actual;
+    return { ...stub, candidateVotes: [], status: 'not-yet-reported' };
+  });
 }
 
 function aggregateStats(rows: StationBreakdownRow[], roster: RosterCandidate[]) {
@@ -292,11 +350,19 @@ interface DownloadButtonProps {
   title?: string;
   stage?: 'provisional' | 'official';
   round?: 'round1' | 'runoff';
+  // Individual selection ids, each scoped to its immediate parent — needed
+  // to build the full station roster unambiguously (see buildFullStationRoster).
+  selectedProvinceId?: string;
+  selectedDistrictId?: string;
+  selectedConstituencyId?: string;
+  selectedWardId?: string;
+  selectedStationId?: string;
 }
 
 export function DownloadButton({
   label, format, electionType, levelType, levelId, locationLabel, candidateRoster,
   title = 'Presidential Election Results', stage, round,
+  selectedProvinceId, selectedDistrictId, selectedConstituencyId, selectedWardId, selectedStationId,
 }: DownloadButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -305,11 +371,16 @@ export function DownloadButton({
     setLoading(true);
     setError('');
     try {
-      const { rows } = await resultsApi.exportBreakdown(electionType, levelType, levelId, stage, round);
-      if (rows.length === 0) {
-        setError('No polling station results available yet for this selection.');
+      const roster = buildFullStationRoster({
+        provinceId: selectedProvinceId, districtId: selectedDistrictId, constituencyId: selectedConstituencyId,
+        wardId: selectedWardId, stationId: selectedStationId,
+      });
+      if (roster.length === 0) {
+        setError('No polling stations found for this selection.');
         return;
       }
+      const { rows: submitted } = await resultsApi.exportBreakdown(electionType, levelType, levelId, stage, round);
+      const rows = mergeRosterWithResults(roster, submitted);
       const groupLevels = GROUP_LEVELS[levelType] ?? GROUP_LEVELS.national;
       if (format === 'excel') {
         downloadExcel(rows, candidateRoster, groupLevels, title, locationLabel);
