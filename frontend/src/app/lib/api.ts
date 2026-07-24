@@ -435,6 +435,11 @@ export const gatewayApi = {
     request<{ success: boolean; verified: boolean; result: GatewayVerifyResult }>(
       'POST', '/gateway/verify-card', data
     ),
+
+  verifyDonationCard: (data: { transactionId: number; donationId: string }) =>
+    request<{ success: boolean; verified: boolean; result: GatewayVerifyResult }>(
+      'POST', '/gateway/donation/verify-card', data
+    ),
 };
 
 // ─── Email ────────────────────────────────────────────────────────────────────

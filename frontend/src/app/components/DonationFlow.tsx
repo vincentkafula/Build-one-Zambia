@@ -1,9 +1,16 @@
-import React, { useState, CSSProperties } from 'react';
+import React, { useState, useEffect, useRef, CSSProperties } from 'react';
 import {
   CreditCard, Building2, Smartphone,
   ChevronRight, ChevronLeft, CheckCircle,
-  Heart, Lock, AlertCircle, Copy, Check,
+  Heart, Lock, AlertCircle, Copy, Check, Loader2,
 } from 'lucide-react';
+import { donationApi, gatewayApi } from '../lib/api';
+
+declare global {
+  interface Window {
+    FlutterwaveCheckout?: (config: Record<string, unknown>) => { close: () => void };
+  }
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -244,10 +251,110 @@ function CardPreview({ s }: { s: State }) {
 export function DonationFlow() {
   const [step, setStep] = useState<Step>(1);
   const [done, setDone] = useState(false);
+  const [donationStatus, setDonationStatus] = useState<'completed' | 'pending'>('pending');
   const [s, setS]       = useState<State>(INIT);
+  const [processing, setProcessing] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const set = (k: keyof State, v: string) => setS(prev => ({ ...prev, [k]: v }));
   const amt = displayAmount(s);
+
+  // Load Flutterwave's inline checkout script + public key once, same as
+  // the shop checkout — card entry happens entirely inside their widget,
+  // never in this form.
+  const flwModal = useRef<{ close: () => void } | null>(null);
+  const [gwPublicKey, setGwPublicKey] = useState('');
+  useEffect(() => {
+    gatewayApi.config().then(cfg => setGwPublicKey(cfg.publicKey || '')).catch(() => {});
+    if (document.querySelector('script[src*="checkout.flutterwave.com"]')) return;
+    const script = document.createElement('script');
+    script.src = 'https://checkout.flutterwave.com/v3.js';
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+  function parseAmount(): number {
+    const raw = s.tier === 'custom' ? s.custom : s.tier;
+    return Number(String(raw).replace(/[^0-9.]/g, '')) || 0;
+  }
+
+  async function handleConfirm() {
+    setProcessing(true);
+    setSubmitError('');
+    const amountNum = parseAmount();
+
+    try {
+      // Bank transfer & mobile money are self-reported — record the
+      // donation as pending and let an admin reconcile it against the
+      // actual transfer/mobile money receipt (there's no live API to
+      // confirm these two the way a card charge can be confirmed instantly).
+      if (s.category === 'bank' || s.category === 'mobile') {
+        await donationApi.submit({
+          name: s.name, email: s.email, amount: amountNum, method: s.category,
+          ...(s.category === 'bank' ? { bank: s.bank, bankHolder: s.bankHolder, bankRef: s.bankRef } : {}),
+          ...(s.category === 'mobile' ? { network: s.net, phone: `260${s.phone}`, txRef: s.txRef } : {}),
+        });
+        setDonationStatus('pending');
+        setDone(true);
+        setProcessing(false);
+        return;
+      }
+
+      // Card — create the pending donation record first so Flutterwave's
+      // verify step has a real record to check the confirmed amount
+      // against, then open Flutterwave's own secure widget for entry.
+      const { donation } = await donationApi.submit({ name: s.name, email: s.email, amount: amountNum, method: 'card' });
+      const donationId = (donation as { id: string }).id;
+
+      if (!gwPublicKey || !window.FlutterwaveCheckout) {
+        setSubmitError('Payment system is still loading — please wait a moment and try again.');
+        setProcessing(false);
+        return;
+      }
+
+      const txRef = `boz-donation-${donationId}-${Date.now()}`;
+      flwModal.current = window.FlutterwaveCheckout({
+        public_key: gwPublicKey,
+        tx_ref: txRef,
+        amount: amountNum,
+        currency: 'ZMW',
+        payment_options: 'card',
+        customer: { email: s.email, name: s.name },
+        customizations: {
+          title: 'Build One Zambia — Donation',
+          description: `${amt} donation — ${s.name}`,
+          logo: 'https://buildonezambia.com/logo.png',
+        },
+        callback: async (response: { status: string; transaction_id: number }) => {
+          if (flwModal.current) flwModal.current.close();
+          if (response.status !== 'successful' && response.status !== 'completed') {
+            setSubmitError('Payment was not completed. Please try again.');
+            setProcessing(false);
+            return;
+          }
+          try {
+            const res = await gatewayApi.verifyDonationCard({ transactionId: response.transaction_id, donationId });
+            if (res.verified) {
+              setDonationStatus('completed');
+              setDone(true);
+            } else {
+              setSubmitError('Payment could not be verified. Please contact support if you were charged.');
+            }
+          } catch {
+            setSubmitError('Verification failed. Please contact support if you were charged.');
+          } finally {
+            setProcessing(false);
+          }
+        },
+        onclose: () => {
+          setProcessing(false);
+        },
+      });
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setProcessing(false);
+    }
+  }
 
   // ── Success screen ──────────────────────────────────────────────────────────
 
@@ -258,12 +365,18 @@ export function DonationFlow() {
           <Heart size={38} color="#dc2626" />
         </div>
         <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '2rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '12px' }}>THANK YOU!</h3>
-        <p style={{ color: '#9ca3af', fontSize: '15px', lineHeight: 1.8, maxWidth: '420px', margin: '0 auto 8px' }}>
-          Your donation of <strong style={{ color: '#fff' }}>{amt}</strong> is being processed. A receipt will be sent to <strong style={{ color: '#fff' }}>{s.email}</strong>.
-        </p>
+        {donationStatus === 'completed' ? (
+          <p style={{ color: '#9ca3af', fontSize: '15px', lineHeight: 1.8, maxWidth: '420px', margin: '0 auto 8px' }}>
+            Your donation of <strong style={{ color: '#fff' }}>{amt}</strong> has been received. A receipt will be sent to <strong style={{ color: '#fff' }}>{s.email}</strong>.
+          </p>
+        ) : (
+          <p style={{ color: '#9ca3af', fontSize: '15px', lineHeight: 1.8, maxWidth: '420px', margin: '0 auto 8px' }}>
+            Your donation of <strong style={{ color: '#fff' }}>{amt}</strong> has been recorded and is awaiting confirmation — our team will verify your {s.category === 'bank' ? 'bank transfer' : 'mobile money payment'} and email a receipt to <strong style={{ color: '#fff' }}>{s.email}</strong>.
+          </p>
+        )}
         <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '32px' }}>Together we build One Zambia. Thank you for your support.</p>
         <button
-          onClick={() => { setDone(false); setStep(1); setS(INIT); }}
+          onClick={() => { setDone(false); setStep(1); setS(INIT); setSubmitError(''); }}
           style={{ backgroundColor: '#dc2626', color: '#fff', border: 'none', padding: '12px 32px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.1em', fontSize: '14px', cursor: 'pointer' }}
         >
           DONATE AGAIN
@@ -276,12 +389,12 @@ export function DonationFlow() {
 
   const step1ok = (s.tier !== '' && (s.tier !== 'custom' || s.custom !== '')) && s.name !== '' && s.email !== '';
   const step3ok =
-    s.category === 'card'   ? (s.cardBrand !== '' && s.cardNum !== '' && s.cardName !== '' && s.cardExpiry !== '' && s.cardCvv !== '') :
+    s.category === 'card'   ? true :
     s.category === 'bank'   ? (s.bank !== '' && s.bankHolder !== '') :
     s.category === 'mobile' ? (s.net !== '' && s.phone !== '') : false;
 
   const methodLabel =
-    s.category === 'card'   ? `${s.cardBrand === 'amex' ? 'American Express' : s.cardBrand === 'mastercard' ? 'Mastercard' : 'Visa'} ····${s.cardNum.replace(/\s/g, '').slice(-4)}` :
+    s.category === 'card'   ? 'Card Payment (via Flutterwave)' :
     s.category === 'bank'   ? `Bank Transfer — ${s.bank ? BANKS[s.bank].label : ''}` :
     s.category === 'mobile' ? `${s.net ? NETS[s.net].label : ''} (+260 ${s.phone})` : '';
 
@@ -442,63 +555,27 @@ export function DonationFlow() {
           {/* ── Card ── */}
           {s.category === 'card' && (
             <>
-              <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '6px' }}>CARD DETAILS</h3>
-              <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '24px' }}>Secure payment — card details are never stored.</p>
+              <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '6px' }}>CARD PAYMENT</h3>
+              <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '24px' }}>
+                You'll enter your card details securely on Flutterwave's own payment screen after you confirm below —
+                nothing is collected or stored on this site.
+              </p>
 
-              <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.15em', color: '#dc2626', marginBottom: '12px' }}>SELECT CARD TYPE</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
-                {(['visa', 'mastercard', 'amex'] as CardBrand[]).map(brand => (
-                  <button
-                    key={brand}
-                    type="button"
-                    onClick={() => set('cardBrand', brand)}
-                    style={{
-                      padding: '14px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
-                      cursor: 'pointer', border: 'none',
-                      backgroundColor: s.cardBrand === brand ? 'rgba(220,38,38,0.1)' : '#111',
-                      outline: `1px solid ${s.cardBrand === brand ? '#dc2626' : '#1f1f1f'}`,
-                    }}
-                  >
-                    {brand === 'visa'       && <div style={{ backgroundColor: '#fff', borderRadius: '4px', padding: '4px 10px' }}><span style={{ fontFamily: 'Oswald, sans-serif', fontWeight: 700, fontSize: '1rem', color: '#1a1f71' }}>VISA</span></div>}
-                    {brand === 'mastercard' && <div style={{ backgroundColor: '#1a1a1a', borderRadius: '4px', padding: '4px 10px' }}><MCLogo size={20} /></div>}
-                    {brand === 'amex'       && <div style={{ backgroundColor: '#2e77bc', borderRadius: '4px', padding: '4px 10px' }}><span style={{ fontFamily: 'Oswald, sans-serif', fontWeight: 700, fontSize: '0.75rem', color: '#fff', letterSpacing: '0.04em' }}>AMEX</span></div>}
-                    <span style={{ fontSize: '11px', color: '#9ca3af', fontFamily: 'Oswald, sans-serif' }}>
-                      {brand === 'visa' ? 'Visa' : brand === 'mastercard' ? 'Mastercard' : 'Amex'}
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              <CardPreview s={s} />
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    style={INP} placeholder="Card number"
-                    value={s.cardNum}
-                    onChange={e => set('cardNum', formatCardNum(e.target.value, s.cardBrand))}
-                    maxLength={s.cardBrand === 'amex' ? 17 : 19}
-                  />
-                  <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)' }}>
-                    {s.cardBrand === 'visa' && <VisaLogo />}
-                    {s.cardBrand === 'mastercard' && <MCLogo size={18} />}
-                    {s.cardBrand === 'amex' && <AmexLogo />}
-                    {!s.cardBrand && <CreditCard size={18} color="#4b5563" />}
-                  </div>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '16px', padding: '24px',
+                backgroundColor: '#0d0d0d', border: '1px solid #1f1f1f', marginBottom: '20px',
+              }}>
+                <div style={{ width: 56, height: 56, flexShrink: 0, borderRadius: '50%', backgroundColor: 'rgba(220,38,38,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Lock size={24} color="#dc2626" />
                 </div>
-                <input style={INP} placeholder="Name on card" value={s.cardName} onChange={e => set('cardName', e.target.value.toUpperCase())} />
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <input style={INP} placeholder="MM / YY" value={s.cardExpiry} onChange={e => set('cardExpiry', formatExpiry(e.target.value))} maxLength={5} />
-                  <div style={{ position: 'relative' }}>
-                    <input type="password" style={INP} placeholder={s.cardBrand === 'amex' ? 'CID (4 digits)' : 'CVV (3 digits)'} value={s.cardCvv} onChange={e => set('cardCvv', e.target.value.replace(/\D/g, '').slice(0, s.cardBrand === 'amex' ? 4 : 3))} maxLength={s.cardBrand === 'amex' ? 4 : 3} />
-                    <Lock size={15} color="#4b5563" style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)' }} />
-                  </div>
+                <div>
+                  <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '4px' }}>
+                    Secured by Flutterwave
+                  </p>
+                  <p style={{ fontSize: '12px', color: '#6b7280', lineHeight: 1.6, margin: 0 }}>
+                    Visa · Mastercard · American Express accepted. 256-bit SSL encryption, PCI-DSS compliant.
+                  </p>
                 </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '12px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid #1f1f1f', marginBottom: '20px' }}>
-                <Lock size={14} color="#6b7280" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <p style={{ fontSize: '12px', color: '#6b7280', lineHeight: 1.6, margin: 0 }}>Your payment is secured with 256-bit SSL encryption. Card details are never stored on our servers.</p>
               </div>
             </>
           )}
@@ -655,10 +732,18 @@ export function DonationFlow() {
             </p>
           </div>
 
+          {submitError && (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '14px', backgroundColor: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.35)', marginBottom: '16px' }}>
+              <AlertCircle size={14} color="#dc2626" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <p style={{ fontSize: '12px', color: '#fca5a5', lineHeight: 1.6, margin: 0 }}>{submitError}</p>
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-            <button type="button" onClick={() => setStep(3)} style={btnBack}><ChevronLeft size={15} /> EDIT</button>
-            <button type="button" onClick={() => setDone(true)} style={btnNext(false)}>
-              <Heart size={15} /> CONFIRM DONATION
+            <button type="button" onClick={() => setStep(3)} style={btnBack} disabled={processing}><ChevronLeft size={15} /> EDIT</button>
+            <button type="button" onClick={handleConfirm} disabled={processing} style={btnNext(processing)}>
+              {processing ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Heart size={15} />}
+              {processing ? 'PROCESSING…' : 'CONFIRM DONATION'}
             </button>
           </div>
 

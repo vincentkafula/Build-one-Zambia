@@ -1589,6 +1589,51 @@ app.post(`${BASE}/registrations/validate-memberships`, auth.requireAuth, (req, r
 const donationStore = { donations: kv.get('donations') || [] };
 function saveDonations() { kv.set('donations', donationStore.donations); }
 app.post(`${BASE}/donations`, (req, res) => { const d = { ...req.body, id: `don-${Date.now()}`, status: 'pending', createdAt: new Date().toISOString() }; donationStore.donations.push(d); saveDonations(); res.json({ success: true, donation: d }); });
+
+// Card donations get verified against Flutterwave the same way shop card
+// payments do — the "Confirm Donation" button used to just flip a UI flag
+// with no payment, backend record, or Flutterwave interaction whatsoever,
+// even though raw card number/CVV/expiry fields existed right there in
+// the form (never actually sent anywhere, but a real risk if that had
+// ever been wired up naively — collecting raw card data on your own
+// server is a PCI-DSS violation regardless of whether it's currently
+// used). Card entry now goes through Flutterwave's own secure inline
+// widget instead, same as the shop.
+app.post(`${BASE}/gateway/donation/verify-card`, async (req, res) => {
+  if (!process.env.FLUTTERWAVE_SECRET_KEY) {
+    return res.status(503).json({ success: false, verified: false, error: 'Payment gateway is not configured yet.' });
+  }
+  try {
+    const { transactionId, donationId } = req.body;
+    if (!transactionId || !donationId) return res.status(400).json({ success: false, verified: false, error: 'transactionId and donationId are required.' });
+    const idx = donationStore.donations.findIndex(d => d.id === donationId);
+    if (idx < 0) return res.status(404).json({ success: false, verified: false, error: 'Donation not found.' });
+    const donation = donationStore.donations[idx];
+
+    const r = await fetch(`${FLW_BASE}/transactions/${transactionId}/verify`, { headers: flwHeaders() });
+    const data = await r.json();
+    if (data.status !== 'success' || !data.data) {
+      return res.json({ success: true, verified: false, result: { verified: false, status: 'failed' } });
+    }
+    const d = data.data;
+    // Never trust the client-supplied donation amount — cross-check what
+    // Flutterwave actually confirms was charged against the real donation
+    // record before marking it complete.
+    const amountOk = Math.abs(Number(d.amount) - Number(donation.amount)) < 0.01;
+    const verified = amountOk && d.currency === 'ZMW' && d.status === 'successful';
+    if (verified) {
+      donationStore.donations[idx] = { ...donation, status: 'completed', paymentRef: d.tx_ref, flwTransactionId: d.id, completedAt: new Date().toISOString() };
+      saveDonations();
+    }
+    res.json({
+      success: true,
+      verified,
+      result: { verified, status: d.status === 'successful' ? 'successful' : 'failed', amount: d.amount, currency: d.currency, txRef: d.tx_ref, transactionId: d.id },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, verified: false, error: err.message });
+  }
+});
 app.get(`${BASE}/donations`, auth.requireAuth, (req, res) => { const donations = donationStore.donations; res.json({ donations, count: donations.length, stats: { total: donations.filter(d => d.status === 'completed').reduce((s, d) => s + (d.amount || 0), 0), count: donations.length } }); });
 app.patch(`${BASE}/donations/:id/status`, auth.requireAuth, (req, res) => { const idx = donationStore.donations.findIndex(d => d.id === req.params.id); if (idx < 0) return res.status(404).json({ error: 'Not found' }); donationStore.donations[idx] = { ...donationStore.donations[idx], status: req.body.status, updatedAt: new Date().toISOString() }; saveDonations(); res.json({ success: true, donation: donationStore.donations[idx] }); });
 
