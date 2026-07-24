@@ -308,6 +308,15 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove }: Props) {
           return;
         }
 
+        // Zambia mobile money charges require the customer to complete
+        // authorization on a Flutterwave confirmation page — without this,
+        // the charge sits "awaiting approval" indefinitely no matter how
+        // long polling runs. Opened in a new tab so the checkout page
+        // keeps polling for the result in the background.
+        if (res.authorization?.redirect) {
+          window.open(res.authorization.redirect, '_blank', 'noopener,noreferrer');
+        }
+
         startPolling(res.txRef);
       }
     } catch (err) {

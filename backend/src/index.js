@@ -1729,7 +1729,22 @@ app.post(`${BASE}/gateway/mobile-money`, async (req, res) => {
     const data = await r.json();
     if (data.status === 'success') {
       shop.updateOrder(orderId, { paymentRef: txRef });
-      return res.json({ success: true, txRef, status: data.data?.status || 'pending', message: data.message || 'Check your phone and approve the payment prompt.' });
+      // Per Flutterwave's Zambia mobile money docs, the charge response
+      // carries a meta.authorization object with a redirect URL the
+      // customer must visit to actually approve the payment — this was
+      // previously being silently dropped, so a network requiring that
+      // step (confirmed here: Airtel) would sit "awaiting approval"
+      // forever since nothing ever prompted the customer to complete it.
+      const authorization = data.meta?.authorization || null;
+      return res.json({
+        success: true,
+        txRef,
+        status: data.data?.status || 'pending',
+        message: authorization?.redirect
+          ? 'Please approve the payment on the confirmation page that just opened.'
+          : (data.message || 'Check your phone and approve the payment prompt.'),
+        authorization,
+      });
     }
     return res.json({ success: false, error: data.message || 'Mobile money initiation failed.' });
   } catch (err) {
@@ -1793,9 +1808,6 @@ app.post(`${BASE}/gateway/verify-card`, async (req, res) => {
     res.status(500).json({ success: false, verified: false, error: err.message });
   }
 });
-app.get(`${BASE}/gateway/verify/:txRef`, (req, res) => res.json({ verified: false, txRef: req.params.txRef, status: 'pending' }));
-app.post(`${BASE}/gateway/mobile-money`, (req, res) => res.json({ success: true, reference: `MM-${Date.now()}`, status: 'pending', message: 'Mobile money request initiated' }));
-app.post(`${BASE}/gateway/verify-card`, (req, res) => res.json({ success: false, message: 'Card verification unavailable' }));
 
 // ─── Email ────────────────────────────────────────────────────────────────────
 app.get(`${BASE}/email/config`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => { const key = process.env.RESEND_API_KEY || ''; res.json({ connected: !!key, keyPreview: key ? `re_...${key.slice(-6)}` : null, fromName: process.env.EMAIL_FROM_NAME || 'Build One Zambia', fromEmail: process.env.EMAIL_FROM_ADDRESS || 'noreply@bozplans.org', adminEmail: process.env.ADMIN_EMAIL || '', siteUrl: process.env.SITE_URL || 'https://www.bozplans.org', provider: 'Resend' }); });

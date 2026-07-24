@@ -421,7 +421,10 @@ export const gatewayApi = {
     customerEmail: string;
     customerPhone: string;
   }) =>
-    request<{ success: boolean; txRef: string; status: string; message: string; error?: string }>(
+    request<{
+      success: boolean; txRef: string; status: string; message: string; error?: string;
+      authorization?: { redirect?: string; mode?: string } | null;
+    }>(
       'POST', '/gateway/mobile-money', data
     ),
 
