@@ -454,11 +454,19 @@ app.post(`${BASE}/registrations/agent/:id/grant-login`, auth.requireAuth, auth.r
     const name = reg.fullName || reg.name || ((reg.firstName || '') + ' ' + (reg.lastName || '')).trim() || 'user';
     const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
     const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
-    const username = req.body.username || `agent_${safeName}_${suffix}`;
+    // Prefer the username already on this registration (set by
+    // createPendingAccount at submission time, when the applicant chose
+    // their own password) over recomputing one from scratch. Recomputing
+    // can drift from the original for reasons as small as a name field
+    // changing — auth.getUser() then finds nothing under the new guess,
+    // falls through to creating a *second* account for the same area, and
+    // the area-lock correctly (but confusingly) rejects it as already
+    // taken by the applicant's own real, existing account.
+    const username = reg.username || req.body.username || `agent_${safeName}_${suffix}`;
     const password = req.body.password || generatePassword();
     const role = registrations.AGENT_FORM_TIER_TO_ROLE[reg.role] || TYPE_ROLES.agent;
     const existingUser = auth.getUser(username);
-    if (existingUser) { await auth.resetPassword(existingUser.id, password); }
+    if (existingUser) { await auth.resetPassword(existingUser.id, password); await auth.activateUser(username); }
     else { await auth.registerUser({ username, role, name, email: reg.email || '', phone: reg.phone || reg.cellNumber || '', scopeId: reg.scopeId || '', scopeName: reg.scopeName || reg.pollingStationName || reg.ward || reg.constituency || reg.district || reg.province || 'National', active: true, registrationId: reg.id, registrationType: 'agent' }, password); }
     registrations.updateAgent(id, { status: reg.status === 'pending' ? 'approved' : reg.status, username, loginGranted: true, loginCreatedAt: new Date().toISOString(), loginGrantedBy: req.user?.username, pendingPassword: password });
     res.json({ success: true, credentials: { username, password, role, generatedAt: new Date().toISOString(), name, alreadyExists: !!existingUser }, message: `Login granted for ${name}` });

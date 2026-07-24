@@ -1705,14 +1705,29 @@ export interface AgentReg {
   nrcId: string;
   phone: string;
   email?: string;
+  // The unified application form spans 7 tiers (super_national/national/
+  // provincial/district/constituency/ward/agent) — role/roleLabel/scopeType/
+  // scopeId/scopeName describe which tier and which specific area was
+  // applied for. province/district/pollingStation are also still sent for
+  // display convenience but scopeName is the authoritative "where".
+  role?: string;
+  roleLabel?: string;
+  scopeType?: string;
+  scopeId?: string;
+  scopeName?: string;
   province: string;
-  district: string;
-  pollingStation: string;
+  district?: string;
+  constituency?: string;
+  ward?: string;
+  pollingStation?: string;
   status: RegStatus;
   submittedAt: string;
   reviewedAt?: string;
   reviewedBy?: string;
   notes?: string;
+  username?: string;
+  loginGranted?: boolean;
+  membershipNumber?: string;
 }
 
 export interface GeneratedCredentials {

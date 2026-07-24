@@ -491,9 +491,12 @@ function AgentDetail({ reg }: { reg: AgentReg }) {
           <Field label="Phone" value={reg.phone} icon={<Phone size={13} />} />
           <Field label="Email" value={reg.email} icon={<Mail size={13} />} />
           <Field label="NRC Number" value={reg.nrcId} icon={<CreditCard size={13} />} />
-          <Field label="Polling Station" value={reg.pollingStation} icon={<MapPin size={13} />} />
-          <Field label="Constituency" value={reg.constituency} />
-          <Field label="District" value={reg.district} />
+          <Field label="Position Applied For" value={reg.roleLabel || reg.role} icon={<CreditCard size={13} />} />
+          <Field label="Assigned Area" value={reg.scopeName} icon={<MapPin size={13} />} />
+          {reg.pollingStation && <Field label="Polling Station" value={reg.pollingStation} icon={<MapPin size={13} />} />}
+          {reg.ward && <Field label="Ward" value={reg.ward} />}
+          {reg.constituency && <Field label="Constituency" value={reg.constituency} />}
+          {reg.district && <Field label="District" value={reg.district} />}
           <Field label="Province" value={reg.province} />
           <Field label="Membership Number" value={reg.membershipNumber} icon={<CreditCard size={13} />} />
         </div>
@@ -613,7 +616,7 @@ function RegRow({
     type === 'member'       ? `${(reg as MemberReg).membershipType || 'Standard'} · ${(reg as MemberReg).province || ''}`
     : type === 'cooperative'  ? `${(reg as CoopReg).sector || ''} · ${(reg as CoopReg).district || ''}`
     : type === 'internship'   ? `${(reg as InternshipReg).university || ''} · Yr ${(reg as InternshipReg).yearOfStudy || '?'}`
-    : `${(reg as AgentReg).pollingStation || ''}`;
+    : `${(reg as AgentReg).roleLabel || 'Polling Agent'} · ${(reg as AgentReg).scopeName || (reg as AgentReg).pollingStation || ''}`;
 
   const hasSelfie = !!(reg as unknown as { hasSelfie?: boolean }).hasSelfie;
 
@@ -622,8 +625,13 @@ function RegRow({
     const creds = await onDecision(reg.id, status, note);
     if (creds) setFreshCreds(creds);
     if (status === 'approved') {
+      // If the applicant already chose their own password at submission
+      // time, a real account (and username) already exists on this
+      // registration — use it rather than guessing a new one, which the
+      // backend would ignore anyway but which looked confusingly wrong here.
+      const existingUsername = (reg as AgentReg).username;
       const rawName = (reg as any).fullName || (reg as any).name || (reg as any).cooperativeName || '';
-      const autoUser = rawName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 16) || ('user' + Date.now().toString().slice(-5));
+      const autoUser = existingUsername || rawName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 16) || ('user' + Date.now().toString().slice(-5));
       const autoPass = Math.random().toString(36).slice(2, 7).toUpperCase() + Math.floor(Math.random() * 90 + 10) + '!';
       setGrantUsername(autoUser); setGrantPassword(autoPass); setShowGrantLogin(true);
       setActionMsg('Approved — grant login credentials below.');
