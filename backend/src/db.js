@@ -51,7 +51,19 @@ async function initPostgres() {
   }
   try {
     const { default: pg } = await import('pg');
-    const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+    // Railway's internal database host (*.railway.internal) doesn't offer
+    // SSL on that private connection at all — it's already isolated inside
+    // Railway's network. Forcing ssl:{rejectUnauthorized:false} against a
+    // server that doesn't support SSL makes the connection fail outright
+    // (not just a warning), which silently sends everything back to the
+    // ephemeral file store even though DATABASE_URL is correctly set. Only
+    // use SSL for external hosts (public DATABASE_PUBLIC_URL, other
+    // providers), never for *.railway.internal.
+    const isInternalHost = /\.railway\.internal(:\d+)?/.test(process.env.DATABASE_URL);
+    const client = new pg.Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: isInternalHost ? false : { rejectUnauthorized: false },
+    });
     await client.connect();
 
     // Create table if not exists
@@ -91,6 +103,7 @@ async function initPostgres() {
     console.error('│ the next deploy/restart until this is fixed.                        │');
     console.error('│ Error: ' + String(err.message).slice(0, 60).padEnd(60) + '│');
     console.error('└──────────────────────────────────────────────────────────────────┘');
+    console.error('[db] Full connection error:', err.message);
   }
 }
 
