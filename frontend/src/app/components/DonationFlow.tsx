@@ -91,6 +91,20 @@ function formatExpiry(raw: string): string {
   return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d;
 }
 
+// The script tag gets injected on mount, but nothing guaranteed it had
+// actually finished loading by the time someone clicked through all 4
+// steps and hit Confirm — that used to be a single point-in-time check
+// that failed permanently if the script was even slightly slow. Polls for
+// up to 8 seconds instead of giving up after one look.
+async function waitForFlutterwave(maxWaitMs = 8000): Promise<boolean> {
+  const start = Date.now();
+  while (typeof window !== 'undefined' && !window.FlutterwaveCheckout) {
+    if (Date.now() - start > maxWaitMs) return false;
+    await new Promise(r => setTimeout(r, 150));
+  }
+  return true;
+}
+
 function displayAmount(s: State): string {
   return s.tier === 'custom' ? `K${s.custom || '0'}` : s.tier;
 }
@@ -306,8 +320,17 @@ export function DonationFlow() {
       const { donation } = await donationApi.submit({ name: s.name, email: s.email, amount: amountNum, method: 'card' });
       const donationId = (donation as { id: string }).id;
 
-      if (!gwPublicKey || !window.FlutterwaveCheckout) {
-        setSubmitError('Payment system is still loading — please wait a moment and try again.');
+      let publicKey = gwPublicKey;
+      if (!publicKey) {
+        try {
+          const cfg = await gatewayApi.config();
+          publicKey = cfg.publicKey || '';
+          setGwPublicKey(publicKey);
+        } catch { /* handled by the check below */ }
+      }
+      const scriptReady = await waitForFlutterwave();
+      if (!publicKey || !scriptReady || !window.FlutterwaveCheckout) {
+        setSubmitError('Payment system could not be reached. Please refresh the page and try again.');
         setProcessing(false);
         return;
       }

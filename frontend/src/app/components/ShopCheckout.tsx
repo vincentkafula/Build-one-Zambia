@@ -26,6 +26,18 @@ declare global {
   }
 }
 
+// A single point-in-time check right when the customer clicks "Pay" can
+// fail just because the script was a moment slow to load, even though it
+// finishes loading a second later. Polls for up to 8 seconds instead.
+async function waitForFlutterwave(maxWaitMs = 8000): Promise<boolean> {
+  const start = Date.now();
+  while (typeof window !== 'undefined' && !window.FlutterwaveCheckout) {
+    if (Date.now() - start > maxWaitMs) return false;
+    await new Promise(r => setTimeout(r, 150));
+  }
+  return true;
+}
+
 const s = {
   overlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.88)', zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end' } as CSSProperties,
   drawer: { backgroundColor: '#0d0d0d', width: '100%', maxWidth: '520px', height: '100vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', borderLeft: '1px solid #1f1f1f', fontFamily: 'Open Sans, sans-serif', color: '#fff' } as CSSProperties,
@@ -215,8 +227,13 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove }: Props) {
   // ── Card payment via Flutterwave inline popup ──────────────────────────────
 
   const payCard = async (oId: string) => {
-    if (!gwConfig || !window.FlutterwaveCheckout) {
-      setError('Payment system loading — please wait a moment and try again.');
+    let cfg = gwConfig;
+    if (!cfg) {
+      try { cfg = await gatewayApi.config(); setGwConfig(cfg); } catch { /* handled below */ }
+    }
+    const scriptReady = await waitForFlutterwave();
+    if (!cfg || !scriptReady || !window.FlutterwaveCheckout) {
+      setError('Payment system could not be reached. Please refresh the page and try again.');
       setProcessing(false);
       return;
     }
@@ -225,10 +242,10 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove }: Props) {
     setTxRef(ref);
 
     flwModal.current = window.FlutterwaveCheckout({
-      public_key: gwConfig.publicKey,
+      public_key: cfg.publicKey,
       tx_ref: ref,
       amount: total,
-      currency: gwConfig.currency,
+      currency: cfg.currency,
       payment_options: 'card',
       customer: {
         email: email || `order+${oId}@buildonezambia.com`,
