@@ -10,6 +10,30 @@ function uid(prefix) { return `${prefix}_${Date.now().toString(36)}_${randomUUID
 
 const TYPE_ROLE = { member: 'member', agent: 'polling_agent', cooperative: 'cooperative' };
 
+// The public application form (PollingAgentRegistration.tsx) is actually
+// unified across all 7 election-role tiers, not just polling agents, but
+// every submission posts through /registrations/agent and calls
+// createPendingAccount('agent', ...) regardless of which tier was chosen.
+// This maps the tier the applicant actually selected (reg.role — one of
+// super_national/national/provincial/district/constituency/ward/agent) to
+// the real backend role name used everywhere else in the system (matching
+// ElectionUserManager.tsx / auth.js's AREA_SCOPED_ROLES). Without this,
+// every applicant — even a District or Ward Manager applicant — ended up
+// with a 'polling_agent' account once approved, landing them in the wrong
+// dashboard with the wrong permissions. There's no distinct backend role
+// for the 'Super National Manager' tier (limit 1) since super_admin is an
+// env-configured account, not a normal registerable one — it collapses
+// into national_manager like the regular National Manager tier does.
+export const AGENT_FORM_TIER_TO_ROLE = {
+  super_national: 'national_manager',
+  national: 'national_manager',
+  provincial: 'provincial_manager',
+  district: 'district_manager',
+  constituency: 'constituency_manager',
+  ward: 'ward_manager',
+  agent: 'polling_agent',
+};
+
 // Applicant chose their own password + PIN on the registration form. Create
 // the login account right away, but inactive — auth.loginUser already
 // refuses inactive accounts, so nothing works until an admin approves the
@@ -23,7 +47,7 @@ export async function createPendingAccount(type, reg) {
   const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
   const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
   const username = `${type}_${safeName}_${suffix}`;
-  const role = TYPE_ROLE[type] || 'member';
+  const role = (type === 'agent' && AGENT_FORM_TIER_TO_ROLE[reg.role]) || TYPE_ROLE[type] || 'member';
   try {
     if (!auth.getUser(username)) {
       await auth.registerUser({
@@ -195,12 +219,27 @@ export function registerAgent(input) {
 // up. This is what actually prevents two people applying for the same single
 // position, independent of and in addition to the account-creation-time lock
 // in auth.registerUser().
+// National-tier roles (national/super_national) aren't tied to a specific
+// province/district/etc, so every applicant for that tier shares the same
+// fixed scopeId ('national') — unlike ward/constituency/district/province/
+// agent, where scopeId already uniquely identifies one specific area with
+// exactly one slot. A single-match check would wrongly cap the whole
+// 10-seat National Manager tier at 1 applicant, so these two compare
+// against their real capacity instead.
+const NATIONAL_TIER_ROLES = new Set(['national', 'super_national']);
+
 export function isRoleScopeTaken(role, scopeId) {
   if (!scopeId) return false;
-  return getAgentIndex()
+  const matching = getAgentIndex()
     .map(id => kv.get(`boz:reg:agent:${id}`))
     .filter(Boolean)
-    .some(a => a.role === role && a.scopeId === scopeId && a.status !== 'rejected' && a.status !== 'withdrawn');
+    .filter(a => a.role === role && a.scopeId === scopeId && a.status !== 'rejected' && a.status !== 'withdrawn');
+
+  if (NATIONAL_TIER_ROLES.has(role)) {
+    const limit = ROLE_CAPACITY_LIMITS[role] || 1;
+    return matching.length >= limit;
+  }
+  return matching.length > 0;
 }
 
 // Every scopeId already taken for a given role — used to grey out/mark

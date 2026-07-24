@@ -433,7 +433,7 @@ app.patch(`${BASE}/registrations/agent/:id/status`, auth.requireAuth, auth.requi
         const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
         const username = `agent_${safeName}_${suffix}`;
         const password = generatePassword();
-        const role = reg.role && ['ward_manager', 'constituency_manager', 'district_manager', 'provincial_manager', 'national_manager', 'polling_agent'].includes(reg.role) ? reg.role : TYPE_ROLES.agent;
+        const role = registrations.AGENT_FORM_TIER_TO_ROLE[reg.role] || TYPE_ROLES.agent;
         if (!auth.getUser(username)) {
           await auth.registerUser({ username, role, name, email: reg.email || '', phone: reg.phone || reg.cellNumber || '', scopeId: reg.scopeId || '', scopeName: reg.scopeName || reg.pollingStationName || reg.ward || reg.constituency || reg.district || reg.province || 'National', active: true, registrationId: reg.id, registrationType: 'agent' }, password);
         }
@@ -456,7 +456,7 @@ app.post(`${BASE}/registrations/agent/:id/grant-login`, auth.requireAuth, auth.r
     const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
     const username = req.body.username || `agent_${safeName}_${suffix}`;
     const password = req.body.password || generatePassword();
-    const role = reg.role && ['ward_manager', 'constituency_manager', 'district_manager', 'provincial_manager', 'national_manager', 'polling_agent'].includes(reg.role) ? reg.role : TYPE_ROLES.agent;
+    const role = registrations.AGENT_FORM_TIER_TO_ROLE[reg.role] || TYPE_ROLES.agent;
     const existingUser = auth.getUser(username);
     if (existingUser) { await auth.resetPassword(existingUser.id, password); }
     else { await auth.registerUser({ username, role, name, email: reg.email || '', phone: reg.phone || reg.cellNumber || '', scopeId: reg.scopeId || '', scopeName: reg.scopeName || reg.pollingStationName || reg.ward || reg.constituency || reg.district || reg.province || 'National', active: true, registrationId: reg.id, registrationType: 'agent' }, password); }
