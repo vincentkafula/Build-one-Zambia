@@ -91,6 +91,20 @@ export function requireAuth(req, res, next) {
   if (!token) return res.status(401).json({ error: 'Unauthorised — no token' });
   const payload = verifyToken(token);
   if (!payload) return res.status(401).json({ error: 'Unauthorised — invalid or expired token' });
+
+  // A JWT can be validly signed and unexpired yet belong to an account
+  // that's still pending approval (see loginUser above, which now issues
+  // a token for pending accounts too) or has since been deactivated. Only
+  // the JWT payload was ever checked here before, so a pending account's
+  // token would otherwise carry full real access to its role's
+  // permissions — re-check the live record on every request instead.
+  // The env-based super_admin shortcut has no backing user record, so
+  // this naturally doesn't apply to it.
+  const liveUser = getUser(payload.username);
+  if (liveUser && liveUser.active === false) {
+    return res.status(403).json({ error: 'Your account is pending admin approval.', pending: true });
+  }
+
   req.user = payload;
   next();
 }
@@ -139,13 +153,24 @@ export async function loginUser(username, password) {
   }
 
   const user = kv.get(`user:${username}`);
-  if (!user || !user.active) return null;
+  if (!user) return null;
 
   const storedHash = kv.get(`password:${username}`);
   if (!storedHash) return null;
 
   const valid = await verifyPassword(password, storedHash);
   if (!valid) return null;
+
+  // Correct credentials, but the application hasn't been approved yet.
+  // Previously this returned null here — identical to a wrong password —
+  // so applicants got a confusing "Invalid credentials" error even with
+  // the exact password they just set. Now login succeeds and returns the
+  // account as-is (active: false) so the frontend can show a clear
+  // "pending approval" screen instead. This does NOT grant real access:
+  // requireAuth() below re-checks the live active status on every
+  // subsequent request, so a pending account's token can't actually be
+  // used to do anything until an admin approves it.
+  if (!user.active) return user;
 
   // Update lastLogin
   kv.set(`user:${username}`, { ...user, lastLogin: new Date().toISOString() });

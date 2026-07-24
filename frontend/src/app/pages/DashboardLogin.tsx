@@ -19,7 +19,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   User, Building2, Building, GraduationCap, BarChart2, ShieldCheck,
-  ArrowRight, Lock, Eye, EyeOff, Zap, ChevronLeft,
+  ArrowRight, Lock, Eye, EyeOff, Zap, ChevronLeft, Clock,
 } from 'lucide-react';
 import { API_BASE } from '@/app/lib/apiBase';
 
@@ -116,6 +116,7 @@ export default function DashboardLogin() {
   const [showPass, setShowPass] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [pendingAccount, setPendingAccount] = useState<null | { name: string; role: string; scopeName?: string; username: string }>(null);
 
   const selected = DASHBOARD_TYPES.find(d => d.id === selectedId);
   const isElectionLogin   = selectedId === 'election';
@@ -158,9 +159,24 @@ export default function DashboardLogin() {
           if (res.ok && data.token) {
             const role: string = data.user?.role ?? '';
 
+            // Correct credentials, but the application hasn't been approved
+            // by an admin yet — show a clear status screen instead of either
+            // blocking with a confusing "Invalid credentials" error or (far
+            // worse) actually routing them into a working dashboard.
+            const isPending = data.user?.active === false;
+            if (isPending) {
+              setPendingAccount({
+                name: data.user.name,
+                role: data.user.role,
+                scopeName: data.user.scopeName ?? data.user.pollingStationName,
+                username: data.user.username,
+              });
+              backendSuccess = true;
+            }
+
             // Election dashboard: accept any election-tier role, route
             // automatically based on what the super admin assigned.
-            if (isElectionLogin) {
+            if (isElectionLogin && !isPending) {
               if (!ELECTION_BACKEND_ROLES.includes(role)) {
                 throw new Error(`Your account role "${role}" does not have access to the Election Dashboard. Please select the correct dashboard above.`);
               }
@@ -178,7 +194,7 @@ export default function DashboardLogin() {
             }
 
             // Management dashboard: requires elevated/admin-tier role.
-            if (isManagementLogin) {
+            if (isManagementLogin && !isPending) {
               const MANAGEMENT_ROLES = ['super_admin', 'admin', 'national_manager', 'manager'];
               if (!MANAGEMENT_ROLES.includes(role)) {
                 throw new Error(`Your account role "${role}" does not have access to the Management Dashboard.`);
@@ -191,7 +207,7 @@ export default function DashboardLogin() {
 
             // Member Portal: requires the member role granted on approval
             // (or an admin account, for support/testing access).
-            if (isMemberLogin) {
+            if (isMemberLogin && !isPending) {
               const MEMBER_ROLES = ['member', 'super_admin', 'admin'];
               if (!MEMBER_ROLES.includes(role)) {
                 throw new Error(`Your account role "${role}" does not have access to the Member Portal. Please select the correct dashboard above.`);
@@ -306,7 +322,52 @@ export default function DashboardLogin() {
           </p>
         </div>
 
-        {!selectedId ? (
+        {pendingAccount ? (
+          /* ── Pending approval status screen ── */
+          <div className="max-w-md mx-auto text-center rounded-2xl p-8" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5" style={{ backgroundColor: 'rgba(245,158,11,0.15)' }}>
+              <Clock size={26} style={{ color: '#f59e0b' }} />
+            </div>
+            <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.5rem', color: '#fff', letterSpacing: '0.02em' }}>
+              Application Pending Approval
+            </h2>
+            <p className="mt-3 mb-6" style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', lineHeight: 1.6 }}>
+              Your login was successful, but your application hasn't been reviewed by an admin yet. You'll be able to
+              access your dashboard as soon as it's approved.
+            </p>
+            <div className="text-left rounded-xl p-4 mb-6 space-y-2" style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="flex justify-between text-sm">
+                <span style={{ color: 'rgba(255,255,255,0.4)' }}>Name</span>
+                <span style={{ color: '#fff' }}>{pendingAccount.name}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span style={{ color: 'rgba(255,255,255,0.4)' }}>Role</span>
+                <span style={{ color: '#fff' }}>{pendingAccount.role.replace(/_/g, ' ')}</span>
+              </div>
+              {pendingAccount.scopeName && (
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'rgba(255,255,255,0.4)' }}>Assigned Area</span>
+                  <span style={{ color: '#fff' }}>{pendingAccount.scopeName}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm">
+                <span style={{ color: 'rgba(255,255,255,0.4)' }}>Username</span>
+                <span style={{ color: '#fff' }}>{pendingAccount.username}</span>
+              </div>
+              <div className="flex justify-between text-sm pt-2 mt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <span style={{ color: 'rgba(255,255,255,0.4)' }}>Status</span>
+                <span style={{ color: '#f59e0b', fontWeight: 600 }}>Awaiting Approval</span>
+              </div>
+            </div>
+            <button
+              onClick={() => { setPendingAccount(null); setUsername(''); setPassword(''); setSelectedId(null); }}
+              className="w-full py-3 rounded-lg font-semibold text-sm transition-colors"
+              style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
+            >
+              Back to Login
+            </button>
+          </div>
+        ) : !selectedId ? (
           /* ── Dashboard selection grid ── */
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
