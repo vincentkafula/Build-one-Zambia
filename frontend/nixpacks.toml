@@ -11,4 +11,4 @@ cmds = ["npm run build"]
 cmd = "node server.js"
 
 [variables]
-NIXPACKS_CACHE_KEY = "redeploy-candidate-cards-fix-20260723"
+NIXPACKS_CACHE_KEY = "redeploy-autotable-fix-20260724"
