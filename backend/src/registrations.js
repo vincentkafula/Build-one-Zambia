@@ -32,7 +32,8 @@ export async function createPendingAccount(type, reg) {
         name,
         email: reg.email || '',
         phone: reg.phone || reg.cellNumber || '',
-        scopeName: reg.pollingStation || reg.ward || reg.constituency || reg.district || reg.province || 'National',
+        scopeId: reg.scopeId || reg.pollingStationId || '',
+        scopeName: reg.scopeName || reg.pollingStation || reg.ward || reg.constituency || reg.district || reg.province || 'National',
         active: false,
         registrationId: reg.id,
         registrationType: type,
@@ -186,6 +187,51 @@ export function registerAgent(input) {
   kv.set(`boz:reg:agent:${id}`, reg);
   kv.set('boz:reg:agent:index', [...getAgentIndex(), id]);
   return reg;
+}
+
+// A role+area combination (e.g. "polling_agent" at "Mukwas Primary School-12",
+// or "ward_manager" at "Kanyama Ward") is taken once someone has a pending or
+// approved application for it — rejected/withdrawn applications free it back
+// up. This is what actually prevents two people applying for the same single
+// position, independent of and in addition to the account-creation-time lock
+// in auth.registerUser().
+export function isRoleScopeTaken(role, scopeId) {
+  if (!scopeId) return false;
+  return getAgentIndex()
+    .map(id => kv.get(`boz:reg:agent:${id}`))
+    .filter(Boolean)
+    .some(a => a.role === role && a.scopeId === scopeId && a.status !== 'rejected' && a.status !== 'withdrawn');
+}
+
+// Every scopeId already taken for a given role — used to grey out/mark
+// already-applied-for options (e.g. polling stations within a ward) in the
+// application form before the applicant even picks one.
+export function takenScopeIdsForRole(role) {
+  const taken = new Set();
+  for (const id of getAgentIndex()) {
+    const a = kv.get(`boz:reg:agent:${id}`);
+    if (a && a.role === role && a.status !== 'rejected' && a.status !== 'withdrawn' && a.scopeId) taken.add(a.scopeId);
+  }
+  return taken;
+}
+
+const ROLE_CAPACITY_LIMITS = {
+  super_national: 1, national: 10, provincial: 10, district: 116,
+  constituency: 226, ward: 1858, agent: 13529,
+};
+
+export function getRoleCapacity() {
+  const counts = {};
+  for (const id of getAgentIndex()) {
+    const a = kv.get(`boz:reg:agent:${id}`);
+    if (a && a.status !== 'rejected' && a.status !== 'withdrawn') counts[a.role] = (counts[a.role] || 0) + 1;
+  }
+  const result = {};
+  for (const [role, limit] of Object.entries(ROLE_CAPACITY_LIMITS)) {
+    const current = counts[role] || 0;
+    result[role] = { limit, current, remaining: Math.max(0, limit - current), full: current >= limit };
+  }
+  return result;
 }
 
 export function listAgents(filters = {}) {

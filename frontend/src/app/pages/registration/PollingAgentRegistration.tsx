@@ -253,6 +253,11 @@ export default function PollingAgentRegistration() {
   const [selectedRole, setSelectedRole] = useState<RoleKey | ''>('');
   const [capacity, setCapacity] = useState<Record<string, { limit: number; current: number; remaining: number; full: boolean }>>({});
   const [capacityLoading, setCapacityLoading] = useState(false);
+  // scopeIds that already have a pending/approved application for the
+  // currently selected role — e.g. which specific polling stations are
+  // already taken — so they can be marked/disabled before the applicant
+  // even picks one, instead of only finding out on submit.
+  const [takenScopeIds, setTakenScopeIds] = useState<Set<string>>(new Set());
 
   // Load capacity on mount
   useEffect(() => {
@@ -268,6 +273,15 @@ export default function PollingAgentRegistration() {
       })
       .finally(() => setCapacityLoading(false));
   }, []);
+
+  // Load which positions are already taken whenever the selected role changes
+  useEffect(() => {
+    if (!selectedRole) { setTakenScopeIds(new Set()); return; }
+    safeFetch(`${BACKEND}/registrations/agent/taken?role=${selectedRole}`)
+      .then(r => r.json())
+      .then(data => setTakenScopeIds(new Set(data.taken || [])))
+      .catch(() => setTakenScopeIds(new Set()));
+  }, [selectedRole]);
 
   // Step 3 — Personal
   const [personal, setPersonal] = useState({
@@ -329,13 +343,24 @@ export default function PollingAgentRegistration() {
   function areaValid(): boolean {
     if (!selectedRole) return false;
     const scope = roleConfig?.scopeType;
-    if (scope === 'national') return true;
-    if (scope === 'province') return !!loc.provinceId;
-    if (scope === 'district') return !!(loc.provinceId && loc.districtId);
-    if (scope === 'constituency') return !!(loc.provinceId && loc.districtId && loc.constituencyId);
-    if (scope === 'ward') return !!(loc.provinceId && loc.districtId && loc.constituencyId && loc.wardId);
-    if (scope === 'polling_station') return !!(loc.provinceId && loc.districtId && loc.constituencyId && loc.wardId && loc.pollingStationId);
-    return false;
+    let ok: boolean;
+    if (scope === 'national') ok = true;
+    else if (scope === 'province') ok = !!loc.provinceId;
+    else if (scope === 'district') ok = !!(loc.provinceId && loc.districtId);
+    else if (scope === 'constituency') ok = !!(loc.provinceId && loc.districtId && loc.constituencyId);
+    else if (scope === 'ward') ok = !!(loc.provinceId && loc.districtId && loc.constituencyId && loc.wardId);
+    else if (scope === 'polling_station') ok = !!(loc.provinceId && loc.districtId && loc.constituencyId && loc.wardId && loc.pollingStationId);
+    else ok = false;
+    if (!ok) return false;
+    // Whatever the deepest selected id is for this role's scope depth —
+    // block proceeding if someone's already applied for that exact position.
+    const chosenScopeId = scope === 'national' ? 'national'
+      : scope === 'province' ? loc.provinceId
+      : scope === 'district' ? loc.districtId
+      : scope === 'constituency' ? loc.constituencyId
+      : scope === 'ward' ? loc.wardId
+      : loc.pollingStationId;
+    return !takenScopeIds.has(chosenScopeId);
   }
 
   function canAdvance(): boolean {
@@ -796,9 +821,16 @@ export default function PollingAgentRegistration() {
                   <SelectField value={loc.pollingStationId} onChange={setPollingStation} disabled={!selWard}>
                     <option value="">— {selWard ? 'Select Polling Station' : 'Select Ward first'} —</option>
                     {selWard?.pollingStations.map(s => (
-                      <option key={s.id} value={s.id}>{s.name} ({s.registeredVoters.toLocaleString()} voters)</option>
+                      <option key={s.id} value={s.id} disabled={takenScopeIds.has(s.id)}>
+                        {s.name} ({s.registeredVoters.toLocaleString()} voters){takenScopeIds.has(s.id) ? ' — Already Applied' : ''}
+                      </option>
                     ))}
                   </SelectField>
+                  {loc.pollingStationId && takenScopeIds.has(loc.pollingStationId) && (
+                    <p className="text-xs text-red-600 mt-1.5">
+                      An application has already been submitted for this polling station. Please choose a different one.
+                    </p>
+                  )}
                 </Field>
                 )}
 

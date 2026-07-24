@@ -300,6 +300,56 @@ app.get(`${BASE}/register/interns`, auth.requireAuth, auth.requireRole('admin', 
 app.post(`${BASE}/register/agent`, (req, res) => { try { const registration = registrations.registerAgent(req.body); setImmediate(() => notifyNewApplication('agent', registration)); res.json({ registration }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/register/agents`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ agents: registrations.listAgents() }));
 app.delete(`${BASE}/register/agent/:id`, auth.requireAuth, auth.requireRole('super_admin'), (req, res) => { const ok = registrations.deleteAgent(req.params.id); if (!ok) return res.status(404).json({ error: 'Agent registration not found' }); res.json({ success: true }); });
+
+// ─── Public application form (all 7 tiers: national through polling_station) ─
+// This is the endpoint frontend/src/app/pages/registration/PollingAgentRegistration.tsx
+// actually calls. It previously didn't exist at all — the form only had a
+// matching GET .../capacity and a permanently-stubbed GET .../validate,
+// meaning every application silently failed to reach the server and was
+// quietly queued in the applicant's own browser localStorage instead,
+// looking like a successful submission with nothing ever really submitted.
+app.post(`${BASE}/registrations/agent`, async (req, res) => {
+  try {
+    const { role, scopeId, scopeName } = req.body;
+    if (!role || !scopeId) return res.status(400).json({ error: 'role and scopeId are required' });
+
+    // The actual fix for "an applicant must only apply if no one else has
+    // applied for that polling station" — checked per role+scope, not as a
+    // single national aggregate. A pending OR approved application for this
+    // exact position blocks further applications; a rejected/withdrawn one
+    // frees it back up.
+    if (registrations.isRoleScopeTaken(role, scopeId)) {
+      return res.status(409).json({
+        error: `An application has already been submitted for ${scopeName || 'this position'}. Please choose a different position, or contact BOZ if you believe this is an error.`,
+      });
+    }
+
+    const registration = registrations.registerAgent(req.body);
+    const withAccount = await registrations.createPendingAccount('agent', registration);
+    setImmediate(() => notifyNewApplication('agent', withAccount));
+    res.json({ registration: withAccount });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.get(`${BASE}/registrations/agent/capacity`, (req, res) => res.json({ capacity: registrations.getRoleCapacity() }));
+
+// Which scopeIds (e.g. which polling stations within a ward) are already
+// taken for a given role, so the form can grey them out before the
+// applicant even picks one instead of only finding out on submit.
+app.get(`${BASE}/registrations/agent/taken`, (req, res) => {
+  const role = req.query.role;
+  if (!role) return res.status(400).json({ error: 'role is required' });
+  res.json({ taken: Array.from(registrations.takenScopeIdsForRole(role)) });
+});
+
+app.get(`${BASE}/registrations/agent/validate`, (req, res) => {
+  const { role, scopeId } = req.query;
+  if (!role || !scopeId) return res.json({ valid: false, message: 'role and scopeId are required' });
+  const taken = registrations.isRoleScopeTaken(role, scopeId);
+  res.json({ valid: !taken, message: taken ? 'An application has already been submitted for this position.' : 'Position is available.' });
+});
 app.post(`${BASE}/register/cooperative`, (req, res) => { try { const registration = registrations.registerCoop(req.body); setImmediate(() => notifyNewApplication('cooperative', registration)); res.json({ registration }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/register/coops`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ coops: registrations.listCoops ? registrations.listCoops() : [] }));
 
@@ -1377,8 +1427,6 @@ app.get(`${BASE}/registrations/member/:id/credentials`, (req, res) => {
 });
 
 // Registration extras
-app.get(`${BASE}/registrations/agent/capacity`, (req, res) => { const agents = registrations.listAgents({}); res.json({ capacity: { total: 500, registered: agents.length, remaining: Math.max(0, 500 - agents.length), open: agents.length < 500 } }); });
-app.get(`${BASE}/registrations/agent/validate`, (req, res) => res.json({ valid: false, message: 'No registration found' }));
 app.get(`${BASE}/registrations/stats`, auth.requireAuth, (req, res) => { const agents = registrations.listAgents({}); const members = registrations.listMembers({}); const interns = registrations.listInterns({}); const coops = registrations.listCoops ? registrations.listCoops({}) : []; const all = [...agents, ...members, ...interns, ...coops]; res.json({ stats: { total: all.length, agent: agents.length, member: members.length, internship: interns.length, cooperative: coops.length, pending: all.filter(r => r.status === 'pending').length, approved: all.filter(r => r.status === 'approved').length, rejected: all.filter(r => r.status === 'rejected').length } }); });
 app.get(`${BASE}/registrations/validate-membership`, auth.requireAuth, (req, res) => { const m = registrations.getMemberByMembershipNumber(req.query.number); if (!m) return res.json({ valid: false, error: 'Not found' }); res.json({ valid: true, fullName: `${m.firstName || ''} ${m.lastName || ''}`.trim(), membershipNumber: m.membershipNumber, status: m.status }); });
 app.post(`${BASE}/registrations/validate-memberships`, auth.requireAuth, (req, res) => { const { numbers = [] } = req.body; const results2 = {}; let invalidCount = 0; for (const num of numbers) { const m = registrations.getMemberByMembershipNumber(num); if (m) results2[num] = { valid: true, fullName: `${m.firstName || ''} ${m.lastName || ''}`.trim() }; else { results2[num] = { valid: false, error: 'Not found' }; invalidCount++; } } res.json({ results: results2, invalidCount }); });
