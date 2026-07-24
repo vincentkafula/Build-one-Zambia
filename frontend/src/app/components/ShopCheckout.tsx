@@ -114,6 +114,7 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove }: Props) {
   const [pollMsg, setPollMsg]         = useState('');
   const [gwConfig, setGwConfig]       = useState<GatewayConfig | null>(null);
   const [flwLoaded, setFlwLoaded]     = useState(false);
+  const [flwScriptFailed, setFlwScriptFailed] = useState(false);
 
   const pollRef   = useRef<ReturnType<typeof setInterval> | null>(null);
   const orderId   = useRef('');
@@ -128,7 +129,7 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove }: Props) {
     script.id = 'flw-script';
     script.src = 'https://checkout.flutterwave.com/v3.js';
     script.onload = () => setFlwLoaded(true);
-    script.onerror = () => console.warn('Flutterwave script failed to load');
+    script.onerror = () => setFlwScriptFailed(true);
     document.head.appendChild(script);
   }, []);
 
@@ -228,12 +229,19 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove }: Props) {
 
   const payCard = async (oId: string) => {
     let cfg = gwConfig;
+    let configFailed = false;
     if (!cfg) {
-      try { cfg = await gatewayApi.config(); setGwConfig(cfg); } catch { /* handled below */ }
+      try { cfg = await gatewayApi.config(); setGwConfig(cfg); if (!cfg?.publicKey) configFailed = true; } catch { configFailed = true; }
     }
-    const scriptReady = await waitForFlutterwave();
-    if (!cfg || !scriptReady || !window.FlutterwaveCheckout) {
-      setError('Payment system could not be reached. Please refresh the page and try again.');
+    const scriptReady = cfg ? await waitForFlutterwave() : false;
+
+    if (configFailed || !cfg) {
+      setError('Could not reach BOZ\'s payment configuration. Please check your internet connection and try again.');
+      setProcessing(false);
+      return;
+    }
+    if (flwScriptFailed || !scriptReady || !window.FlutterwaveCheckout) {
+      setError('The secure payment widget from Flutterwave could not load. This is often caused by an ad blocker, privacy extension, or VPN blocking checkout.flutterwave.com — try disabling it or using a different browser, then try again.');
       setProcessing(false);
       return;
     }

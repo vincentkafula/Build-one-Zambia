@@ -278,12 +278,14 @@ export function DonationFlow() {
   // never in this form.
   const flwModal = useRef<{ close: () => void } | null>(null);
   const [gwPublicKey, setGwPublicKey] = useState('');
+  const [flwScriptFailed, setFlwScriptFailed] = useState(false);
   useEffect(() => {
     gatewayApi.config().then(cfg => setGwPublicKey(cfg.publicKey || '')).catch(() => {});
     if (document.querySelector('script[src*="checkout.flutterwave.com"]')) return;
     const script = document.createElement('script');
     script.src = 'https://checkout.flutterwave.com/v3.js';
     script.async = true;
+    script.onerror = () => setFlwScriptFailed(true);
     document.body.appendChild(script);
   }, []);
 
@@ -321,16 +323,24 @@ export function DonationFlow() {
       const donationId = (donation as { id: string }).id;
 
       let publicKey = gwPublicKey;
+      let configFailed = false;
       if (!publicKey) {
         try {
           const cfg = await gatewayApi.config();
           publicKey = cfg.publicKey || '';
           setGwPublicKey(publicKey);
-        } catch { /* handled by the check below */ }
+          if (!publicKey) configFailed = true;
+        } catch { configFailed = true; }
       }
-      const scriptReady = await waitForFlutterwave();
-      if (!publicKey || !scriptReady || !window.FlutterwaveCheckout) {
-        setSubmitError('Payment system could not be reached. Please refresh the page and try again.');
+      const scriptReady = publicKey ? await waitForFlutterwave() : false;
+
+      if (configFailed || !publicKey) {
+        setSubmitError('Could not reach BOZ\'s payment configuration. Please check your internet connection and try again.');
+        setProcessing(false);
+        return;
+      }
+      if (flwScriptFailed || !scriptReady || !window.FlutterwaveCheckout) {
+        setSubmitError('The secure payment widget from Flutterwave could not load. This is often caused by an ad blocker, privacy extension, or VPN blocking checkout.flutterwave.com — try disabling it or using a different browser, then try again.');
         setProcessing(false);
         return;
       }
