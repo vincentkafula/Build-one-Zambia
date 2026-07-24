@@ -1203,6 +1203,9 @@ export const newsApi = {
   unpublish: (id: string) =>
     request<{ success: boolean; post: Post }>('PATCH', `/news/posts/${id}/unpublish`, {}, true),
 
+  restore: (id: string) =>
+    request<{ success: boolean; post: Post }>('PATCH', `/news/posts/${id}/restore`, {}, true),
+
   archivePost: (id: string) =>
     request<{ success: boolean }>('DELETE', `/news/posts/${id}`, undefined, true),
 

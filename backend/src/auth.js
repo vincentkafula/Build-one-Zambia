@@ -7,7 +7,24 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { kv } from './db.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'boz-jwt-secret-change-in-production-2024';
+// SECURITY: never fall back to a hardcoded secret — this repo is public on
+// GitHub, so any default string here is known to anyone who reads the
+// source and can be used to forge valid session tokens for ANY role,
+// including super_admin. If JWT_SECRET isn't set, generate a random one for
+// this process instead (sessions won't survive a restart, but that's far
+// safer than a guessable, publicly-known secret signing live election data).
+function resolveJwtSecret() {
+  if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+  const generated = crypto.randomBytes(48).toString('hex');
+  console.error('┌──────────────────────────────────────────────────────────────────┐');
+  console.error('│ [auth] SECURITY WARNING: JWT_SECRET is not set.                     │');
+  console.error('│ Generated a random secret for THIS PROCESS ONLY — every existing    │');
+  console.error('│ login session will be invalidated on the next restart/deploy.       │');
+  console.error('│ Set a strong, permanent JWT_SECRET on this Railway service now.      │');
+  console.error('└──────────────────────────────────────────────────────────────────┘');
+  return generated;
+}
+const JWT_SECRET = resolveJwtSecret();
 const SESSION_TTL = 24 * 60 * 60; // 24 hours in seconds
 
 // ─── Password Hashing (PBKDF2-SHA256, 310,000 iterations) ──────────────────
@@ -90,12 +107,27 @@ export function requireRole(...roles) {
 
 // ─── User CRUD ──────────────────────────────────────────────────────────────
 
+// SECURITY: same reasoning as JWT_SECRET above — this repo is public, so a
+// hardcoded default admin password here is a published credential. If
+// ADMIN_PASSWORD isn't set, disable this shortcut login entirely rather than
+// silently accepting a known password for the highest-privilege account in
+// the system.
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'superadmin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Admin@BOZ2024';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || null;
+if (!ADMIN_PASSWORD) {
+  console.error('┌──────────────────────────────────────────────────────────────────┐');
+  console.error('│ [auth] SECURITY WARNING: ADMIN_PASSWORD is not set.                 │');
+  console.error(`│ The built-in super_admin shortcut login ('${ADMIN_USERNAME}') is DISABLED  │`);
+  console.error('│ until a strong ADMIN_PASSWORD is set on this service.               │');
+  console.error('│ Manage election-staff accounts via Election Users instead, or set   │');
+  console.error('│ ADMIN_PASSWORD now if you need this login.                          │');
+  console.error('└──────────────────────────────────────────────────────────────────┘');
+}
 
 export async function loginUser(username, password) {
-  // Super-admin shortcut (env-based)
-  if (username === ADMIN_USERNAME) {
+  // Super-admin shortcut (env-based) — only active when ADMIN_PASSWORD is
+  // explicitly configured; see warning above.
+  if (ADMIN_PASSWORD && username === ADMIN_USERNAME) {
     if (password !== ADMIN_PASSWORD) return null;
     return {
       username: ADMIN_USERNAME,

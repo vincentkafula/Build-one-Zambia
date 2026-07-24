@@ -393,7 +393,7 @@ function PostRow({ post, onEdit, onChangeImage, onAction, actionLoading }: {
   post: PostListItem;
   onEdit: () => void;
   onChangeImage: () => void;
-  onAction: (action: 'publish' | 'unpublish' | 'archive' | 'delete') => void;
+  onAction: (action: 'publish' | 'unpublish' | 'archive' | 'restore' | 'delete') => void;
   actionLoading: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -448,6 +448,7 @@ function PostRow({ post, onEdit, onChangeImage, onAction, actionLoading }: {
           {post.status === 'draft'     && <button onClick={() => onAction('publish')}   disabled={actionLoading} title="Publish"   style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#10b981', padding: '6px' }}><Globe size={15} /></button>}
           {post.status === 'published' && <button onClick={() => onAction('unpublish')} disabled={actionLoading} title="Unpublish" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f59e0b', padding: '6px' }}><EyeOff size={15} /></button>}
           {post.status !== 'archived'  && <button onClick={() => onAction('archive')}   disabled={actionLoading} title="Archive"  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: '6px' }}><Archive size={15} /></button>}
+          {post.status === 'archived' && <button onClick={() => onAction('restore')}   disabled={actionLoading} title="Restore"  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3b82f6', padding: '6px' }}><Clock size={15} /></button>}
           <button onClick={() => setExpanded(v => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: '6px' }}>
             {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
           </button>
@@ -521,13 +522,14 @@ export function NewsManager() {
     }
   };
 
-  const handleAction = async (post: PostListItem, action: 'publish' | 'unpublish' | 'archive' | 'delete') => {
+  const handleAction = async (post: PostListItem, action: 'publish' | 'unpublish' | 'archive' | 'restore' | 'delete') => {
     if (action === 'delete' && !confirm(`Permanently delete "${post.title}"? This cannot be undone.`)) return;
     setActionLoadingId(post.id);
     try {
       if (action === 'publish')   await newsApi.publish(post.id);
       if (action === 'unpublish') await newsApi.unpublish(post.id);
       if (action === 'archive')   await newsApi.archivePost(post.id);
+      if (action === 'restore')   await newsApi.restore(post.id);
       if (action === 'delete')    await newsApi.hardDeletePost(post.id);
       setMsg(action === 'delete' ? 'Post deleted' : `Post ${action}ed`);
       load();

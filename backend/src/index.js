@@ -5,6 +5,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -41,7 +42,13 @@ const EXTRA_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.
 app.use(cors({
   origin: (origin, cb) => {
     const allowed = ['https://bozplans.org','https://www.bozplans.org','https://glorious-sparkle-production-b0a3.up.railway.app',...EXTRA_ORIGINS];
-    if (!origin || allowed.includes(origin) || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1') || origin.includes('railway.app') || origin.includes('railway.internal')) cb(null, true);
+    // SECURITY: origin.includes('railway.app') used to match ANY Railway-hosted
+    // app (not just this project's), since Railway domains are always
+    // *.up.railway.app — combined with credentials:true, that let any other
+    // developer's Railway app make authenticated cross-origin requests here.
+    // Use endsWith on the real Railway domain suffixes instead.
+    const isRailwayOrigin = origin && (origin.endsWith('.up.railway.app') || origin.endsWith('.railway.internal'));
+    if (!origin || allowed.includes(origin) || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1') || isRailwayOrigin) cb(null, true);
     else { console.warn(`[CORS] Blocked: ${origin}`); cb(null, false); }
   },
   credentials: true,
@@ -50,6 +57,29 @@ app.use(cors({
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 app.set('trust proxy', 1);
+
+// ─── Rate limiting ────────────────────────────────────────────────────────────
+// No rate limiting existed anywhere in this API before — every endpoint,
+// including login, could be hit as fast as a script could send requests.
+// A coarse global limit plus a strict one on login specifically (the door
+// to every election-manager and super-admin account) closes the most
+// obvious brute-force and denial-of-service paths.
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 600,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests — please slow down and try again shortly.' },
+}));
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  message: { error: 'Too many login attempts. Please wait 15 minutes before trying again.' },
+});
 
 // ─── Uploads ─────────────────────────────────────────────────────────────────
 const IS_RAILWAY = !!process.env.RAILWAY_ENVIRONMENT || !!process.env.RAILWAY_PROJECT_ID;
@@ -146,7 +176,7 @@ app.get(`${BASE}/health`, (req, res) => res.json({ name: 'Build One Zambia API',
 app.get('/ping', (req, res) => res.json({ status: 'ok', service: 'boz-backend', port: PORT, timestamp: new Date().toISOString() }));
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
-app.post(`${BASE}/auth/login`, async (req, res) => {
+app.post(`${BASE}/auth/login`, loginLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ error: 'username and password required' });
@@ -181,7 +211,22 @@ app.get(`${BASE}/leadership/seed`, auth.requireAuth, auth.requireRole('super_adm
 app.post(`${BASE}/leadership/seed`, auth.requireAuth, auth.requireRole('super_admin'), async (req, res) => { try { res.json({ success: true, ...(await leadership.seedLeaders(process.env.BACKEND_URL || '')) }); } catch (err) { res.status(500).json({ error: err.message }); } });
 
 // ─── News ─────────────────────────────────────────────────────────────────────
-app.get(`${BASE}/news/posts`, (req, res) => res.json({ posts: news.listPosts({ published: req.query.published !== 'false', category: req.query.category, limit: parseInt(req.query.limit || '50', 10) }) }));
+app.get(`${BASE}/news/posts`, (req, res) => {
+  const requestedStatus = req.query.status;
+  // Only an authenticated admin/super_admin may see drafts, archived posts,
+  // or 'all' — everyone else (the public news page) always gets published
+  // posts only, regardless of what status is requested.
+  let status = undefined;
+  if (requestedStatus && requestedStatus !== 'published') {
+    const header = req.headers.authorization || '';
+    const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+    const payload = token ? auth.verifyToken(token) : null;
+    if (payload && ['admin', 'super_admin'].includes(payload.role)) status = requestedStatus;
+  } else if (requestedStatus === 'published') {
+    status = 'published';
+  }
+  res.json({ posts: news.listPosts({ status, category: req.query.category, limit: parseInt(req.query.limit || '50', 10) }) });
+});
 app.get(`${BASE}/news/posts/stats`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json(news.getStats()));
 app.get(`${BASE}/news/posts/:id`, (req, res) => { const p = news.getPost(req.params.id); if (!p) return res.status(404).json({ error: 'Not found' }); res.json({ post: p }); });
 app.get(`${BASE}/news/posts/:id/image`, (req, res) => { const img = news.getPostImage(req.params.id); if (!img) return res.status(404).json({ error: 'No image' }); const [meta, b64] = img.split(','); res.setHeader('Content-Type', meta.replace('data:', '').replace(';base64', '')); res.send(Buffer.from(b64, 'base64')); });
@@ -190,8 +235,11 @@ app.patch(`${BASE}/news/posts/:id`, auth.requireAuth, auth.requireRole('admin', 
 app.patch(`${BASE}/news/posts/:id/image`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const p = news.getPost(req.params.id); if (!p) return res.status(404).json({ error: 'Not found' }); res.json({ post: news.updatePost(req.params.id, { hasCustomImage: true, imageDataUrl: req.body.imageDataUrl }) }); });
 app.patch(`${BASE}/news/posts/:id/publish`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const p = news.publishPost(req.params.id); if (!p) return res.status(404).json({ error: 'Not found' }); res.json({ post: p }); });
 app.patch(`${BASE}/news/posts/:id/unpublish`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const p = news.unpublishPost(req.params.id); if (!p) return res.status(404).json({ error: 'Not found' }); res.json({ post: p }); });
-app.delete(`${BASE}/news/posts/:id`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { news.deletePost(req.params.id); res.json({ success: true }); });
-app.delete(`${BASE}/news/posts/:id/hard`, auth.requireAuth, auth.requireRole('super_admin'), (req, res) => { news.deletePost(req.params.id); res.json({ success: true, deleted: 'permanent' }); });
+app.patch(`${BASE}/news/posts/:id/restore`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const p = news.restorePost(req.params.id); if (!p) return res.status(404).json({ error: 'Not found' }); res.json({ post: p }); });
+// Soft archive (reversible) — this is what the admin UI's "delete"/"archive" action calls.
+app.delete(`${BASE}/news/posts/:id`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const p = news.archivePost(req.params.id); if (!p) return res.status(404).json({ error: 'Not found' }); res.json({ success: true, post: p }); });
+// Permanent, irreversible delete — deliberately restricted to super_admin only.
+app.delete(`${BASE}/news/posts/:id/hard`, auth.requireAuth, auth.requireRole('super_admin'), (req, res) => { news.hardDeletePost(req.params.id); res.json({ success: true, deleted: 'permanent' }); });
 
 // ─── Candidates ───────────────────────────────────────────────────────────────
 app.get(`${BASE}/candidates`, (req, res) => res.json({ candidates: candidates.listCandidates({ electionType: req.query.electionType, scopeId: req.query.scopeId, party: req.query.party, gender: req.query.gender }) }));
