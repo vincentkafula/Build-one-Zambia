@@ -110,6 +110,40 @@ export function getBreakdown(electionType, groupField, parentField, parentId) {
   return result;
 }
 
+// Raw per-polling-station rows for exports (PDF/Excel downloads). Unlike
+// buildResult() (which only returns aggregated totals), this returns one
+// row per station with its full province/district/constituency/ward names
+// attached, so a report can be built showing every station individually
+// underneath whatever level is currently selected.
+export function getStationBreakdown(electionType, levelType, levelId, stage, round) {
+  const fieldMap = { province: 'provinceId', district: 'districtId', constituency: 'constituencyId', ward: 'wardId', station: 'pollingStationId' };
+  const field = fieldMap[levelType];
+  const all = getAllSubmissions(electionType, stage, round);
+  const filtered = (!field || levelType === 'national' || !levelId) ? all : all.filter(s => s[field] === levelId);
+
+  return filtered
+    .map(s => ({
+      provinceId: s.provinceId || '', provinceName: s.provinceName || '',
+      districtId: s.districtId || '', districtName: s.districtName || '',
+      constituencyId: s.constituencyId || '', constituencyName: s.constituencyName || '',
+      wardId: s.wardId || '', wardName: s.wardName || '',
+      pollingStationId: s.pollingStationId || '', pollingStationName: s.pollingStationName || '',
+      registeredVoters: Number(s.registeredVoters || 0),
+      rejectedBallots: Number(s.rejectedBallots || s.totalRejected || s.totalRejectedBallots || 0),
+      candidateVotes: (s.candidateVotes || s.candidateResults || s.candidates || [])
+        .filter(cv => cv.candidateId)
+        .map(cv => ({ candidateId: cv.candidateId, votes: Number(cv.votes || 0) })),
+      status: s.status || 'pending',
+    }))
+    .sort((a, b) =>
+      a.provinceName.localeCompare(b.provinceName) ||
+      a.districtName.localeCompare(b.districtName) ||
+      a.constituencyName.localeCompare(b.constituencyName) ||
+      a.wardName.localeCompare(b.wardName) ||
+      a.pollingStationName.localeCompare(b.pollingStationName)
+    );
+}
+
 export function getLeaderboard(electionType) {
   const result = getNational(electionType);
   return { electionType, candidates: result.candidates.map((c, i) => ({ rank: i + 1, candidateId: c.candidateId, totalVotes: c.votes, percentage: c.percentage, provinceLeads: [] })), totalStationsReporting: result.stationsReporting, totalVotes: result.totalVotesCast, computedAt: new Date().toISOString() };

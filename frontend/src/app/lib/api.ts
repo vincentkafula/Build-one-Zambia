@@ -1030,9 +1030,38 @@ export interface DashboardSummary {
   recentActivity: LiveFeedEntry[];
 }
 
+export interface StationBreakdownRow {
+  provinceId: string; provinceName: string;
+  districtId: string; districtName: string;
+  constituencyId: string; constituencyName: string;
+  wardId: string; wardName: string;
+  pollingStationId: string; pollingStationName: string;
+  registeredVoters: number;
+  rejectedBallots: number;
+  candidateVotes: { candidateId: string; votes: number }[];
+  status: string;
+}
+
 export const resultsApi = {
   dashboard: () =>
     request<{ summary: DashboardSummary }>('GET', '/results/dashboard'),
+
+  exportBreakdown: (
+    electionType: ElectionCategory,
+    levelType: 'national' | LevelType,
+    levelId?: string,
+    stage?: 'provisional' | 'official',
+    round?: 'round1' | 'runoff',
+  ) => {
+    const qs = new URLSearchParams();
+    if (stage) qs.set('stage', stage);
+    if (round) qs.set('round', round);
+    const q = qs.toString();
+    const idPart = levelId ? `/${encodeURIComponent(levelId)}` : '';
+    return request<{ rows: StationBreakdownRow[]; count: number }>(
+      'GET', `/results/export-breakdown/${electionType}/${levelType}${idPart}${q ? `?${q}` : ''}`
+    );
+  },
 
   national: (electionType: ElectionCategory, stage?: 'provisional' | 'official', round?: 'round1' | 'runoff', statuses?: string) => {
     const qs = new URLSearchParams();

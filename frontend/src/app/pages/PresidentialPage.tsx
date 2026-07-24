@@ -121,6 +121,17 @@ export function PresidentialPage() {
     : 'national';
   const levelId = selectedWard || selectedConstituency || selectedDistrict || selectedProvince || '';
 
+  // Downloads go one level finer than the live results view — a specific
+  // polling station can be selected for the report even though the results
+  // panel above only drills down to ward level.
+  const exportLevelType = selectedPollingStation ? 'station'
+    : selectedWard ? 'ward'
+    : selectedConstituency ? 'constituency'
+    : selectedDistrict ? 'district'
+    : selectedProvince ? 'province'
+    : 'national';
+  const exportLevelId = selectedPollingStation || selectedWard || selectedConstituency || selectedDistrict || selectedProvince || '';
+
   const live = useElectionResults('presidential', levelType as any, levelId, resultStage, viewRound);
 
   // ── Mock data fallback ────────────────────────────────────────────────────
@@ -618,21 +629,34 @@ export function PresidentialPage() {
         </div>
 
         {/* Downloads */}
-        <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-center gap-3">
-          <DownloadButton
-            format="pdf"
-            data={candidateResults}
-            title="Presidential Election Results"
-            locationLabel={eczLevelName}
-            totals={{ registered: totalRegistered, cast: totalVotes, valid: totalValidVotes, rejected: totalRejected, turnout }}
-          />
-          <DownloadButton
-            format="excel"
-            data={candidateResults}
-            title="Presidential Election Results"
-            locationLabel={eczLevelName}
-            totals={{ registered: totalRegistered, cast: totalVotes, valid: totalValidVotes, rejected: totalRejected, turnout }}
-          />
+        <div className="mt-10 pt-6 border-t border-border flex flex-col items-center gap-3">
+          <p className="text-xs text-muted-foreground text-center max-w-md">
+            Includes a full breakdown by polling station under the currently selected location, for every candidate.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <DownloadButton
+              format="pdf"
+              electionType="presidential"
+              levelType={exportLevelType}
+              levelId={exportLevelId || undefined}
+              locationLabel={eczLevelName}
+              candidateRoster={candidateResults.map(r => ({ id: r.candidate.id, name: r.candidate.name, party: r.candidate.party }))}
+              title="Presidential Election Results"
+              stage={resultStage}
+              round={viewRound}
+            />
+            <DownloadButton
+              format="excel"
+              electionType="presidential"
+              levelType={exportLevelType}
+              levelId={exportLevelId || undefined}
+              locationLabel={eczLevelName}
+              candidateRoster={candidateResults.map(r => ({ id: r.candidate.id, name: r.candidate.name, party: r.candidate.party }))}
+              title="Presidential Election Results"
+              stage={resultStage}
+              round={viewRound}
+            />
+          </div>
         </div>
       </div>
     </div>

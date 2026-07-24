@@ -869,6 +869,21 @@ app.get(`${BASE}/results/breakdown/:electionType/province`, (req, res) => res.js
 app.get(`${BASE}/results/breakdown/:electionType/district/:provinceId`, (req, res) => res.json({ breakdown: results.getBreakdown(req.params.electionType, 'districtId', 'provinceId', decodeURIComponent(req.params.provinceId)) }));
 app.get(`${BASE}/results/breakdown/:electionType/constituency/:districtId`, (req, res) => res.json({ breakdown: results.getBreakdown(req.params.electionType, 'constituencyId', 'districtId', decodeURIComponent(req.params.districtId)) }));
 app.get(`${BASE}/results/breakdown/:electionType/ward/:constituencyId`, (req, res) => res.json({ breakdown: results.getBreakdown(req.params.electionType, 'wardId', 'constituencyId', decodeURIComponent(req.params.constituencyId)) }));
+
+// Full per-polling-station rows for PDF/Excel exports — see
+// results.getStationBreakdown for what each row contains. levelType is one
+// of national/province/district/constituency/ward/station; levelId is
+// omitted (or ignored) for national.
+app.get(`${BASE}/results/export-breakdown/:electionType/:levelType/:levelId?`, (req, res) => {
+  const rows = results.getStationBreakdown(
+    req.params.electionType,
+    req.params.levelType,
+    req.params.levelId ? decodeURIComponent(req.params.levelId) : null,
+    req.query.stage,
+    req.query.round
+  );
+  res.json({ rows, count: rows.length });
+});
 app.get(`${BASE}/results/leaderboard/:electionType`, (req, res) => res.json({ leaderboard: results.getLeaderboard(req.params.electionType) }));
 app.get(`${BASE}/results/coverage`, (req, res) => res.json({ stats: results.getCoverage(req.query.electionType) }));
 app.get(`${BASE}/results/heatmap/:electionType`, (req, res) => res.json({ heatmap: results.getHeatmap(req.params.electionType) }));
