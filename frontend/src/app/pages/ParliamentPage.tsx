@@ -5,7 +5,7 @@ import { CandidateCardCompact } from '../components/CandidateCardCompact';
 import { ResultsStatusBar, ResultStage } from '../components/ResultsStatusBar';
 import { DrillDownFilters } from '../components/DrillDownFilters';
 import { useElectionResults } from '../hooks/useElectionResults';
-import { Users, MapPin, Clock, Wifi, WifiOff } from 'lucide-react';
+import { Users, MapPin, Clock, Wifi, WifiOff, Award } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 export function ParliamentPage() {
@@ -180,7 +180,33 @@ export function ParliamentPage() {
                 </p>
               </div>
 
-              {(() => {
+              {currentConstituency.mpCandidates.length === 1 ? (
+                (() => {
+                  const winner = currentConstituency.mpCandidates[0];
+                  return (
+                    <div className="rounded-2xl border-2 p-8 text-center" style={{ borderColor: '#198754', background: 'linear-gradient(135deg, #198754 0%, #146c43 100%)' }}>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold uppercase tracking-wide mb-4">
+                        <Award className="w-3.5 h-3.5" />
+                        Elected Unopposed
+                      </div>
+                      <div
+                        className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold border-4 border-white/40"
+                        style={{ backgroundColor: winner.partyColor }}
+                      >
+                        {winner.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                      </div>
+                      <h3 className="text-2xl font-extrabold text-white mb-1">{winner.name}</h3>
+                      <span className="inline-block px-3 py-1 rounded-full bg-white/20 text-white text-sm font-semibold mb-3">{winner.party}</span>
+                      <p className="text-white/90 text-sm max-w-md mx-auto">
+                        Only one candidate was validly nominated for {currentConstituency.name} Constituency, so no poll is
+                        required — {winner.name} is declared the duly elected Member of Parliament unopposed.
+                      </p>
+                    </div>
+                  );
+                })()
+              ) : (
+
+              (() => {
                 const sorted = candidateResults;
                 const totalValidVotes = totalValidVotesForDisplay;
                 const displayed = showAllCandidates ? sorted : sorted.slice(0, 4);
@@ -286,7 +312,8 @@ export function ParliamentPage() {
                     </div>
                   </div>
                 );
-              })()}
+              })()
+              )}
 
               <div className="mt-4 pt-4 border-t border-border">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
