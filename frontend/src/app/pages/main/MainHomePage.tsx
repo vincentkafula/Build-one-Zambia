@@ -43,11 +43,9 @@ const PROMISES = [
   },
 ];
 
-const ELECTION_POPUP_STORAGE_KEY = 'boz_election_popup_seen_2026';
-
 export default function MainHomePage() {
   const [slideIndex, setSlideIndex] = useState(0);
-  const [showElectionPopup, setShowElectionPopup] = useState(false);
+  const [showElectionPopup, setShowElectionPopup] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -56,22 +54,8 @@ export default function MainHomePage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Show once per browser, the first time someone lands on the home page.
-  useEffect(() => {
-    try {
-      if (!localStorage.getItem(ELECTION_POPUP_STORAGE_KEY)) {
-        setShowElectionPopup(true);
-      }
-    } catch {
-      // localStorage unavailable (private browsing etc.) — just show it
-      // for this visit without trying to persist the dismissal.
-      setShowElectionPopup(true);
-    }
-  }, []);
-
   function dismissElectionPopup() {
     setShowElectionPopup(false);
-    try { localStorage.setItem(ELECTION_POPUP_STORAGE_KEY, '1'); } catch { /* ignore */ }
   }
 
   return (
@@ -79,7 +63,7 @@ export default function MainHomePage() {
 
       {showElectionPopup && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] flex items-start justify-center p-4 pt-6 sm:pt-10 overflow-y-auto"
           style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
           onClick={dismissElectionPopup}
         >
