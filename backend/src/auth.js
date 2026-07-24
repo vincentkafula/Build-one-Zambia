@@ -221,7 +221,14 @@ export async function registerUser(userData, password) {
     ...userData,
     id: crypto.randomUUID(),
     createdAt: now,
-    active: true,
+    // BUG FIX: this used to be a hardcoded `active: true` placed after the
+    // ...userData spread, which unconditionally overwrote whatever active
+    // value the caller passed — including createPendingAccount's explicit
+    // active: false for applications awaiting approval. Every account was
+    // silently active immediately on creation, regardless of intent,
+    // completely bypassing the pending-approval gate. Now only defaults to
+    // true when the caller didn't specify active at all.
+    active: userData.active !== undefined ? userData.active : true,
   };
 
   const hash = await hashPassword(password);

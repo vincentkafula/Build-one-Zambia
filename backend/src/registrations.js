@@ -66,7 +66,13 @@ export async function createPendingAccount(type, reg) {
     }
   } catch (e) {
     console.error(`[registrations] failed to pre-create account for ${type}/${reg.id}:`, e.message);
-    return reg;
+    // Don't fail the whole application over this — but don't hide it
+    // either. Without this, a failed pre-creation left the registration
+    // with no username at all and no indication why, which then cascaded
+    // into confusing "account already exists" / "invalid credentials"
+    // problems much later at approval time with no way to tell what
+    // actually happened.
+    return { ...reg, accountCreationFailed: true, accountCreationError: e.message };
   }
   // Strip plaintext credentials before the registration record itself gets
   // persisted — they now live only as hashes in auth.js's kv store.

@@ -1728,6 +1728,8 @@ export interface AgentReg {
   username?: string;
   loginGranted?: boolean;
   membershipNumber?: string;
+  accountCreationFailed?: boolean;
+  accountCreationError?: string;
 }
 
 export interface GeneratedCredentials {
