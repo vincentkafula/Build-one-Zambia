@@ -1663,7 +1663,136 @@ app.post(`${BASE}/otp/send`, async (req, res) => {
 app.post(`${BASE}/otp/verify`, (req, res) => { const { phone, email, otp } = req.body; const key = phone || email; const stored = otpStore[key]; if (!stored) return res.status(400).json({ error: 'No OTP found. Request a new one.' }); if (Date.now() > stored.expiresAt) { delete otpStore[key]; return res.status(400).json({ error: 'OTP expired' }); } if (stored.otp !== otp) return res.status(400).json({ error: 'Invalid OTP' }); delete otpStore[key]; res.json({ success: true, verified: true }); });
 
 // ─── Gateway ──────────────────────────────────────────────────────────────────
-app.get(`${BASE}/gateway/config`, (req, res) => res.json({ config: { flutterwaveEnabled: !!process.env.FLUTTERWAVE_SECRET_KEY, resendEnabled: !!process.env.RESEND_API_KEY, twilioEnabled: !!process.env.TWILIO_ACCOUNT_SID, publicKey: process.env.FLUTTERWAVE_PUBLIC_KEY || null, siteUrl: process.env.SITE_URL || '' } }));
+app.get(`${BASE}/gateway/config`, (req, res) => res.json({
+  config: {
+    flutterwaveEnabled: !!process.env.FLUTTERWAVE_SECRET_KEY,
+    resendEnabled: !!process.env.RESEND_API_KEY,
+    twilioEnabled: !!process.env.TWILIO_ACCOUNT_SID,
+    publicKey: process.env.FLUTTERWAVE_PUBLIC_KEY || null,
+    currency: 'ZMW',
+    country: 'ZM',
+    redirectUrl: process.env.SITE_URL || '',
+    siteUrl: process.env.SITE_URL || '',
+  },
+}));
+
+// ─── Flutterwave payment processing ──────────────────────────────────────────
+// These were referenced by the frontend (ShopCheckout.tsx) all along but
+// never actually existed on the backend — only the /gateway/config check
+// above did. Card payments would hang forever verifying, and mobile money
+// had no way to even initiate a charge.
+const FLW_BASE = 'https://api.flutterwave.com/v3';
+function flwHeaders() {
+  return { Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`, 'Content-Type': 'application/json' };
+}
+
+// Every verification cross-checks the amount/currency Flutterwave actually
+// confirms against the real order record — never trusts a client-supplied
+// amount — so a tampered client request can't mark an order paid for less
+// than its real total.
+function confirmOrderPaid(order, flwData) {
+  if (!order) return false;
+  const amountOk = Math.abs(Number(flwData.amount) - Number(order.total)) < 0.01;
+  const currencyOk = flwData.currency === 'ZMW';
+  const statusOk = flwData.status === 'successful';
+  if (amountOk && currencyOk && statusOk) {
+    shop.updateOrderStatus(order.id, 'paid', flwData.tx_ref);
+    return true;
+  }
+  return false;
+}
+
+app.post(`${BASE}/gateway/mobile-money`, async (req, res) => {
+  if (!process.env.FLUTTERWAVE_SECRET_KEY) {
+    return res.status(503).json({ success: false, error: 'Payment gateway is not configured yet.' });
+  }
+  try {
+    const { orderId, phone, network, customerName, customerEmail, customerPhone } = req.body;
+    if (!orderId || !phone || !network) return res.status(400).json({ success: false, error: 'orderId, phone, and network are required.' });
+    const order = shop.getOrder(orderId);
+    if (!order) return res.status(404).json({ success: false, error: 'Order not found.' });
+
+    const txRef = `boz-${orderId}-${Date.now()}`;
+    const r = await fetch(`${FLW_BASE}/charges?type=mobile_money_zambia`, {
+      method: 'POST',
+      headers: flwHeaders(),
+      body: JSON.stringify({
+        tx_ref: txRef,
+        amount: String(order.total), // real order total, not whatever the client sent
+        currency: 'ZMW',
+        email: customerEmail || order.customerEmail || 'no-reply@buildonezambia.com',
+        phone_number: phone,
+        fullname: customerName || order.customerName || 'Customer',
+        network: String(network).toUpperCase(),
+      }),
+    });
+    const data = await r.json();
+    if (data.status === 'success') {
+      shop.updateOrder(orderId, { paymentRef: txRef });
+      return res.json({ success: true, txRef, status: data.data?.status || 'pending', message: data.message || 'Check your phone and approve the payment prompt.' });
+    }
+    return res.json({ success: false, error: data.message || 'Mobile money initiation failed.' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get(`${BASE}/gateway/verify/:txRef`, async (req, res) => {
+  if (!process.env.FLUTTERWAVE_SECRET_KEY) {
+    return res.json({ result: { verified: false, status: 'error', error: 'Payment gateway is not configured.' } });
+  }
+  try {
+    const txRef = req.params.txRef;
+    const r = await fetch(`${FLW_BASE}/transactions/verify_by_reference?tx_ref=${encodeURIComponent(txRef)}`, { headers: flwHeaders() });
+    const data = await r.json();
+    if (data.status !== 'success' || !data.data) {
+      return res.json({ result: { verified: false, status: 'pending', txRef } });
+    }
+    const d = data.data;
+    // tx_ref is boz-{orderId}-{timestamp} — recover the order to cross-check against.
+    const orderId = txRef.replace(/^boz-/, '').replace(/-\d+$/, '');
+    const order = shop.getOrder(orderId);
+    const verified = confirmOrderPaid(order, { amount: d.amount, currency: d.currency, status: d.status, tx_ref: d.tx_ref });
+    res.json({
+      result: {
+        verified,
+        status: d.status === 'successful' ? 'successful' : d.status === 'failed' ? 'failed' : 'pending',
+        amount: d.amount, currency: d.currency, txRef: d.tx_ref, transactionId: d.id, flwRef: d.flw_ref, paymentType: d.payment_type,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ result: { verified: false, status: 'error', error: err.message } });
+  }
+});
+
+app.post(`${BASE}/gateway/verify-card`, async (req, res) => {
+  if (!process.env.FLUTTERWAVE_SECRET_KEY) {
+    return res.status(503).json({ success: false, verified: false, error: 'Payment gateway is not configured yet.' });
+  }
+  try {
+    const { transactionId, orderId } = req.body;
+    if (!transactionId) return res.status(400).json({ success: false, verified: false, error: 'transactionId is required.' });
+    const order = shop.getOrder(orderId);
+    const r = await fetch(`${FLW_BASE}/transactions/${transactionId}/verify`, { headers: flwHeaders() });
+    const data = await r.json();
+    if (data.status !== 'success' || !data.data) {
+      return res.json({ success: true, verified: false, result: { verified: false, status: 'failed' } });
+    }
+    const d = data.data;
+    const verified = confirmOrderPaid(order, { amount: d.amount, currency: d.currency, status: d.status, tx_ref: d.tx_ref });
+    res.json({
+      success: true,
+      verified,
+      result: {
+        verified,
+        status: d.status === 'successful' ? 'successful' : d.status === 'failed' ? 'failed' : 'pending',
+        amount: d.amount, currency: d.currency, txRef: d.tx_ref, transactionId: d.id, flwRef: d.flw_ref, paymentType: d.payment_type,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, verified: false, error: err.message });
+  }
+});
 app.get(`${BASE}/gateway/verify/:txRef`, (req, res) => res.json({ verified: false, txRef: req.params.txRef, status: 'pending' }));
 app.post(`${BASE}/gateway/mobile-money`, (req, res) => res.json({ success: true, reference: `MM-${Date.now()}`, status: 'pending', message: 'Mobile money request initiated' }));
 app.post(`${BASE}/gateway/verify-card`, (req, res) => res.json({ success: false, message: 'Card verification unavailable' }));
