@@ -17,36 +17,36 @@ interface RosterCandidate {
   party: string;
 }
 
-// Which geography columns to show, narrowing as the selected level gets
-// more specific — matches how far "up" from Polling Station the current
-// selection sits. A column for the level currently selected (and anything
-// above it) is redundant since it's fixed for every row, so it's dropped.
-const GEO_COLUMNS: Record<string, { key: keyof StationBreakdownRow; label: string }[]> = {
+interface GroupLevel {
+  key: keyof StationBreakdownRow;
+  label: string;
+}
+
+// Grouping levels above Polling Station, narrowing as the selected level
+// gets more specific — mirrors the Electoral Commission's own "Registered
+// Voters per Polling Station" report structure (Province -> District ->
+// Constituency -> Ward -> Polling Station, with a "Totals for X" row
+// closing out each group).
+const GROUP_LEVELS: Record<string, GroupLevel[]> = {
   national: [
     { key: 'provinceName', label: 'Province' },
     { key: 'districtName', label: 'District' },
     { key: 'constituencyName', label: 'Constituency' },
     { key: 'wardName', label: 'Ward' },
-    { key: 'pollingStationName', label: 'Polling Station' },
   ],
   province: [
     { key: 'districtName', label: 'District' },
     { key: 'constituencyName', label: 'Constituency' },
     { key: 'wardName', label: 'Ward' },
-    { key: 'pollingStationName', label: 'Polling Station' },
   ],
   district: [
     { key: 'constituencyName', label: 'Constituency' },
     { key: 'wardName', label: 'Ward' },
-    { key: 'pollingStationName', label: 'Polling Station' },
   ],
   constituency: [
     { key: 'wardName', label: 'Ward' },
-    { key: 'pollingStationName', label: 'Polling Station' },
   ],
-  ward: [
-    { key: 'pollingStationName', label: 'Polling Station' },
-  ],
+  ward: [],
   station: [],
 };
 
@@ -61,53 +61,93 @@ function rowStats(row: StationBreakdownRow) {
   return { validVotes, totalCast, turnout };
 }
 
-function buildTableData(rows: StationBreakdownRow[], roster: RosterCandidate[], geoCols: { key: keyof StationBreakdownRow; label: string }[]) {
-  const headers = [
-    ...geoCols.map(c => c.label),
-    ...roster.map(c => `${c.name} (${c.party})`),
-    'Registered Voters',
-    'Total Valid Votes',
-    'Rejected Votes',
-    'Voter Turnout',
-  ];
-
-  const body = rows.map(row => {
-    const { validVotes, turnout } = rowStats(row);
-    const voteMap = new Map(row.candidateVotes.map(c => [c.candidateId, c.votes]));
-    return [
-      ...geoCols.map(c => String(row[c.key] ?? '')),
-      ...roster.map(c => formatNum(voteMap.get(c.id) ?? 0)),
-      formatNum(row.registeredVoters),
-      formatNum(validVotes),
-      formatNum(row.rejectedBallots),
-      `${turnout.toFixed(1)}%`,
-    ];
-  });
-
-  // Grand-total footer row
-  const totalRegistered = rows.reduce((s, r) => s + r.registeredVoters, 0);
-  const totalRejected = rows.reduce((s, r) => s + r.rejectedBallots, 0);
-  const totalValid = rows.reduce((s, r) => s + rowStats(r).validVotes, 0);
-  const totalCast = totalValid + totalRejected;
-  const totalTurnout = totalRegistered > 0 ? (totalCast / totalRegistered) * 100 : 0;
-  const perCandidateTotals = roster.map(c =>
+function aggregateStats(rows: StationBreakdownRow[], roster: RosterCandidate[]) {
+  const registeredVoters = rows.reduce((s, r) => s + r.registeredVoters, 0);
+  const rejectedBallots = rows.reduce((s, r) => s + r.rejectedBallots, 0);
+  const validVotes = rows.reduce((s, r) => s + rowStats(r).validVotes, 0);
+  const totalCast = validVotes + rejectedBallots;
+  const turnout = registeredVoters > 0 ? (totalCast / registeredVoters) * 100 : 0;
+  const perCandidate = roster.map(c =>
     rows.reduce((s, r) => s + (r.candidateVotes.find(cv => cv.candidateId === c.id)?.votes ?? 0), 0)
   );
-  const footer = [
-    ...geoCols.map((_, i) => (i === 0 ? 'TOTAL' : '')),
-    ...perCandidateTotals.map(formatNum),
-    formatNum(totalRegistered),
-    formatNum(totalValid),
-    formatNum(totalRejected),
-    `${totalTurnout.toFixed(1)}%`,
-  ];
-
-  return { headers, body, footer };
+  return { registeredVoters, rejectedBallots, validVotes, turnout, perCandidate };
 }
 
-function downloadExcel(rows: StationBreakdownRow[], roster: RosterCandidate[], geoCols: { key: keyof StationBreakdownRow; label: string }[], title: string, location: string) {
+type Block =
+  | { kind: 'header'; label: string; depth: number }
+  | { kind: 'row'; row: StationBreakdownRow }
+  | { kind: 'subtotal'; label: string; depth: number; rows: StationBreakdownRow[] };
+
+// Rows arrive pre-sorted (province -> district -> constituency -> ward ->
+// station name) from the backend, so a single pass can detect every group
+// boundary: whenever a grouping value changes, close every open subtotal
+// from the deepest level up to the change point, then open fresh headers
+// back down to the deepest level again.
+function buildBlocks(rows: StationBreakdownRow[], groupLevels: GroupLevel[]): Block[] {
+  if (groupLevels.length === 0) return rows.map(row => ({ kind: 'row', row } as Block));
+
+  const blocks: Block[] = [];
+  const current: (string | null)[] = groupLevels.map(() => null);
+  const buffers: StationBreakdownRow[][] = groupLevels.map(() => []);
+
+  const closeLevel = (i: number) => {
+    if (current[i] !== null) {
+      blocks.push({ kind: 'subtotal', label: `Total for ${groupLevels[i].label}: ${current[i]}`, depth: i, rows: buffers[i] });
+    }
+    buffers[i] = [];
+  };
+
+  for (const row of rows) {
+    const values = groupLevels.map(g => String(row[g.key] ?? ''));
+    let changeIdx = groupLevels.length;
+    for (let i = 0; i < groupLevels.length; i++) {
+      if (current[i] !== values[i]) { changeIdx = i; break; }
+    }
+    if (changeIdx < groupLevels.length) {
+      for (let i = groupLevels.length - 1; i >= changeIdx; i--) closeLevel(i);
+      for (let i = changeIdx; i < groupLevels.length; i++) {
+        current[i] = values[i];
+        blocks.push({ kind: 'header', label: `${groupLevels[i].label}: ${values[i]}`, depth: i });
+      }
+    }
+    for (let i = 0; i < groupLevels.length; i++) buffers[i].push(row);
+    blocks.push({ kind: 'row', row });
+  }
+  for (let i = groupLevels.length - 1; i >= 0; i--) closeLevel(i);
+
+  return blocks;
+}
+
+function tableColumns(roster: RosterCandidate[]) {
+  return [
+    'Code', 'Polling Station',
+    ...roster.map(c => `${c.name} (${c.party})`),
+    'Registered Voters', 'Total Valid Votes', 'Rejected Votes', 'Voter Turnout',
+  ];
+}
+
+function dataRowCells(row: StationBreakdownRow, roster: RosterCandidate[]): string[] {
+  const { validVotes, turnout } = rowStats(row);
+  const voteMap = new Map(row.candidateVotes.map(c => [c.candidateId, c.votes]));
+  return [
+    row.pollingStationId, row.pollingStationName,
+    ...roster.map(c => formatNum(voteMap.get(c.id) ?? 0)),
+    formatNum(row.registeredVoters), formatNum(validVotes), formatNum(row.rejectedBallots), `${turnout.toFixed(1)}%`,
+  ];
+}
+
+function subtotalRowCells(label: string, rows: StationBreakdownRow[], roster: RosterCandidate[]): string[] {
+  const s = aggregateStats(rows, roster);
+  return [
+    label, '',
+    ...s.perCandidate.map(formatNum),
+    formatNum(s.registeredVoters), formatNum(s.validVotes), formatNum(s.rejectedBallots), `${s.turnout.toFixed(1)}%`,
+  ];
+}
+
+function downloadExcel(rows: StationBreakdownRow[], roster: RosterCandidate[], groupLevels: GroupLevel[], title: string, location: string) {
   const wb = XLSX.utils.book_new();
-  const { headers, body, footer } = buildTableData(rows, roster, geoCols);
+  const grand = aggregateStats(rows, roster);
 
   const summaryRows = [
     ['BOZ Election Results', ''],
@@ -115,14 +155,29 @@ function downloadExcel(rows: StationBreakdownRow[], roster: RosterCandidate[], g
     ['Selected Level', location],
     ['Polling Stations Included', rows.length],
     ['Generated', new Date().toLocaleString()],
+    ['', ''],
+    ['Registered Voters', grand.registeredVoters],
+    ['Total Valid Votes', grand.validVotes],
+    ['Rejected Votes', grand.rejectedBallots],
+    ['Voter Turnout', `${grand.turnout.toFixed(1)}%`],
   ];
   const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
   wsSummary['!cols'] = [{ wch: 24 }, { wch: 34 }];
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
-  const wsResults = XLSX.utils.aoa_to_sheet([headers, ...body, footer]);
+  const headers = tableColumns(roster);
+  const blocks = buildBlocks(rows, groupLevels);
+  const body: (string | number)[][] = [headers];
+  for (const b of blocks) {
+    if (b.kind === 'header') body.push([`▸ ${b.label}`]);
+    else if (b.kind === 'row') body.push(dataRowCells(b.row, roster));
+    else body.push(subtotalRowCells(`  ${b.label}`, b.rows, roster));
+  }
+  body.push(subtotalRowCells('GRAND TOTAL', rows, roster));
+
+  const wsResults = XLSX.utils.aoa_to_sheet(body);
   wsResults['!cols'] = [
-    ...geoCols.map(() => ({ wch: 20 })),
+    { wch: 16 }, { wch: 26 },
     ...roster.map(() => ({ wch: 16 })),
     { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 14 },
   ];
@@ -131,9 +186,7 @@ function downloadExcel(rows: StationBreakdownRow[], roster: RosterCandidate[], g
   XLSX.writeFile(wb, `presidential-results-${location.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}.xlsx`);
 }
 
-function downloadPDF(rows: StationBreakdownRow[], roster: RosterCandidate[], geoCols: { key: keyof StationBreakdownRow; label: string }[], title: string, location: string) {
-  // Landscape — this table can have many columns once every candidate and
-  // every geography level is included.
+function downloadPDF(rows: StationBreakdownRow[], roster: RosterCandidate[], groupLevels: GroupLevel[], title: string, location: string) {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
   let y = 15;
@@ -160,18 +213,66 @@ function downloadPDF(rows: StationBreakdownRow[], roster: RosterCandidate[], geo
   doc.text(`${location}  ·  ${rows.length.toLocaleString()} polling station${rows.length === 1 ? '' : 's'}  ·  Generated ${new Date().toLocaleString()}`, pageW / 2, y, { align: 'center' });
   y += 6;
 
-  const { headers, body, footer } = buildTableData(rows, roster, geoCols);
+  const headers = tableColumns(roster);
+  const blocks = buildBlocks(rows, groupLevels);
+
+  // Build body rows in parallel with a style map, since autoTable has no
+  // native concept of grouped/nested rows — header and subtotal rows get
+  // distinct bold/coloured styling applied per-row via didParseCell below.
+  const body: string[][] = [];
+  const rowKind: ('header' | 'subtotal' | 'data' | 'grandtotal')[] = [];
+  const rowDepth: number[] = [];
+
+  for (const b of blocks) {
+    if (b.kind === 'header') {
+      body.push([b.label, ...Array(headers.length - 1).fill('')]);
+      rowKind.push('header');
+      rowDepth.push(b.depth);
+    } else if (b.kind === 'row') {
+      body.push(dataRowCells(b.row, roster));
+      rowKind.push('data');
+      rowDepth.push(groupLevels.length);
+    } else {
+      body.push(subtotalRowCells(b.label, b.rows, roster));
+      rowKind.push('subtotal');
+      rowDepth.push(b.depth);
+    }
+  }
+  const grandTotalRow = subtotalRowCells('GRAND TOTAL', rows, roster);
+  body.push(grandTotalRow);
+  rowKind.push('grandtotal');
+  rowDepth.push(-1);
+
+  const depthColors: [number, number, number][] = [
+    [214, 234, 222], [225, 240, 231], [235, 246, 239], [245, 250, 247],
+  ];
 
   doc.autoTable({
     startY: y,
     head: [headers],
     body,
-    foot: [footer],
     theme: 'striped',
-    styles: { fontSize: 6.5, cellPadding: 1.3 },
+    styles: { fontSize: 6.3, cellPadding: 1.2 },
     headStyles: { fillColor: [25, 135, 84], textColor: 255, fontStyle: 'bold', fontSize: 6.5 },
-    footStyles: { fillColor: [220, 38, 38], textColor: 255, fontStyle: 'bold', fontSize: 6.5 },
     margin: { left: 8, right: 8 },
+    didParseCell: (data: any) => {
+      if (data.section !== 'body') return;
+      const kind = rowKind[data.row.index];
+      const depth = rowDepth[data.row.index];
+      if (kind === 'header') {
+        data.cell.styles.fontStyle = 'bold';
+        data.cell.styles.fillColor = depthColors[Math.min(depth, depthColors.length - 1)];
+        data.cell.styles.textColor = [20, 60, 40];
+      } else if (kind === 'subtotal') {
+        data.cell.styles.fontStyle = 'bold';
+        data.cell.styles.fillColor = [255, 243, 205];
+        data.cell.styles.textColor = [110, 80, 10];
+      } else if (kind === 'grandtotal') {
+        data.cell.styles.fontStyle = 'bold';
+        data.cell.styles.fillColor = [220, 38, 38];
+        data.cell.styles.textColor = [255, 255, 255];
+      }
+    },
   });
 
   const totalPages = (doc as any).internal.getNumberOfPages();
@@ -215,11 +316,11 @@ export function DownloadButton({
         setError('No polling station results available yet for this selection.');
         return;
       }
-      const geoCols = GEO_COLUMNS[levelType] ?? GEO_COLUMNS.national;
+      const groupLevels = GROUP_LEVELS[levelType] ?? GROUP_LEVELS.national;
       if (format === 'excel') {
-        downloadExcel(rows, candidateRoster, geoCols, title, locationLabel);
+        downloadExcel(rows, candidateRoster, groupLevels, title, locationLabel);
       } else {
-        downloadPDF(rows, candidateRoster, geoCols, title, locationLabel);
+        downloadPDF(rows, candidateRoster, groupLevels, title, locationLabel);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to generate report');
