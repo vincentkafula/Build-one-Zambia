@@ -43,8 +43,11 @@ const PROMISES = [
   },
 ];
 
+const ELECTION_POPUP_STORAGE_KEY = 'boz_election_popup_seen_2026';
+
 export default function MainHomePage() {
   const [slideIndex, setSlideIndex] = useState(0);
+  const [showElectionPopup, setShowElectionPopup] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -53,8 +56,72 @@ export default function MainHomePage() {
     return () => clearInterval(timer);
   }, []);
 
+  // Show once per browser, the first time someone lands on the home page.
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem(ELECTION_POPUP_STORAGE_KEY)) {
+        setShowElectionPopup(true);
+      }
+    } catch {
+      // localStorage unavailable (private browsing etc.) — just show it
+      // for this visit without trying to persist the dismissal.
+      setShowElectionPopup(true);
+    }
+  }, []);
+
+  function dismissElectionPopup() {
+    setShowElectionPopup(false);
+    try { localStorage.setItem(ELECTION_POPUP_STORAGE_KEY, '1'); } catch { /* ignore */ }
+  }
+
   return (
     <div style={{ fontFamily: 'Open Sans, sans-serif', backgroundColor: '#007A30', color: '#1a1a1a' }}>
+
+      {showElectionPopup && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+          onClick={dismissElectionPopup}
+        >
+          <div
+            className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
+            style={{ backgroundColor: '#ffffff' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="px-6 pt-6 pb-5 text-center" style={{ background: 'linear-gradient(160deg, #007A30 0%, #005A22 100%)' }}>
+              <button
+                onClick={dismissElectionPopup}
+                aria-label="Close"
+                className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center text-white/90 hover:bg-white/20 transition-colors text-xl leading-none"
+              >
+                ×
+              </button>
+              <p className="text-white text-xs font-bold tracking-widest uppercase mb-2">Zambia Elections 2026</p>
+              <p className="text-white text-base leading-relaxed">
+                Zambia goes to the polls on <strong>13 August 2026</strong>, electing the President, Members of
+                Parliament, Mayors/Council Chairpersons, and Councillors. See the results here, and be peaceful.
+              </p>
+            </div>
+            <div className="flex gap-3 px-6 py-4">
+              <button
+                onClick={dismissElectionPopup}
+                className="flex-1 py-2.5 rounded-lg border font-semibold text-sm transition-colors"
+                style={{ borderColor: '#d1d5db', color: '#374151' }}
+              >
+                Close
+              </button>
+              <Link
+                to="/results"
+                onClick={dismissElectionPopup}
+                className="flex-1 py-2.5 rounded-lg text-white font-semibold text-sm text-center transition-colors"
+                style={{ backgroundColor: '#007A30' }}
+              >
+                See Results
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── HERO — do not change this message ─────────────────────────── */}
       <section className="relative overflow-hidden" style={{ minHeight: '92vh', background: 'linear-gradient(160deg, #007A30 0%, #006B28 60%, #005A22 100%)' }}>
