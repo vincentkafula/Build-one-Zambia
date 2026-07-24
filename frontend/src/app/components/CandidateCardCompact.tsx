@@ -46,7 +46,7 @@ export function CandidateCardCompact({ candidate, votes, totalVotes, isLeading }
       {/* Photo */}
       {candidatePhotos[candidate.id] ? (
         <div
-          className="w-16 h-16 rounded-full overflow-hidden shadow-sm mb-3"
+          className="w-24 h-24 rounded-full overflow-hidden shadow-sm mb-3"
           style={{ border: `2.5px solid ${candidate.partyColor}` }}
         >
           <ImageWithFallback
@@ -57,10 +57,10 @@ export function CandidateCardCompact({ candidate, votes, totalVotes, isLeading }
         </div>
       ) : (
         <div
-          className="w-16 h-16 rounded-full flex items-center justify-center shadow-sm mb-3"
+          className="w-24 h-24 rounded-full flex items-center justify-center shadow-sm mb-3"
           style={{ background: `linear-gradient(135deg, ${candidate.partyColor} 0%, ${candidate.partyColor}aa 100%)` }}
         >
-          <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '20px', color: '#fff' }}>{initials}</span>
+          <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '28px', color: '#fff' }}>{initials}</span>
         </div>
       )}
 
