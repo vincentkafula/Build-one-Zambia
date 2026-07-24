@@ -350,6 +350,89 @@ app.get(`${BASE}/registrations/agent/validate`, (req, res) => {
   const taken = registrations.isRoleScopeTaken(role, scopeId);
   res.json({ valid: !taken, message: taken ? 'An application has already been submitted for this position.' : 'Position is available.' });
 });
+
+// This is what RegistrationApprovalAdmin.tsx (the super-admin approval
+// screen) actually calls — it didn't exist before, so submitted
+// applications had nowhere to be listed for review even after the POST
+// endpoint above was fixed to actually accept them.
+app.get(`${BASE}/registrations/agent`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  const regs = registrations.listAgents({ status: req.query.status });
+  res.json({ registrations: regs, applications: regs, count: regs.length });
+});
+
+app.patch(`${BASE}/registrations/agent/:id/status`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
+  const { status, notes } = req.body;
+  let reg = registrations.updateAgentStatus(req.params.id, status);
+  if (!reg) return res.status(404).json({ error: 'Registration not found' });
+  reg = registrations.updateAgent(req.params.id, { notes, reviewedAt: new Date().toISOString(), reviewedBy: req.user?.username });
+
+  let credentials = null;
+  let activated = false;
+  if (status === 'approved') {
+    try {
+      if (reg.username && !reg.loginGranted) {
+        // Applicant already chose their own password + PIN at application
+        // time (see registrations.createPendingAccount) — just switch it on.
+        auth.activateUser(reg.username);
+        reg = registrations.updateAgent(req.params.id, { loginGranted: true, loginActivatedAt: new Date().toISOString() });
+        activated = true;
+        console.log(`[activate] Enabled login for agent/${reg.id}: ${reg.username}`);
+      } else if (!reg.username && !reg.loginGranted) {
+        // Legacy fallback for applications submitted before this flow
+        // existed (no self-chosen password captured).
+        const name = reg.fullName || reg.name || ((reg.firstName || '') + ' ' + (reg.lastName || '')).trim() || 'user';
+        const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
+        const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
+        const username = `agent_${safeName}_${suffix}`;
+        const password = generatePassword();
+        const role = reg.role && ['ward_manager', 'constituency_manager', 'district_manager', 'provincial_manager', 'national_manager', 'polling_agent'].includes(reg.role) ? reg.role : TYPE_ROLES.agent;
+        if (!auth.getUser(username)) {
+          await auth.registerUser({ username, role, name, email: reg.email || '', phone: reg.phone || reg.cellNumber || '', scopeId: reg.scopeId || '', scopeName: reg.scopeName || reg.pollingStationName || reg.ward || reg.constituency || reg.district || reg.province || 'National', active: true, registrationId: reg.id, registrationType: 'agent' }, password);
+        }
+        credentials = { username, password, role, generatedAt: new Date().toISOString(), name };
+        reg = registrations.updateAgent(req.params.id, { username, loginGranted: true, loginCreatedAt: new Date().toISOString(), pendingPassword: password });
+        console.log(`[auto-grant] Created login for agent/${reg.id}: ${username}`);
+      }
+    } catch (e) { console.error(`[auto-grant] Failed for agent/${req.params.id}:`, e.message); }
+  }
+  res.json({ success: true, application: reg, registration: reg, credentials, activated });
+});
+
+app.post(`${BASE}/registrations/agent/:id/grant-login`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
+  try {
+    const id = req.params.id;
+    const reg = registrations.getAgent(id);
+    if (!reg) return res.status(404).json({ error: `Registration ${id} not found` });
+    const name = reg.fullName || reg.name || ((reg.firstName || '') + ' ' + (reg.lastName || '')).trim() || 'user';
+    const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
+    const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
+    const username = req.body.username || `agent_${safeName}_${suffix}`;
+    const password = req.body.password || generatePassword();
+    const role = reg.role && ['ward_manager', 'constituency_manager', 'district_manager', 'provincial_manager', 'national_manager', 'polling_agent'].includes(reg.role) ? reg.role : TYPE_ROLES.agent;
+    const existingUser = auth.getUser(username);
+    if (existingUser) { await auth.resetPassword(existingUser.id, password); }
+    else { await auth.registerUser({ username, role, name, email: reg.email || '', phone: reg.phone || reg.cellNumber || '', scopeId: reg.scopeId || '', scopeName: reg.scopeName || reg.pollingStationName || reg.ward || reg.constituency || reg.district || reg.province || 'National', active: true, registrationId: reg.id, registrationType: 'agent' }, password); }
+    registrations.updateAgent(id, { status: reg.status === 'pending' ? 'approved' : reg.status, username, loginGranted: true, loginCreatedAt: new Date().toISOString(), loginGrantedBy: req.user?.username, pendingPassword: password });
+    res.json({ success: true, credentials: { username, password, role, generatedAt: new Date().toISOString(), name, alreadyExists: !!existingUser }, message: `Login granted for ${name}` });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Public by design, same reasoning as the equivalent member endpoint above:
+// the applicant has no login yet at this point, and the registration id
+// doubles as their reference number to retrieve credentials once approved.
+app.get(`${BASE}/registrations/agent/:id/credentials`, (req, res) => {
+  const reg = registrations.getAgent(req.params.id);
+  if (!reg) return res.status(404).json({ success: false, credentials: null, error: 'Registration not found' });
+  if (!reg.loginGranted || !reg.username) {
+    return res.json({ success: false, credentials: null, message: 'Not approved yet — check back after an admin reviews your application.' });
+  }
+  if (!reg.pendingPassword) {
+    return res.json({ success: true, credentials: null, activated: true, username: reg.username, message: 'Your application has been approved — your account is now active. Log in with the username above and the password you created when you applied.' });
+  }
+  const credentials = { username: reg.username, password: reg.pendingPassword };
+  registrations.updateAgent(req.params.id, { pendingPassword: null });
+  res.json({ success: true, credentials, activated: false });
+});
 app.post(`${BASE}/register/cooperative`, (req, res) => { try { const registration = registrations.registerCoop(req.body); setImmediate(() => notifyNewApplication('cooperative', registration)); res.json({ registration }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/register/coops`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ coops: registrations.listCoops ? registrations.listCoops() : [] }));
 

@@ -234,6 +234,16 @@ export function getRoleCapacity() {
   return result;
 }
 
+export function getAgent(id) { return kv.get(`boz:reg:agent:${id}`); }
+
+export function updateAgent(id, patch) {
+  const a = kv.get(`boz:reg:agent:${id}`);
+  if (!a) return null;
+  const updated = { ...a, ...patch, updatedAt: new Date().toISOString() };
+  kv.set(`boz:reg:agent:${id}`, updated);
+  return updated;
+}
+
 export function listAgents(filters = {}) {
   let agents = getAgentIndex().map(id => kv.get(`boz:reg:agent:${id}`)).filter(Boolean);
   if (filters.status) agents = agents.filter(a => a.status === filters.status);
