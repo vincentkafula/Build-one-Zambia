@@ -601,11 +601,11 @@ export function NewsManager() {
       {tab === 'overview' && stats && (
         <div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px', marginBottom: '24px' }}>
-            <StatCard icon={<FileText size={18} />}    label="Total Posts"  value={stats.total}     color="#1d4ed8" />
-            <StatCard icon={<Globe size={18} />}       label="Published"    value={stats.published} color="#10b981" />
-            <StatCard icon={<Clock size={18} />}       label="Drafts"       value={stats.drafts}    color="#f59e0b" />
-            <StatCard icon={<Archive size={18} />}     label="Archived"     value={stats.archived}  color="#6b7280" />
-            <StatCard icon={<Star size={18} />}        label="Featured"     value={stats.featured}  color="#f59e0b" />
+            <StatCard icon={<FileText size={18} />}    label="Total Posts"  value={stats.total ?? 0}     color="#1d4ed8" />
+            <StatCard icon={<Globe size={18} />}       label="Published"    value={stats.published ?? 0} color="#10b981" />
+            <StatCard icon={<Clock size={18} />}       label="Drafts"       value={stats.drafts ?? 0}    color="#f59e0b" />
+            <StatCard icon={<Archive size={18} />}     label="Archived"     value={stats.archived ?? 0}  color="#6b7280" />
+            <StatCard icon={<Star size={18} />}        label="Featured"     value={stats.featured ?? 0}  color="#f59e0b" />
           </div>
 
           <h3 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 700, color: '#374151' }}>By Category</h3>
@@ -613,7 +613,7 @@ export function NewsManager() {
             {CATEGORIES.map(cat => (
               <div key={cat} style={{ padding: '12px 14px', border: '1px solid #e5e7eb', borderRadius: '8px', backgroundColor: '#fff', borderLeft: `4px solid ${CAT_COLORS[cat]}` }}>
                 <p style={{ margin: '0 0 4px', fontSize: '11px', color: '#6b7280', fontWeight: 600 }}>{CAT_LABELS[cat]}</p>
-                <p style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: '#111827' }}>{stats.byCategory[cat] || 0}</p>
+                <p style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: '#111827' }}>{stats.byCategory?.[cat] ?? 0}</p>
               </div>
             ))}
           </div>

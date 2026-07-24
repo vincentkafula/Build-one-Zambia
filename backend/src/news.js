@@ -57,6 +57,7 @@ export function createPost(input, author) {
     tags: input.tags || [],
     published: false,
     archived: false,
+    featured: !!input.featured,
     publishedAt: null,
     author,
     imageUrl: input.imageUrl || '',
@@ -129,10 +130,14 @@ export function hardDeletePost(id) {
 
 export function getStats() {
   const posts = getIndex().map(id => kv.get(`boz:news:post:${id}`)).filter(Boolean).map(withStatus);
+  const byCategory = {};
+  for (const p of posts) byCategory[p.category] = (byCategory[p.category] || 0) + 1;
   return {
     total: posts.length,
     published: posts.filter(p => p.status === 'published').length,
-    draft: posts.filter(p => p.status === 'draft').length,
+    drafts: posts.filter(p => p.status === 'draft').length,
     archived: posts.filter(p => p.status === 'archived').length,
+    featured: posts.filter(p => p.featured).length,
+    byCategory,
   };
 }
