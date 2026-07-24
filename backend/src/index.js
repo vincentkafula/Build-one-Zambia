@@ -147,28 +147,35 @@ async function autoSeedParliamentaryCandidates() {
 }
 autoSeedParliamentaryCandidates().catch(e => console.error('[auto-seed]', e.message));
 
-// ─── One-time correction: Munali (constituency 082) MP candidate names ──────
-// The original ECZ nomination source had several Munali surnames obscured by
-// a watermark; those got seeded as literal "(name Obscured By Watermark)"
-// placeholders. The real names are now known. Auto-seeding only runs once
-// (skipped once candidates already exist), so fixing the seed JSON alone
-// doesn't correct records already written to the live database on a prior
-// deploy — this runs unconditionally on every boot, matches only the
-// specific old placeholder ids, and is a no-op once already fixed.
-function correctMunaliCandidateNames() {
-  const MUNALI_FIXES = [
-    { oldId: 'p26-082-name-obscured-by-watermark-chrispin', newId: 'p26-082-chiinda-chrispin', name: 'Chiinda Chrispin' },
-    { oldId: 'p26-082-name-obscured-by-watermark-m', newId: 'p26-082-chomba-obbie-m', name: 'Chomba Obbie M' },
-    { oldId: 'p26-082-name-obscured-by-watermark-anwa-v', newId: 'p26-082-kasanda-mpomwa-v', name: 'Kasanda Mpomwa V' },
-    { oldId: 'p26-082-name-obscured-by-watermark', newId: 'p26-082-mankishi-kisulo', name: 'Mankishi Kisulo' },
-    { oldId: 'p26-082-name-obscured-by-watermark-mwenya-r', newId: 'p26-082-matafwali-mwenya-r', name: 'Matafwali Mwenya R' },
-    { oldId: 'p26-082-name-obscured-by-watermark-2', newId: 'p26-082-mutila-andrew', name: 'Mutila Andrew' },
-    { oldId: 'p26-082-name-obscured-by-watermark-agaton-m', newId: 'p26-082-mvunga-agaton-m', name: 'Mvunga Agaton M' },
-  ];
+// ─── One-time correction: watermark-obscured MP candidate names ─────────────
+// The original ECZ nomination source had a watermark obscuring several
+// candidate surnames in some constituencies; those got seeded as literal
+// "(name Obscured By Watermark)" placeholders. As the real names are
+// confirmed constituency by constituency, add their fixes to OBSCURED_NAME_FIXES
+// below. Auto-seeding only runs once (skipped once candidates already
+// exist), so fixing the seed JSON alone doesn't correct records already
+// written to the live database on a prior deploy — this runs
+// unconditionally on every boot, matches only the specific old placeholder
+// ids listed, and is a no-op for anything already fixed.
+const OBSCURED_NAME_FIXES = [
+  // Munali (082)
+  { oldId: 'p26-082-name-obscured-by-watermark-chrispin', newId: 'p26-082-chiinda-chrispin', name: 'Chiinda Chrispin' },
+  { oldId: 'p26-082-name-obscured-by-watermark-m', newId: 'p26-082-chomba-obbie-m', name: 'Chomba Obbie M' },
+  { oldId: 'p26-082-name-obscured-by-watermark-anwa-v', newId: 'p26-082-kasanda-mpomwa-v', name: 'Kasanda Mpomwa V' },
+  { oldId: 'p26-082-name-obscured-by-watermark', newId: 'p26-082-mankishi-kisulo', name: 'Mankishi Kisulo' },
+  { oldId: 'p26-082-name-obscured-by-watermark-mwenya-r', newId: 'p26-082-matafwali-mwenya-r', name: 'Matafwali Mwenya R' },
+  { oldId: 'p26-082-name-obscured-by-watermark-2', newId: 'p26-082-mutila-andrew', name: 'Mutila Andrew' },
+  { oldId: 'p26-082-name-obscured-by-watermark-agaton-m', newId: 'p26-082-mvunga-agaton-m', name: 'Mvunga Agaton M' },
+  // Kanyama (078)
+  { oldId: 'p26-078-name-obscured-by-watermark-joseph', newId: 'p26-078-chibesa-joseph', name: 'Chibesa Joseph' },
+  { oldId: 'p26-078-name-obscured-by-watermark-muhammed-k', newId: 'p26-078-dambele-muhammed-k', name: 'Dambele Muhammed K' },
+];
+
+function correctObscuredCandidateNames() {
   let fixedCount = 0;
   const index = kv.get('boz:candidates:index') || [];
   let newIndex = index;
-  for (const { oldId, newId, name } of MUNALI_FIXES) {
+  for (const { oldId, newId, name } of OBSCURED_NAME_FIXES) {
     const existing = kv.get(`boz:candidates:cand:${oldId}`);
     if (!existing) continue; // already fixed, or never seeded under the old id
     kv.set(`boz:candidates:cand:${newId}`, { ...existing, id: newId, name, updatedAt: new Date().toISOString() });
@@ -178,15 +185,15 @@ function correctMunaliCandidateNames() {
   }
   if (fixedCount > 0) {
     kv.set('boz:candidates:index', newIndex);
-    console.log(`[correction] Fixed ${fixedCount} Munali (082) MP candidate name(s) previously obscured by a source-document watermark.`);
+    console.log(`[correction] Fixed ${fixedCount} MP candidate name(s) previously obscured by a source-document watermark.`);
   }
 }
 // Runs after a short delay rather than immediately at boot, so the
 // PostgreSQL connection (which happens asynchronously) has time to finish
 // loading existing records into memory first — otherwise this could run
-// before a previously-seeded Munali record is even visible to kv.get() and
+// before a previously-seeded record is even visible to kv.get() and
 // wrongly conclude there's nothing to fix.
-setTimeout(correctMunaliCandidateNames, 3000);
+setTimeout(correctObscuredCandidateNames, 3000);
 
 // ─── Auto-seed 2026 mayoral/chairperson candidates (from ECZ nomination notice) ──
 async function autoSeedMayoralCandidates() {
