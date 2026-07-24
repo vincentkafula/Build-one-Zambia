@@ -2,14 +2,8 @@ import { useState } from 'react';
 import { Download, Loader2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { resultsApi, type StationBreakdownRow, type ElectionCategory, type LevelType } from '../lib/api';
-
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: Record<string, unknown>) => jsPDF;
-  }
-}
 
 interface RosterCandidate {
   id: string;
@@ -247,7 +241,7 @@ function downloadPDF(rows: StationBreakdownRow[], roster: RosterCandidate[], gro
     [214, 234, 222], [225, 240, 231], [235, 246, 239], [245, 250, 247],
   ];
 
-  doc.autoTable({
+  autoTable(doc, {
     startY: y,
     head: [headers],
     body,
