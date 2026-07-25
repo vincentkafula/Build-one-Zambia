@@ -1,75 +1,193 @@
+import { useEffect, useRef, useState } from 'react';
+import { Lock, Landmark, CreditCard, Smartphone, ArrowDown } from 'lucide-react';
 import { DonationFlow } from '../../components/DonationFlow';
 
-export function DonatePage() {
-  return (
-    <div style={{ backgroundColor: '#007A30', fontFamily: 'Open Sans, sans-serif', color: '#fff', minHeight: '100vh' }}>
+// Real donation tiers already used by DonationFlow (K100/K500/K1,000/K5,000)
+// mapped to concrete, specific outcomes drawn from BOZ's actual described
+// activities — grassroots outreach, voter education, rally logistics —
+// rather than generic "your gift matters" language. This is the page's
+// signature: a stepped "build" ladder (green rail, ascending) that makes
+// the literal thing a kwacha amount buys visible, tying directly into the
+// party's own name.
+const IMPACT_STEPS = [
+  { amount: 'K100', title: 'Supporter', outcome: 'Prints voter-education flyers for one polling station.' },
+  { amount: 'K500', title: 'Advocate', outcome: 'Funds a full day of door-to-door canvassing in one ward.' },
+  { amount: 'K1,000', title: 'Champion', outcome: 'Covers sound and staging for one community rally.' },
+  { amount: 'K5,000', title: 'Patron', outcome: 'Buys a voter-education radio slot reaching a whole constituency.' },
+];
 
-      {/* Hero */}
-      <section style={{ position: 'relative', padding: '100px 16px 80px', textAlign: 'center', overflow: 'hidden', background: 'linear-gradient(135deg, #007A30 0%, #006B28 40%, #1a0000 100%)' }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 50% 40%, rgba(220,38,38,0.12) 0%, transparent 65%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'relative', maxWidth: '700px', margin: '0 auto' }}>
-          <p style={{ fontSize: '11px', letterSpacing: '0.25em', color: '#dc2626', fontFamily: 'Oswald, sans-serif', fontWeight: 600, marginBottom: '16px' }}>
-            FUEL THE MOVEMENT
-          </p>
-          <h1 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(2.4rem, 6vw, 4rem)', lineHeight: 1.1, letterSpacing: '0.03em', marginBottom: '20px', color: '#fff' }}>
-            DONATE TO <span style={{ color: '#dc2626' }}>BUILD ONE ZAMBIA</span>
-          </h1>
-          <p style={{ color: '#9ca3af', fontSize: '1.05rem', lineHeight: 1.85, maxWidth: '560px', margin: '0 auto' }}>
-            Every kwacha you give goes directly to grassroots outreach, voter education, and rally logistics across all 10 provinces of Zambia.
-          </p>
+const TRUST_ITEMS = [
+  { Icon: Lock, label: '256-bit SSL Encryption' },
+  { Icon: CreditCard, label: 'Visa · Mastercard · Amex' },
+  { Icon: Landmark, label: 'ABSA · FNB · Zanaco' },
+  { Icon: Smartphone, label: 'Airtel · Zamtel · MTN' },
+];
+
+function useCountUp(target: number, active: boolean, durationMs = 1400) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (!active) return;
+    let raf: number;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / durationMs);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setValue(Math.round(target * eased));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [active, target, durationMs]);
+  return value;
+}
+
+export function DonatePage() {
+  const [heroVisible, setHeroVisible] = useState(false);
+  const flowRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { const t = setTimeout(() => setHeroVisible(true), 80); return () => clearTimeout(t); }, []);
+  const voters = useCountUp(8786300, heroVisible);
+
+  return (
+    <div style={{ backgroundColor: '#04120a', fontFamily: 'Open Sans, sans-serif', color: '#fff', minHeight: '100vh' }}>
+
+      {/* ── Hero — split, grounded in real civic scale, not a generic appeal ── */}
+      <section style={{ position: 'relative', overflow: 'hidden', padding: '96px 20px 64px', background: 'linear-gradient(160deg, #04120a 0%, #062b16 55%, #0a0a0a 100%)' }}>
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 15% 20%, rgba(0,122,48,0.35) 0%, transparent 55%)', pointerEvents: 'none' }} />
+        <div
+          style={{
+            position: 'relative', maxWidth: '1060px', margin: '0 auto',
+            display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', gap: '32px',
+          }}
+          className="donate-hero-grid"
+        >
+          <div style={{ opacity: heroVisible ? 1 : 0, transform: heroVisible ? 'translateY(0)' : 'translateY(14px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+            <p style={{ fontSize: '11px', letterSpacing: '0.3em', color: '#dc2626', fontFamily: 'Oswald, sans-serif', fontWeight: 600, marginBottom: '18px' }}>
+              WHY IT MATTERS
+            </p>
+            <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(3rem, 9vw, 5.5rem)', lineHeight: 1, letterSpacing: '0.01em', color: '#fff', fontVariantNumeric: 'tabular-nums' }}>
+              {voters.toLocaleString()}
+            </div>
+            <p style={{ color: '#8fb89e', fontSize: '0.95rem', letterSpacing: '0.04em', marginTop: '6px' }}>
+              Zambians registered to vote in 2026 — every one of them reachable only with real resources.
+            </p>
+          </div>
+
+          <div style={{ opacity: heroVisible ? 1 : 0, transform: heroVisible ? 'translateY(0)' : 'translateY(14px)', transition: 'opacity 0.7s ease 0.12s, transform 0.7s ease 0.12s' }}>
+            <h1 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(2rem, 5vw, 3.1rem)', lineHeight: 1.12, letterSpacing: '0.01em', marginBottom: '18px', color: '#fff' }}>
+              Your kwacha reaches every one of them.
+            </h1>
+            <p style={{ color: '#b9c9bf', fontSize: '1rem', lineHeight: 1.85, maxWidth: '520px', marginBottom: '28px' }}>
+              Donations fund grassroots outreach, voter education, and rally logistics across all ten provinces —
+              nothing routed anywhere else.
+            </p>
+            <button
+              onClick={() => flowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '10px',
+                backgroundColor: '#dc2626', color: '#fff', border: 'none',
+                padding: '14px 28px', fontFamily: 'Oswald, sans-serif', fontSize: '14px',
+                letterSpacing: '0.1em', cursor: 'pointer',
+              }}
+            >
+              DONATE NOW <ArrowDown size={15} />
+            </button>
+          </div>
+        </div>
+
+        {/* Zambian-flag colour rail — the one deliberate accent, used once */}
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '4px', display: 'flex' }}>
+          <div style={{ flex: 3, backgroundColor: '#007A30' }} />
+          <div style={{ flex: 1, backgroundColor: '#dc2626' }} />
+          <div style={{ flex: 1, backgroundColor: '#000' }} />
+          <div style={{ flex: 1, backgroundColor: '#ff8200' }} />
         </div>
       </section>
 
-      {/* Why donate — 3 pillars */}
-      <section style={{ padding: '60px 16px', backgroundColor: '#0d0d0d' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-          {[
-            { num: '01', title: 'Grassroots Outreach',   desc: 'Fund campaign teams in every ward, constituency, and district across Zambia.' },
-            { num: '02', title: 'Voter Education',        desc: 'Support materials, radio broadcasts, and community meetings educating citizens on their rights.' },
-            { num: '03', title: 'Rally Logistics',        desc: 'Help cover transport, venues, and equipment to bring the message to every corner of the nation.' },
-          ].map(item => (
-            <div key={item.num} style={{ backgroundColor: '#111', border: '1px solid #1f1f1f', borderTop: '3px solid #dc2626', padding: '28px 24px' }}>
-              <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: '2rem', color: 'rgba(220,38,38,0.25)', marginBottom: '12px', letterSpacing: '0.06em' }}>{item.num}</div>
-              <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1rem', letterSpacing: '0.06em', color: '#fff', marginBottom: '8px' }}>{item.title}</h3>
-              <p style={{ color: '#6b7280', fontSize: '13px', lineHeight: 1.75, margin: 0 }}>{item.desc}</p>
+      {/* ── Impact ladder — signature element: kwacha amount -> literal outcome ── */}
+      <section style={{ padding: '76px 20px 64px', backgroundColor: '#080808' }}>
+        <div style={{ maxWidth: '640px', margin: '0 auto 44px', textAlign: 'center' }}>
+          <p style={{ fontSize: '11px', letterSpacing: '0.3em', color: '#dc2626', fontFamily: 'Oswald, sans-serif', fontWeight: 600, marginBottom: '14px' }}>
+            WHAT IT BUILDS
+          </p>
+          <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.6rem, 3.6vw, 2.3rem)', letterSpacing: '0.01em', color: '#fff' }}>
+            Every level, a real result
+          </h2>
+        </div>
+
+        <div style={{ maxWidth: '620px', margin: '0 auto', position: 'relative' }}>
+          {/* connecting rail */}
+          <div style={{ position: 'absolute', left: '27px', top: '14px', bottom: '14px', width: '2px', background: 'linear-gradient(180deg, #1a3a26 0%, #007A30 100%)' }} />
+          {IMPACT_STEPS.map((step, i) => (
+            <div key={step.amount} style={{ position: 'relative', display: 'flex', gap: '24px', paddingBottom: i === IMPACT_STEPS.length - 1 ? 0 : '38px' }}>
+              <div
+                style={{
+                  flexShrink: 0, width: '56px', height: '56px', borderRadius: '50%',
+                  backgroundColor: '#0d0d0d', border: `2px solid ${i === IMPACT_STEPS.length - 1 ? '#dc2626' : '#007A30'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1,
+                }}
+              >
+                <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10px', fontWeight: 700, color: i === IMPACT_STEPS.length - 1 ? '#dc2626' : '#22c55e', letterSpacing: '0.02em' }}>
+                  {step.amount}
+                </span>
+              </div>
+              <div style={{ paddingTop: '8px' }}>
+                <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.95rem', letterSpacing: '0.06em', color: '#fff', marginBottom: '4px' }}>
+                  {step.title.toUpperCase()}
+                </p>
+                <p style={{ color: '#8b9a91', fontSize: '14px', lineHeight: 1.7, margin: 0, maxWidth: '420px' }}>
+                  {step.outcome}
+                </p>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Donation flow */}
-      <section style={{ padding: '72px 16px 96px' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr', gap: '48px' }}>
-
-          {/* Flow */}
-          <div style={{ backgroundColor: '#0d0d0d', border: '1px solid #1f1f1f', padding: '40px 36px' }}>
+      {/* ── Donation flow ── */}
+      <section ref={flowRef} style={{ padding: '24px 20px 96px', backgroundColor: '#080808' }}>
+        <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+          <div style={{ backgroundColor: '#0d0d0d', border: '1px solid #1a1a1a', borderTop: '3px solid #007A30' }}>
             <DonationFlow />
           </div>
         </div>
       </section>
 
-      {/* Trust bar */}
-      <section style={{ padding: '40px 16px', backgroundColor: '#080808', borderTop: '1px solid #005020' }}>
-        <div style={{ maxWidth: '700px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '32px' }}>
-          {[
-            '🔒 256-bit SSL Encryption',
-            '🏛 Compliant with Zambian Electoral Laws',
-            '💳 Visa · Mastercard · Amex',
-            '🏦 ABSA · FNB · Zanaco',
-            '📱 Airtel · Zamtel · MTN',
-          ].map(item => (
-            <span key={item} style={{ fontSize: '12px', color: '#6b7280', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>{item}</span>
+      {/* ── Trust row ── */}
+      <section style={{ padding: '36px 20px', backgroundColor: '#04120a', borderTop: '1px solid #0f2a1a', borderBottom: '1px solid #0f2a1a' }}>
+        <div style={{ maxWidth: '760px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '36px' }}>
+          {TRUST_ITEMS.map(({ Icon, label }) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+              <Icon size={15} color="#4a7a5c" />
+              <span style={{ fontSize: '12px', color: '#6b7280', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.05em' }}>{label}</span>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* Closing banner */}
-      <section style={{ padding: '72px 16px', backgroundColor: '#dc2626', textAlign: 'center' }}>
-        <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', letterSpacing: '0.03em', color: '#fff', marginBottom: '10px' }}>
+      {/* ── Closing banner — angled, not a flat rectangle ── */}
+      <section
+        style={{
+          position: 'relative', padding: '88px 20px 76px', textAlign: 'center',
+          backgroundColor: '#dc2626', overflow: 'hidden',
+          clipPath: 'polygon(0 6%, 100% 0, 100% 100%, 0 100%)',
+        }}
+      >
+        <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.7rem, 4.4vw, 2.7rem)', letterSpacing: '0.02em', color: '#fff', marginBottom: '10px' }}>
           One Zambia. One Future. Built by Us.
         </h2>
-        <p style={{ color: 'rgba(255,255,255,0.8)', fontStyle: 'italic', fontSize: '15px', margin: 0 }}>Let us make history together — Vote 14 August 2031.</p>
+        <p style={{ color: 'rgba(255,255,255,0.82)', fontStyle: 'italic', fontSize: '15px', margin: 0 }}>
+          Let us make history together — Vote 14 August 2031.
+        </p>
       </section>
+
+      <style>{`
+        @media (min-width: 860px) {
+          .donate-hero-grid { grid-template-columns: 0.85fr 1.15fr !important; align-items: center; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+        }
+      `}</style>
     </div>
   );
 }
