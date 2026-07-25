@@ -22,6 +22,7 @@ import {
   ArrowRight, Lock, Eye, EyeOff, Zap, ChevronLeft, Clock,
 } from 'lucide-react';
 import { API_BASE } from '@/app/lib/apiBase';
+import { authApi } from '../lib/api';
 
 // ── API base resolver ──────────────────────────────────────────────────────
 function getApiBaseUrl(): string {
@@ -117,6 +118,10 @@ export default function DashboardLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [pendingAccount, setPendingAccount] = useState<null | { name: string; role: string; scopeName?: string; username: string }>(null);
+  const [showResendPanel, setShowResendPanel] = useState(false);
+  const [resendEmail, setResendEmail] = useState('');
+  const [resendMsg, setResendMsg] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
 
   const selected = DASHBOARD_TYPES.find(d => d.id === selectedId);
   const isElectionLogin   = selectedId === 'election';
@@ -569,6 +574,59 @@ export default function DashboardLogin() {
                     </button>
                   </div>
                 </div>
+
+                {/* Forgot username / PIN */}
+                <div className="mb-5 text-right">
+                  <button
+                    type="button"
+                    onClick={() => { setShowResendPanel(v => !v); setResendMsg(''); }}
+                    className="text-xs"
+                    style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}
+                  >
+                    Forgot your username or PIN?
+                  </button>
+                </div>
+
+                {showResendPanel && (
+                  <div className="mb-5 p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                      Enter the email you applied with — if an account matches, we'll send new login details to it.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="email"
+                        value={resendEmail}
+                        onChange={(e) => setResendEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        className="flex-1 px-3 py-2 rounded-lg text-sm"
+                        style={{ backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', outline: 'none' }}
+                      />
+                      <button
+                        type="button"
+                        disabled={resendLoading || !resendEmail}
+                        onClick={async () => {
+                          setResendLoading(true);
+                          setResendMsg('');
+                          try {
+                            const res = await authApi.resendLogin({ email: resendEmail });
+                            setResendMsg(res.message);
+                          } catch (err) {
+                            setResendMsg(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+                          } finally {
+                            setResendLoading(false);
+                          }
+                        }}
+                        className="px-4 py-2 rounded-lg text-xs font-semibold"
+                        style={{ backgroundColor: selected?.color || '#22c55e', color: '#fff', opacity: resendLoading || !resendEmail ? 0.6 : 1 }}
+                      >
+                        {resendLoading ? 'Sending…' : 'Send'}
+                      </button>
+                    </div>
+                    {resendMsg && (
+                      <p className="text-xs mt-2" style={{ color: 'rgba(255,255,255,0.6)' }}>{resendMsg}</p>
+                    )}
+                  </div>
+                )}
 
                 {/* Submit */}
                 <button

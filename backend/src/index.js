@@ -242,6 +242,39 @@ app.post(`${BASE}/auth/register`, auth.requireAuth, auth.requireRole('admin', 's
 });
 app.get(`${BASE}/auth/users`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ users: auth.listUsers() }));
 
+// Passwords and PINs are hashed (auth.js/PBKDF2) — there is no original
+// value to "resend", ever. This resets both to new random values and
+// emails the new credentials, same as any standard account-recovery flow.
+// Always responds with the same generic message regardless of whether a
+// matching account was found, so this can't be used to check which
+// emails/usernames have accounts (account enumeration).
+app.post(`${BASE}/auth/resend-login`, loginLimiter, async (req, res) => {
+  const { email, username } = req.body || {};
+  const generic = { success: true, message: 'If an account matches those details, new login credentials have been emailed to the address on file.' };
+  if (!email && !username) return res.status(400).json({ error: 'email or username is required' });
+
+  try {
+    const users = auth.listUsers();
+    const match = users.find(u =>
+      (username && u.username === username) ||
+      (email && u.email && u.email.toLowerCase() === String(email).toLowerCase())
+    );
+    if (!match) return res.json(generic);
+
+    const newPassword = generatePassword();
+    const newPin = String(Math.floor(1000 + Math.random() * 9000));
+    await auth.resetPassword(match.id, newPassword);
+    await auth.setPin(match.username, newPin);
+    await sendCredentialsResetEmail(match, newPassword, newPin);
+    res.json(generic);
+  } catch (err) {
+    console.error('[resend-login] error:', err.message);
+    // Still return the generic message — never reveal whether something
+    // failed internally vs. no account existed at all.
+    res.json(generic);
+  }
+});
+
 // ─── Leadership ───────────────────────────────────────────────────────────────
 let seeded = false;
 function ensureSeeded(req) { if (!seeded) { leadership.seedLeaders(`${req.protocol}://${req.get('host')}`); seeded = true; } }
@@ -375,6 +408,7 @@ app.post(`${BASE}/registrations/agent`, async (req, res) => {
     const registration = registrations.registerAgent(req.body);
     const withAccount = await registrations.createPendingAccount('agent', registration);
     setImmediate(() => notifyNewApplication('agent', withAccount));
+    setImmediate(() => sendApplicantWelcomeEmail(withAccount, withAccount.roleLabel || withAccount.role));
     res.json({ registration: withAccount });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -1185,12 +1219,80 @@ function saveReg(type) { kv.set(`reg:${type}`, regStore[type]); }
 function generatePassword() { const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$'; let p = ''; for (let i = 0; i < 10; i++) p += chars[Math.floor(Math.random() * chars.length)]; return p; }
 const TYPE_ROLES = { agent: 'polling_agent', member: 'member', internship: 'internship', cooperative: 'cooperative' };
 
+// Sent by POST /auth/resend-login once new credentials have actually been
+// generated and saved — separate from sendApplicantWelcomeEmail (that one
+// only fires once, right at initial application submission).
+async function sendCredentialsResetEmail(user, newPassword, newPin) {
+  if (!process.env.RESEND_API_KEY || !user.email) return;
+  try {
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
+        <h2 style="color:#007A30">Your Login Details</h2>
+        <p>Hi ${user.name || 'there'},</p>
+        <p>Here are your new Build One Zambia login details, as requested:</p>
+        <div style="background:#f3f4f6;border-radius:8px;padding:16px;margin:16px 0">
+          <p style="margin:0 0 10px"><span style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">Username</span><br><strong style="font-size:16px">${user.username}</strong></p>
+          <p style="margin:0 0 10px"><span style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">New Password</span><br><strong style="font-size:16px">${newPassword}</strong></p>
+          <p style="margin:0"><span style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">New PIN</span><br><strong style="font-size:16px">${newPin}</strong></p>
+        </div>
+        <p style="color:#374151">Your previous password and PIN no longer work — please use these new ones to log in.</p>
+        <p style="color:#6b7280;font-size:13px">If you didn't request this, please contact BOZ immediately.</p>
+      </div>`;
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: process.env.EMAIL_FROM_ADDRESS || 'no-reply@bozplans.org', to: user.email, subject: 'Your Build One Zambia Login Details', html }),
+    });
+    const data = await r.json();
+    if (!r.ok) console.error(`[resend-login] Resend error for ${user.username}:`, data);
+    else console.log(`[resend-login] Sent new credentials to ${user.username} (${user.email}): ${data.id}`);
+  } catch (e) {
+    console.error(`[resend-login] Failed to send credentials email for ${user.username}:`, e.message);
+  }
+}
+
+// Sent to the APPLICANT themselves right after they submit — separate from
+// notifyNewApplication, which only ever emails BOZ admins about the new
+// application, never the applicant. Without this, an applicant who chose
+// their own password/PIN at signup had no record at all of their own
+// username once they closed the confirmation screen.
+async function sendApplicantWelcomeEmail(reg, roleLabel) {
+  if (!process.env.RESEND_API_KEY || !reg.email || !reg.username) return;
+  try {
+    const name = reg.fullName || reg.name || ((reg.firstName || '') + ' ' + (reg.lastName || '')).trim() || 'there';
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
+        <h2 style="color:#007A30">Application Received</h2>
+        <p>Hi ${name},</p>
+        <p>Thank you for applying${roleLabel ? ` for <strong>${roleLabel}</strong>` : ''} with Build One Zambia. Your application is now awaiting admin review.</p>
+        <div style="background:#f3f4f6;border-radius:8px;padding:16px;margin:16px 0">
+          <p style="margin:0 0 4px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">Your Username</p>
+          <p style="margin:0;font-size:18px;font-weight:700;color:#111827">${reg.username}</p>
+        </div>
+        <p style="color:#374151">Use this username with the password and PIN you chose when applying, once your application is approved, to log in.</p>
+        <p style="color:#6b7280;font-size:13px">If you forget your password or PIN later, use the "Resend Login Details" option on the login page to reset them.</p>
+        <p>Together we build One Zambia.</p>
+      </div>`;
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: process.env.EMAIL_FROM_ADDRESS || 'no-reply@bozplans.org', to: reg.email, subject: 'Your Build One Zambia Application — Username Inside', html }),
+    });
+    const data = await r.json();
+    if (!r.ok) console.error(`[welcome] Resend error sending applicant email for ${reg.id}:`, data);
+    else console.log(`[welcome] Sent applicant username email for ${reg.id} to ${reg.email}: ${data.id}`);
+  } catch (e) {
+    console.error(`[welcome] Failed to send applicant email for ${reg.id}:`, e.message);
+  }
+}
+
 function regRoutes(type, noun) {
   app.post(`${BASE}/registrations/${type}`, async (req, res) => {
     let reg = { ...req.body, id: `${type}-${Date.now()}`, status: 'pending', submittedAt: new Date().toISOString() };
     reg = await registrations.createPendingAccount(type, reg);
     regStore[type].push(reg); saveReg(type);
     setImmediate(() => notifyNewApplication(type, reg));
+    setImmediate(() => sendApplicantWelcomeEmail(reg, noun));
     res.json({ success: true, message: `${noun} registration submitted`, registration: reg });
   });
 

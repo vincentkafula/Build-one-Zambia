@@ -309,6 +309,9 @@ export const authApi = {
     ),
   logout: () => request('POST', '/auth/logout', undefined, true),
   me: () => request<{ user: unknown }>('GET', '/auth/me', undefined, true),
+
+  resendLogin: (data: { email?: string; username?: string }) =>
+    request<{ success: boolean; message: string }>('POST', '/auth/resend-login', data),
 };
 
 // ─── Voter Verification ────────────────────────────────────────────────────────
