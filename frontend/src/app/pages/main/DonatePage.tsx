@@ -10,12 +10,6 @@ declare global {
 
 // ── Content — matches the approved reference design exactly ────────────────
 
-const STATS = [
-  { value: '226', label: 'CONSTITUENCIES TARGETED' },
-  { value: 'K500', label: 'FUNDS ONE AGENT, ONE DAY' },
-  { value: '100%', label: 'INDEPENDENT & NON-PARTISAN' },
-];
-
 const TIERS = [
   { name: 'Supporter', amount: 100, desc: 'Membership card, supporter listing, and regular monitoring updates.' },
   { name: 'Bronze', amount: 250, desc: 'AGM voting rights, a free branded t-shirt, and early access to monitoring reports.' },
@@ -40,7 +34,6 @@ const BANKS = [
 
 const CREAM = '#F5F0E3';
 const GREEN_DARK = '#0E2A1B';
-const GREEN_PANEL = '#123420';
 const GOLD = '#CC9F3D';
 const SERIF = "'Playfair Display', serif";
 const MONO = "'IBM Plex Mono', monospace";
@@ -207,29 +200,12 @@ export function DonatePage() {
     <div style={{ backgroundColor: CREAM, minHeight: '100vh', fontFamily: 'Open Sans, sans-serif' }}>
 
       {/* ── Hero ── */}
-      <section style={{ position: 'relative', overflow: 'hidden', backgroundColor: GREEN_DARK, padding: '64px 20px 0' }}>
+      <section style={{ position: 'relative', overflow: 'hidden', backgroundColor: GREEN_DARK, padding: '72px 20px 56px' }}>
         <div style={{
           position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none',
           backgroundImage: 'repeating-radial-gradient(circle at 82% 30%, transparent 0, transparent 40px, rgba(255,255,255,0.025) 41px)',
         }} />
         <div style={{ position: 'relative', maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontFamily: MONO, fontSize: '11px', letterSpacing: '0.25em', color: GOLD, marginBottom: '28px' }}>
-            —— 2026 ELECTION &amp; BEYOND ——
-          </p>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: 34, height: 34, borderRadius: '50%', border: `1.5px solid ${GOLD}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <CheckCircle2 size={17} color="#fff" />
-              </div>
-              <span style={{ fontFamily: SERIF, fontSize: '1.1rem', fontWeight: 600, color: '#fff' }}>Build One Zambia</span>
-            </div>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '999px', backgroundColor: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.4)' }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#22c55e' }} />
-              <span style={{ fontFamily: MONO, fontSize: '11px', color: '#4ade80', letterSpacing: '0.06em' }}>SECURED</span>
-            </span>
-          </div>
-
           <h1 style={{ fontFamily: SERIF, fontSize: 'clamp(2.2rem, 6vw, 3.4rem)', lineHeight: 1.15, color: '#fff', marginBottom: '4px' }}>
             Fund the watch.
           </h1>
@@ -237,20 +213,11 @@ export function DonatePage() {
             Protect the vote.
           </h1>
 
-          <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '15px', lineHeight: 1.8, maxWidth: '620px', margin: '0 auto 48px' }}>
+          <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '15px', lineHeight: 1.8, maxWidth: '620px', margin: '0 auto' }}>
             Every donation puts a trained, independent monitor at a polling station.
             Help us keep Zambia's elections transparent, counted, and accountable
             — from now through 2026 and every election after it.
           </p>
-
-          <div style={{ backgroundColor: GREEN_PANEL, borderRadius: '14px 14px 0 0', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
-            {STATS.map((s, i) => (
-              <div key={s.label} style={{ padding: '32px 20px', textAlign: 'left', borderLeft: i > 0 ? '1px solid rgba(255,255,255,0.1)' : 'none' }}>
-                <p style={{ fontFamily: SERIF, fontSize: '2rem', color: '#fff', marginBottom: '6px' }}>{s.value}</p>
-                <p style={{ fontFamily: MONO, fontSize: '10.5px', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.55)' }}>{s.label}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
