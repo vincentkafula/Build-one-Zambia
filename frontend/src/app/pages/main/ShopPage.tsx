@@ -177,6 +177,74 @@ export function ShopPage() {
         </div>
       </section>
 
+      {/* Trending marquee showcase — moving product rows, poster-wall aesthetic */}
+      <section style={{ backgroundColor: '#0b0f0a', padding: '48px 0 40px', borderTop: '1px solid rgba(255,255,255,0.08)', borderBottom: '1px solid rgba(255,255,255,0.08)', position: 'relative', overflow: 'hidden' }}>
+        <style>{`
+          @keyframes bozScrollRow { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+          .boz-track { display: flex; gap: 18px; width: max-content; animation: bozScrollRow linear infinite; }
+          .boz-track:hover { animation-play-state: paused; }
+          .boz-row-mask { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); padding: 8px 0; }
+          @media (prefers-reduced-motion: reduce) { .boz-track { animation: none !important; } }
+        `}</style>
+
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px 26px' }}>
+          <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.22em', color: '#dc2626', marginBottom: '8px' }}>THE NEW LOOK</p>
+          <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.4rem, 3vw, 2rem)', color: '#fff', letterSpacing: '0.02em', margin: 0 }}>Trending in the campaign store</h2>
+          <p style={{ color: '#9ca3af', fontSize: '13px', marginTop: '8px', maxWidth: '60ch' }}>Hover any row to pause it and browse. Tap ADD to send a piece straight to your cart.</p>
+        </div>
+
+        {CATEGORIES.filter(c => c !== 'ALL').map((cat, rowIndex) => {
+          const rowProducts = PRODUCTS.filter(p => p.tag === cat);
+          if (rowProducts.length === 0) return null;
+          const looped = [...rowProducts, ...rowProducts];
+          const duration = 26 + rowIndex * 4;
+          const direction = rowIndex % 2 === 0 ? 'normal' : 'reverse';
+          return (
+            <div key={cat} style={{ marginBottom: '20px' }}>
+              <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px 10px' }}>
+                <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10.5px', letterSpacing: '0.14em', color: '#6b7280' }}>{cat}</span>
+              </div>
+              <div className="boz-row-mask">
+                <div className="boz-track" style={{ animationDuration: `${duration}s`, animationDirection: direction }}>
+                  {looped.map((product, i) => {
+                    const inCart = cart.find(ci => ci.id === product.id);
+                    const justAdded = addedId === product.id;
+                    return (
+                      <div key={`${cat}-${product.id}-${i}`}
+                        style={{
+                          background: '#F0EAD6', color: '#181C12', width: '190px', flex: '0 0 190px',
+                          borderRadius: '2px', padding: '12px 12px 14px', position: 'relative',
+                          boxShadow: '0 14px 24px -14px rgba(0,0,0,0.6)',
+                          transform: i % 2 === 0 ? 'rotate(-1deg)' : 'rotate(1deg)'
+                        }}
+                      >
+                        <div style={{ position: 'absolute', top: '-5px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: '#dc2626', boxShadow: '0 2px 3px rgba(0,0,0,0.4)' }} />
+                        {inCart && (
+                          <div style={{ position: 'absolute', top: '8px', right: '8px', background: '#181C12', color: '#F0EAD6', fontSize: '9px', fontFamily: 'Oswald, sans-serif', padding: '2px 6px', borderRadius: '10px' }}>
+                            ×{inCart.qty}
+                          </div>
+                        )}
+                        <div style={{ height: '100px', borderRadius: '2px', overflow: 'hidden', marginBottom: '10px', background: '#E4DCC1' }}>
+                          <img src={product.img} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '9px', letterSpacing: '0.08em', color: '#98281A', margin: '0 0 4px' }}>{product.tag}</p>
+                        <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '12.5px', fontWeight: 600, lineHeight: 1.25, margin: '0 0 10px', minHeight: '30px' }}>{product.name}</p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', paddingTop: '10px', borderTop: '1px dashed #D8CDA9' }}>
+                          <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', fontWeight: 700 }}>{product.price}</span>
+                          <button onClick={() => addToCart(product)} style={{ background: '#181C12', color: '#F0EAD6', border: 'none', fontFamily: 'Oswald, sans-serif', fontSize: '10px', letterSpacing: '0.04em', padding: '7px 10px', borderRadius: '2px', cursor: 'pointer' }}>
+                            {justAdded ? 'ADDED' : 'ADD'}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </section>
+
       {/* Search + filter */}
       <section style={{ padding: '40px 16px 0', backgroundColor: '#007A30' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
