@@ -1624,6 +1624,7 @@ app.post(`${BASE}/gateway/donation/verify-card`, async (req, res) => {
     if (verified) {
       donationStore.donations[idx] = { ...donation, status: 'completed', paymentRef: d.tx_ref, flwTransactionId: d.id, completedAt: new Date().toISOString() };
       saveDonations();
+      if (donation.email) setImmediate(() => sendReceiptEmail('donation', donationStore.donations[idx]));
     }
     res.json({
       success: true,
@@ -1742,9 +1743,47 @@ function confirmOrderPaid(order, flwData) {
   const statusOk = flwData.status === 'successful';
   if (amountOk && currencyOk && statusOk) {
     shop.updateOrderStatus(order.id, 'paid', flwData.tx_ref);
+    if (order.email) setImmediate(() => sendReceiptEmail('order', order));
     return true;
   }
   return false;
+}
+
+// Every "a receipt will be sent to your email" message on a successful
+// order/donation was never backed by any actual email — confirmOrderPaid
+// and the donation verify-card endpoint only ever updated the database
+// record, nothing ever called Resend. Reuses the exact same
+// fetch-to-resend.com pattern already proven working elsewhere (OTP
+// codes, new-application notifications) rather than anything new/untested.
+async function sendReceiptEmail(kind, record) {
+  if (!process.env.RESEND_API_KEY) { console.warn(`[receipt] RESEND_API_KEY not set, skipping ${kind} receipt for ${record.id}`); return; }
+  try {
+    const isDonation = kind === 'donation';
+    const amount = isDonation ? record.amount : record.total;
+    const email = record.email;
+    if (!email) return;
+    const subject = isDonation ? 'Thank you for your donation — Build One Zambia' : 'Your Build One Zambia order receipt';
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
+        <h2 style="color:#007A30">${isDonation ? 'Thank you for your donation!' : 'Order Confirmed'}</h2>
+        <p>Hi ${record.name || 'there'},</p>
+        <p>${isDonation
+          ? `Your donation of <strong>K${Number(amount).toLocaleString()}</strong> has been received and confirmed.`
+          : `Your order <strong>${record.id}</strong> for <strong>K${Number(amount).toLocaleString()}</strong> has been paid and confirmed.`}</p>
+        <p style="color:#6b7280;font-size:13px">Reference: ${record.paymentRef || record.id}</p>
+        <p>Together we build One Zambia. Thank you for your support.</p>
+      </div>`;
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: process.env.EMAIL_FROM_ADDRESS || 'no-reply@bozplans.org', to: email, subject, html }),
+    });
+    const data = await r.json();
+    if (!r.ok) console.error(`[receipt] Resend error sending ${kind} receipt for ${record.id}:`, data);
+    else console.log(`[receipt] Sent ${kind} receipt for ${record.id} to ${email}`);
+  } catch (e) {
+    console.error(`[receipt] Failed to send ${kind} receipt for ${record.id}:`, e.message);
+  }
 }
 
 app.post(`${BASE}/gateway/mobile-money`, async (req, res) => {
@@ -1917,8 +1956,20 @@ app.post(`${BASE}/gateway/verify-card`, async (req, res) => {
 // ─── Email ────────────────────────────────────────────────────────────────────
 app.get(`${BASE}/email/config`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => { const key = process.env.RESEND_API_KEY || ''; res.json({ connected: !!key, keyPreview: key ? `re_...${key.slice(-6)}` : null, fromName: process.env.EMAIL_FROM_NAME || 'Build One Zambia', fromEmail: process.env.EMAIL_FROM_ADDRESS || 'noreply@bozplans.org', adminEmail: process.env.ADMIN_EMAIL || '', siteUrl: process.env.SITE_URL || 'https://www.bozplans.org', provider: 'Resend' }); });
 app.post(`${BASE}/email/test`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => { try { if (!process.env.RESEND_API_KEY) return res.status(400).json({ error: 'RESEND_API_KEY not configured', configured: false }); const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from: process.env.EMAIL_FROM_ADDRESS || 'no-reply@bozplans.org', to: req.body.to || process.env.ADMIN_EMAIL, subject: 'BOZ Email Test', html: '<p>Email service is working correctly.</p>' }) }); const data = await r.json(); if (r.ok) res.json({ success: true, id: data.id }); else res.status(400).json({ error: data.message || 'Email send failed', configured: true }); } catch (e) { res.status(500).json({ error: e.message }); } });
-app.post(`${BASE}/email/resend/order/:orderId`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => res.json({ success: true, orderId: req.params.orderId, message: 'Email queued' }));
-app.post(`${BASE}/email/resend/payment/:paymentRef`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => res.json({ success: true, paymentRef: req.params.paymentRef, message: 'Receipt email queued' }));
+app.post(`${BASE}/email/resend/order/:orderId`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
+  const order = shop.getOrder(req.params.orderId);
+  if (!order) return res.status(404).json({ success: false, error: 'Order not found' });
+  if (!order.email) return res.status(400).json({ success: false, error: 'This order has no email address on file.' });
+  await sendReceiptEmail('order', order);
+  res.json({ success: true, orderId: req.params.orderId, message: `Receipt sent to ${order.email}` });
+});
+app.post(`${BASE}/email/resend/payment/:paymentRef`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
+  const donation = donationStore.donations.find(d => d.paymentRef === req.params.paymentRef || d.id === req.params.paymentRef);
+  if (!donation) return res.status(404).json({ success: false, error: 'Donation not found for that reference.' });
+  if (!donation.email) return res.status(400).json({ success: false, error: 'This donation has no email address on file.' });
+  await sendReceiptEmail('donation', donation);
+  res.json({ success: true, paymentRef: req.params.paymentRef, message: `Receipt sent to ${donation.email}` });
+});
 
 // ─── Application Notifications (send all submitted applications + documents to BOZ) ──
 const APPLICATION_NOTIFY_EMAIL = 'info@bozplans.org';
