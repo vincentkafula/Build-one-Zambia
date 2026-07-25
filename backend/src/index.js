@@ -1231,11 +1231,9 @@ app.patch(`${BASE}/events/:id`, auth.requireAuth, (req, res) => { const idx = ev
 app.delete(`${BASE}/events/:id`, auth.requireAuth, (req, res) => { eventsStore.events = eventsStore.events.filter(e => e.id !== req.params.id); kv.del && kv.del(`events:photo:${req.params.id}`); saveEvents(); res.json({ success: true }); });
 
 // ─── Registrations (new /registrations/* routes) ─────────────────────────────
-// regStore still backs agent only (member, cooperative, and internship are
-// now consolidated onto registrations.js's boz:reg:* stores — see the
-// dedicated route blocks below).
-const regStore = { agent: kv.get('reg:agent') || [] };
-function saveReg(type) { kv.set(`reg:${type}`, regStore[type]); }
+// All four types (agent, member, cooperative, internship) now read and
+// write registrations.js's canonical boz:reg:*/* stores directly — see
+// the dedicated route blocks below and further down in this file.
 
 // Grant Login helper
 function generatePassword() { const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$'; let p = ''; for (let i = 0; i < 10; i++) p += chars[Math.floor(Math.random() * chars.length)]; return p; }
@@ -1306,152 +1304,6 @@ async function sendApplicantWelcomeEmail(reg, roleLabel) {
     console.error(`[welcome] Failed to send applicant email for ${reg.id}:`, e.message);
   }
 }
-
-function regRoutes(type, noun) {
-  app.post(`${BASE}/registrations/${type}`, async (req, res) => {
-    let reg = { ...req.body, id: `${type}-${Date.now()}`, status: 'pending', submittedAt: new Date().toISOString() };
-    reg = await registrations.createPendingAccount(type, reg);
-    regStore[type].push(reg); saveReg(type);
-    setImmediate(() => notifyNewApplication(type, reg));
-    setImmediate(() => sendApplicantWelcomeEmail(reg, noun));
-    res.json({ success: true, message: `${noun} registration submitted`, registration: reg });
-  });
-
-  app.get(`${BASE}/registrations/${type}`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
-    let regs = [...regStore[type]];
-    if (req.query.status) regs = regs.filter(r => r.status === req.query.status);
-    res.json({ registrations: regs, count: regs.length });
-  });
-
-  app.patch(`${BASE}/registrations/${type}/:id/status`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
-    const idx = regStore[type].findIndex(r => r.id === req.params.id);
-    if (idx < 0) return res.status(404).json({ error: 'Registration not found' });
-    const { status, notes } = req.body;
-    regStore[type][idx] = { ...regStore[type][idx], status, notes, reviewedAt: new Date().toISOString(), reviewedBy: req.user?.username };
-    saveReg(type);
-    // Auto-grant login on approval — done synchronously (not via setImmediate)
-    // so the generated credentials can actually be included in this response.
-    // Previously this ran after the response had already been sent, so the
-    // password was generated but never returned to anyone — the account
-    // existed but nobody, including the admin, ever saw its password.
-    let credentials = null;
-    let activated = false;
-    if (status === 'approved') {
-      try {
-        const reg = regStore[type][idx];
-        if (reg.username && !reg.loginGranted) {
-          // Applicant already chose their own password + PIN at
-          // registration time — just switch their account on.
-          auth.activateUser(reg.username);
-          regStore[type][idx] = { ...regStore[type][idx], loginGranted: true, loginActivatedAt: new Date().toISOString() };
-          saveReg(type);
-          activated = true;
-          console.log(`[activate] Enabled login for ${type}/${reg.id}: ${reg.username}`);
-        } else if (!reg.username && !reg.loginGranted) {
-          // Legacy fallback for registrations submitted before applicants
-          // chose their own password (no self-service account to activate).
-          const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
-          const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
-          const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
-          const username = `${type}_${safeName}_${suffix}`;
-          const password = generatePassword();
-          const role = TYPE_ROLES[type] || 'polling_agent';
-          if (!auth.getUser(username)) {
-            await auth.registerUser({ username, role, name, email: reg.email || '', phone: reg.phone || reg.cellNumber || '', scopeName: reg.pollingStation || reg.ward || reg.constituency || reg.district || reg.province || 'National', active: true, registrationId: reg.id, registrationType: type }, password);
-          }
-          credentials = { username, password, role, generatedAt: new Date().toISOString(), name };
-          // pendingPassword is cleared the first time /credentials is fetched
-          // (by the registrant, using their reference number), so the
-          // plaintext password is retrievable exactly once outside of this
-          // admin-only response.
-          regStore[type][idx] = { ...regStore[type][idx], username, loginGranted: true, loginCreatedAt: new Date().toISOString(), pendingPassword: password };
-          saveReg(type);
-          console.log(`[auto-grant] Created login for ${type}/${reg.id}: ${username}`);
-        }
-      } catch (e) { console.error(`[auto-grant] Failed for ${type}/${req.params.id}:`, e.message); }
-    }
-    res.json({ success: true, registration: regStore[type][idx], credentials, activated });
-  });
-
-  app.post(`${BASE}/registrations/${type}/:id/grant-login`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
-    try {
-      const id = req.params.id;
-      let idx = regStore[type]?.findIndex(r => r.id === id) ?? -1;
-      let reg = idx >= 0 ? regStore[type][idx] : null;
-      // Check KV variants
-      if (!reg) {
-        for (const key of [`boz:reg:${type === 'internship' ? 'intern' : type === 'cooperative' ? 'coop' : type}:${id}`, `reg:${type}`]) {
-          const val = kv.get(key);
-          if (Array.isArray(val)) { const found = val.find(r => r.id === id); if (found) { reg = found; regStore[type].push(reg); saveReg(type); idx = regStore[type].length - 1; break; } }
-          else if (val?.id === id) { reg = val; regStore[type].push(reg); saveReg(type); idx = regStore[type].length - 1; break; }
-        }
-      }
-      if (!reg) return res.status(404).json({ error: `Registration ${id} not found` });
-      const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
-      const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
-      const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
-      const username = req.body.username || `${type}_${safeName}_${suffix}`;
-      const password = req.body.password || generatePassword();
-      const role = TYPE_ROLES[type] || 'polling_agent';
-      const existingUser = auth.getUser(username);
-      if (existingUser) { await auth.resetPassword(existingUser.id, password); }
-      else { await auth.registerUser({ username, role, name, email: reg.email || '', phone: reg.phone || reg.cellNumber || '', scopeName: reg.pollingStation || reg.ward || reg.constituency || reg.district || reg.province || 'National', active: true, registrationId: reg.id, registrationType: type }, password); }
-      regStore[type][idx] = { ...reg, status: reg.status === 'pending' ? 'approved' : reg.status, username, loginGranted: true, loginCreatedAt: new Date().toISOString(), loginGrantedBy: req.user?.username, pendingPassword: password };
-      saveReg(type);
-      res.json({ success: true, credentials: { username, password, role, generatedAt: new Date().toISOString(), name, alreadyExists: !!existingUser }, message: `Login granted for ${name}` });
-    } catch (e) { res.status(500).json({ error: e.message }); }
-  });
-
-  app.get(`${BASE}/registrations/${type}/:id/selfie`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
-    const reg = regStore[type]?.find(r => r.id === req.params.id) || kv.get(`boz:reg:${type === 'internship' ? 'intern' : type === 'cooperative' ? 'coop' : type}:${req.params.id}`);
-    if (!reg) return res.status(404).json({ error: 'Not found' });
-    res.json({ dataUrl: reg.selfieDataUrl || reg.selfie || null, hasSelfie: !!(reg.selfieDataUrl || reg.selfie) });
-  });
-
-  app.get(`${BASE}/registrations/${type}/:id/documents`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
-    const id = req.params.id;
-    let reg = regStore[type]?.find(r => r.id === id);
-    if (!reg) {
-      for (const key of [`boz:reg:${type === 'internship' ? 'intern' : type === 'cooperative' ? 'coop' : type}:${id}`, `boz:reg:agent:${id}`, `boz:reg:member:${id}`]) {
-        const val = kv.get(key);
-        if (Array.isArray(val)) { const found = val.find(r => r.id === id); if (found) { reg = found; break; } }
-        else if (val?.id === id) { reg = val; break; }
-      }
-    }
-    if (!reg) return res.status(404).json({ error: `Registration ${id} not found` });
-    const documents = { ...(reg.documents || reg.uploads || reg.docs || {}) };
-    if (reg.selfieDataUrl && !documents.selfie) documents.selfie = reg.selfieDataUrl;
-    res.json({ documents, documentsMeta: reg.documentsMeta || {}, hasDocuments: Object.keys(documents).length > 0 });
-  });
-
-  // Public by design: the registrant has no login yet at this point, and
-  // the UI already tells them to "return with your reference number" to
-  // retrieve credentials. The registration id doubles as that reference
-  // number/lookup key. The password is returned once, then cleared from
-  // storage, so it can't be re-fetched by someone who intercepts the id
-  // after the real registrant has already collected it.
-  app.get(`${BASE}/registrations/${type}/:id/credentials`, (req, res) => {
-    const id = req.params.id;
-    const idx = regStore[type]?.findIndex(r => r.id === id) ?? -1;
-    const reg = idx >= 0 ? regStore[type][idx] : null;
-    if (!reg) return res.status(404).json({ success: false, credentials: null, error: 'Registration not found' });
-    if (!reg.loginGranted || !reg.username) {
-      return res.json({ success: false, credentials: null, message: 'Not approved yet — check back after an admin reviews your application.' });
-    }
-    if (!reg.pendingPassword) {
-      // Self-service accounts (applicant chose their own password/PIN at
-      // registration) have nothing to hand back here — just confirm it's live.
-      return res.json({ success: true, credentials: null, activated: true, username: reg.username, message: 'Your application has been approved — your account is now active. Log in with the username above and the password you created when you applied.' });
-    }
-    const name = reg.fullName || reg.name || ((reg.firstName||'') + ' ' + (reg.lastName||'')).trim() || 'user';
-    const credentials = { username: reg.username, password: reg.pendingPassword };
-    regStore[type][idx] = { ...reg, pendingPassword: null };
-    saveReg(type);
-    res.json({ success: true, credentials, fullName: name });
-  });
-}
-
-regRoutes('agent', 'Agent');
 
 // ─── Cooperative & Internship registrations — consolidated onto the ───────────
 // canonical store, same treatment as member. There isn't a second live UI
