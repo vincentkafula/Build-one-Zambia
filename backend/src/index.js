@@ -262,10 +262,8 @@ app.post(`${BASE}/auth/resend-login`, loginLimiter, async (req, res) => {
     if (!match) return res.json(generic);
 
     const newPassword = generatePassword();
-    const newPin = String(Math.floor(1000 + Math.random() * 9000));
     await auth.resetPassword(match.id, newPassword);
-    await auth.setPin(match.username, newPin);
-    await sendCredentialsResetEmail(match, newPassword, newPin);
+    await sendCredentialsResetEmail(match, newPassword);
     res.json(generic);
   } catch (err) {
     console.error('[resend-login] error:', err.message);
@@ -1222,7 +1220,7 @@ const TYPE_ROLES = { agent: 'polling_agent', member: 'member', internship: 'inte
 // Sent by POST /auth/resend-login once new credentials have actually been
 // generated and saved — separate from sendApplicantWelcomeEmail (that one
 // only fires once, right at initial application submission).
-async function sendCredentialsResetEmail(user, newPassword, newPin) {
+async function sendCredentialsResetEmail(user, newPassword) {
   if (!process.env.RESEND_API_KEY || !user.email) return;
   try {
     const html = `
@@ -1232,10 +1230,9 @@ async function sendCredentialsResetEmail(user, newPassword, newPin) {
         <p>Here are your new Build One Zambia login details, as requested:</p>
         <div style="background:#f3f4f6;border-radius:8px;padding:16px;margin:16px 0">
           <p style="margin:0 0 10px"><span style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">Username</span><br><strong style="font-size:16px">${user.username}</strong></p>
-          <p style="margin:0 0 10px"><span style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">New Password</span><br><strong style="font-size:16px">${newPassword}</strong></p>
-          <p style="margin:0"><span style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">New PIN</span><br><strong style="font-size:16px">${newPin}</strong></p>
+          <p style="margin:0"><span style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">New Password</span><br><strong style="font-size:16px">${newPassword}</strong></p>
         </div>
-        <p style="color:#374151">Your previous password and PIN no longer work — please use these new ones to log in.</p>
+        <p style="color:#374151">Your previous password no longer works — please use this new one to log in.</p>
         <p style="color:#6b7280;font-size:13px">If you didn't request this, please contact BOZ immediately.</p>
       </div>`;
     const r = await fetch('https://api.resend.com/emails', {
@@ -1269,8 +1266,8 @@ async function sendApplicantWelcomeEmail(reg, roleLabel) {
           <p style="margin:0 0 4px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">Your Username</p>
           <p style="margin:0;font-size:18px;font-weight:700;color:#111827">${reg.username}</p>
         </div>
-        <p style="color:#374151">Use this username with the password and PIN you chose when applying, once your application is approved, to log in.</p>
-        <p style="color:#6b7280;font-size:13px">If you forget your password or PIN later, use the "Resend Login Details" option on the login page to reset them.</p>
+        <p style="color:#374151">Use this username with the password you chose when applying, once your application is approved, to log in.</p>
+        <p style="color:#6b7280;font-size:13px">If you forget your password later, use the "Resend Login Details" option on the login page to reset it.</p>
         <p>Together we build One Zambia.</p>
       </div>`;
     const r = await fetch('https://api.resend.com/emails', {

@@ -575,7 +575,7 @@ export default function DashboardLogin() {
                   </div>
                 </div>
 
-                {/* Forgot username / PIN */}
+                {/* Forgot username / password */}
                 <div className="mb-5 text-right">
                   <button
                     type="button"
@@ -583,7 +583,7 @@ export default function DashboardLogin() {
                     className="text-xs"
                     style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}
                   >
-                    Forgot your username or PIN?
+                    Forgot your username or password?
                   </button>
                 </div>
 

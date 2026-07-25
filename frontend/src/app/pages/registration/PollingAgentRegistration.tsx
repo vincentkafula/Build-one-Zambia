@@ -327,10 +327,7 @@ export default function PollingAgentRegistration() {
   const [devCode, setDevCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [pin, setPin] = useState('');
-  const [confirmPin, setConfirmPin] = useState('');
   const [showPass, setShowPass] = useState(false);
-  const [showPin, setShowPin] = useState(false);
   const [securityError, setSecurityError] = useState('');
 
   // ── OTP via Firebase Phone Authentication ─────────────────────────────────
@@ -382,14 +379,6 @@ export default function PollingAgentRegistration() {
     }
     if (password !== confirmPassword) {
       setSecurityError('Passwords do not match.');
-      return;
-    }
-    if (!/^\d{4,6}$/.test(pin)) {
-      setSecurityError('PIN must be 4–6 digits.');
-      return;
-    }
-    if (pin !== confirmPin) {
-      setSecurityError('PINs do not match.');
       return;
     }
     handleSubmit();
@@ -462,7 +451,6 @@ export default function PollingAgentRegistration() {
         // Applicant-chosen login credentials — account is created now but
         // stays inactive until an admin approves the application.
         password,
-        pin,
       };
 
       try {
@@ -512,7 +500,7 @@ export default function PollingAgentRegistration() {
             </p>
           </div>
           <p className="text-xs text-gray-500 mb-6">
-            Your login is already created with the password and PIN you set — it stays inactive until an
+            Your login is already created with the password you set — it stays inactive until an
             admin approves your application, then you can log in right away.
           </p>
           <button
@@ -980,33 +968,6 @@ export default function PollingAgentRegistration() {
                       className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium mb-1 text-gray-600">PIN (4–6 digits)</label>
-                      <input
-                        type={showPin ? 'text' : 'password'}
-                        inputMode="numeric"
-                        value={pin}
-                        onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        placeholder="e.g. 4821"
-                        className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium mb-1 text-gray-600">Confirm PIN</label>
-                      <input
-                        type={showPin ? 'text' : 'password'}
-                        inputMode="numeric"
-                        value={confirmPin}
-                        onChange={e => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        placeholder="Re-enter your PIN"
-                        className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm"
-                      />
-                    </div>
-                  </div>
-                  <button type="button" onClick={() => setShowPin(s => !s)} className="text-xs" style={{ color: GREEN }}>
-                    {showPin ? 'Hide PIN' : 'Show PIN'}
-                  </button>
                 </div>
                 {securityError && (
                   <div className="flex items-start gap-2 mt-3 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
