@@ -104,41 +104,65 @@ export function ShopPage() {
         <ShopCheckout cart={cart} onClose={closeCheckout} onUpdateQty={updateQty} onRemove={removeItem} />
       )}
 
-      {/* Hero slideshow */}
-      <section style={{ position: 'relative', overflow: 'hidden', height: 'clamp(400px, 65vh, 660px)' }}>
+      {/* Hero slideshow — compact banner */}
+      <section style={{ position: 'relative', overflow: 'hidden', height: 'clamp(220px, 34vh, 320px)' }}>
         {AD_SLIDES.map((slide, i) => (
           <div key={slide.name} style={{ position: 'absolute', inset: 0, opacity: i === slideIndex ? 1 : 0, transition: 'opacity 1s', pointerEvents: i === slideIndex ? 'auto' : 'none' }}>
             <img src={slide.img} alt={slide.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.1) 100%)' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.5) 55%, rgba(0,0,0,0.15) 100%)' }} />
             <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '4px', backgroundColor: '#dc2626' }} />
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 clamp(24px, 8vw, 96px)' }}>
-              <p style={{ fontSize: '11px', letterSpacing: '0.22em', color: '#dc2626', fontFamily: 'Oswald, sans-serif', marginBottom: '12px' }}>{slide.tag}</p>
-              <h1 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(2rem, 5vw, 4rem)', lineHeight: 1.05, letterSpacing: '0.03em', color: '#fff', maxWidth: '560px', marginBottom: '10px' }}>{slide.name}</h1>
-              <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1rem, 2vw, 1.4rem)', letterSpacing: '0.06em', color: '#dc2626', marginBottom: '16px' }}>{slide.tagline}</p>
-              <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.4rem, 3vw, 2.2rem)', color: '#fff', letterSpacing: '0.05em', marginBottom: '28px' }}>{slide.price}</p>
-              <button
-                onClick={() => { const p = PRODUCTS.find(pr => pr.name === slide.name); if (p) addToCart(p); }}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', alignSelf: 'flex-start', padding: '13px 28px', backgroundColor: '#dc2626', color: '#fff', border: 'none', fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.12em', cursor: 'pointer' }}
-              >
-                ADD TO CART <ArrowRight style={{ width: '15px', height: '15px' }} />
-              </button>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 clamp(20px, 6vw, 72px)' }}>
+              <p style={{ fontSize: '10px', letterSpacing: '0.22em', color: '#dc2626', fontFamily: 'Oswald, sans-serif', marginBottom: '8px' }}>{slide.tag}</p>
+              <h1 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.4rem, 3.4vw, 2.4rem)', lineHeight: 1.05, letterSpacing: '0.03em', color: '#fff', maxWidth: '520px', marginBottom: '6px' }}>{slide.name}</h1>
+              <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(0.8rem, 1.4vw, 1rem)', letterSpacing: '0.06em', color: '#dc2626', marginBottom: '10px' }}>{slide.tagline}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '18px', flexWrap: 'wrap' }}>
+                <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1rem, 2vw, 1.5rem)', color: '#fff', letterSpacing: '0.05em', margin: 0 }}>{slide.price}</p>
+                <button
+                  onClick={() => { const p = PRODUCTS.find(pr => pr.name === slide.name); if (p) addToCart(p); }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '9px 20px', backgroundColor: '#dc2626', color: '#fff', border: 'none', fontFamily: 'Oswald, sans-serif', fontSize: '11.5px', letterSpacing: '0.12em', cursor: 'pointer' }}
+                >
+                  ADD TO CART <ArrowRight style={{ width: '13px', height: '13px' }} />
+                </button>
+              </div>
+            </div>
+
+            {/* Ballot-stamp badge — signature motif tying the store to the election date */}
+            <div style={{ position: 'absolute', right: 'clamp(14px, 3vw, 40px)', bottom: '14px', width: 'clamp(58px, 8vw, 84px)', height: 'clamp(58px, 8vw, 84px)', opacity: 0.9, transform: 'rotate(-8deg)', pointerEvents: 'none' }}>
+              <svg viewBox="0 0 200 200" style={{ width: '100%', height: '100%' }}>
+                <defs>
+                  <path id={`arcTop-${i}`} d="M 20 100 A 80 80 0 1 1 180 100" />
+                  <path id={`arcBottom-${i}`} d="M 38 148 A 80 80 0 0 0 162 148" />
+                </defs>
+                <circle cx="100" cy="100" r="92" fill="none" stroke="#fff" strokeWidth="3" opacity="0.85" />
+                <circle cx="100" cy="100" r="78" fill="none" stroke="#fff" strokeWidth="1" strokeDasharray="2 5" opacity="0.6" />
+                <text fontFamily="Oswald, sans-serif" fontSize="11" letterSpacing="2" fill="#fff">
+                  <textPath href={`#arcTop-${i}`} startOffset="2">GENERAL ELECTION</textPath>
+                </text>
+                <text fontFamily="Oswald, sans-serif" fontSize="11" letterSpacing="2" fill="#fff">
+                  <textPath href={`#arcBottom-${i}`} startOffset="2">13 AUGUST 2026</textPath>
+                </text>
+                <g transform="translate(100 96)">
+                  <rect x="-30" y="-22" width="60" height="44" rx="4" fill="none" stroke="#fff" strokeWidth="3" />
+                  <path d="M-16 -2 L-4 10 L18 -14" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                </g>
+              </svg>
             </div>
           </div>
         ))}
 
-        <button onClick={prev} aria-label="Previous" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5 }}
+        <button onClick={prev} aria-label="Previous" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5 }}
           onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#dc2626'}
           onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,0,0,0.55)'}
-        ><ChevronLeft style={{ width: '20px', height: '20px' }} /></button>
+        ><ChevronLeft style={{ width: '17px', height: '17px' }} /></button>
 
-        <button onClick={next} aria-label="Next" style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5 }}
+        <button onClick={next} aria-label="Next" style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5 }}
           onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#dc2626'}
           onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,0,0,0.55)'}
-        ><ChevronRight style={{ width: '20px', height: '20px' }} /></button>
+        ><ChevronRight style={{ width: '17px', height: '17px' }} /></button>
 
-        <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', zIndex: 5 }}>
+        <div style={{ position: 'absolute', bottom: '14px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '7px', zIndex: 5 }}>
           {AD_SLIDES.map((_, i) => (
-            <button key={i} onClick={() => setSlideIndex(i)} style={{ width: i === slideIndex ? '28px' : '8px', height: '8px', borderRadius: '4px', backgroundColor: i === slideIndex ? '#dc2626' : 'rgba(255,255,255,0.35)', border: 'none', cursor: 'pointer', transition: 'all 0.3s' }} />
+            <button key={i} onClick={() => setSlideIndex(i)} style={{ width: i === slideIndex ? '24px' : '7px', height: '7px', borderRadius: '4px', backgroundColor: i === slideIndex ? '#dc2626' : 'rgba(255,255,255,0.35)', border: 'none', cursor: 'pointer', transition: 'all 0.3s' }} />
           ))}
         </div>
       </section>
@@ -189,9 +213,19 @@ export function ShopPage() {
               const justAdded = addedId === product.id;
               return (
                 <div key={product.id}
-                  style={{ backgroundColor: '#111', border: '1px solid #1f1f1f', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'border-color 0.2s' }}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = '#dc2626'}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = '#1f1f1f'}
+                  style={{ backgroundColor: '#111', border: '1px solid #1f1f1f', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'border-color 0.2s, transform 0.2s, box-shadow 0.2s' }}
+                  onMouseEnter={e => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.borderColor = '#dc2626';
+                    el.style.transform = 'translateY(-4px) rotate(-0.6deg)';
+                    el.style.boxShadow = '0 16px 28px -16px rgba(0,0,0,0.5)';
+                  }}
+                  onMouseLeave={e => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.borderColor = '#1f1f1f';
+                    el.style.transform = 'none';
+                    el.style.boxShadow = 'none';
+                  }}
                 >
                   <div style={{ position: 'relative', height: '210px', overflow: 'hidden', backgroundColor: '#1a1a1a' }}>
                     <img src={product.img} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s' }}
