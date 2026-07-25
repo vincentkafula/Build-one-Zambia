@@ -345,6 +345,7 @@ export default function PollingAgentRegistration() {
 
   // Track whether backend is reachable
   const [devCode, setDevCode] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -393,6 +394,10 @@ export default function PollingAgentRegistration() {
 
   const onSubmitClick = () => {
     setSecurityError('');
+    if (!username || !/^[a-zA-Z0-9_.]{4,20}$/.test(username)) {
+      setSecurityError('Username must be 4-20 characters — letters, numbers, underscore, or period only.');
+      return;
+    }
     if (!password || password.length < 8) {
       setSecurityError('Password must be at least 8 characters.');
       return;
@@ -472,6 +477,7 @@ export default function PollingAgentRegistration() {
         documents: uploads,
         // Applicant-chosen login credentials — account is created now but
         // stays inactive until an admin approves the application.
+        username: username.trim(),
         password,
       };
 
@@ -980,6 +986,19 @@ export default function PollingAgentRegistration() {
                   you'll log in with exactly what you set here.
                 </p>
                 <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600">Username</label>
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={e => setUsername(e.target.value.replace(/[^a-zA-Z0-9_.]/g, '').slice(0, 20))}
+                      placeholder="4-20 characters, letters/numbers"
+                      className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm"
+                    />
+                    {username && !/^[a-zA-Z0-9_.]{4,20}$/.test(username) && (
+                      <p className="text-xs text-red-600 mt-1">4-20 characters — letters, numbers, underscore, or period only.</p>
+                    )}
+                  </div>
                   <div>
                     <label className="block text-xs font-medium mb-1 text-gray-600">Password</label>
                     <div className="relative">

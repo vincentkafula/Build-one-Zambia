@@ -389,8 +389,18 @@ app.delete(`${BASE}/register/agent/:id`, auth.requireAuth, auth.requireRole('sup
 // looking like a successful submission with nothing ever really submitted.
 app.post(`${BASE}/registrations/agent`, async (req, res) => {
   try {
-    const { role, scopeId, scopeName, dateOfBirth, nrcNumber, voterCardNumber, email } = req.body;
+    const { role, scopeId, scopeName, dateOfBirth, nrcNumber, voterCardNumber, email, username, password } = req.body;
     if (!role || !scopeId) return res.status(400).json({ error: 'role and scopeId are required' });
+
+    // Applicant chooses their own username and password on the form now.
+    if (!username || !String(username).trim()) return res.status(400).json({ error: 'Please choose a username.' });
+    if (!/^[a-zA-Z0-9_.]{4,20}$/.test(username)) {
+      return res.status(400).json({ error: 'Username must be 4-20 characters, letters/numbers/underscore/period only.' });
+    }
+    if (!password || String(password).length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    if (auth.getUser(username)) {
+      return res.status(409).json({ error: 'That username is already taken. Please choose a different one.' });
+    }
 
     // Applicants under 16 are refused outright.
     if (dateOfBirth) {

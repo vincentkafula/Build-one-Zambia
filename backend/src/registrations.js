@@ -46,7 +46,12 @@ export async function createPendingAccount(type, reg) {
   const name = reg.fullName || reg.name || ((reg.firstName || '') + ' ' + (reg.lastName || '')).trim() || 'user';
   const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
   const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
-  const username = `${type}_${safeName}_${suffix}`;
+  // Applicant now chooses their own username on the form — only fall back
+  // to auto-generating one for older/other registration types that don't
+  // collect one. Availability is already checked at the API layer
+  // (POST /registrations/agent) before this ever runs, but this stays
+  // defensive in case createPendingAccount is ever called from elsewhere.
+  const username = (reg.username && String(reg.username).trim()) || `${type}_${safeName}_${suffix}`;
   const role = (type === 'agent' && AGENT_FORM_TIER_TO_ROLE[reg.role]) || TYPE_ROLE[type] || 'member';
   try {
     if (!auth.getUser(username)) {
