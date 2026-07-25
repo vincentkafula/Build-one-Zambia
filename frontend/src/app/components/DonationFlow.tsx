@@ -351,7 +351,7 @@ export function DonationFlow() {
 
       const txRef = `boz-donation-${donationId}-${Date.now()}`;
       flwModal.current = window.FlutterwaveCheckout({
-        public_key: gwPublicKey,
+        public_key: publicKey,
         tx_ref: txRef,
         amount: amountNum,
         currency: 'ZMW',
