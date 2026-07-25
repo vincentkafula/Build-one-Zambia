@@ -11,4 +11,4 @@ cmds = ["npm run build"]
 cmd = "node server.js"
 
 [variables]
-NIXPACKS_CACHE_KEY = "redeploy-donate-page-rebuild-20260725"
+NIXPACKS_CACHE_KEY = "redeploy-donate-config-retry-20260725b"
