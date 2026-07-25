@@ -31,6 +31,23 @@ const PRODUCTS = [
   { id: 26, name: 'BOZ Umbrella',                 price: 'K220',  priceNum: 220,  tag: 'ACCESSORIES', desc: 'Full-size automatic umbrella in party colours with the Build One Zambia logo printed on each panel. Ideal for outdoor rallies and events.', img: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=500&h=500&fit=crop&auto=format' },
   { id: 27, name: 'BOZ Polo Shirt',               price: 'K195',  priceNum: 195,  tag: 'APPAREL',     desc: 'Premium cotton polo shirt embroidered with the Build One Zambia logo on the chest. Available in green, red, and white. Sizes S–3XL.', img: 'https://images.unsplash.com/photo-1618354691229-88d47f285158?w=500&h=500&fit=crop&auto=format' },
   { id: 28, name: 'Campaign Backpack',            price: 'K450',  priceNum: 450,  tag: 'BAGS',        desc: 'Durable 25L backpack with the BOZ logo and slogan. Multiple compartments, padded laptop sleeve, and water-resistant fabric. Perfect for agents and volunteers.', img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format' },
+  { id: 29, name: 'Hand-Held Rally Flag',         price: 'K45',   priceNum: 45,   tag: 'SIGNAGE',     desc: 'Small hand-held party flag on a stick, perfect for waving at rallies and motorcades.',            img: 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=500&h=500&fit=crop&auto=format' },
+  { id: 30, name: 'BOZ Chitenge Wrap',            price: 'K85',   priceNum: 85,   tag: 'APPAREL',     desc: 'Traditional chitenge fabric printed with the Build One Zambia pattern and colours.',              img: 'https://images.unsplash.com/photo-1618354691229-88d47f285158?w=500&h=500&fit=crop&auto=format' },
+  { id: 31, name: 'BOZ Enamel Pin (Single)',      price: 'K25',   priceNum: 25,   tag: 'ACCESSORIES', desc: 'Single hard-enamel lapel pin featuring the party crest.',                                        img: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=500&h=500&fit=crop&auto=format' },
+  { id: 32, name: 'Rally Wristband',              price: 'K25',   priceNum: 25,   tag: 'ACCESSORIES', desc: 'Single silicone wristband debossed with a campaign slogan.',                                     img: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&h=500&fit=crop&auto=format' },
+  { id: 33, name: 'BOZ Car Window Flag',          price: 'K55',   priceNum: 55,   tag: 'SIGNAGE',     desc: 'Clip-on window flag for cars and trucks, visible from both sides.',                              img: 'https://images.unsplash.com/photo-1531844251246-9a1bfaae09fc?w=500&h=500&fit=crop&auto=format' },
+  { id: 34, name: 'Campaign Canvas Print (A3)',   price: 'K140',  priceNum: 140,  tag: 'PRINT',       desc: 'Larger framing-quality canvas print of official campaign artwork.',                             img: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?w=500&h=500&fit=crop&auto=format' },
+  { id: 35, name: 'BOZ Sticker Sheet',            price: 'K20',   priceNum: 20,   tag: 'STICKERS',    desc: 'A5 sheet of assorted logo and slogan stickers for laptops and notebooks.',                       img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&h=500&fit=crop&auto=format' },
+  { id: 36, name: 'BOZ Vinyl Decal',              price: 'K35',   priceNum: 35,   tag: 'STICKERS',    desc: 'Large single vinyl decal for car windows and shopfronts.',                                       img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&h=500&fit=crop&auto=format' },
+  { id: 37, name: 'BOZ Insulated Bottle',         price: 'K140',  priceNum: 140,  tag: 'HOMEWARE',    desc: 'Double-walled insulated bottle with the party crest, 500ml.',                                    img: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&h=500&fit=crop&auto=format' },
+  { id: 38, name: 'BOZ Coaster Set (Pack of 4)',  price: 'K40',   priceNum: 40,   tag: 'HOMEWARE',    desc: 'Cork-backed coasters printed with campaign artwork, set of four.',                               img: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=500&h=500&fit=crop&auto=format' },
+  { id: 39, name: 'BOZ Sticky Notes',             price: 'K25',   priceNum: 25,   tag: 'STATIONERY',  desc: 'Branded sticky note pad for offices, schools, and volunteer desks.',                             img: 'https://images.unsplash.com/photo-1585336261022-680e295ce3fe?w=500&h=500&fit=crop&auto=format' },
+  { id: 40, name: 'BOZ Desk Diary',               price: 'K85',   priceNum: 85,   tag: 'STATIONERY',  desc: 'A5 hardcover desk diary printed with the 2031 campaign calendar.',                               img: 'https://images.unsplash.com/photo-1531346680769-a1d79b57de5c?w=500&h=500&fit=crop&auto=format' },
+  { id: 41, name: 'BOZ Phone Grip',               price: 'K35',   priceNum: 35,   tag: 'TECH',        desc: 'Collapsible phone grip and stand with the party logo.',                                          img: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=500&h=500&fit=crop&auto=format' },
+  { id: 42, name: 'BOZ Laptop Sleeve',            price: 'K165',  priceNum: 165,  tag: 'BAGS',        desc: 'Padded 13–15" laptop sleeve with embroidered BOZ logo.',                                         img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format' },
+  { id: 43, name: 'Campaign Duffel Bag',          price: 'K420',  priceNum: 420,  tag: 'BAGS',        desc: 'Large duffel bag for agents and volunteers travelling between wards.',                          img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format' },
+  { id: 44, name: 'BOZ Windbreaker',              price: 'K380',  priceNum: 380,  tag: 'APPAREL',     desc: 'Lightweight windbreaker in party colours, ideal for outdoor canvassing.',                       img: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&h=500&fit=crop&auto=format' },
+  { id: 45, name: 'BOZ Snapback Cap',             price: 'K130',  priceNum: 130,  tag: 'ACCESSORIES', desc: 'Flat-brim snapback cap with an embroidered front logo.',                                        img: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=500&h=500&fit=crop&auto=format' },
 ];
 
 const CATEGORIES = ['ALL', 'APPAREL', 'ACCESSORIES', 'HOMEWARE', 'STATIONERY', 'PRINT', 'STICKERS', 'SIGNAGE', 'BAGS', 'TECH'];
@@ -76,7 +93,7 @@ export function ShopPage() {
   });
 
   const isSearching = search.trim().length > 0;
-  const rowCategories = activeCategory === 'ALL' ? CATEGORIES.filter(c => c !== 'ALL') : [activeCategory];
+  const isFiltering = isSearching || activeCategory !== 'ALL';
 
   function ProductCard({ product, tilt }: { product: Product; tilt: 'left' | 'right' }) {
     const inCart = cart.find(ci => ci.id === product.id);
@@ -104,16 +121,40 @@ export function ShopPage() {
     );
   }
 
+  function MosaicTile({ product }: { product: Product }) {
+    const inCart = cart.find(ci => ci.id === product.id);
+    const justAdded = addedId === product.id;
+    return (
+      <div style={{ position: 'relative', aspectRatio: '1 / 1', overflow: 'hidden', background: PAPER_DIM }}>
+        <img src={product.img} alt={product.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,13,7,0.92) 0%, rgba(8,13,7,0.55) 38%, rgba(8,13,7,0) 62%)' }} />
+        {inCart && (
+          <div style={{ position: 'absolute', top: '6px', right: '6px', background: RED, color: '#fff', fontSize: '9px', fontFamily: 'Oswald, sans-serif', padding: '2px 6px', borderRadius: '10px', zIndex: 2 }}>
+            ×{inCart.qty}
+          </div>
+        )}
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '8px 9px' }}>
+          <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '8px', letterSpacing: '0.1em', color: '#DE8A2A', margin: '0 0 3px' }}>{product.tag}</p>
+          <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', fontWeight: 600, lineHeight: 1.2, color: '#fff', margin: '0 0 6px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{product.name}</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+            <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '12px', fontWeight: 700, color: '#fff' }}>{product.price}</span>
+            <button onClick={() => addToCart(product)} style={{ background: RED, color: '#fff', border: 'none', fontFamily: 'Oswald, sans-serif', fontSize: '9px', letterSpacing: '0.04em', padding: '5px 8px', borderRadius: '2px', cursor: 'pointer' }}>
+              {justAdded ? 'ADDED' : 'ADD'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ backgroundColor: CANVAS, fontFamily: 'Open Sans, sans-serif', color: '#fff', position: 'relative' }}>
       <style>{`
-        @keyframes bozScrollRow { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-        .boz-track { display: flex; gap: 18px; width: max-content; animation: bozScrollRow linear infinite; }
-        .boz-track:hover { animation-play-state: paused; }
-        .boz-row-mask { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); padding: 8px 0; }
+        .boz-mosaic { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; }
         .boz-hero-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px; align-items: center; }
+        @media (max-width: 900px) { .boz-mosaic { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 540px) { .boz-mosaic { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 760px) { .boz-hero-grid { grid-template-columns: 1fr; } }
-        @media (prefers-reduced-motion: reduce) { .boz-track { animation: none !important; } }
       `}</style>
 
       {/* Sticky cart button */}
@@ -221,15 +262,15 @@ export function ShopPage() {
       </div>
 
       {/* Product showcase */}
-      <section style={{ padding: '28px 0 90px' }}>
-        {isSearching ? (
-          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
+      <section style={{ padding: isFiltering ? '28px 0 90px' : '0 0 90px' }}>
+        {isFiltering ? (
+          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '28px 16px 0' }}>
             {searchFiltered.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '80px 0', color: '#6b7280' }}>
                 <p style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '1.1rem' }}>No items match your search.</p>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '20px', paddingTop: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '20px' }}>
                 {searchFiltered.map((product, i) => (
                   <ProductCard key={product.id} product={product} tilt={i % 2 === 0 ? 'left' : 'right'} />
                 ))}
@@ -237,27 +278,16 @@ export function ShopPage() {
             )}
           </div>
         ) : (
-          rowCategories.map((cat, rowIndex) => {
-            const rowProducts = PRODUCTS.filter(p => p.tag === cat);
-            if (rowProducts.length === 0) return null;
-            const looped = [...rowProducts, ...rowProducts];
-            const duration = 26 + rowIndex * 4;
-            const direction = rowIndex % 2 === 0 ? 'normal' : 'reverse';
-            return (
-              <div key={cat} style={{ marginBottom: '22px' }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px 10px' }}>
-                  <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10.5px', letterSpacing: '0.14em', color: '#6b7280' }}>{cat}</span>
-                </div>
-                <div className="boz-row-mask">
-                  <div className="boz-track" style={{ animationDuration: `${duration}s`, animationDirection: direction }}>
-                    {looped.map((product, i) => (
-                      <ProductCard key={`${cat}-${product.id}-${i}`} product={product} tilt={i % 2 === 0 ? 'left' : 'right'} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            );
-          })
+          <>
+            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '28px 16px 14px' }}>
+              <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10.5px', letterSpacing: '0.14em', color: '#6b7280' }}>THE FULL WALL — {PRODUCTS.length} ITEMS</span>
+            </div>
+            <div className="boz-mosaic">
+              {PRODUCTS.map(product => (
+                <MosaicTile key={product.id} product={product} />
+              ))}
+            </div>
+          </>
         )}
       </section>
     </div>
