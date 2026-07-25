@@ -109,12 +109,27 @@ export function DonatePage() {
       const donationId = (donation as { id: string }).id;
 
       let publicKey = gwPublicKey;
+      let configErrorDetail = '';
       if (!publicKey) {
-        try { const cfg = await gatewayApi.config(); publicKey = cfg.publicKey || ''; setGwPublicKey(publicKey); } catch { /* handled below */ }
+        // Retry twice with a short backoff — a single transient network
+        // blip shouldn't fail the whole donation attempt when the backend
+        // is otherwise healthy.
+        for (let attempt = 0; attempt < 3 && !publicKey; attempt++) {
+          if (attempt > 0) await new Promise(r => setTimeout(r, 500 * attempt));
+          try {
+            const cfg = await gatewayApi.config();
+            publicKey = cfg.publicKey || '';
+            if (publicKey) setGwPublicKey(publicKey);
+            else configErrorDetail = 'backend responded but returned no public key — Flutterwave may not be configured on the backend.';
+          } catch (cfgErr) {
+            configErrorDetail = cfgErr instanceof Error ? cfgErr.message : 'unknown error contacting backend';
+          }
+        }
       }
       const scriptReady = publicKey ? await loadFlutterwaveScript() : false;
       if (!publicKey) {
-        setError('Could not reach BOZ\'s payment configuration. Please check your internet connection and try again.');
+        console.error('[donate] gateway config fetch failed after retries:', configErrorDetail);
+        setError(`Could not reach BOZ's payment configuration. Please check your internet connection and try again. (Detail: ${configErrorDetail || 'unknown'})`);
         setProcessing(false);
         return;
       }
