@@ -10,6 +10,7 @@ const ABOUT_DROPDOWN = [
   { label: 'Male Candidates',   path: '/home/male',          desc: 'Meet our shadow cabinet male candidates' },
   { label: 'Female Candidates', path: '/home/female',        desc: 'Meet our shadow cabinet female candidates' },
   { label: 'Opportunities',     path: '/home/opportunities', desc: 'Membership, cooperatives & internships' },
+  { label: 'Contact',           path: '/contact',            desc: 'Get in touch with Build One Zambia' },
 ];
 
 const NEWS_DROPDOWN = [
@@ -35,7 +36,6 @@ const NAV_LINKS: NavLink[] = [
   { label: 'PAGES',     path: '/pages',    hasDropdown: false },
   { label: 'MEDIA',     path: '/news',     hasDropdown: true,  dropdownType: 'news' },
   { label: 'SHOP',      path: '/shop',     hasDropdown: false },
-  { label: 'CONTACT',   path: '/contact',  hasDropdown: false },
 ];
 
 export function MainNavigation() {
