@@ -1798,33 +1798,105 @@ function getOtpEntry(key) { return kv.get(`boz:otp:${key}`); }
 function setOtpEntry(key, entry) { kv.set(`boz:otp:${key}`, entry); }
 function deleteOtpEntry(key) { kv.del(`boz:otp:${key}`); }
 
+// Phone verification uses Twilio Verify instead of sending raw SMS
+// ourselves. Two real advantages: Verify is priced per verification
+// (~$0.05) rather than per SMS ($0.30-0.43 to Zambia on Twilio's raw
+// Messages API) - roughly a sixth of the cost - and Twilio owns the
+// entire code lifecycle (generation, storage, expiry, retry limits,
+// fraud protection) on their side, so none of that needs to live in our
+// own database at all for the phone path. Requires a Verify Service
+// created in the Twilio console (Verify > Services), its SID set as
+// TWILIO_VERIFY_SERVICE_SID, alongside the existing TWILIO_ACCOUNT_SID/
+// TWILIO_AUTH_TOKEN.
+const TWILIO_VERIFY_BASE = 'https://verify.twilio.com/v2';
+function twilioAuthHeader() {
+  return { Authorization: `Basic ${Buffer.from(process.env.TWILIO_ACCOUNT_SID + ':' + process.env.TWILIO_AUTH_TOKEN).toString('base64')}` };
+}
+const twilioVerifyConfigured = () => !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_VERIFY_SERVICE_SID);
+
 app.post(`${BASE}/otp/send`, async (req, res) => {
   try {
     const { phone, email } = req.body;
     if (!phone && !email) return res.status(400).json({ error: 'Phone or email required' });
+
+    if (phone) {
+      if (!twilioVerifyConfigured()) {
+        console.warn('[OTP] Phone requested but Twilio Verify is not fully configured (need TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_VERIFY_SERVICE_SID)');
+        return res.json({ success: true, sent: false, channel: null, message: 'OTP generated' });
+      }
+      // channel: 'sms' (default), 'whatsapp', or 'call' (voice - Twilio
+      // Verify's own name for this channel is "call", not "voice").
+      // SMS and Voice work as soon as that channel is enabled on the
+      // Verify Service in the console - no extra approval needed.
+      // WhatsApp additionally requires a WhatsApp-approved sender
+      // connected to this Verify Service before it will actually
+      // deliver anything; enabling the channel checkbox alone is not
+      // enough for WhatsApp specifically.
+      const requestedChannel = ['sms', 'whatsapp', 'call'].includes(req.body.channel) ? req.body.channel : 'sms';
+      try {
+        const r = await fetch(`${TWILIO_VERIFY_BASE}/Services/${process.env.TWILIO_VERIFY_SERVICE_SID}/Verifications`, {
+          method: 'POST',
+          headers: Object.assign({ 'Content-Type': 'application/x-www-form-urlencoded' }, twilioAuthHeader()),
+          body: new URLSearchParams({ To: phone, Channel: requestedChannel }),
+        });
+        const data = await r.json();
+        if (r.ok && data.status === 'pending') {
+          return res.json({ success: true, sent: true, channel: requestedChannel, message: `OTP sent via ${requestedChannel}` });
+        }
+        console.error('[OTP] Twilio Verify send error:', data);
+        return res.json({ success: true, sent: false, channel: null, message: 'OTP generated', error: data.message });
+      } catch (e) {
+        console.error('[OTP] Twilio Verify error:', e.message);
+        return res.json({ success: true, sent: false, channel: null, message: 'OTP generated' });
+      }
+    }
+
+    // Email path - unchanged: generate + store our own code, send via Resend.
+    // (Twilio Verify also offers an Email channel, but it requires its own
+    // separate SendGrid sender setup, and Resend is already confirmed
+    // working - no reason to duplicate a solved problem.)
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const key = phone || email;
-    setOtpEntry(key, { otp, expiresAt: Date.now() + 10 * 60 * 1000 });
-    let sent = false, channel = null;
-    if (phone && process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
-      try { const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${process.env.TWILIO_ACCOUNT_SID}/Messages.json`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', Authorization: `Basic ${Buffer.from(`${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`).toString('base64')}` }, body: new URLSearchParams({ From: process.env.TWILIO_FROM_NUMBER, To: phone, Body: `Your BOZ verification code is: ${otp}. Valid for 10 minutes.` }) }); const data = await r.json(); if (r.ok && data.sid) { sent = true; channel = 'sms'; } } catch (e) { console.error('[OTP] Twilio error:', e.message); }
+    setOtpEntry(email, { otp, expiresAt: Date.now() + 10 * 60 * 1000 });
+    let sent = false;
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from: process.env.EMAIL_FROM_ADDRESS || 'no-reply@bozplans.org', to: email, subject: 'Your BOZ Verification Code', html: `<p>Your verification code is: <strong style="font-size:24px;letter-spacing:4px">${otp}</strong></p><p>Valid for 10 minutes.</p>` }) });
+        const data = await r.json();
+        if (r.ok && data.id) sent = true;
+      } catch (e) { console.error('[OTP] Resend error:', e.message); }
     }
-    if (!sent && email && process.env.RESEND_API_KEY) {
-      try { const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from: process.env.EMAIL_FROM_ADDRESS || 'no-reply@bozplans.org', to: email, subject: 'Your BOZ Verification Code', html: `<p>Your verification code is: <strong style="font-size:24px;letter-spacing:4px">${otp}</strong></p><p>Valid for 10 minutes.</p>` }) }); const data = await r.json(); if (r.ok && data.id) { sent = true; channel = 'email'; } } catch (e) { console.error('[OTP] Resend error:', e.message); }
-    }
-    if (!sent) console.log(`[OTP] Code for ${key}: ${otp}`);
+    if (!sent) console.log(`[OTP] Code for ${email}: ${otp}`);
     const isDev = process.env.NODE_ENV !== 'production';
-    res.json({ success: true, sent, channel, message: sent ? `OTP sent via ${channel}` : 'OTP generated', ...(isDev ? { otp } : {}) });
+    res.json({ success: true, sent, channel: sent ? 'email' : null, message: sent ? 'OTP sent via email' : 'OTP generated', ...(isDev ? { otp } : {}) });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post(`${BASE}/otp/verify`, (req, res) => {
+
+app.post(`${BASE}/otp/verify`, async (req, res) => {
   const { phone, email, otp } = req.body;
-  const key = phone || email;
-  const stored = getOtpEntry(key);
+
+  if (phone) {
+    if (!twilioVerifyConfigured()) return res.status(400).json({ error: 'Phone verification is not configured.' });
+    try {
+      const r = await fetch(`${TWILIO_VERIFY_BASE}/Services/${process.env.TWILIO_VERIFY_SERVICE_SID}/VerificationCheck`, {
+        method: 'POST',
+        headers: Object.assign({ 'Content-Type': 'application/x-www-form-urlencoded' }, twilioAuthHeader()),
+        body: new URLSearchParams({ To: phone, Code: otp }),
+      });
+      const data = await r.json();
+      if (r.ok && data.status === 'approved') return res.json({ success: true, verified: true });
+      return res.status(400).json({ error: data.status === 'pending' ? 'Invalid code' : (data.message || 'Invalid or expired code') });
+    } catch (e) {
+      console.error('[OTP] Twilio Verify check error:', e.message);
+      return res.status(500).json({ error: 'Could not verify code right now. Please try again.' });
+    }
+  }
+
+  // Email path - unchanged, checks our own kv-stored code.
+  const stored = getOtpEntry(email);
   if (!stored) return res.status(400).json({ error: 'No OTP found. Request a new one.' });
-  if (Date.now() > stored.expiresAt) { deleteOtpEntry(key); return res.status(400).json({ error: 'OTP expired' }); }
+  if (Date.now() > stored.expiresAt) { deleteOtpEntry(email); return res.status(400).json({ error: 'OTP expired' }); }
   if (stored.otp !== otp) return res.status(400).json({ error: 'Invalid OTP' });
-  deleteOtpEntry(key);
+  deleteOtpEntry(email);
   res.json({ success: true, verified: true });
 });
 
@@ -1834,6 +1906,7 @@ app.get(`${BASE}/gateway/config`, (req, res) => res.json({
     flutterwaveEnabled: !!process.env.FLUTTERWAVE_SECRET_KEY,
     resendEnabled: !!process.env.RESEND_API_KEY,
     twilioEnabled: !!process.env.TWILIO_ACCOUNT_SID,
+    twilioVerifyConfigured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_VERIFY_SERVICE_SID),
     publicKey: process.env.FLUTTERWAVE_PUBLIC_KEY || null,
     currency: 'ZMW',
     country: 'ZM',

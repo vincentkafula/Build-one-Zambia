@@ -37,13 +37,14 @@ export function clearRecaptcha() {
 }
 
 // ── Backend OTP (primary method — works without Firebase Phone Auth) ───────────
-// Sends a 6-digit code via backend → Twilio SMS or Resend email
+// Sends a 6-digit code via backend → Twilio Verify (SMS/WhatsApp/Voice) or Resend email
 export async function sendBackendOTP(
   contact: string, // phone number or email
+  channel?: 'sms' | 'whatsapp' | 'call', // phone only — ignored for email
 ): Promise<{ success: boolean; otp?: string; channel?: string; error?: string }> {
   try {
     const isEmail = contact.includes('@');
-    const body = isEmail ? { email: contact } : { phone: contact };
+    const body = isEmail ? { email: contact } : { phone: contact, ...(channel ? { channel } : {}) };
     const res = await fetch(`${getApiBase()}/otp/send`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
