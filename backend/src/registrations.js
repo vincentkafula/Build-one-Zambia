@@ -248,6 +248,31 @@ export function isRoleScopeTaken(role, scopeId) {
   return matching.length > 0;
 }
 
+// NRC number, voter's card number, and email must each belong to exactly
+// one person on record — one real human shouldn't be able to hold
+// multiple active applications under the same identity. A rejected or
+// withdrawn application frees its identity details back up, same as it
+// already does for position slots, so a corrected reapplication isn't
+// permanently blocked by its own earlier rejected attempt.
+export function findDuplicateIdentity({ nrcNumber, voterCardNumber, email }) {
+  const norm = (s) => String(s || '').trim().toLowerCase();
+  const nrcNorm = norm(nrcNumber);
+  const voterNorm = norm(voterCardNumber);
+  const emailNorm = norm(email);
+
+  const active = getAgentIndex()
+    .map(id => kv.get(`boz:reg:agent:${id}`))
+    .filter(Boolean)
+    .filter(a => a.status !== 'rejected' && a.status !== 'withdrawn');
+
+  for (const a of active) {
+    if (nrcNorm && norm(a.nrcNumber) === nrcNorm) return { field: 'NRC number', existing: a };
+    if (voterNorm && norm(a.voterCardNumber) === voterNorm) return { field: "voter's card number", existing: a };
+    if (emailNorm && norm(a.email) === emailNorm) return { field: 'email address', existing: a };
+  }
+  return null;
+}
+
 // Every scopeId already taken for a given role — used to grey out/mark
 // already-applied-for options (e.g. polling stations within a ward) in the
 // application form before the applicant even picks one.

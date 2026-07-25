@@ -9,6 +9,25 @@ import {
 import { provinces } from '../../data/mockData';
 import { agentApi, getToken } from '../../lib/api';
 
+// Applicants under 16 must be refused. Computed properly (accounts for
+// whether the birthday has actually happened yet this year), not just a
+// naive year subtraction.
+const MINIMUM_APPLICANT_AGE = 16;
+function calculateAge(dateOfBirth: string): number | null {
+  if (!dateOfBirth) return null;
+  const dob = new Date(dateOfBirth);
+  if (Number.isNaN(dob.getTime())) return null;
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
+  return age;
+}
+function meetsMinimumAge(dateOfBirth: string): boolean {
+  const age = calculateAge(dateOfBirth);
+  return age !== null && age >= MINIMUM_APPLICANT_AGE;
+}
+
 // Safe fetch wrapper — handles non-JSON responses (e.g. rate limit plain text)
 async function safeFetch(url: string, options?: RequestInit) {
   const res = await fetch(url, options);
@@ -287,6 +306,7 @@ export default function PollingAgentRegistration() {
   const [personal, setPersonal] = useState({
     firstName: '', lastName: '', dateOfBirth: '', placeOfBirth: '',
     chief: '', town: '', grade: '', email: '', address: '',
+    nrcNumber: '', voterCardNumber: '',
   });
 
   // Step 4 — Assignment Area (real ECZ data — depth depends on role)
@@ -363,7 +383,7 @@ export default function PollingAgentRegistration() {
   function canAdvance(): boolean {
     if (step === 1) return !!(phone);  // phone verification skipped
     if (step === 2) return !!(selectedRole && !roleCap?.full);
-    if (step === 3) return !!(personal.firstName && personal.lastName && personal.dateOfBirth && personal.grade && personal.email && personal.address);
+    if (step === 3) return !!(personal.firstName && personal.lastName && personal.dateOfBirth && personal.nrcNumber && personal.voterCardNumber && personal.grade && personal.email && personal.address && meetsMinimumAge(personal.dateOfBirth));
     if (step === 4) return areaValid();
     if (step === 5) return !!(docs.grade12 && docs.nrc && docs.voterCard && docs.proofAddress);
     return true;
@@ -425,6 +445,8 @@ export default function PollingAgentRegistration() {
         lastName:           personal.lastName,
         fullName:           `${personal.firstName} ${personal.lastName}`,
         dateOfBirth:        personal.dateOfBirth,
+        nrcNumber:          personal.nrcNumber.trim(),
+        voterCardNumber:    personal.voterCardNumber.trim(),
         placeOfBirth:       personal.placeOfBirth,
         chief:              personal.chief,
         town:               personal.town,
@@ -703,6 +725,19 @@ export default function PollingAgentRegistration() {
                 <Field label="Date of Birth" required>
                   <input type="date" className={inputCls} style={inputStyle} value={personal.dateOfBirth}
                     onChange={e => setPersonal(p => ({ ...p, dateOfBirth: e.target.value }))} />
+                  {personal.dateOfBirth && !meetsMinimumAge(personal.dateOfBirth) && (
+                    <p className="text-xs text-red-600 mt-1">
+                      Applicants must be at least {MINIMUM_APPLICANT_AGE} years old to apply.
+                    </p>
+                  )}
+                </Field>
+                <Field label="NRC Number" required>
+                  <input className={inputCls} style={inputStyle} placeholder="e.g. 123456/78/1" value={personal.nrcNumber}
+                    onChange={e => setPersonal(p => ({ ...p, nrcNumber: e.target.value }))} />
+                </Field>
+                <Field label="Voter's Card Number" required>
+                  <input className={inputCls} style={inputStyle} placeholder="Voter registration number" value={personal.voterCardNumber}
+                    onChange={e => setPersonal(p => ({ ...p, voterCardNumber: e.target.value }))} />
                 </Field>
                 <Field label="Place of Birth">
                   <input className={inputCls} style={inputStyle} placeholder="e.g. Lusaka" value={personal.placeOfBirth}
@@ -903,6 +938,8 @@ export default function PollingAgentRegistration() {
                 <ReviewSection title="Personal Information" onEdit={() => setStep(3)}>
                   <ReviewRow label="Full Name" value={`${personal.firstName} ${personal.lastName}`} />
                   <ReviewRow label="Date of Birth" value={personal.dateOfBirth} />
+                  <ReviewRow label="NRC Number" value={personal.nrcNumber} />
+                  <ReviewRow label="Voter's Card Number" value={personal.voterCardNumber} />
                   <ReviewRow label="Place of Birth" value={personal.placeOfBirth || '—'} />
                   <ReviewRow label="Chief" value={personal.chief || '—'} />
                   <ReviewRow label="Town" value={personal.town || '—'} />

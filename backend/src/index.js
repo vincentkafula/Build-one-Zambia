@@ -389,8 +389,32 @@ app.delete(`${BASE}/register/agent/:id`, auth.requireAuth, auth.requireRole('sup
 // looking like a successful submission with nothing ever really submitted.
 app.post(`${BASE}/registrations/agent`, async (req, res) => {
   try {
-    const { role, scopeId, scopeName } = req.body;
+    const { role, scopeId, scopeName, dateOfBirth, nrcNumber, voterCardNumber, email } = req.body;
     if (!role || !scopeId) return res.status(400).json({ error: 'role and scopeId are required' });
+
+    // Applicants under 16 are refused outright.
+    if (dateOfBirth) {
+      const dob = new Date(dateOfBirth);
+      if (!Number.isNaN(dob.getTime())) {
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
+        if (age < 16) {
+          return res.status(400).json({ error: 'Applicants must be at least 16 years old. This application cannot be accepted.' });
+        }
+      }
+    }
+
+    // NRC number, voter's card number, and email may each only be on
+    // record for one person — a new application reusing any of them from
+    // an existing (non-rejected) application is refused.
+    const dup = registrations.findDuplicateIdentity({ nrcNumber, voterCardNumber, email });
+    if (dup) {
+      return res.status(409).json({
+        error: `This ${dup.field} is already on record for another application. Each ${dup.field} may only be used once. Please contact BOZ if you believe this is an error.`,
+      });
+    }
 
     // The actual fix for "an applicant must only apply if no one else has
     // applied for that polling station" — checked per role+scope, not as a
