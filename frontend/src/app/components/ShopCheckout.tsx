@@ -35,6 +35,7 @@ declare global {
 // it's called, always giving the current attempt a genuinely fresh
 // chance instead of trusting stale state.
 let flwLoadPromise: Promise<boolean> | null = null;
+let flwLastFailureReason = '';
 function loadFlutterwaveScript(forceRetry = false): Promise<boolean> {
   if (window.FlutterwaveCheckout && !forceRetry) return Promise.resolve(true);
   if (flwLoadPromise && !forceRetry) return flwLoadPromise;
@@ -45,11 +46,28 @@ function loadFlutterwaveScript(forceRetry = false): Promise<boolean> {
     script.src = 'https://checkout.flutterwave.com/v3.js';
     script.async = true;
     let settled = false;
-    const finish = (ok: boolean) => { if (!settled) { settled = true; resolve(ok); } };
-    script.onload = () => finish(true);
-    script.onerror = () => finish(false);
+    const finish = (ok: boolean, reason: string) => {
+      if (settled) return;
+      settled = true;
+      console.log(`[Flutterwave] load ${ok ? 'succeeded' : 'failed'}: ${reason}`);
+      if (!ok) flwLastFailureReason = reason;
+      resolve(ok);
+    };
+    // onload only means the file downloaded — not that
+    // window.FlutterwaveCheckout has actually been assigned yet. Poll for
+    // the real global after onload instead of trusting the event alone.
+    script.onload = () => {
+      const deadline = Date.now() + 5000;
+      const poll = () => {
+        if (window.FlutterwaveCheckout) { finish(true, 'script loaded, global confirmed'); return; }
+        if (Date.now() > deadline) { finish(false, 'script loaded but window.FlutterwaveCheckout never appeared'); return; }
+        setTimeout(poll, 100);
+      };
+      poll();
+    };
+    script.onerror = () => finish(false, 'script failed to download (onerror fired — likely blocked)');
     document.body.appendChild(script);
-    setTimeout(() => finish(!!window.FlutterwaveCheckout), 8000);
+    setTimeout(() => finish(!!window.FlutterwaveCheckout, 'onload/onerror never fired — timed out after 10s'), 10000);
   });
   return flwLoadPromise;
 }
@@ -268,7 +286,7 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove }: Props) {
       return;
     }
     if (!scriptReady || !window.FlutterwaveCheckout) {
-      setError('The secure payment widget from Flutterwave could not load. This is often caused by an ad blocker, privacy extension, or VPN blocking checkout.flutterwave.com — try disabling it or using a different browser, then try again.');
+      setError(`The secure payment widget from Flutterwave could not load. This is often caused by an ad blocker, privacy extension, or VPN blocking checkout.flutterwave.com — try disabling it or using a different browser, then try again. (Detail: ${flwLastFailureReason || 'unknown'})`);
       setShowLinkFallback(true);
       setPendingOrderId(oId);
       setProcessing(false);
