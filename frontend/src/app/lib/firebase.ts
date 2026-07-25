@@ -37,10 +37,10 @@ export function clearRecaptcha() {
 }
 
 // ── Backend OTP (primary method — works without Firebase Phone Auth) ───────────
-// Sends a 6-digit code via backend → Resend email or logs to console in dev
+// Sends a 6-digit code via backend → Twilio SMS or Resend email
 export async function sendBackendOTP(
   contact: string, // phone number or email
-): Promise<{ success: boolean; otp?: string; error?: string }> {
+): Promise<{ success: boolean; otp?: string; channel?: string; error?: string }> {
   try {
     const isEmail = contact.includes('@');
     const body = isEmail ? { email: contact } : { phone: contact };
@@ -51,8 +51,18 @@ export async function sendBackendOTP(
     });
     const data = await res.json();
     if (!res.ok) return { success: false, error: data.error || 'Failed to send OTP' };
-    // In dev mode, backend returns the OTP directly
-    return { success: true, otp: data.otp };
+    // The backend always responds 200 even when the code was never
+    // actually delivered (e.g. Twilio/Resend not configured or the send
+    // itself failed) — it only logs the code server-side in that case.
+    // res.ok alone was previously treated as "code sent", so a delivery
+    // failure looked identical to success: the user would see "Code
+    // sent!" and wait for an SMS/email that was never actually delivered,
+    // with no indication anything had gone wrong.
+    if (!data.sent) {
+      return { success: false, error: 'Could not deliver a verification code right now. Please try again shortly, or contact support if this continues.' };
+    }
+    // In dev mode, backend also returns the OTP directly for testing
+    return { success: true, otp: data.otp, channel: data.channel };
   } catch {
     return { success: false, error: 'Could not reach server. Please check your connection.' };
   }

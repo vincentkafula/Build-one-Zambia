@@ -1788,14 +1788,23 @@ app.patch(`${BASE}/shadow-cabinet/:gender/:id`, auth.requireAuth, auth.requireRo
 app.delete(`${BASE}/shadow-cabinet/:gender/:id`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => { const g = req.params.gender; if (!['male','female'].includes(g)) return res.status(400).json({ error: 'invalid gender' }); shadowStore[g] = shadowStore[g].filter(m => m.id !== req.params.id); kv.del && kv.del(`shadow:photo:${req.params.id}`); saveShadow(g); res.json({ success: true }); });
 
 // ─── OTP ──────────────────────────────────────────────────────────────────────
-const otpStore = {};
+// Was a plain in-memory object — any backend restart or redeploy between
+// a code being sent and the user entering it would silently wipe it,
+// leaving them with "No OTP found. Request a new one." for no visible
+// reason. Moved to kv (same persistent store everything else uses) so a
+// code survives exactly as long as its actual 10-minute validity window,
+// not just until the next deploy.
+function getOtpEntry(key) { return kv.get(`boz:otp:${key}`); }
+function setOtpEntry(key, entry) { kv.set(`boz:otp:${key}`, entry); }
+function deleteOtpEntry(key) { kv.del(`boz:otp:${key}`); }
+
 app.post(`${BASE}/otp/send`, async (req, res) => {
   try {
     const { phone, email } = req.body;
     if (!phone && !email) return res.status(400).json({ error: 'Phone or email required' });
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const key = phone || email;
-    otpStore[key] = { otp, expiresAt: Date.now() + 10 * 60 * 1000 };
+    setOtpEntry(key, { otp, expiresAt: Date.now() + 10 * 60 * 1000 });
     let sent = false, channel = null;
     if (phone && process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
       try { const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${process.env.TWILIO_ACCOUNT_SID}/Messages.json`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', Authorization: `Basic ${Buffer.from(`${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`).toString('base64')}` }, body: new URLSearchParams({ From: process.env.TWILIO_FROM_NUMBER, To: phone, Body: `Your BOZ verification code is: ${otp}. Valid for 10 minutes.` }) }); const data = await r.json(); if (r.ok && data.sid) { sent = true; channel = 'sms'; } } catch (e) { console.error('[OTP] Twilio error:', e.message); }
@@ -1808,7 +1817,16 @@ app.post(`${BASE}/otp/send`, async (req, res) => {
     res.json({ success: true, sent, channel, message: sent ? `OTP sent via ${channel}` : 'OTP generated', ...(isDev ? { otp } : {}) });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post(`${BASE}/otp/verify`, (req, res) => { const { phone, email, otp } = req.body; const key = phone || email; const stored = otpStore[key]; if (!stored) return res.status(400).json({ error: 'No OTP found. Request a new one.' }); if (Date.now() > stored.expiresAt) { delete otpStore[key]; return res.status(400).json({ error: 'OTP expired' }); } if (stored.otp !== otp) return res.status(400).json({ error: 'Invalid OTP' }); delete otpStore[key]; res.json({ success: true, verified: true }); });
+app.post(`${BASE}/otp/verify`, (req, res) => {
+  const { phone, email, otp } = req.body;
+  const key = phone || email;
+  const stored = getOtpEntry(key);
+  if (!stored) return res.status(400).json({ error: 'No OTP found. Request a new one.' });
+  if (Date.now() > stored.expiresAt) { deleteOtpEntry(key); return res.status(400).json({ error: 'OTP expired' }); }
+  if (stored.otp !== otp) return res.status(400).json({ error: 'Invalid OTP' });
+  deleteOtpEntry(key);
+  res.json({ success: true, verified: true });
+});
 
 // ─── Gateway ──────────────────────────────────────────────────────────────────
 app.get(`${BASE}/gateway/config`, (req, res) => res.json({
