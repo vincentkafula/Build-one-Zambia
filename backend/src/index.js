@@ -480,36 +480,32 @@ app.patch(`${BASE}/registrations/agent/:id/status`, auth.requireAuth, auth.requi
   if (!reg) return res.status(404).json({ error: 'Registration not found' });
   reg = registrations.updateAgent(req.params.id, { notes, reviewedAt: new Date().toISOString(), reviewedBy: req.user?.username });
 
-  let credentials = null;
   let activated = false;
   if (status === 'approved') {
-    try {
-      if (reg.username && !reg.loginGranted) {
-        // Applicant already chose their own password + PIN at application
-        // time (see registrations.createPendingAccount) — just switch it on.
+    // Approving an application is now purely a status action — it does
+    // not generate, show, or send any password. Applicants create their
+    // own username and password at application time
+    // (registrations.createPendingAccount); approval just switches that
+    // already-existing (inactive) account on and lets them know by
+    // email. Nothing here ever displays a password to an admin.
+    if (reg.username && !reg.loginGranted) {
+      try {
         auth.activateUser(reg.username);
         reg = registrations.updateAgent(req.params.id, { loginGranted: true, loginActivatedAt: new Date().toISOString() });
         activated = true;
         console.log(`[activate] Enabled login for agent/${reg.id}: ${reg.username}`);
-      } else if (!reg.username && !reg.loginGranted) {
-        // Legacy fallback for applications submitted before this flow
-        // existed (no self-chosen password captured).
-        const name = reg.fullName || reg.name || ((reg.firstName || '') + ' ' + (reg.lastName || '')).trim() || 'user';
-        const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || 'user';
-        const suffix = reg.id.replace(/[^a-z0-9]/g, '').slice(-4);
-        const username = `agent_${safeName}_${suffix}`;
-        const password = generatePassword();
-        const role = registrations.AGENT_FORM_TIER_TO_ROLE[reg.role] || TYPE_ROLES.agent;
-        if (!auth.getUser(username)) {
-          await auth.registerUser({ username, role, name, email: reg.email || '', phone: reg.phone || reg.cellNumber || '', scopeId: reg.scopeId || '', scopeName: reg.scopeName || reg.pollingStationName || reg.ward || reg.constituency || reg.district || reg.province || 'National', active: true, registrationId: reg.id, registrationType: 'agent' }, password);
-        }
-        credentials = { username, password, role, generatedAt: new Date().toISOString(), name };
-        reg = registrations.updateAgent(req.params.id, { username, loginGranted: true, loginCreatedAt: new Date().toISOString(), pendingPassword: password });
-        console.log(`[auto-grant] Created login for agent/${reg.id}: ${username}`);
-      }
-    } catch (e) { console.error(`[auto-grant] Failed for agent/${req.params.id}:`, e.message); }
+        setImmediate(() => sendApprovalNotificationEmail(reg));
+      } catch (e) { console.error(`[activate] Failed for agent/${req.params.id}:`, e.message); }
+    } else if (!reg.username) {
+      // Legacy record from before applicants chose their own credentials
+      // at signup — has nothing to activate. Deliberately does NOT
+      // auto-generate a password here; an admin must use the separate
+      // "Grant Login" action for these specific old records, so
+      // approving never silently creates credentials as a side effect.
+      console.warn(`[activate] agent/${req.params.id} has no self-chosen username — approved, but needs manual "Grant Login" (legacy record).`);
+    }
   }
-  res.json({ success: true, application: reg, registration: reg, credentials, activated });
+  res.json({ success: true, application: reg, registration: reg, activated });
 });
 
 app.post(`${BASE}/registrations/agent/:id/grant-login`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), async (req, res) => {
@@ -535,7 +531,14 @@ app.post(`${BASE}/registrations/agent/:id/grant-login`, auth.requireAuth, auth.r
     if (existingUser) { await auth.resetPassword(existingUser.id, password); await auth.activateUser(username); }
     else { await auth.registerUser({ username, role, name, email: reg.email || '', phone: reg.phone || reg.cellNumber || '', scopeId: reg.scopeId || '', scopeName: reg.scopeName || reg.pollingStationName || reg.ward || reg.constituency || reg.district || reg.province || 'National', active: true, registrationId: reg.id, registrationType: 'agent' }, password); }
     registrations.updateAgent(id, { status: reg.status === 'pending' ? 'approved' : reg.status, username, loginGranted: true, loginCreatedAt: new Date().toISOString(), loginGrantedBy: req.user?.username, pendingPassword: password });
-    res.json({ success: true, credentials: { username, password, role, generatedAt: new Date().toISOString(), name, alreadyExists: !!existingUser }, message: `Login granted for ${name}` });
+    // This is a manual admin override for genuine edge cases (a legacy
+    // record with no self-chosen password, or an admin needing to reset
+    // one) — not part of normal approval. The new password still goes
+    // straight to the applicant's email rather than only being shown in
+    // the admin UI, same reasoning as everywhere else: an admin should
+    // never be the one holding/relaying someone else's password.
+    if (reg.email) setImmediate(() => sendCredentialsResetEmail({ username, name, email: reg.email }, password));
+    res.json({ success: true, credentials: { username, password, role, generatedAt: new Date().toISOString(), name, alreadyExists: !!existingUser }, message: `Login granted for ${name}${reg.email ? ` — credentials emailed to ${reg.email}` : ''}` });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -1285,6 +1288,40 @@ async function sendCredentialsResetEmail(user, newPassword) {
 // application, never the applicant. Without this, an applicant who chose
 // their own password/PIN at signup had no record at all of their own
 // username once they closed the confirmation screen.
+// Sent by PATCH /registrations/agent/:id/status when an admin approves an
+// application. Unlike the other credential emails, this never includes a
+// password — the applicant already knows it, since they chose it
+// themselves at signup (registrations.createPendingAccount). This is
+// purely a "you're approved, you can log in now" notification.
+async function sendApprovalNotificationEmail(reg) {
+  if (!process.env.RESEND_API_KEY || !reg.email || !reg.username) return;
+  try {
+    const name = reg.fullName || reg.name || ((reg.firstName || '') + ' ' + (reg.lastName || '')).trim() || 'there';
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
+        <h2 style="color:#007A30">Application Approved!</h2>
+        <p>Hi ${name},</p>
+        <p>Your Build One Zambia application has been approved. You can now log in using the username and password you chose when you applied.</p>
+        <div style="background:#f3f4f6;border-radius:8px;padding:16px;margin:16px 0">
+          <p style="margin:0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">Your Username</p>
+          <p style="margin:0;font-size:18px;font-weight:700;color:#111827">${reg.username}</p>
+        </div>
+        <p style="color:#6b7280;font-size:13px">Forgotten your password? Use "Resend Login Details" on the login page to reset it.</p>
+        <p>Together we build One Zambia.</p>
+      </div>`;
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: process.env.EMAIL_FROM_ADDRESS || 'no-reply@bozplans.org', to: reg.email, subject: 'Your Build One Zambia Application Has Been Approved', html }),
+    });
+    const data = await r.json();
+    if (!r.ok) console.error(`[approval] Resend error sending approval email for ${reg.id}:`, data);
+    else console.log(`[approval] Sent approval notification for ${reg.id} to ${reg.email}: ${data.id}`);
+  } catch (e) {
+    console.error(`[approval] Failed to send approval email for ${reg.id}:`, e.message);
+  }
+}
+
 async function sendApplicantWelcomeEmail(reg, roleLabel) {
   if (!process.env.RESEND_API_KEY || !reg.email || !reg.username) return;
   try {

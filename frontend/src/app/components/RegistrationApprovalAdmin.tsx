@@ -631,16 +631,22 @@ function RegRow({
     const creds = await onDecision(reg.id, status, note);
     if (creds) setFreshCreds(creds);
     if (status === 'approved') {
-      // If the applicant already chose their own password at submission
-      // time, a real account (and username) already exists on this
-      // registration — use it rather than guessing a new one, which the
-      // backend would ignore anyway but which looked confusingly wrong here.
+      // Applicants now choose their own username and password at
+      // application time — approving just switches their existing
+      // (inactive) account on and emails them a confirmation. Nothing is
+      // generated or shown here anymore for the normal case. Grant
+      // Login only ever needs manual use now for a genuine legacy
+      // record with no self-chosen username at all.
       const existingUsername = (reg as AgentReg).username;
-      const rawName = (reg as any).fullName || (reg as any).name || (reg as any).cooperativeName || '';
-      const autoUser = existingUsername || rawName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 16) || ('user' + Date.now().toString().slice(-5));
-      const autoPass = Math.random().toString(36).slice(2, 7).toUpperCase() + Math.floor(Math.random() * 90 + 10) + '!';
-      setGrantUsername(autoUser); setGrantPassword(autoPass); setShowGrantLogin(true);
-      setActionMsg('Approved — grant login credentials below.');
+      if (existingUsername) {
+        setActionMsg(`Approved — ${existingUsername} has been emailed their login confirmation.`);
+      } else {
+        const rawName = (reg as any).fullName || (reg as any).name || (reg as any).cooperativeName || '';
+        const autoUser = rawName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 16) || ('user' + Date.now().toString().slice(-5));
+        const autoPass = Math.random().toString(36).slice(2, 7).toUpperCase() + Math.floor(Math.random() * 90 + 10) + '!';
+        setGrantUsername(autoUser); setGrantPassword(autoPass); setShowGrantLogin(true);
+        setActionMsg('Approved — this is a legacy record with no self-chosen username. Use "Grant Login" below to create one; the new credentials will be emailed to the applicant.');
+      }
     } else {
       setActionMsg('Application rejected.');
     }
@@ -875,7 +881,7 @@ export function RegistrationApprovalAdmin() {
       if (status === 'approved' && username && password) {
         try { await grantLogin(activeTab, id, username, password); } catch {}
       }
-      setMsg(status === 'approved' ? '✓ Approved — grant login credentials to activate.' : '✗ Registration rejected.');
+      setMsg(status === 'approved' ? '✓ Approved — applicant notified by email.' : '✗ Registration rejected.');
       await loadData();
       return res.credentials || null;
     } catch {
