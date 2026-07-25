@@ -55,10 +55,10 @@ const INIT: State = {
 // ── Static data ───────────────────────────────────────────────────────────────
 
 const TIERS = [
-  { amount: 'K100',   label: 'Supporter', perks: 'Campaign badge & newsletter' },
-  { amount: 'K500',   label: 'Advocate',  perks: 'Badge, newsletter & signed poster' },
-  { amount: 'K1,000', label: 'Champion',  perks: 'All above + rally invitation' },
-  { amount: 'K5,000', label: 'Patron',    perks: 'All above + leadership meet & greet' },
+  { amount: 'K100',   label: 'Bronze',   perks: 'Campaign badge & newsletter' },
+  { amount: 'K500',   label: 'Silver',   perks: 'Badge, newsletter & signed poster' },
+  { amount: 'K1,000', label: 'Gold',     perks: 'All above + rally invitation' },
+  { amount: 'K5,000', label: 'Platinum', perks: 'All above + leadership meet & greet' },
 ];
 
 const BANKS: Record<BankKey, { label: string; account: string; branch: string; swift: string; color: string }> = {

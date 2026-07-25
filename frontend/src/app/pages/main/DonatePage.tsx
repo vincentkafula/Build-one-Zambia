@@ -10,10 +10,10 @@ import { DonationFlow } from '../../components/DonationFlow';
 // the literal thing a kwacha amount buys visible, tying directly into the
 // party's own name.
 const IMPACT_STEPS = [
-  { amount: 'K100', title: 'Supporter', outcome: 'Prints voter-education flyers for one polling station.' },
-  { amount: 'K500', title: 'Advocate', outcome: 'Funds a full day of door-to-door canvassing in one ward.' },
-  { amount: 'K1,000', title: 'Champion', outcome: 'Covers sound and staging for one community rally.' },
-  { amount: 'K5,000', title: 'Patron', outcome: 'Buys a voter-education radio slot reaching a whole constituency.' },
+  { amount: 'K100', title: 'Bronze', outcome: 'Prints voter-education flyers for one polling station.' },
+  { amount: 'K500', title: 'Silver', outcome: 'Funds a full day of door-to-door canvassing in one ward.' },
+  { amount: 'K1,000', title: 'Gold', outcome: 'Covers sound and staging for one community rally.' },
+  { amount: 'K5,000', title: 'Platinum', outcome: 'Buys a voter-education radio slot reaching a whole constituency.' },
 ];
 
 const TRUST_ITEMS = [
@@ -116,22 +116,26 @@ export function DonatePage() {
 
         <div style={{ maxWidth: '620px', margin: '0 auto', position: 'relative' }}>
           {/* connecting rail */}
-          <div style={{ position: 'absolute', left: '27px', top: '14px', bottom: '14px', width: '2px', background: 'linear-gradient(180deg, #1a3a26 0%, #007A30 100%)' }} />
-          {IMPACT_STEPS.map((step, i) => (
+          <div style={{ position: 'absolute', left: '27px', top: '14px', bottom: '14px', width: '2px', background: 'linear-gradient(180deg, #cd7f32 0%, #c0c0c0 33%, #e0b83c 66%, #e5e4e2 100%)' }} />
+          {IMPACT_STEPS.map((step, i) => {
+            const METAL_COLORS = ['#cd7f32', '#c0c0c0', '#e0b83c', '#e5e4e2'];
+            const metal = METAL_COLORS[i];
+            return (
             <div key={step.amount} style={{ position: 'relative', display: 'flex', gap: '24px', paddingBottom: i === IMPACT_STEPS.length - 1 ? 0 : '38px' }}>
               <div
                 style={{
                   flexShrink: 0, width: '56px', height: '56px', borderRadius: '50%',
-                  backgroundColor: '#0d0d0d', border: `2px solid ${i === IMPACT_STEPS.length - 1 ? '#dc2626' : '#007A30'}`,
+                  backgroundColor: '#0d0d0d', border: `2px solid ${metal}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1,
+                  boxShadow: `0 0 0 1px rgba(0,0,0,0.4), 0 0 14px ${metal}33`,
                 }}
               >
-                <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10px', fontWeight: 700, color: i === IMPACT_STEPS.length - 1 ? '#dc2626' : '#22c55e', letterSpacing: '0.02em' }}>
+                <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10px', fontWeight: 700, color: metal, letterSpacing: '0.02em' }}>
                   {step.amount}
                 </span>
               </div>
               <div style={{ paddingTop: '8px' }}>
-                <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.95rem', letterSpacing: '0.06em', color: '#fff', marginBottom: '4px' }}>
+                <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.95rem', letterSpacing: '0.06em', color: metal, marginBottom: '4px' }}>
                   {step.title.toUpperCase()}
                 </p>
                 <p style={{ color: '#8b9a91', fontSize: '14px', lineHeight: 1.7, margin: 0, maxWidth: '420px' }}>
@@ -139,7 +143,8 @@ export function DonatePage() {
                 </p>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
