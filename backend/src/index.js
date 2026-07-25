@@ -1821,19 +1821,30 @@ app.post(`${BASE}/otp/verify`, async (req, res) => {
 });
 
 // ─── Gateway ──────────────────────────────────────────────────────────────────
-app.get(`${BASE}/gateway/config`, (req, res) => res.json({
-  config: {
-    flutterwaveEnabled: !!process.env.FLUTTERWAVE_SECRET_KEY,
-    resendEnabled: !!process.env.RESEND_API_KEY,
-    twilioEnabled: !!process.env.TWILIO_ACCOUNT_SID,
-    twilioVerifyConfigured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_VERIFY_SERVICE_SID),
-    publicKey: process.env.FLUTTERWAVE_PUBLIC_KEY || null,
-    currency: 'ZMW',
-    country: 'ZM',
-    redirectUrl: process.env.SITE_URL || '',
-    siteUrl: process.env.SITE_URL || '',
-  },
-}));
+app.get(`${BASE}/gateway/config`, (req, res) => {
+  // This response can change (keys getting configured/rotated) and is a
+  // GET with no explicit cache directive, which browsers and any
+  // intermediate proxy/CDN layer are allowed to cache by default. If a
+  // stale response was ever cached from before FLUTTERWAVE_PUBLIC_KEY was
+  // set (returning publicKey: null), it could keep being served
+  // indefinitely through a caching layer even though hitting this route
+  // directly always returns the current, correct value — explicitly
+  // forbidding caching closes that off entirely.
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.json({
+    config: {
+      flutterwaveEnabled: !!process.env.FLUTTERWAVE_SECRET_KEY,
+      resendEnabled: !!process.env.RESEND_API_KEY,
+      twilioEnabled: !!process.env.TWILIO_ACCOUNT_SID,
+      twilioVerifyConfigured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_VERIFY_SERVICE_SID),
+      publicKey: process.env.FLUTTERWAVE_PUBLIC_KEY || null,
+      currency: 'ZMW',
+      country: 'ZM',
+      redirectUrl: process.env.SITE_URL || '',
+      siteUrl: process.env.SITE_URL || '',
+    },
+  });
+});
 
 // ─── Flutterwave payment processing ──────────────────────────────────────────
 // These were referenced by the frontend (ShopCheckout.tsx) all along but
