@@ -29,6 +29,7 @@ const FemaleCandidatesPage = lazy(() => import('./pages/main/FemaleCandidatesPag
 const OpportunitiesPage    = lazy(() => import('./pages/main/OpportunitiesPage'));
 const ChambersPage         = lazy(() => import('./pages/main/ChambersPage'));
 const DonatePage           = lazy(() => import('./pages/main/DonatePage'));
+const PaymentCompletePage  = lazy(() => import('./pages/main/PaymentCompletePage'));
 const LiveStreamingPage    = lazy(() => import('./pages/main/LiveStreamingPage'));
 const DocumentsPage        = lazy(() => import('./pages/main/DocumentsPage'));
 const NewsPage             = lazy(() => import('./pages/main/NewsPage'));
@@ -95,6 +96,7 @@ const MainLayout = memo(function MainLayout() {
               <Route path="/pages"               element={<PagesPage />} />
               <Route path="/contact"             element={<ContactDonatePage />} />
               <Route path="/donate"              element={<DonatePage />} />
+              <Route path="/payment/complete"    element={<PaymentCompletePage />} />
               <Route path="/news/live"          element={<LiveStreamingPage />} />
               <Route path="/news/documents"         element={<DocumentsPage />} />
               <Route path="/news/latest"            element={<NewsPage />} />

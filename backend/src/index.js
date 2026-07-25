@@ -1825,6 +1825,66 @@ app.get(`${BASE}/gateway/verify/:txRef`, async (req, res) => {
   }
 });
 
+// ─── Hosted checkout link (Flutterwave "Standard" flow) ─────────────────────
+// The inline widget above loads checkout.flutterwave.com/v3.js as a
+// same-page <script> tag, which some ad blockers / privacy extensions /
+// VPNs block outright — the customer's browser fetches the page fine but
+// the embedded script never initializes. This is a fallback that sidesteps
+// that entirely: instead of loading anything in-page, it asks Flutterwave
+// for a hosted payment page URL and does a full-page redirect there, then
+// Flutterwave redirects back once payment completes. No third-party
+// script runs on this site at any point in this flow.
+app.post(`${BASE}/gateway/checkout-link`, async (req, res) => {
+  if (!process.env.FLUTTERWAVE_SECRET_KEY) {
+    return res.status(503).json({ success: false, error: 'Payment gateway is not configured yet.' });
+  }
+  try {
+    const { type, id, name, email, phone } = req.body;
+    if (!type || !id) return res.status(400).json({ success: false, error: 'type and id are required.' });
+
+    let amount;
+    if (type === 'order') {
+      const order = shop.getOrder(id);
+      if (!order) return res.status(404).json({ success: false, error: 'Order not found.' });
+      amount = order.total;
+    } else if (type === 'donation') {
+      const donation = donationStore.donations.find(d => d.id === id);
+      if (!donation) return res.status(404).json({ success: false, error: 'Donation not found.' });
+      amount = donation.amount;
+    } else {
+      return res.status(400).json({ success: false, error: "type must be 'order' or 'donation'." });
+    }
+
+    const txRef = `boz-${type}-${id}-${Date.now()}`;
+    // Prefer the configured SITE_URL, but fall back to wherever this
+    // request actually came from — SITE_URL being unset shouldn't be a
+    // hard blocker for an otherwise-working payment flow.
+    const origin = process.env.SITE_URL || req.headers.origin || (req.headers.referer ? new URL(req.headers.referer).origin : '');
+    if (!origin) return res.status(500).json({ success: false, error: 'Could not determine a return address for this payment. Please set SITE_URL on the backend.' });
+    const redirectUrl = `${origin.replace(/\/$/, '')}/payment/complete?type=${type}&id=${encodeURIComponent(id)}`;
+
+    const r = await fetch(`${FLW_BASE}/payments`, {
+      method: 'POST',
+      headers: flwHeaders(),
+      body: JSON.stringify({
+        tx_ref: txRef,
+        amount: String(amount),
+        currency: 'ZMW',
+        redirect_url: redirectUrl,
+        customer: { email: email || 'no-reply@buildonezambia.com', name: name || 'Customer', phonenumber: phone || '' },
+        customizations: { title: 'Build One Zambia', description: type === 'order' ? 'BOZ Shop Order' : 'BOZ Donation' },
+      }),
+    });
+    const data = await r.json();
+    if (data.status === 'success' && data.data?.link) {
+      return res.json({ success: true, link: data.data.link, txRef });
+    }
+    return res.json({ success: false, error: data.message || 'Could not create a payment link.' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.post(`${BASE}/gateway/verify-card`, async (req, res) => {
   if (!process.env.FLUTTERWAVE_SECRET_KEY) {
     return res.status(503).json({ success: false, verified: false, error: 'Payment gateway is not configured yet.' });

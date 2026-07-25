@@ -115,6 +115,8 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove }: Props) {
   const [gwConfig, setGwConfig]       = useState<GatewayConfig | null>(null);
   const [flwLoaded, setFlwLoaded]     = useState(false);
   const [flwScriptFailed, setFlwScriptFailed] = useState(false);
+  const [showLinkFallback, setShowLinkFallback] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState('');
 
   const pollRef   = useRef<ReturnType<typeof setInterval> | null>(null);
   const orderId   = useRef('');
@@ -227,6 +229,23 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove }: Props) {
 
   // ── Card payment via Flutterwave inline popup ──────────────────────────────
 
+  const payViaLink = async () => {
+    setProcessing(true);
+    setError('');
+    try {
+      const res = await gatewayApi.checkoutLink({ type: 'order', id: pendingOrderId, name, email, phone });
+      if (res.success && res.link) {
+        window.location.href = res.link;
+      } else {
+        setError(res.error || 'Could not create a payment link. Please try again later.');
+        setProcessing(false);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not create a payment link.');
+      setProcessing(false);
+    }
+  };
+
   const payCard = async (oId: string) => {
     let cfg = gwConfig;
     let configFailed = false;
@@ -242,6 +261,8 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove }: Props) {
     }
     if (flwScriptFailed || !scriptReady || !window.FlutterwaveCheckout) {
       setError('The secure payment widget from Flutterwave could not load. This is often caused by an ad blocker, privacy extension, or VPN blocking checkout.flutterwave.com — try disabling it or using a different browser, then try again.');
+      setShowLinkFallback(true);
+      setPendingOrderId(oId);
       setProcessing(false);
       return;
     }
@@ -699,9 +720,21 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove }: Props) {
 
           {/* Error */}
           {error && (
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', backgroundColor: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)', padding: '12px', marginTop: '16px' }}>
-              <AlertCircle style={{ width: '15px', height: '15px', color: '#dc2626', flexShrink: 0, marginTop: '1px' }} />
-              <p style={{ fontSize: '13px', color: '#fca5a5', margin: 0 }}>{error}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', backgroundColor: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)', padding: '12px', marginTop: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                <AlertCircle style={{ width: '15px', height: '15px', color: '#dc2626', flexShrink: 0, marginTop: '1px' }} />
+                <p style={{ fontSize: '13px', color: '#fca5a5', margin: 0 }}>{error}</p>
+              </div>
+              {showLinkFallback && (
+                <button
+                  type="button"
+                  onClick={payViaLink}
+                  disabled={processing}
+                  style={{ alignSelf: 'flex-start', backgroundColor: 'transparent', border: '1px solid #dc2626', color: '#fca5a5', padding: '8px 16px', fontSize: '12px', letterSpacing: '0.03em', cursor: 'pointer' }}
+                >
+                  {processing ? 'Opening…' : 'Try a different secure payment link →'}
+                </button>
+              )}
             </div>
           )}
         </div>

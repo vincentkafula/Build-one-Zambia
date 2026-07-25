@@ -440,6 +440,14 @@ export const gatewayApi = {
     request<{ success: boolean; verified: boolean; result: GatewayVerifyResult }>(
       'POST', '/gateway/donation/verify-card', data
     ),
+
+  // Hosted checkout link (Flutterwave "Standard" flow) — a full-page
+  // redirect fallback for when the inline widget's script fails to load
+  // (typically an ad blocker / privacy extension / VPN blocking it).
+  checkoutLink: (data: { type: 'order' | 'donation'; id: string; name?: string; email?: string; phone?: string }) =>
+    request<{ success: boolean; link?: string; txRef?: string; error?: string }>(
+      'POST', '/gateway/checkout-link', data
+    ),
 };
 
 // ─── Email ────────────────────────────────────────────────────────────────────

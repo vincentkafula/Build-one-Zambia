@@ -269,6 +269,8 @@ export function DonationFlow() {
   const [s, setS]       = useState<State>(INIT);
   const [processing, setProcessing] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [showLinkFallback, setShowLinkFallback] = useState(false);
+  const [pendingDonationId, setPendingDonationId] = useState('');
 
   const set = (k: keyof State, v: string) => setS(prev => ({ ...prev, [k]: v }));
   const amt = displayAmount(s);
@@ -341,6 +343,8 @@ export function DonationFlow() {
       }
       if (flwScriptFailed || !scriptReady || !window.FlutterwaveCheckout) {
         setSubmitError('The secure payment widget from Flutterwave could not load. This is often caused by an ad blocker, privacy extension, or VPN blocking checkout.flutterwave.com — try disabling it or using a different browser, then try again.');
+        setShowLinkFallback(true);
+        setPendingDonationId(donationId);
         setProcessing(false);
         return;
       }
@@ -385,6 +389,23 @@ export function DonationFlow() {
       });
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setProcessing(false);
+    }
+  }
+
+  async function handlePayViaLink() {
+    setProcessing(true);
+    setSubmitError('');
+    try {
+      const res = await gatewayApi.checkoutLink({ type: 'donation', id: pendingDonationId, name: s.name, email: s.email, phone: s.phone ? `260${s.phone}` : undefined });
+      if (res.success && res.link) {
+        window.location.href = res.link;
+      } else {
+        setSubmitError(res.error || 'Could not create a payment link. Please try again later.');
+        setProcessing(false);
+      }
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Could not create a payment link.');
       setProcessing(false);
     }
   }
@@ -766,9 +787,21 @@ export function DonationFlow() {
           </div>
 
           {submitError && (
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '14px', backgroundColor: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.35)', marginBottom: '16px' }}>
-              <AlertCircle size={14} color="#dc2626" style={{ flexShrink: 0, marginTop: '2px' }} />
-              <p style={{ fontSize: '12px', color: '#fca5a5', lineHeight: 1.6, margin: 0 }}>{submitError}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '14px', backgroundColor: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.35)', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <AlertCircle size={14} color="#dc2626" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <p style={{ fontSize: '12px', color: '#fca5a5', lineHeight: 1.6, margin: 0 }}>{submitError}</p>
+              </div>
+              {showLinkFallback && (
+                <button
+                  type="button"
+                  onClick={handlePayViaLink}
+                  disabled={processing}
+                  style={{ alignSelf: 'flex-start', backgroundColor: 'transparent', border: '1px solid #dc2626', color: '#fca5a5', padding: '8px 16px', fontFamily: 'Oswald, sans-serif', fontSize: '12px', letterSpacing: '0.06em', cursor: 'pointer' }}
+                >
+                  {processing ? 'OPENING…' : 'TRY A DIFFERENT SECURE PAYMENT LINK →'}
+                </button>
+              )}
             </div>
           )}
 
