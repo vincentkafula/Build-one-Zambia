@@ -91,18 +91,37 @@ function formatExpiry(raw: string): string {
   return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d;
 }
 
-// The script tag gets injected on mount, but nothing guaranteed it had
-// actually finished loading by the time someone clicked through all 4
-// steps and hit Confirm — that used to be a single point-in-time check
-// that failed permanently if the script was even slightly slow. Polls for
-// up to 8 seconds instead of giving up after one look.
-async function waitForFlutterwave(maxWaitMs = 8000): Promise<boolean> {
-  const start = Date.now();
-  while (typeof window !== 'undefined' && !window.FlutterwaveCheckout) {
-    if (Date.now() - start > maxWaitMs) return false;
-    await new Promise(r => setTimeout(r, 150));
-  }
-  return true;
+// Actively (re)loads Flutterwave's checkout script rather than passively
+// polling and giving up forever the first time it fails or is slow. A
+// prior attempt setting a one-shot "failed" flag used to permanently
+// doom every later click within the same page load, even though a fresh
+// attempt right now might well succeed (transient network blip, a
+// blocking rule that only applied to the very first request, etc.) — so
+// this removes any existing script tag (working or stuck) and injects a
+// brand new one every time it's called, always giving the current
+// attempt a genuinely fresh chance instead of trusting stale state.
+let flwLoadPromise: Promise<boolean> | null = null;
+function loadFlutterwaveScript(forceRetry = false): Promise<boolean> {
+  if (window.FlutterwaveCheckout && !forceRetry) return Promise.resolve(true);
+  if (flwLoadPromise && !forceRetry) return flwLoadPromise;
+
+  flwLoadPromise = new Promise(resolve => {
+    document.querySelectorAll('script[src*="checkout.flutterwave.com"]').forEach(el => el.remove());
+    const script = document.createElement('script');
+    script.src = 'https://checkout.flutterwave.com/v3.js';
+    script.async = true;
+    let settled = false;
+    const finish = (ok: boolean) => { if (!settled) { settled = true; resolve(ok); } };
+    script.onload = () => finish(true);
+    script.onerror = () => finish(false);
+    document.body.appendChild(script);
+    // Safety net: the script can technically fire onload before
+    // window.FlutterwaveCheckout is actually assigned, or never fire an
+    // event at all in some edge cases — fall back to checking the real
+    // global directly after a reasonable wait either way.
+    setTimeout(() => finish(!!window.FlutterwaveCheckout), 8000);
+  });
+  return flwLoadPromise;
 }
 
 function displayAmount(s: State): string {
@@ -275,20 +294,14 @@ export function DonationFlow() {
   const set = (k: keyof State, v: string) => setS(prev => ({ ...prev, [k]: v }));
   const amt = displayAmount(s);
 
-  // Load Flutterwave's inline checkout script + public key once, same as
-  // the shop checkout — card entry happens entirely inside their widget,
-  // never in this form.
+  // Load Flutterwave's inline checkout script + public key once on mount,
+  // same as the shop checkout — card entry happens entirely inside their
+  // widget, never in this form.
   const flwModal = useRef<{ close: () => void } | null>(null);
   const [gwPublicKey, setGwPublicKey] = useState('');
-  const [flwScriptFailed, setFlwScriptFailed] = useState(false);
   useEffect(() => {
     gatewayApi.config().then(cfg => setGwPublicKey(cfg.publicKey || '')).catch(() => {});
-    if (document.querySelector('script[src*="checkout.flutterwave.com"]')) return;
-    const script = document.createElement('script');
-    script.src = 'https://checkout.flutterwave.com/v3.js';
-    script.async = true;
-    script.onerror = () => setFlwScriptFailed(true);
-    document.body.appendChild(script);
+    loadFlutterwaveScript();
   }, []);
 
   function parseAmount(): number {
@@ -334,14 +347,14 @@ export function DonationFlow() {
           if (!publicKey) configFailed = true;
         } catch { configFailed = true; }
       }
-      const scriptReady = publicKey ? await waitForFlutterwave() : false;
+      const scriptReady = publicKey ? await loadFlutterwaveScript(true) : false;
 
       if (configFailed || !publicKey) {
         setSubmitError('Could not reach BOZ\'s payment configuration. Please check your internet connection and try again.');
         setProcessing(false);
         return;
       }
-      if (flwScriptFailed || !scriptReady || !window.FlutterwaveCheckout) {
+      if (!scriptReady || !window.FlutterwaveCheckout) {
         setSubmitError('The secure payment widget from Flutterwave could not load. This is often caused by an ad blocker, privacy extension, or VPN blocking checkout.flutterwave.com — try disabling it or using a different browser, then try again.');
         setShowLinkFallback(true);
         setPendingDonationId(donationId);

@@ -26,16 +26,32 @@ declare global {
   }
 }
 
-// A single point-in-time check right when the customer clicks "Pay" can
-// fail just because the script was a moment slow to load, even though it
-// finishes loading a second later. Polls for up to 8 seconds instead.
-async function waitForFlutterwave(maxWaitMs = 8000): Promise<boolean> {
-  const start = Date.now();
-  while (typeof window !== 'undefined' && !window.FlutterwaveCheckout) {
-    if (Date.now() - start > maxWaitMs) return false;
-    await new Promise(r => setTimeout(r, 150));
-  }
-  return true;
+// Actively (re)loads Flutterwave's checkout script rather than passively
+// polling and giving up forever the first time it fails or is slow. A
+// prior attempt setting a one-shot "failed" flag used to permanently
+// doom every later click within the same page load, even though a fresh
+// attempt right now might well succeed — so this removes any existing
+// script tag (working or stuck) and injects a brand new one every time
+// it's called, always giving the current attempt a genuinely fresh
+// chance instead of trusting stale state.
+let flwLoadPromise: Promise<boolean> | null = null;
+function loadFlutterwaveScript(forceRetry = false): Promise<boolean> {
+  if (window.FlutterwaveCheckout && !forceRetry) return Promise.resolve(true);
+  if (flwLoadPromise && !forceRetry) return flwLoadPromise;
+
+  flwLoadPromise = new Promise(resolve => {
+    document.querySelectorAll('script[src*="checkout.flutterwave.com"]').forEach(el => el.remove());
+    const script = document.createElement('script');
+    script.src = 'https://checkout.flutterwave.com/v3.js';
+    script.async = true;
+    let settled = false;
+    const finish = (ok: boolean) => { if (!settled) { settled = true; resolve(ok); } };
+    script.onload = () => finish(true);
+    script.onerror = () => finish(false);
+    document.body.appendChild(script);
+    setTimeout(() => finish(!!window.FlutterwaveCheckout), 8000);
+  });
+  return flwLoadPromise;
 }
 
 const s = {
@@ -114,7 +130,6 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove }: Props) {
   const [pollMsg, setPollMsg]         = useState('');
   const [gwConfig, setGwConfig]       = useState<GatewayConfig | null>(null);
   const [flwLoaded, setFlwLoaded]     = useState(false);
-  const [flwScriptFailed, setFlwScriptFailed] = useState(false);
   const [showLinkFallback, setShowLinkFallback] = useState(false);
   const [pendingOrderId, setPendingOrderId] = useState('');
 
@@ -125,14 +140,7 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove }: Props) {
   // Load Flutterwave inline script + gateway config
   useEffect(() => {
     gatewayApi.config().then(cfg => setGwConfig(cfg)).catch(() => {});
-
-    if (document.getElementById('flw-script')) { setFlwLoaded(true); return; }
-    const script = document.createElement('script');
-    script.id = 'flw-script';
-    script.src = 'https://checkout.flutterwave.com/v3.js';
-    script.onload = () => setFlwLoaded(true);
-    script.onerror = () => setFlwScriptFailed(true);
-    document.head.appendChild(script);
+    loadFlutterwaveScript().then(setFlwLoaded);
   }, []);
 
   // Stop polling on unmount
@@ -252,14 +260,14 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove }: Props) {
     if (!cfg) {
       try { cfg = await gatewayApi.config(); setGwConfig(cfg); if (!cfg?.publicKey) configFailed = true; } catch { configFailed = true; }
     }
-    const scriptReady = cfg ? await waitForFlutterwave() : false;
+    const scriptReady = cfg ? await loadFlutterwaveScript(true) : false;
 
     if (configFailed || !cfg) {
       setError('Could not reach BOZ\'s payment configuration. Please check your internet connection and try again.');
       setProcessing(false);
       return;
     }
-    if (flwScriptFailed || !scriptReady || !window.FlutterwaveCheckout) {
+    if (!scriptReady || !window.FlutterwaveCheckout) {
       setError('The secure payment widget from Flutterwave could not load. This is often caused by an ad blocker, privacy extension, or VPN blocking checkout.flutterwave.com — try disabling it or using a different browser, then try again.');
       setShowLinkFallback(true);
       setPendingOrderId(oId);
