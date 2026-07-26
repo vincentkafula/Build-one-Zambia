@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ShoppingBag, Search, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ShopCheckout, CartItem } from '../../components/ShopCheckout';
 
@@ -62,6 +62,77 @@ const CANVAS = '#0B120A';
 
 type Product = typeof PRODUCTS[0];
 
+function ProductCard({ product, tilt, cart, addedId, onAdd }: { product: Product; tilt: 'left' | 'right'; cart: CartItem[]; addedId: number | null; onAdd: (p: Product) => void }) {
+  const inCart = cart.find(ci => ci.id === product.id);
+  const justAdded = addedId === product.id;
+  return (
+    <div style={{ background: PAPER, color: INK, width: '190px', flex: '0 0 190px', borderRadius: '2px', padding: '12px 12px 14px', position: 'relative', boxShadow: '0 14px 24px -14px rgba(0,0,0,0.6)', transform: tilt === 'left' ? 'rotate(-1deg)' : 'rotate(1deg)' }}>
+      <div style={{ position: 'absolute', top: '-5px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: RED, boxShadow: '0 2px 3px rgba(0,0,0,0.4)' }} />
+      {inCart && (
+        <div style={{ position: 'absolute', top: '8px', right: '8px', background: INK, color: PAPER, fontSize: '9px', fontFamily: 'Oswald, sans-serif', padding: '2px 6px', borderRadius: '10px' }}>
+          ×{inCart.qty}
+        </div>
+      )}
+      <div style={{ height: '110px', borderRadius: '2px', overflow: 'hidden', marginBottom: '10px', background: PAPER_DIM }}>
+        <img src={product.img} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      </div>
+      <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '9px', letterSpacing: '0.08em', color: RED_DARK, margin: '0 0 4px' }}>{product.tag}</p>
+      <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '12.5px', fontWeight: 600, lineHeight: 1.25, margin: '0 0 10px', minHeight: '30px' }}>{product.name}</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', paddingTop: '10px', borderTop: `1px dashed ${LINE_ON_PAPER}` }}>
+        <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', fontWeight: 700 }}>{product.price}</span>
+        <button onClick={() => onAdd(product)} style={{ background: INK, color: PAPER, border: 'none', fontFamily: 'Oswald, sans-serif', fontSize: '10px', letterSpacing: '0.04em', padding: '7px 10px', borderRadius: '2px', cursor: 'pointer' }}>
+          {justAdded ? 'ADDED' : 'ADD'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Discrete 5-position carousel: exactly 5 products visible (positions 1..5, left to right).
+// Every 5 seconds the whole line steps left by one slot — the item leaving position 1
+// reappears at position 5, and so on — then holds for 5 seconds before stepping again.
+const CARD_UNIT = 208; // 190px card + 18px gap
+const VISIBLE_SLOTS = 5;
+const STEP_HOLD_MS = 5000;
+const STEP_TRANSITION_MS = 600;
+
+function MovingRow({ products, cart, addedId, onAdd }: { products: Product[]; cart: CartItem[]; addedId: number | null; onAdd: (p: Product) => void }) {
+  const n = products.length;
+  const [step, setStep] = useState(n);
+  const [animate, setAnimate] = useState(true);
+
+  useEffect(() => {
+    if (n === 0) return;
+    const id = setInterval(() => setStep(s => s + 1), STEP_HOLD_MS);
+    return () => clearInterval(id);
+  }, [n]);
+
+  useEffect(() => {
+    if (n === 0 || step < 2 * n) return;
+    const t = setTimeout(() => { setAnimate(false); setStep(n); }, STEP_TRANSITION_MS + 20);
+    return () => clearTimeout(t);
+  }, [step, n]);
+
+  useEffect(() => {
+    if (animate) return;
+    const raf = requestAnimationFrame(() => requestAnimationFrame(() => setAnimate(true)));
+    return () => cancelAnimationFrame(raf);
+  }, [animate]);
+
+  if (n === 0) return null;
+  const loop = [...products, ...products, ...products];
+
+  return (
+    <div className="boz-row-mask" style={{ maxWidth: `${VISIBLE_SLOTS * CARD_UNIT - 18}px`, margin: '0 auto' }}>
+      <div style={{ display: 'flex', gap: '18px', transform: `translateX(-${step * CARD_UNIT}px)`, transition: animate ? `transform ${STEP_TRANSITION_MS}ms ease` : 'none' }}>
+        {loop.map((product, i) => (
+          <ProductCard key={`${product.id}-${i}`} product={product} tilt={i % 2 === 0 ? 'left' : 'right'} cart={cart} addedId={addedId} onAdd={onAdd} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ShopPage() {
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -101,40 +172,10 @@ export function ShopPage() {
 
   const isSearching = search.trim().length > 0;
 
-  function ProductCard({ product, tilt }: { product: Product; tilt: 'left' | 'right' }) {
-    const inCart = cart.find(ci => ci.id === product.id);
-    const justAdded = addedId === product.id;
-    return (
-      <div style={{ background: PAPER, color: INK, width: '190px', flex: '0 0 190px', borderRadius: '2px', padding: '12px 12px 14px', position: 'relative', boxShadow: '0 14px 24px -14px rgba(0,0,0,0.6)', transform: tilt === 'left' ? 'rotate(-1deg)' : 'rotate(1deg)' }}>
-        <div style={{ position: 'absolute', top: '-5px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: RED, boxShadow: '0 2px 3px rgba(0,0,0,0.4)' }} />
-        {inCart && (
-          <div style={{ position: 'absolute', top: '8px', right: '8px', background: INK, color: PAPER, fontSize: '9px', fontFamily: 'Oswald, sans-serif', padding: '2px 6px', borderRadius: '10px' }}>
-            ×{inCart.qty}
-          </div>
-        )}
-        <div style={{ height: '110px', borderRadius: '2px', overflow: 'hidden', marginBottom: '10px', background: PAPER_DIM }}>
-          <img src={product.img} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-        <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '9px', letterSpacing: '0.08em', color: RED_DARK, margin: '0 0 4px' }}>{product.tag}</p>
-        <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '12.5px', fontWeight: 600, lineHeight: 1.25, margin: '0 0 10px', minHeight: '30px' }}>{product.name}</p>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', paddingTop: '10px', borderTop: `1px dashed ${LINE_ON_PAPER}` }}>
-          <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', fontWeight: 700 }}>{product.price}</span>
-          <button onClick={() => addToCart(product)} style={{ background: INK, color: PAPER, border: 'none', fontFamily: 'Oswald, sans-serif', fontSize: '10px', letterSpacing: '0.04em', padding: '7px 10px', borderRadius: '2px', cursor: 'pointer' }}>
-            {justAdded ? 'ADDED' : 'ADD'}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div style={{ backgroundColor: CANVAS, fontFamily: 'Open Sans, sans-serif', color: '#fff', position: 'relative' }}>
       <style>{`
-        @keyframes bozScrollRow { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-        .boz-track { display: flex; gap: 18px; width: max-content; animation: bozScrollRow linear infinite; }
-        .boz-track:hover { animation-play-state: paused; }
-        .boz-row-mask { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); padding: 8px 0; }
-        @media (prefers-reduced-motion: reduce) { .boz-track { animation: none !important; } }
+        .boz-row-mask { overflow: hidden; padding: 8px 0; }
       `}</style>
 
       {/* Sticky cart button */}
@@ -242,26 +283,18 @@ export function ShopPage() {
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '20px' }}>
                 {searchFiltered.map((product, i) => (
-                  <ProductCard key={product.id} product={product} tilt={i % 2 === 0 ? 'left' : 'right'} />
+                  <ProductCard key={product.id} product={product} tilt={i % 2 === 0 ? 'left' : 'right'} cart={cart} addedId={addedId} onAdd={addToCart} />
                 ))}
               </div>
             )}
           </div>
         ) : (
-          CATEGORIES.filter(c => c !== 'ALL').map((cat, rowIndex) => {
+          CATEGORIES.filter(c => c !== 'ALL').map(cat => {
             const rowProducts = PRODUCTS.filter(p => p.tag === cat);
             if (rowProducts.length === 0) return null;
-            const looped = [...rowProducts, ...rowProducts];
-            const duration = 26 + rowIndex * 4;
             return (
               <div key={cat} style={{ marginBottom: '20px' }}>
-                <div className="boz-row-mask">
-                  <div className="boz-track" style={{ animationDuration: `${duration}s` }}>
-                    {looped.map((product, i) => (
-                      <ProductCard key={`${cat}-${product.id}-${i}`} product={product} tilt={i % 2 === 0 ? 'left' : 'right'} />
-                    ))}
-                  </div>
-                </div>
+                <MovingRow products={rowProducts} cart={cart} addedId={addedId} onAdd={addToCart} />
               </div>
             );
           })
