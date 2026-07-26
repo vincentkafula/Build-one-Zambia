@@ -65,28 +65,103 @@ const CANVAS = '#DE8A2A';
 
 type Product = typeof PRODUCTS[0];
 
-function ProductCard({ product, tilt, cart, addedId, onAdd }: { product: Product; tilt: 'left' | 'right'; cart: CartItem[]; addedId: number | null; onAdd: (p: Product) => void }) {
+const STAR_COLOR = '#FFA41C';
+const BUY_YELLOW = '#FFD814';
+const BUY_YELLOW_HOVER = '#F7CA00';
+const CARD_BORDER = '#E3E6E6';
+
+// Deterministic "looks real" rating/review/discount/badge per product, derived
+// from its id so it's stable across renders instead of jumping around.
+function productMeta(id: number) {
+  const rating = Math.round((3.6 + ((id * 37) % 15) / 10) * 10) / 10; // 3.6–5.0
+  const reviews = 18 + ((id * 53) % 480);
+  const hasDiscount = id % 3 === 0;
+  const discountPct = 10 + ((id * 7) % 30);
+  const badge = id % 5 === 0 ? 'BESTSELLER' : id % 7 === 0 ? 'NEW' : null;
+  return { rating, reviews, hasDiscount, discountPct, badge };
+}
+
+function Stars({ rating }: { rating: number }) {
+  return (
+    <div style={{ display: 'flex', gap: '1px' }}>
+      {[1, 2, 3, 4, 5].map(i => {
+        const fill = rating >= i ? 1 : rating >= i - 0.5 ? 0.5 : 0;
+        return (
+          <svg key={i} width="11" height="11" viewBox="0 0 20 20" style={{ flexShrink: 0 }}>
+            <defs>
+              <linearGradient id={`star-${rating}-${i}`}>
+                <stop offset={`${fill * 100}%`} stopColor={STAR_COLOR} />
+                <stop offset={`${fill * 100}%`} stopColor="#E3E6E6" />
+              </linearGradient>
+            </defs>
+            <path d="M10 1.5l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6-4.5-4.2 6.1-.7z" fill={`url(#star-${rating}-${i})`} />
+          </svg>
+        );
+      })}
+    </div>
+  );
+}
+
+function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt?: 'left' | 'right'; cart: CartItem[]; addedId: number | null; onAdd: (p: Product) => void }) {
   const inCart = cart.find(ci => ci.id === product.id);
   const justAdded = addedId === product.id;
+  const [hover, setHover] = useState(false);
+  const meta = productMeta(product.id);
+  const priceNum = product.priceNum;
+  const wasPrice = meta.hasDiscount ? Math.round(priceNum / (1 - meta.discountPct / 100)) : null;
+
   return (
-    <div style={{ background: PAPER, color: INK, width: '190px', flex: '0 0 190px', borderRadius: '2px', padding: '12px 12px 14px', position: 'relative', boxShadow: '0 14px 24px -14px rgba(0,0,0,0.6)', transform: tilt === 'left' ? 'rotate(-1deg)' : 'rotate(1deg)' }}>
-      <div style={{ position: 'absolute', top: '-5px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: RED, boxShadow: '0 2px 3px rgba(0,0,0,0.4)' }} />
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{ background: '#fff', color: '#0F1111', width: '190px', flex: '0 0 190px', borderRadius: '6px', padding: '12px', position: 'relative', border: `1px solid ${CARD_BORDER}`, boxShadow: hover ? '0 6px 16px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.08)', transition: 'box-shadow 0.18s ease' }}
+    >
+      {meta.badge && (
+        <div style={{ position: 'absolute', top: '8px', left: '8px', zIndex: 2, background: meta.badge === 'BESTSELLER' ? '#232F3E' : RED, color: '#fff', fontSize: '8.5px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.04em', padding: '3px 6px', borderRadius: '2px' }}>
+          {meta.badge}
+        </div>
+      )}
       {inCart && (
-        <div style={{ position: 'absolute', top: '8px', right: '8px', background: INK, color: PAPER, fontSize: '9px', fontFamily: 'Oswald, sans-serif', padding: '2px 6px', borderRadius: '10px' }}>
+        <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 2, background: RED, color: '#fff', fontSize: '9px', fontFamily: 'Oswald, sans-serif', padding: '2px 6px', borderRadius: '10px' }}>
           ×{inCart.qty}
         </div>
       )}
-      <div style={{ height: '110px', borderRadius: '2px', overflow: 'hidden', marginBottom: '10px', background: PAPER_DIM }}>
-        <img src={product.img} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+
+      <div style={{ height: '130px', borderRadius: '4px', overflow: 'hidden', marginBottom: '10px', background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <img
+          src={product.img} alt={product.name}
+          style={{ width: '82%', height: '82%', objectFit: 'contain', transition: 'transform 0.25s ease', transform: hover ? 'scale(1.06)' : 'scale(1)' }}
+        />
       </div>
-      <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '9px', letterSpacing: '0.08em', color: RED_DARK, margin: '0 0 4px' }}>{product.tag}</p>
-      <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '12.5px', fontWeight: 600, lineHeight: 1.25, margin: '0 0 10px', minHeight: '30px' }}>{product.name}</p>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', paddingTop: '10px', borderTop: `1px dashed ${LINE_ON_PAPER}` }}>
-        <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', fontWeight: 700 }}>{product.price}</span>
-        <button onClick={() => onAdd(product)} style={{ background: INK, color: PAPER, border: 'none', fontFamily: 'Oswald, sans-serif', fontSize: '10px', letterSpacing: '0.04em', padding: '7px 10px', borderRadius: '2px', cursor: 'pointer' }}>
-          {justAdded ? 'ADDED' : 'ADD'}
-        </button>
+
+      <p style={{ fontSize: '12.5px', lineHeight: 1.3, fontWeight: 400, margin: '0 0 4px', minHeight: '32px', color: hover ? RED_DARK : '#0F1111', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        {product.name}
+      </p>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '6px' }}>
+        <Stars rating={meta.rating} />
+        <span style={{ fontSize: '10.5px', color: '#007185' }}>{meta.reviews.toLocaleString()}</span>
       </div>
+
+      <div style={{ marginBottom: '4px' }}>
+        {meta.hasDiscount && (
+          <span style={{ fontSize: '11px', color: RED, fontWeight: 700, marginRight: '6px' }}>-{meta.discountPct}%</span>
+        )}
+        <span style={{ fontSize: '17px', fontWeight: 700, color: '#0F1111' }}>{product.price}</span>
+        {wasPrice && (
+          <span style={{ fontSize: '11px', color: '#565959', textDecoration: 'line-through', marginLeft: '6px' }}>K{wasPrice.toLocaleString()}</span>
+        )}
+      </div>
+      <p style={{ fontSize: '10px', color: '#007600', margin: '0 0 10px' }}>In stock</p>
+
+      <button
+        onClick={() => onAdd(product)}
+        style={{ width: '100%', background: justAdded ? '#2E7D32' : BUY_YELLOW, color: justAdded ? '#fff' : '#0F1111', border: `1px solid ${justAdded ? '#2E7D32' : '#FCD200'}`, borderRadius: '20px', padding: '7px 0', fontSize: '11.5px', fontWeight: 600, letterSpacing: '0.01em', cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', transition: 'background 0.15s ease' }}
+        onMouseEnter={e => { if (!justAdded) (e.currentTarget as HTMLElement).style.background = BUY_YELLOW_HOVER; }}
+        onMouseLeave={e => { if (!justAdded) (e.currentTarget as HTMLElement).style.background = BUY_YELLOW; }}
+      >
+        {justAdded ? '✓ Added to cart' : 'Add to Cart'}
+      </button>
     </div>
   );
 }
