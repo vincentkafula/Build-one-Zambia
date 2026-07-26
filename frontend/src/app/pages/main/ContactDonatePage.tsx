@@ -22,12 +22,6 @@ export function ContactDonatePage() {
   const [sendError, setSendError] = useState('');
 
   const inp: CSSProperties = {
-    backgroundColor: '#111', border: '1px solid #2a2a2a', color: '#fff',
-    padding: '12px 16px', width: '100%',
-    fontFamily: 'Open Sans, sans-serif', fontSize: '14px', outline: 'none',
-  };
-
-  const inpLight: CSSProperties = {
     backgroundColor: '#fff', border: '1px solid #d1d5db', color: '#000',
     padding: '12px 16px', width: '100%',
     fontFamily: 'Open Sans, sans-serif', fontSize: '14px', outline: 'none',
@@ -53,7 +47,7 @@ export function ContactDonatePage() {
       </section>
 
       {/* How to get involved */}
-      <section style={{ padding: '72px 16px', backgroundColor: '#0d0d0d' }}>
+      <section style={{ padding: '72px 16px', backgroundColor: '#ffffff' }}>
         <div style={{ maxWidth: '960px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '12px' }}>
@@ -61,18 +55,18 @@ export function ContactDonatePage() {
               <span style={{ fontSize: '11px', letterSpacing: '0.2em', color: '#dc2626', fontFamily: 'Oswald, sans-serif', fontWeight: 600 }}>TAKE ACTION</span>
               <span style={{ display: 'block', width: '32px', height: '2px', backgroundColor: '#dc2626' }} />
             </div>
-            <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', fontWeight: 700, color: '#fff', margin: 0 }}>
+            <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', fontWeight: 700, color: '#000', margin: 0 }}>
               How You Can Get Involved
             </h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
             {INVOLVEMENT.map((item, i) => (
-              <div key={item.label} style={{ padding: '28px', backgroundColor: '#111', border: '1px solid #1f1f1f', borderTop: '3px solid #dc2626' }}>
+              <div key={item.label} style={{ padding: '28px', backgroundColor: '#fff', border: '1px solid #e5e7eb', borderTop: '3px solid #dc2626' }}>
                 <div style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#dc2626', fontFamily: 'Oswald, sans-serif', fontSize: '1rem', color: '#fff', marginBottom: '16px', fontWeight: 700 }}>
                   {i + 1}
                 </div>
-                <h3 style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.04em', fontSize: '1rem', color: '#fff', marginBottom: '8px' }}>{item.label}</h3>
-                <p style={{ color: '#6b7280', fontSize: '13px', lineHeight: 1.75, margin: 0 }}>{item.desc}</p>
+                <h3 style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.04em', fontSize: '1rem', color: '#000', marginBottom: '8px' }}>{item.label}</h3>
+                <p style={{ color: '#4b5563', fontSize: '13px', lineHeight: 1.75, margin: 0 }}>{item.desc}</p>
               </div>
             ))}
           </div>
@@ -80,7 +74,7 @@ export function ContactDonatePage() {
       </section>
 
       {/* Testimonials */}
-      <section style={{ padding: '72px 16px' }}>
+      <section style={{ padding: '72px 16px', backgroundColor: '#ffffff' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '40px' }}>
             <span style={{ display: 'block', width: '32px', height: '2px', backgroundColor: '#dc2626' }} />
@@ -89,9 +83,9 @@ export function ContactDonatePage() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
             {TESTIMONIALS.map(t => (
-              <div key={t.name} style={{ padding: '32px', backgroundColor: '#111', border: '1px solid #1f1f1f', borderLeft: '3px solid #dc2626' }}>
-                <p style={{ color: '#d1d5db', fontSize: '15px', lineHeight: 1.8, fontStyle: 'italic', marginBottom: '20px' }}>"{t.quote}"</p>
-                <p style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.04em', color: '#fff', marginBottom: '4px' }}>— {t.name}</p>
+              <div key={t.name} style={{ padding: '32px', backgroundColor: '#fff', border: '1px solid #e5e7eb', borderLeft: '3px solid #dc2626' }}>
+                <p style={{ color: '#111827', fontSize: '15px', lineHeight: 1.8, fontStyle: 'italic', marginBottom: '20px' }}>"{t.quote}"</p>
+                <p style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.04em', color: '#000', marginBottom: '4px' }}>— {t.name}</p>
                 <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>{t.role}</p>
               </div>
             ))}
@@ -100,7 +94,7 @@ export function ContactDonatePage() {
       </section>
 
       {/* Tab bar */}
-      <div style={{ padding: '16px', backgroundColor: '#080808', borderTop: '1px solid #005020', borderBottom: '1px solid #005020' }}>
+      <div style={{ padding: '16px', backgroundColor: '#ffffff', borderTop: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb' }}>
         <div style={{ maxWidth: '480px', margin: '0 auto', display: 'flex', gap: '8px', justifyContent: 'center' }}>
           {(['contact', 'volunteer'] as const).map(t => (
             <button
@@ -109,9 +103,9 @@ export function ContactDonatePage() {
               style={{
                 padding: '10px 28px', cursor: 'pointer', border: 'none',
                 fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.1em',
-                backgroundColor: tab === t ? '#dc2626' : '#111',
-                color: tab === t ? '#fff' : '#9ca3af',
-                outline: `1px solid ${tab === t ? '#dc2626' : '#2a2a2a'}`,
+                backgroundColor: tab === t ? '#dc2626' : '#f3f4f6',
+                color: tab === t ? '#fff' : '#374151',
+                outline: `1px solid ${tab === t ? '#dc2626' : '#d1d5db'}`,
               }}
             >
               {t === 'contact' ? 'CONTACT US' : 'VOLUNTEER'}
@@ -143,10 +137,10 @@ export function ContactDonatePage() {
                   </div>
                 ))}
               </div>
-              <div style={{ padding: '24px', backgroundColor: '#111', border: '1px solid #1f1f1f' }}>
-                <p style={{ fontSize: '12px', color: '#9ca3af', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', marginBottom: '12px' }}>OFFICE HOURS</p>
-                <p style={{ fontSize: '14px', color: '#d1d5db', margin: '4px 0' }}>Monday – Friday: 08:00 – 17:00 hrs</p>
-                <p style={{ fontSize: '14px', color: '#d1d5db', margin: '4px 0' }}>Saturday: 09:00 – 13:00 hrs</p>
+              <div style={{ padding: '24px', backgroundColor: '#fff', border: '1px solid #e5e7eb' }}>
+                <p style={{ fontSize: '12px', color: '#374151', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', marginBottom: '12px' }}>OFFICE HOURS</p>
+                <p style={{ fontSize: '14px', color: '#000', margin: '4px 0' }}>Monday – Friday: 08:00 – 17:00 hrs</p>
+                <p style={{ fontSize: '14px', color: '#000', margin: '4px 0' }}>Saturday: 09:00 – 13:00 hrs</p>
                 <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0' }}>Closed on Sundays and public holidays</p>
               </div>
               <p style={{ marginTop: '24px', fontSize: '13px', color: '#4b5563' }}>bozplans.org · Vote: 14 August 2031</p>
@@ -180,12 +174,12 @@ export function ContactDonatePage() {
                 >
                   <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', letterSpacing: '0.03em', color: '#000', marginBottom: '8px' }}>SEND A MESSAGE</h2>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <input required style={inpLight} placeholder="Full name" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} />
-                    <input required type="email" style={inpLight} placeholder="Email address" value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} />
+                    <input required style={inp} placeholder="Full name" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} />
+                    <input required type="email" style={inp} placeholder="Email address" value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} />
                   </div>
-                  <input style={inpLight} placeholder="Phone number (optional)" value={formData.phone} onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))} />
-                  <input required style={inpLight} placeholder="Subject" value={formData.subject} onChange={e => setFormData(p => ({ ...p, subject: e.target.value }))} />
-                  <textarea required rows={5} style={{ ...inpLight, resize: 'none' }} placeholder="Your message…" value={formData.message} onChange={e => setFormData(p => ({ ...p, message: e.target.value }))} />
+                  <input style={inp} placeholder="Phone number (optional)" value={formData.phone} onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))} />
+                  <input required style={inp} placeholder="Subject" value={formData.subject} onChange={e => setFormData(p => ({ ...p, subject: e.target.value }))} />
+                  <textarea required rows={5} style={{ ...inp, resize: 'none' }} placeholder="Your message…" value={formData.message} onChange={e => setFormData(p => ({ ...p, message: e.target.value }))} />
                   {sendError && <p style={{ color: '#dc2626', fontSize: '13px', margin: 0 }}>{sendError}</p>}
                   <button type="submit" disabled={sending} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 32px', backgroundColor: '#dc2626', color: '#fff', border: 'none', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '14px', cursor: sending ? 'default' : 'pointer', alignSelf: 'flex-start', opacity: sending ? 0.7 : 1 }}>
                     <Send size={15} /> {sending ? 'SENDING…' : 'SEND MESSAGE'}
@@ -207,8 +201,8 @@ export function ContactDonatePage() {
                 Change doesn't come from above — it rises from the grassroots. Join thousands of volunteers working across Zambia's constituencies, districts, and wards.
               </p>
             </div>
-            <div style={{ maxWidth: '560px', margin: '0 auto', backgroundColor: '#111', border: '1px solid #1f1f1f', padding: '36px' }}>
-              <h3 style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', fontSize: '1.2rem', color: '#fff', marginBottom: '24px' }}>VOLUNTEER SIGN-UP</h3>
+            <div style={{ maxWidth: '560px', margin: '0 auto', backgroundColor: '#fff', border: '1px solid #e5e7eb', padding: '36px' }}>
+              <h3 style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', fontSize: '1.2rem', color: '#000', marginBottom: '24px' }}>VOLUNTEER SIGN-UP</h3>
               <form
                 style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
                 onSubmit={e => { e.preventDefault(); alert('Thank you! Our provincial coordinator will contact you within 48 hours. Together we rise — One Zambia!'); }}
