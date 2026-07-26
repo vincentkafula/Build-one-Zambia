@@ -64,7 +64,6 @@ const CANVAS_DEEP = '#080D07';
 type Product = typeof PRODUCTS[0];
 
 export function ShopPage() {
-  const [activeCategory, setActiveCategory] = useState('ALL');
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -87,13 +86,11 @@ export function ShopPage() {
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
   const searchFiltered = PRODUCTS.filter(p => {
-    const matchCat = activeCategory === 'ALL' || p.tag === activeCategory;
     const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.desc.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
+    return matchSearch;
   });
 
   const isSearching = search.trim().length > 0;
-  const isFiltering = isSearching || activeCategory !== 'ALL';
 
   function ProductCard({ product, tilt }: { product: Product; tilt: 'left' | 'right' }) {
     const inCart = cart.find(ci => ci.id === product.id);
@@ -121,40 +118,16 @@ export function ShopPage() {
     );
   }
 
-  function MosaicTile({ product }: { product: Product }) {
-    const inCart = cart.find(ci => ci.id === product.id);
-    const justAdded = addedId === product.id;
-    return (
-      <div style={{ position: 'relative', aspectRatio: '1 / 1', overflow: 'hidden', background: PAPER_DIM }}>
-        <img src={product.img} alt={product.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,13,7,0.92) 0%, rgba(8,13,7,0.55) 38%, rgba(8,13,7,0) 62%)' }} />
-        {inCart && (
-          <div style={{ position: 'absolute', top: '6px', right: '6px', background: RED, color: '#fff', fontSize: '9px', fontFamily: 'Oswald, sans-serif', padding: '2px 6px', borderRadius: '10px', zIndex: 2 }}>
-            ×{inCart.qty}
-          </div>
-        )}
-        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '8px 9px' }}>
-          <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '8px', letterSpacing: '0.1em', color: '#DE8A2A', margin: '0 0 3px' }}>{product.tag}</p>
-          <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', fontWeight: 600, lineHeight: 1.2, color: '#fff', margin: '0 0 6px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{product.name}</p>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
-            <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '12px', fontWeight: 700, color: '#fff' }}>{product.price}</span>
-            <button onClick={() => addToCart(product)} style={{ background: RED, color: '#fff', border: 'none', fontFamily: 'Oswald, sans-serif', fontSize: '9px', letterSpacing: '0.04em', padding: '5px 8px', borderRadius: '2px', cursor: 'pointer' }}>
-              {justAdded ? 'ADDED' : 'ADD'}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div style={{ backgroundColor: CANVAS, fontFamily: 'Open Sans, sans-serif', color: '#fff', position: 'relative' }}>
       <style>{`
-        .boz-mosaic { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; }
+        @keyframes bozScrollRow { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        .boz-track { display: flex; gap: 18px; width: max-content; animation: bozScrollRow linear infinite; }
+        .boz-track:hover { animation-play-state: paused; }
+        .boz-row-mask { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); padding: 8px 0; }
         .boz-hero-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px; align-items: center; }
-        @media (max-width: 900px) { .boz-mosaic { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 540px) { .boz-mosaic { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 760px) { .boz-hero-grid { grid-template-columns: 1fr; } }
+        @media (prefers-reduced-motion: reduce) { .boz-track { animation: none !important; } }
       `}</style>
 
       {/* Sticky cart button */}
@@ -240,17 +213,6 @@ export function ShopPage() {
         </div>
       </section>
 
-      {/* Category strip */}
-      <div style={{ backgroundColor: '#12190f', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '14px 16px', display: 'flex', gap: '10px', overflowX: 'auto' }}>
-          {CATEGORIES.map(cat => (
-            <button key={cat} onClick={() => setActiveCategory(cat)}
-              style={{ flexShrink: 0, background: activeCategory === cat ? RED : 'transparent', border: `1px solid ${activeCategory === cat ? RED : 'rgba(255,255,255,0.15)'}`, color: activeCategory === cat ? '#fff' : '#AEB49E', borderRadius: '20px', padding: '7px 16px', fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.08em', cursor: 'pointer', whiteSpace: 'nowrap' }}
-            >{cat}</button>
-          ))}
-        </div>
-      </div>
-
       {/* Search */}
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 16px 0' }}>
         <div style={{ position: 'relative', maxWidth: '420px' }}>
@@ -262,9 +224,9 @@ export function ShopPage() {
       </div>
 
       {/* Product showcase */}
-      <section style={{ padding: isFiltering ? '28px 0 90px' : '0 0 90px' }}>
-        {isFiltering ? (
-          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '28px 16px 0' }}>
+      <section style={{ padding: isSearching ? '28px 0 90px' : '20px 0 90px' }}>
+        {isSearching ? (
+          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
             {searchFiltered.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '80px 0', color: '#6b7280' }}>
                 <p style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '1.1rem' }}>No items match your search.</p>
@@ -278,16 +240,23 @@ export function ShopPage() {
             )}
           </div>
         ) : (
-          <>
-            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '28px 16px 14px' }}>
-              <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10.5px', letterSpacing: '0.14em', color: '#6b7280' }}>THE FULL WALL — {PRODUCTS.length} ITEMS</span>
-            </div>
-            <div className="boz-mosaic">
-              {PRODUCTS.map(product => (
-                <MosaicTile key={product.id} product={product} />
-              ))}
-            </div>
-          </>
+          CATEGORIES.filter(c => c !== 'ALL').map((cat, rowIndex) => {
+            const rowProducts = PRODUCTS.filter(p => p.tag === cat);
+            if (rowProducts.length === 0) return null;
+            const looped = [...rowProducts, ...rowProducts];
+            const duration = 26 + rowIndex * 4;
+            return (
+              <div key={cat} style={{ marginBottom: '20px' }}>
+                <div className="boz-row-mask">
+                  <div className="boz-track" style={{ animationDuration: `${duration}s` }}>
+                    {looped.map((product, i) => (
+                      <ProductCard key={`${cat}-${product.id}-${i}`} product={product} tilt={i % 2 === 0 ? 'left' : 'right'} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })
         )}
       </section>
     </div>
