@@ -58,7 +58,7 @@ const LINE_ON_PAPER = '#D8CDA9';
 const INK = '#181C12';
 const RED = '#dc2626';
 const RED_DARK = '#98281A';
-const CANVAS = '#0B120A';
+const CANVAS = '#DE8A2A';
 
 type Product = typeof PRODUCTS[0];
 
@@ -173,7 +173,7 @@ export function ShopPage() {
   const isSearching = search.trim().length > 0;
 
   return (
-    <div style={{ backgroundColor: CANVAS, fontFamily: 'Open Sans, sans-serif', color: '#fff', position: 'relative' }}>
+    <div style={{ backgroundColor: CANVAS, fontFamily: 'Open Sans, sans-serif', color: INK, position: 'relative' }}>
       <style>{`
         .boz-row-mask { overflow: hidden; padding: 8px 0; }
       `}</style>
@@ -253,10 +253,10 @@ export function ShopPage() {
       </section>
 
       {/* Campaign fund banner */}
-      <section style={{ backgroundColor: 'rgba(220,38,38,0.08)', borderBottom: '1px solid rgba(220,38,38,0.2)', padding: '16px' }}>
+      <section style={{ backgroundColor: 'rgba(255,255,255,0.18)', borderBottom: '1px solid rgba(255,255,255,0.35)', padding: '16px' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', textAlign: 'center' }}>
           <ShoppingBag style={{ width: '16px', height: '16px', color: RED, flexShrink: 0 }} />
-          <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '12px', letterSpacing: '0.08em', color: '#d1d5db', margin: 0 }}>
+          <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '12px', letterSpacing: '0.08em', color: INK, margin: 0 }}>
             ALL PROCEEDS FROM SHOP SALES GO DIRECTLY TO THE <span style={{ color: RED }}>BUILD ONE ZAMBIA CAMPAIGN FUND</span>
           </p>
         </div>
@@ -267,7 +267,7 @@ export function ShopPage() {
         <div style={{ position: 'relative', maxWidth: '420px' }}>
           <Search style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', width: '14px', height: '14px', color: '#6b7280' }} />
           <input type="text" placeholder="Search merchandise…" value={search} onChange={e => setSearch(e.target.value)}
-            style={{ width: '100%', boxSizing: 'border-box', padding: '11px 14px 11px 40px', backgroundColor: '#12190f', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '14px', outline: 'none', fontFamily: 'Open Sans, sans-serif', borderRadius: '2px' }}
+            style={{ width: '100%', boxSizing: 'border-box', padding: '11px 14px 11px 40px', backgroundColor: '#ffffff', border: '1px solid rgba(0,0,0,0.15)', color: INK, fontSize: '14px', outline: 'none', fontFamily: 'Open Sans, sans-serif', borderRadius: '2px', boxShadow: '0 2px 6px rgba(0,0,0,0.12)' }}
           />
         </div>
       </div>
@@ -277,7 +277,7 @@ export function ShopPage() {
         {isSearching ? (
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
             {searchFiltered.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '80px 0', color: '#6b7280' }}>
+              <div style={{ textAlign: 'center', padding: '80px 0', color: RED_DARK }}>
                 <p style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '1.1rem' }}>No items match your search.</p>
               </div>
             ) : (
