@@ -18,23 +18,34 @@ import { kv } from './db.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_PATH = path.join(__dirname, '../assets/membership-card-template.png');
 
-// Template PNG is the card design at its native resolution (front + back
-// stacked on one page). DPI chosen just to give the PDF page a sensible
-// physical size — see membershipCertificate.js for the same convention.
-const PX_W = 1536, PX_H = 1024, DPI = 150;
+// Template PNG is the card design at its native resolution (front on top,
+// back below, stacked vertically on one portrait page). DPI chosen just to
+// give the PDF page a sensible physical size — see membershipCertificate.js
+// for the same convention.
+//
+// NOTE: the original template asset had the entire card design rotated 90°
+// (landscape sheet, text reading bottom-to-top). The FIELDS below were
+// tuned against that rotated version but drawText() never applied a
+// matching rotation, so the white masking rectangle landed nowhere near
+// the baked-in sample text ("JANE SMITH" etc.) — it stayed visible right
+// through the real name/ID/date drawn on top, producing overlapping text
+// on every generated card. Fixed by rotating the template asset itself to
+// be upright and re-measuring every field against the corrected image,
+// rather than trying to rotate the drawn text to match the old asset.
+const PX_W = 1024, PX_H = 1536, DPI = 150;
 const PAGE_W = (PX_W / DPI) * 72;
 const PAGE_H = (PX_H / DPI) * 72;
 
-// Field positions as fractions of the card image (0,0 = top-left),
-// measured directly against the uploaded template. If different artwork
-// is swapped in, regenerate a card and nudge these.
+// Field positions as fractions of the (now upright) card image (0,0 =
+// top-left), measured directly against the corrected template. If
+// different artwork is swapped in, regenerate a card and nudge these.
 const FIELDS = {
-  name:           { x0: 0.264, x1: 0.50,  yTop: 0.244, yBot: 0.278, size: 26 },
-  membershipId:   { x0: 0.264, x1: 0.42,  yTop: 0.332, yBot: 0.357, size: 15 },
-  memberSince:    { x0: 0.265, x1: 0.345, yTop: 0.388, yBot: 0.405, size: 11 },
-  membershipType: { x0: 0.456, x1: 0.60,  yTop: 0.388, yBot: 0.405, size: 11 },
+  name:           { x0: 0.26, x1: 0.48, yTop: 0.315, yBot: 0.355, size: 26 },
+  membershipId:   { x0: 0.26, x1: 0.44, yTop: 0.378, yBot: 0.415, size: 15 },
+  memberSince:    { x0: 0.26, x1: 0.37, yTop: 0.438, yBot: 0.475, size: 11 },
+  membershipType: { x0: 0.44, x1: 0.61, yTop: 0.438, yBot: 0.475, size: 11 },
 };
-const PHOTO_BOX = { x0: 0.098, x1: 0.260, yTop: 0.220, yBot: 0.459 };
+const PHOTO_BOX = { x0: 0.03, x1: 0.195, yTop: 0.305, yBot: 0.485 };
 
 function fieldToPoints(field) {
   return {
