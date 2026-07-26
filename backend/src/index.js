@@ -1921,7 +1921,16 @@ async function notifyContactMessage(msg) {
   if (!process.env.RESEND_API_KEY) { console.warn(`[notify] RESEND_API_KEY not set, skipping contact-form email for ${msg.id}`); return; }
   try {
     const escape = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const isValidEmail = typeof msg.ministerEmail === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(msg.ministerEmail);
+    // If this message was sent from a shadow minister's profile and that
+    // minister has a contact email on file, it goes to them directly
+    // (cc'd to the general inbox so the office still sees everything).
+    // Otherwise it just goes to the general inbox, same as before.
+    const to = isValidEmail ? msg.ministerEmail : 'info@bozplans.org';
+    const cc = isValidEmail ? ['info@bozplans.org'] : undefined;
+
     const html = `
+      ${msg.ministerName ? `<p style="color:#666;font-size:13px;">Sent from the profile of <strong>${escape(msg.ministerName)}</strong>${msg.ministerRole ? ` (${escape(msg.ministerRole)})` : ''}.</p>` : ''}
       <h2>New contact form submission — Build One Zambia</h2>
       <table style="border-collapse:collapse;">
         <tr><td style="padding:4px 8px;font-weight:600;border:1px solid #ddd;">Name</td><td style="padding:4px 8px;border:1px solid #ddd;">${escape(msg.name)}</td></tr>
@@ -1936,7 +1945,8 @@ async function notifyContactMessage(msg) {
       headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         from: process.env.EMAIL_FROM_ADDRESS || 'no-reply@bozplans.org',
-        to: 'info@bozplans.org',
+        to,
+        cc,
         reply_to: msg.email || undefined,
         subject: `Contact form: ${msg.subject || 'New message from ' + (msg.name || 'website visitor')}`,
         html,
@@ -1944,7 +1954,7 @@ async function notifyContactMessage(msg) {
     });
     const data = await r.json();
     if (!r.ok) console.error('[notify] Resend error sending contact-form email:', data);
-    else console.log(`[notify] Contact-form email sent to info@bozplans.org for ${msg.id}: ${data.id}`);
+    else console.log(`[notify] Contact-form email sent to ${to} for ${msg.id}: ${data.id}`);
   } catch (e) { console.error('[notify] Failed to send contact-form email:', e.message); }
 }
 

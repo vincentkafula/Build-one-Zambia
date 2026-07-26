@@ -477,6 +477,7 @@ export interface ShadowMember {
   role: string;
   credentials?: string;
   constituency?: string;
+  email?: string;
   focus?: string;
   headline?: string;
   bio1?: string;

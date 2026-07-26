@@ -6,7 +6,7 @@ import { shadowCabinetApi, type ShadowMember } from '../lib/api';
 type Gender = 'male' | 'female';
 
 const EMPTY = {
-  name: '', role: '', credentials: '', constituency: 'National',
+  name: '', role: '', credentials: '', constituency: 'National', email: '',
   focus: '', headline: '', bio1: '', bio2: '', quote: '', signature: '',
 };
 
@@ -88,6 +88,14 @@ function MemberForm({
         <div>
           <label className="block text-xs font-semibold text-muted-foreground mb-1">CONSTITUENCY</label>
           <input value={form.constituency} onChange={e => set('constituency', e.target.value)} placeholder="National" className={INP} />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-muted-foreground mb-1">CONTACT EMAIL</label>
+          <input type="email" value={form.email || ''} onChange={e => set('email', e.target.value)} placeholder="minister@bozplans.org"
+            className={INP} />
+          <p className="text-xs text-muted-foreground/60 mt-1">
+            If set, constituent messages from their profile are sent directly here (and cc'd to info@bozplans.org). If left blank, messages go to info@bozplans.org only.
+          </p>
         </div>
         <div>
           <label className="block text-xs font-semibold text-muted-foreground mb-1">KEY FOCUS AREA</label>
@@ -256,7 +264,7 @@ export default function ShadowCabinetManager() {
             <div key={m.id}>
               {editing?.id === m.id ? (
                 <MemberForm
-                  initial={{ name: m.name, role: m.role, credentials: m.credentials || '', constituency: m.constituency || 'National',
+                  initial={{ name: m.name, role: m.role, credentials: m.credentials || '', constituency: m.constituency || 'National', email: m.email || '',
                     focus: m.focus || '', headline: m.headline || '', bio1: m.bio1 || '', bio2: m.bio2 || '', quote: m.quote || '', signature: m.signature || '' }}
                   existingPhotoUrl={m.hasPhoto ? photoUrl(m.id, gender) : undefined}
                   gender={gender} onSave={handleUpdate} onCancel={() => setEditing(null)} saving={saving}

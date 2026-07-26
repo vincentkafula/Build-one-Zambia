@@ -12,7 +12,7 @@ const REASONS = [
 ];
 
 interface Props {
-  minister: { name: string; role: string; constituency?: string };
+  minister: { name: string; role: string; constituency?: string; email?: string };
   onClose: () => void;
 }
 
@@ -44,6 +44,7 @@ export function ShadowMinisterContactModal({ minister, onClose }: Props) {
         message: `${confidential ? '[Constituent asked to remain confidential]\n\n' : ''}${message.trim()}`,
         ministerName: minister.name,
         ministerRole: minister.role,
+        ministerEmail: minister.email || undefined,
       });
       setSent(true);
     } catch (err) {
@@ -76,6 +77,13 @@ export function ShadowMinisterContactModal({ minister, onClose }: Props) {
         </div>
 
         <div className="px-6 py-5 overflow-y-auto">
+          {!sent && (
+            <p className="text-xs mb-4 px-3 py-2 rounded-lg" style={{ backgroundColor: '#f9fafb', color: '#6b7280' }}>
+              {minister.email
+                ? `This message goes directly to ${minister.name.split(' ').slice(-1)[0]}'s office, cc'd to our general inbox.`
+                : `${minister.name.split(' ').slice(-1)[0]} doesn't have a direct contact email on file yet, so this goes to our general inbox and will be forwarded.`}
+            </p>
+          )}
           {sent ? (
             <div className="text-center py-6">
               <CheckCircle2 size={44} style={{ color: '#16a34a', margin: '0 auto 14px' }} />
