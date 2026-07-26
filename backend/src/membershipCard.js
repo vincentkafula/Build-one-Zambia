@@ -124,6 +124,11 @@ async function renderCardPdf({ name, membershipNumber, memberSince, membershipTy
  * field that appears on the card (not just membershipNumber, unlike the
  * certificate) since tier/join-date/photo can all change independently.
  */
+// Bumped when the template artwork or field coordinates change, so
+// already-cached PDFs regenerate instead of serving a stale render forever
+// (e.g. the rotated-template/overlapping-text bug fixed alongside this).
+const TEMPLATE_VERSION = 2;
+
 export async function getOrCreateCardPdf(member) {
   const name = `${member.firstName || ''} ${member.lastName || ''}`.trim() || member.fullName || 'Member';
   const membershipNumber = member.membershipNumber;
@@ -131,7 +136,7 @@ export async function getOrCreateCardPdf(member) {
   const membershipType = member.tier || 'standard';
   const photoDataUrl = member.selfieDataUrl || null;
 
-  const fingerprint = JSON.stringify([name, membershipNumber, memberSince, membershipType, photoDataUrl?.length]);
+  const fingerprint = JSON.stringify([TEMPLATE_VERSION, name, membershipNumber, memberSince, membershipType, photoDataUrl?.length]);
   const cacheKey = `boz:membership:card-pdf:${member.id}`;
   const cached = kv.get(cacheKey);
   if (cached && cached.fingerprint === fingerprint) return cached.dataUrl;
