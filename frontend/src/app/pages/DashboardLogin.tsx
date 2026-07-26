@@ -133,7 +133,9 @@ export default function DashboardLogin() {
   // Election/Management already do.
   const isMemberLogin     = selectedId === 'member';
   const isCooperativeLogin = selectedId === 'cooperative';
-  const usesBackendAuth = isElectionLogin || isManagementLogin || isMemberLogin || isCooperativeLogin;
+  const isChamberLogin = selectedId === 'chamber';
+  const isInternshipLogin = selectedId === 'internship';
+  const usesBackendAuth = isElectionLogin || isManagementLogin || isMemberLogin || isCooperativeLogin || isChamberLogin || isInternshipLogin;
 
   function handleSelect(id: DashId) {
     setSelectedId(id);
@@ -236,6 +238,35 @@ export default function DashboardLogin() {
               navigate('/dashboard/cooperative');
               backendSuccess = true;
             }
+
+            // Internship dashboard: requires the internship role granted on
+            // approval (or an admin account, for support/testing access).
+            if (isInternshipLogin && !isPending) {
+              const INTERNSHIP_ROLES = ['internship', 'super_admin', 'admin'];
+              if (!INTERNSHIP_ROLES.includes(role)) {
+                throw new Error(`Your account role "${role}" does not have access to the Internship Dashboard. Please select the correct dashboard above.`);
+              }
+              sessionStorage.setItem('boz_session_token', data.token);
+              sessionStorage.setItem('boz_election_user', JSON.stringify(data.user));
+              navigate('/dashboard/internship');
+              backendSuccess = true;
+            }
+
+            // Chamber of Commerce dashboard: there's no dedicated "chamber"
+            // applicant role in the backend yet (chamber data is managed
+            // directly by admins, not via a public registration/approval
+            // queue like the others) — so for now this only accepts an
+            // admin account.
+            if (isChamberLogin && !isPending) {
+              const CHAMBER_ROLES = ['super_admin', 'admin'];
+              if (!CHAMBER_ROLES.includes(role)) {
+                throw new Error(`Your account role "${role}" does not have access to the Chamber of Commerce Dashboard. This dashboard currently requires an admin account.`);
+              }
+              sessionStorage.setItem('boz_session_token', data.token);
+              sessionStorage.setItem('boz_election_user', JSON.stringify(data.user));
+              navigate('/dashboard/chamber');
+              backendSuccess = true;
+            }
           } else {
             throw new Error(data.error || data.details || 'Invalid username or password');
           }
@@ -252,7 +283,14 @@ export default function DashboardLogin() {
                 scopeType: 'national',
               };
               sessionStorage.setItem('boz_election_user', JSON.stringify(localUser));
-              navigate(isElectionLogin ? '/dashboard/election' : isMemberLogin ? '/dashboard/member' : isCooperativeLogin ? '/dashboard/cooperative' : '/dashboard/manager');
+              navigate(
+                isElectionLogin ? '/dashboard/election'
+                : isMemberLogin ? '/dashboard/member'
+                : isCooperativeLogin ? '/dashboard/cooperative'
+                : isInternshipLogin ? '/dashboard/internship'
+                : isChamberLogin ? '/dashboard/chamber'
+                : '/dashboard/manager'
+              );
               backendSuccess = true;
             } else {
               throw new Error('Cannot reach the authentication server. If you are the system administrator, use your master credentials. All other users require network access.');
