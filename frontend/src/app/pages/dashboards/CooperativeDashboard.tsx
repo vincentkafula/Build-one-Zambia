@@ -117,12 +117,18 @@ function Field({ label, value }: { label: string; value: string }) {
 export default function CooperativeDashboard() {
   const [active, setActive] = useState<SectionKey>('overview');
   const [editing, setEditing] = useState(false);
+
+  const sessionUser = (() => {
+    try { return JSON.parse(sessionStorage.getItem('boz_election_user') ?? 'null'); } catch { return null; }
+  })();
+  const isAdminAccess = sessionUser?.role === 'super_admin' || sessionUser?.role === 'admin';
+
   const [org, setOrg] = useState({
-    name: 'Choma Valley Cooperative Society',
-    regNumber: 'COOP-2021-0047',
-    phone: '+260 977 100 200',
-    email: 'chomavalley@cooperative.zm',
-    province: 'Southern Province',
+    name: sessionUser?.name || (isAdminAccess ? 'Admin Access — Choma Valley Cooperative Society' : 'Choma Valley Cooperative Society'),
+    regNumber: sessionUser?.registrationId || 'COOP-2021-0047',
+    phone: sessionUser?.phone || '+260 977 100 200',
+    email: sessionUser?.email || 'chomavalley@cooperative.zm',
+    province: sessionUser?.scopeName || 'Southern Province',
     district: 'Choma',
     ward: 'Mapanza Ward',
     address: 'Plot 12, Mapanza, Choma District',

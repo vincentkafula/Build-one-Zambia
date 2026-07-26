@@ -132,7 +132,8 @@ export default function DashboardLogin() {
   // credentials — it now authenticates against the real backend like
   // Election/Management already do.
   const isMemberLogin     = selectedId === 'member';
-  const usesBackendAuth = isElectionLogin || isManagementLogin || isMemberLogin;
+  const isCooperativeLogin = selectedId === 'cooperative';
+  const usesBackendAuth = isElectionLogin || isManagementLogin || isMemberLogin || isCooperativeLogin;
 
   function handleSelect(id: DashId) {
     setSelectedId(id);
@@ -222,6 +223,19 @@ export default function DashboardLogin() {
               navigate('/dashboard/member');
               backendSuccess = true;
             }
+
+            // Cooperative dashboard: requires the cooperative role granted on
+            // approval (or an admin account, for support/testing access).
+            if (isCooperativeLogin && !isPending) {
+              const COOPERATIVE_ROLES = ['cooperative', 'super_admin', 'admin'];
+              if (!COOPERATIVE_ROLES.includes(role)) {
+                throw new Error(`Your account role "${role}" does not have access to the Cooperative Dashboard. Please select the correct dashboard above.`);
+              }
+              sessionStorage.setItem('boz_session_token', data.token);
+              sessionStorage.setItem('boz_election_user', JSON.stringify(data.user));
+              navigate('/dashboard/cooperative');
+              backendSuccess = true;
+            }
           } else {
             throw new Error(data.error || data.details || 'Invalid username or password');
           }
@@ -238,7 +252,7 @@ export default function DashboardLogin() {
                 scopeType: 'national',
               };
               sessionStorage.setItem('boz_election_user', JSON.stringify(localUser));
-              navigate(isElectionLogin ? '/dashboard/election' : isMemberLogin ? '/dashboard/member' : '/dashboard/manager');
+              navigate(isElectionLogin ? '/dashboard/election' : isMemberLogin ? '/dashboard/member' : isCooperativeLogin ? '/dashboard/cooperative' : '/dashboard/manager');
               backendSuccess = true;
             } else {
               throw new Error('Cannot reach the authentication server. If you are the system administrator, use your master credentials. All other users require network access.');
