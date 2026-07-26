@@ -226,7 +226,7 @@ function SectionHeader({ label, title }: { label: string; title: React.ReactNode
   return (
     <div style={{ marginBottom: '32px' }}>
       <p style={{ fontSize: '11px', letterSpacing: '0.22em', color: R, fontFamily: 'Oswald, sans-serif', fontWeight: 600, marginBottom: '10px' }}>{label}</p>
-      <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.7rem, 3.5vw, 2.4rem)', letterSpacing: '0.03em', color: '#fff', margin: 0, lineHeight: 1.15 }}>{title}</h2>
+      <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.7rem, 3.5vw, 2.4rem)', letterSpacing: '0.03em', color: '#111111', margin: 0, lineHeight: 1.15 }}>{title}</h2>
     </div>
   );
 }
@@ -242,7 +242,7 @@ export function PagesPage() {
   }, [hash]);
 
   return (
-    <div style={{ backgroundColor: NAVY, fontFamily: 'Open Sans, sans-serif', color: '#fff' }}>
+    <div style={{ backgroundColor: NAVY, fontFamily: 'Open Sans, sans-serif', color: '#111111' }}>
 
       {/* Hero */}
       <section style={{ position: 'relative', padding: '112px 16px 80px', textAlign: 'center', overflow: 'hidden', background: `linear-gradient(135deg, ${O} 0%, #006B28 40%, #1a0000 100%)` }}>
@@ -283,7 +283,7 @@ export function PagesPage() {
             {/* Section heading */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
               <div style={{ width: '4px', height: '32px', backgroundColor: section.color, borderRadius: '2px' }} />
-              <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.2rem, 2.5vw, 1.6rem)', letterSpacing: '0.08em', color: '#fff', margin: 0 }}>
+              <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.2rem, 2.5vw, 1.6rem)', letterSpacing: '0.08em', color: '#111111', margin: 0 }}>
                 {section.group}
               </h2>
             </div>
@@ -293,7 +293,7 @@ export function PagesPage() {
               {section.pages.map(page => (
                 <div
                   key={page.title}
-                  style={{ backgroundColor: '#111', border: `1px solid rgba(255,255,255,0.06)`, borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'border-color 0.2s' }}
+                  style={{ backgroundcolor: '#111111', border: `1px solid rgba(255,255,255,0.06)`, borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'border-color 0.2s' }}
                   onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = `${section.color}50`}
                   onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)'}
                 >
@@ -305,7 +305,7 @@ export function PagesPage() {
                       </div>
                       <Link
                         to={page.path}
-                        style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem', letterSpacing: '0.04em', color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}
+                        style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem', letterSpacing: '0.04em', color: '#111111', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}
                         onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = section.color}
                         onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = '#fff'}
                       >
@@ -319,7 +319,7 @@ export function PagesPage() {
                   {/* Sub-links */}
                   {page.sub.length > 0 && (
                     <div style={{ padding: '12px 24px 16px', flex: 1 }}>
-                      <p style={{ fontSize: '10px', letterSpacing: '0.14em', color: 'rgba(255,255,255,0.25)', fontFamily: 'Oswald, sans-serif', marginBottom: '8px' }}>
+                      <p style={{ fontSize: '10px', letterSpacing: '0.14em', color: 'rgba(17,17,17,0.25)', fontFamily: 'Oswald, sans-serif', marginBottom: '8px' }}>
                         {page.sub.length > 4 ? `${page.sub.length} ENTRIES` : 'INCLUDES'}
                       </p>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', maxHeight: page.sub.length > 6 ? '160px' : 'none', overflowY: page.sub.length > 6 ? 'auto' : 'visible' }}>
@@ -367,7 +367,7 @@ export function PagesPage() {
             <p style={{ margin: 0 }}>Our system enables registered polling agents to submit verified, real-time results directly from polling stations. Should any discrepancies arise between our tallied figures and the official ECZ count, Build One Zambia is committed to raising those concerns through proper legal and constitutional channels.</p>
           </div>
           <div style={{ marginTop: '40px' }}>
-            <Link to="/results" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: R, color: '#fff', padding: '14px 28px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '13px', textDecoration: 'none', borderRadius: '4px' }}>
+            <Link to="/results" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: R, color: '#111111', padding: '14px 28px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '13px', textDecoration: 'none', borderRadius: '4px' }}>
               VIEW RESULTS PORTAL <ArrowRight style={{ width: '15px', height: '15px' }} />
             </Link>
           </div>
@@ -385,7 +385,7 @@ export function PagesPage() {
             <p style={{ margin: 0 }}>Once voting concludes, agents observe the official vote count. When results are announced at the polling station, agents record the figures as accepted and declared by all parties present, and request confirmation from the presiding ECZ official that the results are accurate and final. The verified results are then submitted through this platform, which automatically aggregates the national tally.</p>
           </div>
           <div style={{ marginTop: '40px' }}>
-            <Link to="/register/agent" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: R, color: '#fff', padding: '14px 28px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '13px', textDecoration: 'none', borderRadius: '4px' }}>
+            <Link to="/register/agent" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: R, color: '#111111', padding: '14px 28px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '13px', textDecoration: 'none', borderRadius: '4px' }}>
               BECOME A POLLING AGENT <ArrowRight style={{ width: '15px', height: '15px' }} />
             </Link>
           </div>
@@ -410,7 +410,7 @@ export function PagesPage() {
               { num: '10',     label: 'Provinces' },
               { num: '8.79M',  label: 'Registered Voters' },
             ].map(stat => (
-              <div key={stat.label} style={{ backgroundColor: '#111', border: '1px solid #1f1f1f', borderTop: `3px solid ${R}`, padding: '20px 16px', borderRadius: '8px' }}>
+              <div key={stat.label} style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', borderTop: `3px solid ${R}`, padding: '20px 16px', borderRadius: '8px' }}>
                 <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.6rem', color: R, letterSpacing: '0.04em', marginBottom: '4px' }}>{stat.num}</div>
                 <div style={{ fontSize: '11px', color: '#6b7280', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>{stat.label}</div>
               </div>
@@ -427,10 +427,10 @@ export function PagesPage() {
           <SectionHeader label="OUR COMMITMENTS" title={<>TRANSPARENCY <span style={{ color: R }}>PRINCIPLES</span></>} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {TRANSPARENCY_PRINCIPLES.map(p => (
-              <div key={p.title} style={{ display: 'flex', gap: '20px', backgroundColor: '#111', border: '1px solid #1f1f1f', padding: '28px 24px', alignItems: 'flex-start', borderRadius: '10px' }}>
+              <div key={p.title} style={{ display: 'flex', gap: '20px', backgroundcolor: '#111111', border: '1px solid #1f1f1f', padding: '28px 24px', alignItems: 'flex-start', borderRadius: '10px' }}>
                 <CheckCircle2 style={{ width: '22px', height: '22px', color: R, flexShrink: 0, marginTop: '2px' }} />
                 <div>
-                  <h4 style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.05em', fontSize: '1rem', color: '#fff', marginBottom: '6px', marginTop: 0 }}>{p.title}</h4>
+                  <h4 style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.05em', fontSize: '1rem', color: '#111111', marginBottom: '6px', marginTop: 0 }}>{p.title}</h4>
                   <p style={{ fontSize: '14px', lineHeight: 1.75, color: '#6b7280', margin: 0 }}>{p.desc}</p>
                 </div>
               </div>

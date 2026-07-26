@@ -150,7 +150,7 @@ export function EventsGalleryPage() {
   };
 
   return (
-    <div style={{ backgroundColor: '#080808', fontFamily: 'Open Sans, sans-serif', color: '#fff', minHeight: '100vh' }}>
+    <div style={{ backgroundcolor: '#111111', fontFamily: 'Open Sans, sans-serif', color: '#111111', minHeight: '100vh' }}>
 
       {/* Hero */}
       <section style={{ position: 'relative', padding: '96px 16px 64px', overflow: 'hidden', background: 'linear-gradient(135deg, #007A30 0%, #006B28 40%, #1a0000 100%)' }}>
@@ -240,7 +240,7 @@ export function EventsGalleryPage() {
                     onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '0'}
                   />
                   <div style={{ position: 'absolute', bottom: '10px', left: '12px', right: '12px' }}>
-                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.0)', fontFamily: 'Oswald, sans-serif', margin: 0, transition: 'color 0.3s', letterSpacing: '0.05em' }}
+                    <p style={{ fontSize: '11px', color: 'rgba(17,17,17,0.0)', fontFamily: 'Oswald, sans-serif', margin: 0, transition: 'color 0.3s', letterSpacing: '0.05em' }}
                       onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.9)'}
                       onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0)'}
                     >{photo.caption}</p>
@@ -258,7 +258,7 @@ export function EventsGalleryPage() {
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
               {VIDEOS.map(video => (
-                <div key={video.id} style={{ backgroundColor: '#0d0d0d', border: '1px solid #1f1f1f', overflow: 'hidden' }}>
+                <div key={video.id} style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', overflow: 'hidden' }}>
                   {/* Player or thumb */}
                   {playingVideo === video.id ? (
                     <iframe
@@ -278,11 +278,11 @@ export function EventsGalleryPage() {
                         onMouseLeave={e => (e.currentTarget as HTMLImageElement).style.transform = 'scale(1)'}
                       />
                       {/* Duration badge */}
-                      <span style={{ position: 'absolute', bottom: '10px', right: '10px', backgroundColor: 'rgba(0,0,0,0.8)', color: '#fff', fontSize: '11px', padding: '2px 7px', fontFamily: 'Oswald, sans-serif' }}>{video.duration}</span>
+                      <span style={{ position: 'absolute', bottom: '10px', right: '10px', backgroundColor: 'rgba(0,0,0,0.8)', color: '#111111', fontSize: '11px', padding: '2px 7px', fontFamily: 'Oswald, sans-serif' }}>{video.duration}</span>
                       {/* Play button */}
                       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'rgba(220,38,38,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 12px rgba(220,38,38,0.18)' }}>
-                          <Play style={{ width: '22px', height: '22px', color: '#fff', marginLeft: '4px' }} />
+                          <Play style={{ width: '22px', height: '22px', color: '#111111', marginLeft: '4px' }} />
                         </div>
                       </div>
                     </div>
@@ -294,7 +294,7 @@ export function EventsGalleryPage() {
                       <span style={{ fontSize: '10px', backgroundColor: 'rgba(220,38,38,0.12)', color: '#dc2626', padding: '3px 9px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.1em' }}>{video.event}</span>
                       <span style={{ fontSize: '11px', color: '#4b5563' }}>{video.date}</span>
                     </div>
-                    <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '10px', lineHeight: 1.3 }}>{video.title}</h3>
+                    <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1rem', letterSpacing: '0.04em', color: '#111111', marginBottom: '10px', lineHeight: 1.3 }}>{video.title}</h3>
                     <p style={{ fontSize: '13px', lineHeight: 1.75, color: '#6b7280', margin: '0 0 16px' }}>{video.description}</p>
                     <a
                       href={`https://www.youtube.com/watch?v=${video.videoId}`}
@@ -321,7 +321,7 @@ export function EventsGalleryPage() {
           {/* Close */}
           <button
             onClick={() => setLightbox(null)}
-            style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}
+            style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#111111', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}
           >
             <X style={{ width: '18px', height: '18px' }} />
           </button>
@@ -329,7 +329,7 @@ export function EventsGalleryPage() {
           {/* Prev */}
           <button
             onClick={e => { e.stopPropagation(); navLightbox(-1); }}
-            style={{ position: 'absolute', left: '16px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+            style={{ position: 'absolute', left: '16px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#111111', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
           >
             <ChevronLeft style={{ width: '20px', height: '20px' }} />
           </button>
@@ -338,7 +338,7 @@ export function EventsGalleryPage() {
           <div onClick={e => e.stopPropagation()} style={{ maxWidth: '900px', width: '100%' }}>
             <img src={lightbox.src} alt={lightbox.caption} style={{ width: '100%', maxHeight: '75vh', objectFit: 'contain', display: 'block' }} />
             <div style={{ marginTop: '16px', textAlign: 'center' }}>
-              <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '15px', color: '#fff', margin: '0 0 4px', letterSpacing: '0.04em' }}>{lightbox.caption}</p>
+              <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '15px', color: '#111111', margin: '0 0 4px', letterSpacing: '0.04em' }}>{lightbox.caption}</p>
               <p style={{ fontSize: '12px', color: '#4b5563', margin: 0 }}>{lightbox.event} · {lightbox.date}</p>
               <p style={{ fontSize: '11px', color: '#2a2a2a', margin: '8px 0 0', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em' }}>
                 {lightbox.index + 1} / {filteredPhotos.length}
@@ -349,7 +349,7 @@ export function EventsGalleryPage() {
           {/* Next */}
           <button
             onClick={e => { e.stopPropagation(); navLightbox(1); }}
-            style={{ position: 'absolute', right: '16px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+            style={{ position: 'absolute', right: '16px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#111111', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
           >
             <ChevronRight style={{ width: '20px', height: '20px' }} />
           </button>
@@ -358,10 +358,10 @@ export function EventsGalleryPage() {
 
       {/* CTA */}
       <section style={{ padding: '72px 16px', backgroundColor: '#dc2626', textAlign: 'center' }}>
-        <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', letterSpacing: '0.03em', color: '#fff', marginBottom: '12px' }}>
+        <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', letterSpacing: '0.03em', color: '#111111', marginBottom: '12px' }}>
           Be Part of the Movement
         </h2>
-        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '15px', margin: '0 auto 28px', maxWidth: '480px' }}>
+        <p style={{ color: 'rgba(17,17,17,0.85)', fontSize: '15px', margin: '0 auto 28px', maxWidth: '480px' }}>
           Join us at upcoming events across Zambia and help build the nation we deserve.
         </p>
         <a

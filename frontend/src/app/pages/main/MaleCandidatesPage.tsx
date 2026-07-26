@@ -349,7 +349,7 @@ const ACTION_CARDS = [
 // formal confirmation. Their identities are redacted until officially announced.
 
 const REDACTED_PHOTO = (
-  <div className="w-full h-full flex flex-col items-center justify-center" style={{ backgroundColor: '#111', gap: '12px' }}>
+  <div className="w-full h-full flex flex-col items-center justify-center" style={{ backgroundcolor: '#111111', gap: '12px' }}>
     <svg viewBox="0 0 80 80" width="60" height="60" fill="none">
       <circle cx="40" cy="28" r="18" fill="#333" />
       <ellipse cx="40" cy="72" rx="30" ry="18" fill="#333" />
@@ -361,8 +361,8 @@ const REDACTED_PHOTO = (
 function RedactedName() {
   return (
     <span className="inline-flex flex-col gap-1.5" aria-label="Redacted">
-      <span style={{ display: 'inline-block', width: '120px', height: '14px', backgroundColor: '#1a1a1a', borderRadius: '3px' }} />
-      <span style={{ display: 'inline-block', width: '80px', height: '14px', backgroundColor: '#1a1a1a', borderRadius: '3px' }} />
+      <span style={{ display: 'inline-block', width: '120px', height: '14px', backgroundcolor: '#111111', borderRadius: '3px' }} />
+      <span style={{ display: 'inline-block', width: '80px', height: '14px', backgroundcolor: '#111111', borderRadius: '3px' }} />
     </span>
   );
 }
@@ -485,7 +485,7 @@ export function MaleCandidatesPage() {
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(circle at 50% 40%, ${O} 0%, transparent 60%)` }} />
         <div className="relative max-w-4xl mx-auto">
           <p className="text-xs tracking-widest mb-4" style={{ color: O, fontFamily: 'Oswald, sans-serif' }}>BUILD ONE ZAMBIA · SHADOW GOVERNMENT CABINET 2026–2031</p>
-          <h1 className="mb-4" style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(2.2rem, 5vw, 4rem)', lineHeight: 1.1, letterSpacing: '0.03em', color: '#fff' }}>
+          <h1 className="mb-4" style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(2.2rem, 5vw, 4rem)', lineHeight: 1.1, letterSpacing: '0.03em', color: '#111111' }}>
             MALE <span style={{ color: O }}>CANDIDATES</span>
           </h1>
           <p style={{ color: '#9ca3af', fontSize: '1rem', lineHeight: 1.8, maxWidth: '560px', margin: '0 auto' }}>
@@ -495,7 +495,7 @@ export function MaleCandidatesPage() {
       </section>
 
       {/* ── ROTATING FEATURED CANDIDATE ─────────────────────────── */}
-      <section className="py-20 px-4" style={{ backgroundColor: '#fff' }}>
+      <section className="py-20 px-4" style={{ backgroundcolor: '#111111' }}>
         <div className="max-w-6xl mx-auto">
 
           {/* Section label + controls */}
@@ -617,10 +617,10 @@ export function MaleCandidatesPage() {
         <div className="relative max-w-5xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-0">
           {STATS.map((s, i) => (
             <div key={s.label} className="flex flex-col items-center text-center py-6 px-4" style={{ borderRight: i < STATS.length - 1 ? '1px solid rgba(255,255,255,0.3)' : 'none' }}>
-              <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', color: '#fff', lineHeight: 1 }}>
+              <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', color: '#111111', lineHeight: 1 }}>
                 {s.value}<span style={{ fontSize: '0.55em', marginLeft: '2px' }}>{s.unit}</span>
               </div>
-              <p className="mt-3 text-sm leading-snug" style={{ color: 'rgba(255,255,255,0.85)' }}>{s.label}</p>
+              <p className="mt-3 text-sm leading-snug" style={{ color: 'rgba(17,17,17,0.85)' }}>{s.label}</p>
             </div>
           ))}
         </div>
@@ -632,7 +632,7 @@ export function MaleCandidatesPage() {
           {ACTION_CARDS.map(card => (
             <Link key={card.title} to={card.path}
               className="group flex flex-col items-center text-center p-8 rounded-2xl transition-all"
-              style={{ backgroundColor: '#fff', boxShadow: '0 4px 24px rgba(0,0,0,0.07)', border: '1px solid #f0f0f0', textDecoration: 'none' }}
+              style={{ backgroundcolor: '#111111', boxShadow: '0 4px 24px rgba(0,0,0,0.07)', border: '1px solid #f0f0f0', textDecoration: 'none' }}
               onMouseEnter={e => (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 40px rgba(249,115,22,0.18)`}
               onMouseLeave={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 24px rgba(0,0,0,0.07)'}
             >
@@ -653,7 +653,7 @@ export function MaleCandidatesPage() {
       </section>
 
       {/* Candidate grid */}
-      <section className="py-20 px-4" style={{ backgroundColor: '#fff' }}>
+      <section className="py-20 px-4" style={{ backgroundcolor: '#111111' }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-xs tracking-widest mb-3" style={{ color: O, fontFamily: 'Oswald, sans-serif' }}>SHADOW CABINET</p>
@@ -703,7 +703,7 @@ export function MaleCandidatesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
               {shadowMembers.map(m => (
                 <div key={m.id} className="flex flex-col items-center text-center rounded-2xl overflow-hidden"
-                  style={{ backgroundColor: '#fff', border: '1px solid #e0e7ff', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
+                  style={{ backgroundcolor: '#111111', border: '1px solid #e0e7ff', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
                   <ShadowMemberPhoto id={m.id} name={m.name} />
                   <div className="px-6 pb-8 pt-5 w-full">
                     {m.constituency && (
@@ -737,7 +737,7 @@ export function MaleCandidatesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
               {liveCandidates.map(c => (
                 <div key={c.id} className="group flex flex-col items-center text-center rounded-2xl overflow-hidden"
-                  style={{ backgroundColor: '#fff', border: '1px solid #f0f0f0', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
+                  style={{ backgroundcolor: '#111111', border: '1px solid #f0f0f0', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
                   <LiveCandidatePhoto id={c.id} name={c.name} />
                   <div className="px-6 pb-8 pt-5 w-full">
                     {c.scopeName && (
@@ -759,13 +759,13 @@ export function MaleCandidatesPage() {
       {/* CTA */}
       <section className="py-16 px-4 text-center" style={{ background: `linear-gradient(135deg, ${O} 0%, ${R} 100%)` }}>
         <div className="max-w-2xl mx-auto">
-          <p className="text-xs tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.75)', fontFamily: 'Oswald, sans-serif' }}>GET INVOLVED</p>
-          <h2 className="mb-4" style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', letterSpacing: '0.03em', color: '#fff' }}>STAND BEHIND YOUR CANDIDATE</h2>
-          <p className="mb-8 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.85)' }}>
+          <p className="text-xs tracking-widest mb-3" style={{ color: 'rgba(17,17,17,0.75)', fontFamily: 'Oswald, sans-serif' }}>GET INVOLVED</p>
+          <h2 className="mb-4" style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', letterSpacing: '0.03em', color: '#111111' }}>STAND BEHIND YOUR CANDIDATE</h2>
+          <p className="mb-8 text-sm leading-relaxed" style={{ color: 'rgba(17,17,17,0.85)' }}>
             Volunteer, donate, or simply spread the word. Every act of support brings Zambia one step closer to the change it deserves.
           </p>
           <Link to="/register/member" className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full transition-all"
-            style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.12em', backgroundColor: '#fff', color: O, textDecoration: 'none' }}
+            style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.12em', backgroundcolor: '#111111', color: O, textDecoration: 'none' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = NAVY; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = '#fff'; (e.currentTarget as HTMLElement).style.color = O; }}
           >

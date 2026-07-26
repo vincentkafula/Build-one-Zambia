@@ -22,7 +22,7 @@ export function DevDisclaimer() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50" style={{ boxShadow: '0 -4px 24px rgba(0,0,0,0.25)' }}>
-      <div style={{ backgroundColor: '#0d1117', borderTop: '3px solid #f59e0b' }}>
+      <div style={{ backgroundColor: '#ffffff', borderTop: '3px solid #f59e0b' }}>
 
         {/* Collapsed bar — always visible */}
         <div className="flex items-center gap-3 px-5 py-3">

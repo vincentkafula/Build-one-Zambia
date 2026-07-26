@@ -39,17 +39,17 @@ export class ErrorBoundary extends React.Component<Props, State> {
       if (this.props.fallback) return this.props.fallback;
 
       return (
-        <div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
+        <div className="min-h-screen bg-white flex items-center justify-center p-6">
           <div className="max-w-lg w-full text-center">
-            <div className="w-16 h-16 bg-red-900/20 border border-red-700/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <AlertTriangle className="w-8 h-8 text-red-400" />
+            <div className="w-16 h-16 bg-red-50 border border-red-200 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle className="w-8 h-8 text-red-500" />
             </div>
-            <h1 className="text-white text-2xl font-bold mb-2">Something went wrong</h1>
-            <p className="text-gray-400 mb-6">
+            <h1 className="text-gray-900 text-2xl font-bold mb-2">Something went wrong</h1>
+            <p className="text-gray-500 mb-6">
               An unexpected error occurred. The error has been logged and our team has been notified.
             </p>
             {this.state.error && (
-              <pre className="text-left bg-gray-900 border border-gray-800 rounded-xl p-4 text-red-300 text-xs overflow-auto mb-6 max-h-48">
+              <pre className="text-left bg-gray-50 border border-gray-200 rounded-xl p-4 text-red-600 text-xs overflow-auto mb-6 max-h-48">
                 {this.state.error.message}
                 {import.meta.env.DEV && this.state.errorInfo?.componentStack}
               </pre>

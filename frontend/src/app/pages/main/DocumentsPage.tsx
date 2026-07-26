@@ -195,7 +195,7 @@ export function DocumentsPage() {
   ];
 
   return (
-    <div style={{ backgroundColor: '#080808', fontFamily: 'Open Sans, sans-serif', color: '#fff', minHeight: '100vh' }}>
+    <div style={{ backgroundcolor: '#111111', fontFamily: 'Open Sans, sans-serif', color: '#111111', minHeight: '100vh' }}>
 
       {/* PDF Viewer Modal */}
       {viewing && <PDFViewerModal doc={viewing} onClose={() => setViewing(null)} />}
@@ -218,14 +218,14 @@ export function DocumentsPage() {
               placeholder="Search documents…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width: '100%', boxSizing: 'border-box', padding: '14px 16px 14px 44px', backgroundColor: '#111', border: '1px solid #2a2a2a', color: '#fff', fontSize: '14px', outline: 'none', fontFamily: 'Open Sans, sans-serif' }}
+              style={{ width: '100%', boxSizing: 'border-box', padding: '14px 16px 14px 44px', backgroundcolor: '#111111', border: '1px solid #2a2a2a', color: '#111111', fontSize: '14px', outline: 'none', fontFamily: 'Open Sans, sans-serif' }}
             />
           </div>
         </div>
       </section>
 
       {/* Stats bar */}
-      <div style={{ backgroundColor: '#0d0d0d', borderTop: '1px solid #005020', borderBottom: '1px solid #005020' }}>
+      <div style={{ backgroundcolor: '#111111', borderTop: '1px solid #005020', borderBottom: '1px solid #005020' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
           {STATS.map((s, i) => (
             <div key={s.label} style={{ padding: '24px 16px', textAlign: 'center', borderRight: i < 3 ? '1px solid #1a1a1a' : 'none' }}>
@@ -265,7 +265,7 @@ export function DocumentsPage() {
             return (
               <div
                 key={doc.id}
-                style={{ backgroundColor: '#0d0d0d', border: '1px solid #1f1f1f', display: 'grid', gridTemplateColumns: '1fr auto', gap: '24px', padding: '32px', alignItems: 'center', transition: 'border-color 0.2s' }}
+                style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', display: 'grid', gridTemplateColumns: '1fr auto', gap: '24px', padding: '32px', alignItems: 'center', transition: 'border-color 0.2s' }}
                 onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = '#dc2626'}
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = '#1f1f1f'}
               >
@@ -278,7 +278,7 @@ export function DocumentsPage() {
                     <span style={{ fontSize: '10px', letterSpacing: '0.18em', color: '#dc2626', fontFamily: 'Oswald, sans-serif', display: 'block', marginBottom: '6px' }}>
                       {CATEGORY_LABELS[doc.category] || doc.category}
                     </span>
-                    <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.15rem', letterSpacing: '0.04em', color: '#fff', margin: '0 0 10px', lineHeight: 1.25 }}>
+                    <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.15rem', letterSpacing: '0.04em', color: '#111111', margin: '0 0 10px', lineHeight: 1.25 }}>
                       {doc.title}
                     </h3>
                     <p style={{ fontSize: '13px', lineHeight: 1.75, color: '#6b7280', margin: '0 0 16px', maxWidth: '580px' }}>
@@ -292,7 +292,7 @@ export function DocumentsPage() {
                         doc.format?.toUpperCase(),
                         hasFile ? '✓ Available' : hasExternal ? '↗ External' : '— Coming soon',
                       ].filter(Boolean).map(chip => (
-                        <span key={chip} style={{ fontSize: '11px', padding: '3px 10px', backgroundColor: '#1a1a1a', color: chip === '✓ Available' ? '#16a34a' : chip === '— Coming soon' ? '#4b5563' : '#9ca3af', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
+                        <span key={chip} style={{ fontSize: '11px', padding: '3px 10px', backgroundColor: '#ffffff', color: chip === '✓ Available' ? '#16a34a' : chip === '— Coming soon' ? '#4b5563' : '#9ca3af', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
                           {chip}
                         </span>
                       ))}
@@ -308,7 +308,7 @@ export function DocumentsPage() {
                     style={{
                       display: 'flex', alignItems: 'center', gap: '8px',
                       backgroundColor: isDownloading ? '#b91c1c' : '#dc2626',
-                      color: '#fff', border: 'none', cursor: isDownloading ? 'default' : 'pointer',
+                      color: '#111111', border: 'none', cursor: isDownloading ? 'default' : 'pointer',
                       padding: '12px 20px', fontFamily: 'Oswald, sans-serif',
                       fontSize: '12px', letterSpacing: '0.1em', whiteSpace: 'nowrap',
                       transition: 'background-color 0.2s',
@@ -356,10 +356,10 @@ export function DocumentsPage() {
 
       {/* CTA */}
       <section style={{ padding: '72px 16px', backgroundColor: '#dc2626', textAlign: 'center' }}>
-        <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', letterSpacing: '0.03em', color: '#fff', marginBottom: '12px' }}>
+        <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', letterSpacing: '0.03em', color: '#111111', marginBottom: '12px' }}>
           Know Your Party. Know Your Rights.
         </h2>
-        <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', margin: '0 auto', maxWidth: '500px' }}>
+        <p style={{ color: 'rgba(17,17,17,0.8)', fontSize: '15px', margin: '0 auto', maxWidth: '500px' }}>
           An informed citizen is the strongest foundation of democracy. Read, share, and hold us accountable.
         </p>
       </section>

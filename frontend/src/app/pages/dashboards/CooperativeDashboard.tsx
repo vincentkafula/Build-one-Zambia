@@ -96,8 +96,8 @@ function StatusBadge({ status }: { status: string }) {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em' }}>{label}</p>
-      <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem' }}>{value}</p>
+      <p className="text-xs mb-1" style={{ color: 'rgba(17,17,17,0.35)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em' }}>{label}</p>
+      <p style={{ color: 'rgba(17,17,17,0.85)', fontSize: '0.9rem' }}>{value}</p>
     </div>
   );
 }
@@ -171,7 +171,7 @@ function CertificateVisual({ cert }: { cert: CoopCertificate }) {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid #ddd', paddingTop: '16px' }}>
         <div>
-          <div style={{ width: '140px', height: '1px', backgroundColor: '#1a1a1a', marginBottom: '6px' }} />
+          <div style={{ width: '140px', height: '1px', backgroundcolor: '#111111', marginBottom: '6px' }} />
           <p style={{ fontSize: '0.7rem', color: '#555' }}>Registrar of Cooperatives</p>
         </div>
         <p style={{ fontSize: '0.68rem', color: '#888', textAlign: 'right' }}>
@@ -232,7 +232,7 @@ function CertificateSection() {
                 </p>
               </div>
             )}
-            <div className="mb-5" style={{ backgroundColor: '#0d1810', padding: '20px', borderRadius: '8px' }}>
+            <div className="mb-5" style={{ backgroundColor: '#f3f4f6', padding: '20px', borderRadius: '8px' }}>
               <CertificateVisual cert={cert} />
             </div>
             <div className="flex flex-wrap gap-3">

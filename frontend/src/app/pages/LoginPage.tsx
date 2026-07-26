@@ -56,7 +56,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex">
+    <div className="min-h-screen bg-white flex">
       {/* Left panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 p-12 flex-col justify-between relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
@@ -111,31 +111,31 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-green-600/20 border border-green-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-green-400" />
+            <div className="w-16 h-16 bg-green-50 border border-green-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-green-600" />
             </div>
-            <h2 className="text-white text-2xl font-bold">Backend Access</h2>
-            <p className="text-gray-400 mt-1">Sign in to your account</p>
+            <h2 className="text-gray-900 text-2xl font-bold">Backend Access</h2>
+            <p className="text-gray-500 mt-1">Sign in to your account</p>
           </div>
 
           {/* Login form */}
           <form onSubmit={handleSubmit} className="space-y-4 mb-6">
             {error && (
-              <div className="flex items-center gap-2 bg-red-900/30 border border-red-700/50 rounded-lg px-4 py-3">
-                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-                <span className="text-red-300 text-sm">{error}</span>
+              <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                <span className="text-red-600 text-sm">{error}</span>
               </div>
             )}
 
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-1">Username</label>
+              <label className="block text-gray-700 text-sm font-medium mb-1">Username</label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition"
+                  className="w-full bg-gray-50 border border-gray-300 rounded-lg pl-10 pr-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition"
                   placeholder="Enter username"
                   autoComplete="username"
                 />
@@ -143,21 +143,21 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-1">Password</label>
+              <label className="block text-gray-700 text-sm font-medium mb-1">Password</label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-12 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition"
+                  className="w-full bg-gray-50 border border-gray-300 rounded-lg pl-10 pr-12 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition"
                   placeholder="Enter password"
                   autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -167,7 +167,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading || lockoutMs > 0}
-              className="w-full bg-green-600 hover:bg-green-500 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
+              className="w-full bg-green-600 hover:bg-green-500 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
             >
               {loading ? (
                 <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

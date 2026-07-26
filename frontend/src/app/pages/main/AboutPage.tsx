@@ -29,7 +29,7 @@ function SectionLabel({ text }: { text: string }) {
 
 function H2({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="mb-6" style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', fontWeight: 700, color: '#fff', lineHeight: 1.1 }}>
+    <h2 className="mb-6" style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', fontWeight: 700, color: '#111111', lineHeight: 1.1 }}>
       {children}
     </h2>
   );
@@ -507,7 +507,7 @@ function LeadershipAccordion() {
                       <ChevronDown className="w-5 h-5 text-black" />
                     </div>
                   </div>
-                  <div className="mt-4 mb-6 h-px" style={{ backgroundColor: '#1f1f1f' }} />
+                  <div className="mt-4 mb-6 h-px" style={{ backgroundcolor: '#111111' }} />
                   <p className="text-sm" style={{ color: '#1a1a1a', fontStyle: 'italic' }}>
                     Showing leadership for <span style={{ color: '#000' }}>{selectedProvince}</span>
                   </p>
@@ -548,7 +548,7 @@ function LeadershipAccordion() {
                       <ChevronDown className="w-5 h-5 text-black" />
                     </div>
                   </div>
-                  <div className="mt-4 mb-6 h-px" style={{ backgroundColor: '#1f1f1f' }} />
+                  <div className="mt-4 mb-6 h-px" style={{ backgroundcolor: '#111111' }} />
                   <p className="text-sm" style={{ color: '#1a1a1a', fontStyle: 'italic' }}>
                     Showing leadership for <span style={{ color: '#000' }}>{selectedDistrict} District</span>
                   </p>
@@ -670,7 +670,7 @@ function LeadershipAccordion() {
                     </div>
                   </div>
 
-                  <div className="mb-6 h-px" style={{ backgroundColor: '#1f1f1f' }} />
+                  <div className="mb-6 h-px" style={{ backgroundcolor: '#111111' }} />
 
                   {branchWard && selectedWardObj ? (
                     <p className="text-sm" style={{ color: '#1a1a1a', fontStyle: 'italic' }}>
@@ -796,7 +796,7 @@ export function AboutPage() {
       </section>
 
       {/* Taking the First Step */}
-      <section className="py-24 px-4" style={{ backgroundColor: '#0d0d0d' }}>
+      <section className="py-24 px-4" style={{ backgroundcolor: '#111111' }}>
         <div className="max-w-4xl mx-auto">
           <SectionLabel text="OUR STRATEGY" />
           <H2>Taking the First Step</H2>
@@ -860,7 +860,7 @@ export function AboutPage() {
       </section>
 
       {/* Membership */}
-      <section className="py-24 px-4" style={{ backgroundColor: '#0d0d0d' }}>
+      <section className="py-24 px-4" style={{ backgroundcolor: '#111111' }}>
         <div className="max-w-4xl mx-auto">
           <SectionLabel text="GET INVOLVED" />
           <H2>Membership</H2>
@@ -883,7 +883,7 @@ export function AboutPage() {
                 content: 'The Constitution of Zambia remains the foundational policy document of Build One Zambia.',
               },
             ].map(item => (
-              <div key={item.heading} className="p-7" style={{ backgroundColor: '#111', border: '1px solid #1f1f1f' }}>
+              <div key={item.heading} className="p-7" style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f' }}>
                 <h3 className="mb-3 text-white" style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.1rem', letterSpacing: '0.06em', color: '#dc2626' }}>{item.heading}</h3>
                 <p style={{ color: '#9ca3af', fontSize: '14px', lineHeight: 1.8 }}>{item.content}</p>
               </div>
@@ -915,7 +915,7 @@ export function AboutPage() {
               { colour: '#14532d', name: 'Green', border: '#166534', desc: "Celebrates Zambia's rich land and natural fertility — the life-giving soil that has sustained our families for centuries, yet has too often been underutilised or exploited under past systems." },
               { colour: '#854d0e', name: 'Gold', border: '#92400e', desc: "Represents our country's vast mineral wealth — copper, emeralds, and other resources — as well as the broader natural riches of our nation. This wealth belongs to all Zambians, not to a privileged elite." },
             ].map(c => (
-              <div key={c.name} className="p-6" style={{ backgroundColor: '#111', border: '1px solid #1f1f1f' }}>
+              <div key={c.name} className="p-6" style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f' }}>
                 <div className="w-10 h-10 rounded-full mb-4" style={{ backgroundColor: c.colour, border: `2px solid ${c.border}` }} />
                 <h4 className="mb-2 text-white font-bold" style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>{c.name}</h4>
                 <p style={{ color: '#9ca3af', fontSize: '14px', lineHeight: 1.8 }}>{c.desc}</p>

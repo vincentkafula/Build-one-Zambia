@@ -71,7 +71,7 @@ function ImpactBox({ text }: { text: string }) {
 function Accordion({ title, children }: { title: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ backgroundColor: '#ffffff', border: '2px solid #e5e7eb', marginBottom: '12px', borderRadius: '8px', overflow: 'hidden' }}>
+    <div style={{ backgroundcolor: '#111111', border: '2px solid #e5e7eb', marginBottom: '12px', borderRadius: '8px', overflow: 'hidden' }}>
       <button
         className="w-full flex items-center justify-between p-5 text-left"
         onClick={() => setOpen(o => !o)}
@@ -258,7 +258,7 @@ function AgriculturePanel() {
           ],
         },
       ].map(item => (
-        <div key={item.num} className="mb-6 p-7" style={{ backgroundColor: '#111', border: '1px solid #1f1f1f' }}>
+        <div key={item.num} className="mb-6 p-7" style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f' }}>
           <div className="flex items-start gap-5">
             <div className="w-10 h-10 flex items-center justify-center shrink-0 font-bold" style={{ backgroundColor: '#dc2626', fontFamily: 'Oswald, sans-serif', fontSize: '1.1rem', color: '#fff' }}>
               {item.num}
@@ -298,7 +298,7 @@ function HousingPanel() {
         </div>
       </div>
 
-      <div className="mb-8 p-7" style={{ backgroundColor: '#111', border: '1px solid #1f1f1f' }}>
+      <div className="mb-8 p-7" style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f' }}>
         <H3>Redeveloping Unplanned Settlements with Dignity</H3>
         <BodyText className="mb-4">We will redevelop unplanned settlements and informal compounds across Zambia — not by displacing residents, but by replacing small, unsafe structures with tall, modern buildings that offer proper sanitation, clean water, reliable electricity, and genuine dignity for all families.</BodyText>
         <BulletList items={[
@@ -310,7 +310,7 @@ function HousingPanel() {
         <Blockquote>No Zambian should live in rented accommodation indefinitely. Home ownership is a right, not a privilege.</Blockquote>
       </div>
 
-      <div className="mb-8 p-7" style={{ backgroundColor: '#111', border: '1px solid #1f1f1f' }}>
+      <div className="mb-8 p-7" style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f' }}>
         <H3>Going Further — Infrastructure for Dignity</H3>
         <BulletList items={[
           'Construct tourism hotels owned and operated by Zambian entrepreneurs to create jobs and strengthen our economy.',
@@ -330,7 +330,7 @@ function HousingPanel() {
           { title: 'Concrete Batching Plants — Quality Concrete, Made in Zambia', desc: 'Positioned across the country, we reduce dependence on distant suppliers, lower transport costs, maintain material quality for every high-rise and public facility, and accelerate construction timelines.' },
           { title: "Stone Crushers — Turning Zambia's Resources into Homes", desc: 'Stone crushers process raw rock and recycled materials into the sand, gravel, and crushed stone required for concrete, foundations, and roads. Locally positioned crushers cut import costs and create community employment.' },
         ].map(m => (
-          <div key={m.title} className="p-6" style={{ backgroundColor: '#111', border: '1px solid #1f1f1f' }}>
+          <div key={m.title} className="p-6" style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f' }}>
             <h4 className="mb-2 text-white" style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.95rem', letterSpacing: '0.04em' }}>{m.title}</h4>
             <p style={{ color: '#9ca3af', fontSize: '14px', lineHeight: 1.75 }}>{m.desc}</p>
           </div>
@@ -363,7 +363,7 @@ function MiningPanel() {
         </div>
       </div>
 
-      <div className="mb-8 p-7" style={{ backgroundColor: '#111', border: '1px solid #1f1f1f' }}>
+      <div className="mb-8 p-7" style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f' }}>
         <H3>Our Plan</H3>
         <BulletList items={[
           'All new mines will be 100% Zambian-owned.',
@@ -392,7 +392,7 @@ function MiningPanel() {
           body: "Zambia's gold, manganese, and world-class gemstones represent enormous potential for rural development and export diversification. Zambia is the world's largest emerald producer, led by the iconic Kagem mine. Manganese output in Luapula Province has more than doubled over the past decade. Our strategy ends exploitation. New mines and processing facilities will be Zambian-owned. Partnerships with Chinese and American investors will bring polishing and jewellery-making technology without surrendering ownership.",
         },
       ].map(s => (
-        <div key={s.title} className="mb-6 p-7" style={{ backgroundColor: '#111', border: '1px solid #1f1f1f' }}>
+        <div key={s.title} className="mb-6 p-7" style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f' }}>
           <H3>{s.title}</H3>
           <BodyText>{s.body}</BodyText>
         </div>
@@ -427,14 +427,14 @@ function GovernancePanel() {
           { sphere: 'Provincial Parliaments', desc: "Newly established in each of Zambia's ten provinces, these bodies will manage regional development — from infrastructure and education to health and agriculture. The provincial leader will be appointed by the paramount chief, honouring our traditional structures." },
           { sphere: 'Local Council Chambers', desc: 'Strengthened at the municipal level, these councils will focus on the day-to-day services that matter most to citizens: water supply, sanitation, community facilities, and local economic development.' },
         ].map(s => (
-          <div key={s.sphere} className="p-7" style={{ backgroundColor: '#111', border: '1px solid #1f1f1f', borderTop: '3px solid #dc2626' }}>
+          <div key={s.sphere} className="p-7" style={{ backgroundColor: '#ffffff', border: '1px solid #1f1f1f', borderTop: '3px solid #dc2626' }}>
             <h3 className="mb-3 text-white" style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1rem', letterSpacing: '0.06em' }}>{s.sphere}</h3>
             <p style={{ color: '#9ca3af', fontSize: '14px', lineHeight: 1.8 }}>{s.desc}</p>
           </div>
         ))}
       </div>
 
-      <div className="p-7 mb-8" style={{ backgroundColor: '#111', border: '1px solid #1f1f1f' }}>
+      <div className="p-7 mb-8" style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f' }}>
         <H3>Strategic Development in Every Province</H3>
         <BulletList items={[
           'Power plants to end load-shedding and support economic growth.',
@@ -458,7 +458,7 @@ function GovernancePanel() {
           { title: 'International-Standard Stadiums', desc: 'Modern stadiums and sports complexes in every province — venues capable of hosting national league matches, international tournaments, concerts, and community events — nurturing the next Chipolopolo champions.' },
           { title: 'Recreation Parks, Libraries & Cultural Museums', desc: 'Beautiful public parks in every urban centre, well-stocked public libraries in every constituency, and dedicated cultural museums honouring all 73 of Zambia\'s tribes — preserving our heritage while embracing progress.' },
         ].map(p => (
-          <div key={p.title} className="p-6" style={{ backgroundColor: '#111', border: '1px solid #1f1f1f' }}>
+          <div key={p.title} className="p-6" style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f' }}>
             <h4 className="mb-2 text-white" style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.95rem', letterSpacing: '0.04em' }}>{p.title}</h4>
             <p style={{ color: '#9ca3af', fontSize: '14px', lineHeight: 1.75 }}>{p.desc}</p>
           </div>
@@ -490,7 +490,7 @@ export function CampaignPage() {
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 50% 35%, #ffffff 0%, transparent 60%)' }} />
         <div className="relative max-w-4xl mx-auto">
           <p className="text-xs tracking-widest mb-4" style={{ color: '#fef3c7', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.25em', fontWeight: 600 }}>2031 GENERAL ELECTION · 14 AUGUST 2031</p>
-          <h1 className="mb-6" style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', lineHeight: 1.1, letterSpacing: '0.03em', color: '#ffffff' }}>
+          <h1 className="mb-6" style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', lineHeight: 1.1, letterSpacing: '0.03em', color: '#111111' }}>
             OUR <span style={{ color: '#fbbf24' }}>CAMPAIGN</span> PLATFORM
           </h1>
           <p className="max-w-2xl mx-auto" style={{ color: '#f0fdf4', fontSize: '1.05rem', lineHeight: 1.85 }}>
@@ -503,7 +503,7 @@ export function CampaignPage() {
       <EquipmentParade />
 
       {/* Tab bar */}
-      <div className="sticky top-20 z-20 py-4 px-4" style={{ backgroundColor: '#ffffff', borderBottom: '2px solid #e5e7eb', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+      <div className="sticky top-20 z-20 py-4 px-4" style={{ backgroundcolor: '#111111', borderBottom: '2px solid #e5e7eb', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
         <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-2">
           {TABS.map(t => {
             const Icon = t.icon;

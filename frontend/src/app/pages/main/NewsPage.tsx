@@ -29,7 +29,7 @@ function ArticleView({ article, onBack }: { article: NewsArticle; onBack: () => 
       </div>
 
       {/* Title */}
-      <h1 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 4vw, 3rem)', lineHeight: 1.15, letterSpacing: '0.03em', color: '#fff', marginBottom: '32px' }}>
+      <h1 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 4vw, 3rem)', lineHeight: 1.15, letterSpacing: '0.03em', color: '#111111', marginBottom: '32px' }}>
         {article.title}
       </h1>
 
@@ -77,7 +77,7 @@ function ArticleCard({ article, onRead, featured }: { article: NewsArticle; onRe
         onClick={onRead}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        style={{ cursor: 'pointer', backgroundColor: '#0d0d0d', border: `1px solid ${hovered ? '#dc2626' : '#1f1f1f'}`, display: 'grid', gridTemplateColumns: '1fr 1fr', overflow: 'hidden', transition: 'border-color 0.2s' }}
+        style={{ cursor: 'pointer', backgroundColor: '#ffffff', border: `1px solid ${hovered ? '#dc2626' : '#1f1f1f'}`, display: 'grid', gridTemplateColumns: '1fr 1fr', overflow: 'hidden', transition: 'border-color 0.2s' }}
       >
         <div style={{ overflow: 'hidden', maxHeight: '400px' }}>
           <img src={article.image} alt={article.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: hovered ? 'scale(1.04)' : 'scale(1)', transition: 'transform 0.5s' }} />
@@ -88,7 +88,7 @@ function ArticleCard({ article, onRead, featured }: { article: NewsArticle; onRe
             <span style={{ backgroundColor: 'rgba(220,38,38,0.12)', color: '#dc2626', fontSize: '10px', padding: '3px 10px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.12em' }}>{article.category}</span>
             <span style={{ fontSize: '11px', color: '#4b5563', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock style={{ width: '10px', height: '10px' }} />{article.date}</span>
           </div>
-          <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.3rem, 2.5vw, 1.8rem)', letterSpacing: '0.03em', color: '#fff', lineHeight: 1.2, marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.3rem, 2.5vw, 1.8rem)', letterSpacing: '0.03em', color: '#111111', lineHeight: 1.2, marginBottom: '16px' }}>
             {article.title}
           </h2>
           <p style={{ fontSize: '14px', lineHeight: 1.8, color: '#6b7280', marginBottom: '24px' }}>{article.excerpt}</p>
@@ -105,7 +105,7 @@ function ArticleCard({ article, onRead, featured }: { article: NewsArticle; onRe
       onClick={onRead}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ cursor: 'pointer', backgroundColor: '#0d0d0d', border: `1px solid ${hovered ? '#dc2626' : '#1f1f1f'}`, overflow: 'hidden', transition: 'border-color 0.2s', display: 'flex', flexDirection: 'column' }}
+      style={{ cursor: 'pointer', backgroundColor: '#ffffff', border: `1px solid ${hovered ? '#dc2626' : '#1f1f1f'}`, overflow: 'hidden', transition: 'border-color 0.2s', display: 'flex', flexDirection: 'column' }}
     >
       <div style={{ overflow: 'hidden', height: '210px' }}>
         <img src={article.image} alt={article.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: hovered ? 'scale(1.05)' : 'scale(1)', transition: 'transform 0.5s' }} />
@@ -115,7 +115,7 @@ function ArticleCard({ article, onRead, featured }: { article: NewsArticle; onRe
           <span style={{ backgroundColor: 'rgba(220,38,38,0.12)', color: '#dc2626', fontSize: '10px', padding: '3px 9px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.1em' }}>{article.category}</span>
           <span style={{ fontSize: '11px', color: '#4b5563', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock style={{ width: '10px', height: '10px' }} />{article.date}</span>
         </div>
-        <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem', letterSpacing: '0.04em', color: '#fff', lineHeight: 1.3, marginBottom: '12px', flex: 1 }}>
+        <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem', letterSpacing: '0.04em', color: '#111111', lineHeight: 1.3, marginBottom: '12px', flex: 1 }}>
           {article.title}
         </h3>
         <p style={{ fontSize: '13px', lineHeight: 1.75, color: '#6b7280', marginBottom: '20px' }}>{article.excerpt}</p>
@@ -143,7 +143,7 @@ export function NewsPage() {
 
   if (openArticle) {
     return (
-      <div style={{ backgroundColor: '#080808', fontFamily: 'Open Sans, sans-serif', color: '#fff', minHeight: '100vh' }}>
+      <div style={{ backgroundcolor: '#111111', fontFamily: 'Open Sans, sans-serif', color: '#111111', minHeight: '100vh' }}>
         {/* Article hero bar */}
         <div style={{ backgroundColor: '#007A30', borderBottom: '1px solid #005020', padding: '16px' }}>
           <div style={{ maxWidth: '820px', margin: '0 auto' }}>
@@ -158,7 +158,7 @@ export function NewsPage() {
   }
 
   return (
-    <div style={{ backgroundColor: '#080808', fontFamily: 'Open Sans, sans-serif', color: '#fff', minHeight: '100vh' }}>
+    <div style={{ backgroundcolor: '#111111', fontFamily: 'Open Sans, sans-serif', color: '#111111', minHeight: '100vh' }}>
 
       {/* Hero */}
       <section style={{ position: 'relative', padding: '96px 16px 64px', overflow: 'hidden', background: 'linear-gradient(135deg, #007A30 0%, #006B28 40%, #1a0000 100%)' }}>
@@ -180,7 +180,7 @@ export function NewsPage() {
               placeholder="Search news…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width: '100%', boxSizing: 'border-box', padding: '13px 16px 13px 44px', backgroundColor: '#111', border: '1px solid #2a2a2a', color: '#fff', fontSize: '14px', outline: 'none', fontFamily: 'Open Sans, sans-serif' }}
+              style={{ width: '100%', boxSizing: 'border-box', padding: '13px 16px 13px 44px', backgroundcolor: '#111111', border: '1px solid #2a2a2a', color: '#111111', fontSize: '14px', outline: 'none', fontFamily: 'Open Sans, sans-serif' }}
             />
           </div>
         </div>

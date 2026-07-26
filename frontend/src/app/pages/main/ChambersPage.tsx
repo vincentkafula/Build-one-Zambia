@@ -70,7 +70,7 @@ export function ChambersPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#007A30' }}>
       {/* Hero Section */}
-      <div className="relative overflow-hidden" style={{ backgroundColor: '#111' }}>
+      <div className="relative overflow-hidden" style={{ backgroundcolor: '#111111' }}>
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23dc2626\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")', backgroundSize: '60px 60px' }} />
         </div>
@@ -84,7 +84,7 @@ export function ChambersPage() {
               </span>
             </div>
 
-            <h1 className="text-5xl md:text-6xl font-bold mb-6" style={{ fontFamily: 'Oswald, sans-serif', color: '#ffffff', lineHeight: '1.1' }}>
+            <h1 className="text-5xl md:text-6xl font-bold mb-6" style={{ fontFamily: 'Oswald, sans-serif', color: '#111111', lineHeight: '1.1' }}>
               Chambers of Commerce
             </h1>
 
@@ -99,7 +99,7 @@ export function ChambersPage() {
                   <Building2 size={20} style={{ color: '#dc2626' }} />
                 </div>
                 <div className="text-left">
-                  <div className="font-bold text-2xl" style={{ color: '#ffffff', fontFamily: 'Oswald, sans-serif' }}>800+</div>
+                  <div className="font-bold text-2xl" style={{ color: '#111111', fontFamily: 'Oswald, sans-serif' }}>800+</div>
                   <div style={{ color: '#6b7280' }}>Chambers</div>
                 </div>
               </div>
@@ -108,7 +108,7 @@ export function ChambersPage() {
                   <MapPin size={20} style={{ color: '#f59e0b' }} />
                 </div>
                 <div className="text-left">
-                  <div className="font-bold text-2xl" style={{ color: '#ffffff', fontFamily: 'Oswald, sans-serif' }}>226</div>
+                  <div className="font-bold text-2xl" style={{ color: '#111111', fontFamily: 'Oswald, sans-serif' }}>226</div>
                   <div style={{ color: '#6b7280' }}>Constituencies</div>
                 </div>
               </div>
@@ -117,7 +117,7 @@ export function ChambersPage() {
                   <Users size={20} style={{ color: '#10b981' }} />
                 </div>
                 <div className="text-left">
-                  <div className="font-bold text-2xl" style={{ color: '#ffffff', fontFamily: 'Oswald, sans-serif' }}>1,858</div>
+                  <div className="font-bold text-2xl" style={{ color: '#111111', fontFamily: 'Oswald, sans-serif' }}>1,858</div>
                   <div style={{ color: '#6b7280' }}>Wards</div>
                 </div>
               </div>
@@ -141,9 +141,9 @@ export function ChambersPage() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-lg outline-none transition-all"
                   style={{
-                    backgroundColor: '#111',
+                    backgroundcolor: '#111111',
                     border: '1px solid #1f1f1f',
-                    color: '#ffffff',
+                    color: '#111111',
                     fontSize: '14px'
                   }}
                   onFocus={(e) => e.currentTarget.style.borderColor = '#dc2626'}
@@ -159,9 +159,9 @@ export function ChambersPage() {
                 onChange={(e) => setSelectedProvince(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg outline-none appearance-none cursor-pointer"
                 style={{
-                  backgroundColor: '#111',
+                  backgroundcolor: '#111111',
                   border: '1px solid #1f1f1f',
-                  color: '#ffffff',
+                  color: '#111111',
                   fontSize: '14px'
                 }}
               >
@@ -180,9 +180,9 @@ export function ChambersPage() {
                 onChange={(e) => setSelectedType(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg outline-none appearance-none cursor-pointer"
                 style={{
-                  backgroundColor: '#111',
+                  backgroundcolor: '#111111',
                   border: '1px solid #1f1f1f',
-                  color: '#ffffff',
+                  color: '#111111',
                   fontSize: '14px'
                 }}
               >
@@ -201,9 +201,9 @@ export function ChambersPage() {
                 onChange={(e) => setSelectedSector(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg outline-none appearance-none cursor-pointer"
                 style={{
-                  backgroundColor: '#111',
+                  backgroundcolor: '#111111',
                   border: '1px solid #1f1f1f',
-                  color: '#ffffff',
+                  color: '#111111',
                   fontSize: '14px'
                 }}
               >
@@ -230,7 +230,7 @@ export function ChambersPage() {
                   setSelectedSector('all');
                 }}
                 className="text-sm px-3 py-1 rounded transition-colors"
-                style={{ backgroundColor: '#1f1f1f', color: '#dc2626' }}
+                style={{ backgroundColor: '#ffffff', color: '#dc2626' }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1f1f1f'}
               >
@@ -245,10 +245,10 @@ export function ChambersPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {Object.keys(chambersByProvince).length === 0 ? (
           <div className="text-center py-20">
-            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#1f1f1f' }}>
+            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundcolor: '#111111' }}>
               <Search size={24} style={{ color: '#6b7280' }} />
             </div>
-            <h3 className="text-xl font-semibold mb-2" style={{ color: '#ffffff', fontFamily: 'Oswald, sans-serif' }}>
+            <h3 className="text-xl font-semibold mb-2" style={{ color: '#111111', fontFamily: 'Oswald, sans-serif' }}>
               No chambers found
             </h3>
             <p style={{ color: '#6b7280' }}>Try adjusting your search or filters</p>
@@ -256,10 +256,10 @@ export function ChambersPage() {
         ) : (
           Object.entries(chambersByProvince).sort(([a], [b]) => a.localeCompare(b)).map(([province, chambers]) => (
             <div key={province} className="mb-12">
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif', color: '#ffffff' }}>
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-3" style={{ fontFamily: 'Oswald, sans-serif', color: '#111111' }}>
                 <MapPin size={24} style={{ color: '#dc2626' }} />
                 {province}
-                <span className="text-sm font-normal px-3 py-1 rounded-full" style={{ backgroundColor: '#1f1f1f', color: '#9ca3af' }}>
+                <span className="text-sm font-normal px-3 py-1 rounded-full" style={{ backgroundcolor: '#111111', color: '#9ca3af' }}>
                   {chambers.length} {chambers.length === 1 ? 'chamber' : 'chambers'}
                 </span>
               </h2>
@@ -269,7 +269,7 @@ export function ChambersPage() {
                   <div
                     key={chamber.id}
                     className="rounded-xl overflow-hidden transition-all duration-300 group"
-                    style={{ backgroundColor: '#111', border: '1px solid #1f1f1f' }}
+                    style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f' }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.borderColor = '#dc2626';
                       e.currentTarget.style.transform = 'translateY(-4px)';
@@ -300,7 +300,7 @@ export function ChambersPage() {
                         </div>
                       </div>
 
-                      <h3 className="text-lg font-bold mb-2 leading-tight" style={{ fontFamily: 'Oswald, sans-serif', color: '#ffffff' }}>
+                      <h3 className="text-lg font-bold mb-2 leading-tight" style={{ fontFamily: 'Oswald, sans-serif', color: '#111111' }}>
                         {chamber.name}
                       </h3>
 
@@ -319,19 +319,19 @@ export function ChambersPage() {
                       <div className="flex items-center gap-2">
                         <Briefcase size={16} style={{ color: '#f59e0b' }} />
                         <span className="text-sm" style={{ color: '#9ca3af' }}>Sector:</span>
-                        <span className="text-sm font-semibold" style={{ color: '#ffffff' }}>{chamber.sector}</span>
+                        <span className="text-sm font-semibold" style={{ color: '#111111' }}>{chamber.sector}</span>
                       </div>
 
                       <div className="flex items-center gap-2">
                         <Users size={16} style={{ color: '#10b981' }} />
                         <span className="text-sm" style={{ color: '#9ca3af' }}>Members:</span>
-                        <span className="text-sm font-semibold" style={{ color: '#ffffff' }}>{chamber.memberBusinesses}</span>
+                        <span className="text-sm font-semibold" style={{ color: '#111111' }}>{chamber.memberBusinesses}</span>
                       </div>
 
                       <div className="flex items-center gap-2">
                         <Calendar size={16} style={{ color: '#3b82f6' }} />
                         <span className="text-sm" style={{ color: '#9ca3af' }}>Est:</span>
-                        <span className="text-sm font-semibold" style={{ color: '#ffffff' }}>{chamber.established}</span>
+                        <span className="text-sm font-semibold" style={{ color: '#111111' }}>{chamber.established}</span>
                       </div>
 
                       <div className="pt-3 mt-3 border-t space-y-2" style={{ borderColor: '#1f1f1f' }}>
@@ -371,7 +371,7 @@ export function ChambersPage() {
       <div className="border-t" style={{ borderColor: '#1f1f1f' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: 'Oswald, sans-serif', color: '#ffffff' }}>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: 'Oswald, sans-serif', color: '#111111' }}>
               Join Your Local Chamber
             </h2>
             <p className="text-lg mb-8" style={{ color: '#9ca3af', lineHeight: '1.7' }}>

@@ -74,12 +74,12 @@ function loadFlutterwaveScript(forceRetry = false): Promise<boolean> {
 
 const s = {
   overlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.88)', zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end' } as CSSProperties,
-  drawer: { backgroundColor: '#0d0d0d', width: '100%', maxWidth: '520px', height: '100vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', borderLeft: '1px solid #1f1f1f', fontFamily: 'Open Sans, sans-serif', color: '#fff' } as CSSProperties,
-  header: { padding: '20px 24px', borderBottom: '1px solid #1f1f1f', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, backgroundColor: '#0d0d0d', zIndex: 2 } as CSSProperties,
+  drawer: { backgroundcolor: '#111111', width: '100%', maxWidth: '520px', height: '100vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', borderLeft: '1px solid #1f1f1f', fontFamily: 'Open Sans, sans-serif', color: '#111111' } as CSSProperties,
+  header: { padding: '20px 24px', borderBottom: '1px solid #1f1f1f', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, backgroundcolor: '#111111', zIndex: 2 } as CSSProperties,
   body: { flex: 1, padding: '24px', overflowY: 'auto' } as CSSProperties,
-  footer: { padding: '20px 24px', borderTop: '1px solid #1f1f1f', position: 'sticky', bottom: 0, backgroundColor: '#0d0d0d' } as CSSProperties,
+  footer: { padding: '20px 24px', borderTop: '1px solid #1f1f1f', position: 'sticky', bottom: 0, backgroundcolor: '#111111' } as CSSProperties,
   label: { fontSize: '11px', letterSpacing: '0.15em', color: '#6b7280', fontFamily: 'Oswald, sans-serif', display: 'block', marginBottom: '6px' } as CSSProperties,
-  input: { width: '100%', boxSizing: 'border-box', padding: '12px 14px', backgroundColor: '#111', border: '1px solid #2a2a2a', color: '#fff', fontSize: '14px', outline: 'none', fontFamily: 'Open Sans, sans-serif', marginBottom: '16px' } as CSSProperties,
+  input: { width: '100%', boxSizing: 'border-box', padding: '12px 14px', backgroundcolor: '#111111', border: '1px solid #2a2a2a', color: '#111111', fontSize: '14px', outline: 'none', fontFamily: 'Open Sans, sans-serif', marginBottom: '16px' } as CSSProperties,
   btnRed: { width: '100%', padding: '14px', backgroundColor: '#dc2626', color: '#fff', border: 'none', fontFamily: 'Oswald, sans-serif', fontSize: '14px', letterSpacing: '0.1em', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' } as CSSProperties,
   btnGhost: { width: '100%', padding: '13px', backgroundColor: 'transparent', color: '#9ca3af', border: '1px solid #2a2a2a', fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.08em', cursor: 'pointer', marginTop: '10px' } as CSSProperties,
 };
@@ -415,7 +415,7 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove, buyer }: Pr
               </button>
             )}
             <div>
-              <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '16px', letterSpacing: '0.08em', color: '#fff', margin: 0 }}>
+              <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '16px', letterSpacing: '0.08em', color: '#111111', margin: 0 }}>
                 {step === 'cart' ? 'YOUR CART' : step === 'details' ? 'YOUR DETAILS' : step === 'payment' ? 'PAYMENT METHOD' : step === 'confirm' ? 'CONFIRM ORDER' : 'ORDER COMPLETE'}
               </p>
               {step !== 'success' && (
@@ -444,19 +444,19 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove, buyer }: Pr
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {cart.map(item => (
-                    <div key={item.id} style={{ display: 'flex', gap: '14px', backgroundColor: '#111', border: '1px solid #1f1f1f', padding: '14px' }}>
+                    <div key={item.id} style={{ display: 'flex', gap: '14px', backgroundcolor: '#111111', border: '1px solid #1f1f1f', padding: '14px' }}>
                       <img src={item.img} alt={item.name} style={{ width: '70px', height: '70px', objectFit: 'cover', flexShrink: 0 }} />
                       <div style={{ flex: 1 }}>
-                        <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.04em', color: '#fff', margin: '0 0 4px' }}>{item.name}</p>
+                        <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.04em', color: '#111111', margin: '0 0 4px' }}>{item.name}</p>
                         <p style={{ fontSize: '12px', color: '#dc2626', fontFamily: 'Oswald, sans-serif', margin: '0 0 10px' }}>K{item.priceNum.toLocaleString()} each</p>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #2a2a2a' }}>
                             <button onClick={() => item.qty > 1 ? onUpdateQty(item.id, item.qty - 1) : onRemove(item.id)} style={{ width: '30px', height: '30px', background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '16px' }}>−</button>
-                            <span style={{ width: '30px', textAlign: 'center', fontSize: '13px', color: '#fff', fontFamily: 'Oswald, sans-serif' }}>{item.qty}</span>
+                            <span style={{ width: '30px', textAlign: 'center', fontSize: '13px', color: '#111111', fontFamily: 'Oswald, sans-serif' }}>{item.qty}</span>
                             <button onClick={() => onUpdateQty(item.id, item.qty + 1)} style={{ width: '30px', height: '30px', background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '16px' }}>+</button>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '14px', color: '#fff' }}>K{(item.priceNum * item.qty).toLocaleString()}</span>
+                            <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '14px', color: '#111111' }}>K{(item.priceNum * item.qty).toLocaleString()}</span>
                             <button onClick={() => onRemove(item.id)} style={{ background: 'none', border: 'none', color: '#4b5563', cursor: 'pointer', display: 'flex' }}>
                               <Trash2 style={{ width: '14px', height: '14px' }} />
                             </button>
@@ -555,7 +555,7 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove, buyer }: Pr
                     style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', backgroundColor: method === m.key ? 'rgba(220,38,38,0.08)' : '#111', border: `1px solid ${method === m.key ? '#dc2626' : '#2a2a2a'}`, cursor: 'pointer', textAlign: 'left', color: '#fff', transition: 'all 0.15s' }}>
                     <div style={{ width: '36px', height: '36px', borderRadius: '6px', backgroundColor: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>{m.icon}</div>
                     <div style={{ flex: 1 }}>
-                      <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.06em', margin: 0, color: '#fff' }}>{m.label}</p>
+                      <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.06em', margin: 0, color: '#111111' }}>{m.label}</p>
                       <p style={{ fontSize: '11px', color: '#6b7280', margin: '2px 0 0' }}>{m.sub}</p>
                     </div>
                     <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: `2px solid ${method === m.key ? '#dc2626' : '#4b5563'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -567,7 +567,7 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove, buyer }: Pr
 
               {/* Card info box */}
               {method === 'card' && (
-                <div style={{ backgroundColor: '#111', border: '1px solid #1f1f1f', padding: '18px', borderTop: '3px solid #1a3a8f' }}>
+                <div style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', padding: '18px', borderTop: '3px solid #1a3a8f' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
                     <Shield style={{ width: '14px', height: '14px', color: '#60a5fa' }} />
                     <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '12px', letterSpacing: '0.08em', color: '#60a5fa', margin: 0 }}>SECURE CARD CHECKOUT</p>
@@ -592,12 +592,12 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove, buyer }: Pr
               {(method === 'airtel' || method === 'zamtel' || method === 'mtn') && (() => {
                 const net = MOBILE_NETS[method];
                 return (
-                  <div style={{ backgroundColor: '#111', border: '1px solid #1f1f1f', padding: '20px', borderTop: `3px solid ${net.color}` }}>
-                    <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.06em', color: '#fff', marginBottom: '16px' }}>{net.label} PAYMENT</p>
+                  <div style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', padding: '20px', borderTop: `3px solid ${net.color}` }}>
+                    <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.06em', color: '#111111', marginBottom: '16px' }}>{net.label} PAYMENT</p>
                     <label style={s.label}>{net.label.toUpperCase()} PHONE NUMBER *</label>
                     <input style={s.input} value={mobileNum} onChange={e => setMobileNum(e.target.value.replace(/\D/g, '').slice(0, 10))} placeholder={`e.g. ${net.prefix}X XXX XXXX`} />
-                    <div style={{ backgroundColor: '#0d0d0d', border: '1px solid #1f1f1f', padding: '14px', fontSize: '12px', color: '#9ca3af', lineHeight: 1.8 }}>
-                      <p style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.1em', marginBottom: '8px' }}>HOW IT WORKS</p>
+                    <div style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', padding: '14px', fontSize: '12px', color: '#9ca3af', lineHeight: 1.8 }}>
+                      <p style={{ color: '#111111', fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.1em', marginBottom: '8px' }}>HOW IT WORKS</p>
                       <p style={{ margin: '0 0 4px' }}>1. Enter your {net.label} number above</p>
                       <p style={{ margin: '0 0 4px' }}>2. Click Pay — a USSD prompt is sent to your phone</p>
                       <p style={{ margin: '0 0 4px' }}>3. Approve the <strong style={{ color: net.color }}>K{total.toLocaleString()}</strong> payment on your device</p>
@@ -615,7 +615,7 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove, buyer }: Pr
               <StepBar step={step} />
 
               {/* Order summary */}
-              <div style={{ backgroundColor: '#111', border: '1px solid #1f1f1f', padding: '16px', marginBottom: '16px' }}>
+              <div style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', padding: '16px', marginBottom: '16px' }}>
                 <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '12px', letterSpacing: '0.1em', color: '#dc2626', marginBottom: '12px' }}>ORDER SUMMARY</p>
                 {cart.map(item => (
                   <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#d1d5db', marginBottom: '8px' }}>
@@ -641,13 +641,13 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove, buyer }: Pr
               </div>
 
               {/* Customer + delivery */}
-              <div style={{ backgroundColor: '#111', border: '1px solid #1f1f1f', padding: '16px', marginBottom: '16px' }}>
+              <div style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', padding: '16px', marginBottom: '16px' }}>
                 <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '12px', letterSpacing: '0.1em', color: '#dc2626', marginBottom: '10px' }}>CUSTOMER</p>
                 <p style={{ fontSize: '13px', color: '#d1d5db', margin: '0 0 4px' }}>{name}</p>
                 <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 2px' }}>{phone}</p>
                 {email && <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>{email}</p>}
               </div>
-              <div style={{ backgroundColor: '#111', border: '1px solid #1f1f1f', padding: '16px', marginBottom: '16px' }}>
+              <div style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', padding: '16px', marginBottom: '16px' }}>
                 <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '12px', letterSpacing: '0.1em', color: '#dc2626', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                   <MapPin style={{ width: '11px', height: '11px' }} /> DELIVERY ADDRESS
                 </p>
@@ -657,7 +657,7 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove, buyer }: Pr
               </div>
 
               {/* Payment method */}
-              <div style={{ backgroundColor: '#111', border: '1px solid #1f1f1f', padding: '16px', marginBottom: '16px' }}>
+              <div style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', padding: '16px', marginBottom: '16px' }}>
                 <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '12px', letterSpacing: '0.1em', color: '#dc2626', marginBottom: '10px' }}>PAYMENT METHOD</p>
                 {method === 'card' ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -712,9 +712,9 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove, buyer }: Pr
               <div style={{ width: '72px', height: '72px', borderRadius: '50%', backgroundColor: 'rgba(220,38,38,0.12)', border: '2px solid #dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
                 <Check style={{ width: '32px', height: '32px', color: '#dc2626' }} />
               </div>
-              <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.6rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '12px' }}>ORDER CONFIRMED!</h2>
+              <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.6rem', letterSpacing: '0.04em', color: '#111111', marginBottom: '12px' }}>ORDER CONFIRMED!</h2>
               <p style={{ fontSize: '14px', lineHeight: 1.8, color: '#9ca3af', marginBottom: '8px' }}>
-                Thank you, <strong style={{ color: '#fff' }}>{name}</strong>. Your payment was successful.
+                Thank you, <strong style={{ color: '#111111' }}>{name}</strong>. Your payment was successful.
               </p>
               <p style={{ fontSize: '14px', color: '#9ca3af', marginBottom: '8px' }}>
                 Total paid: <strong style={{ color: '#dc2626', fontFamily: 'Oswald, sans-serif' }}>K{total.toLocaleString()}</strong>
@@ -722,7 +722,7 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove, buyer }: Pr
               <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '24px' }}>
                 (K{subtotal.toLocaleString()} items + K{shippingCost.toLocaleString()} shipping)
               </p>
-              <div style={{ backgroundColor: '#111', border: '1px solid #1f1f1f', padding: '16px', textAlign: 'left', marginBottom: '16px' }}>
+              <div style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', padding: '16px', textAlign: 'left', marginBottom: '16px' }}>
                 <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.1em', color: '#dc2626', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                   <MapPin style={{ width: '10px', height: '10px' }} /> SHIPPING TO
                 </p>
@@ -733,7 +733,7 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove, buyer }: Pr
               {txRef && (
                 <p style={{ fontSize: '11px', color: '#4b5563', marginBottom: '20px', fontFamily: 'monospace' }}>Payment ref: {txRef}</p>
               )}
-              <div style={{ backgroundColor: '#111', border: '1px solid #1f1f1f', padding: '16px', textAlign: 'left', marginBottom: '32px' }}>
+              <div style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', padding: '16px', textAlign: 'left', marginBottom: '32px' }}>
                 <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.1em', color: '#dc2626', marginBottom: '8px' }}>WHAT HAPPENS NEXT</p>
                 <p style={{ fontSize: '12px', color: '#6b7280', lineHeight: 1.8, margin: 0 }}>
                   {email ? `A confirmation email has been sent to ${email}.` : ''} Our team will contact you on <strong style={{ color: '#d1d5db' }}>{phone}</strong> to confirm your order. Items are dispatched to <strong style={{ color: '#d1d5db' }}>{city}, {province}</strong> within 7–14 business days.

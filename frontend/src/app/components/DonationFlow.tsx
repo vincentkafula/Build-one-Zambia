@@ -151,9 +151,9 @@ function displayAmount(s: State): string {
 // ── Shared styles ─────────────────────────────────────────────────────────────
 
 const INP: CSSProperties = {
-  backgroundColor: '#0d0d0d',
+  backgroundcolor: '#111111',
   border: '1px solid #2a2a2a',
-  color: '#fff',
+  color: '#111111',
   padding: '12px 16px',
   width: '100%',
   fontFamily: 'Open Sans, sans-serif',
@@ -196,7 +196,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
 function VisaLogo() {
   return (
-    <div style={{ backgroundColor: '#fff', borderRadius: '4px', padding: '2px 6px', display: 'inline-flex', alignItems: 'center' }}>
+    <div style={{ backgroundcolor: '#111111', borderRadius: '4px', padding: '2px 6px', display: 'inline-flex', alignItems: 'center' }}>
       <span style={{ fontFamily: 'Oswald, sans-serif', fontWeight: 700, fontSize: '0.85rem', color: '#1a1f71', letterSpacing: '-0.02em' }}>VISA</span>
     </div>
   );
@@ -214,7 +214,7 @@ function MCLogo({ size = 20 }: { size?: number }) {
 function AmexLogo() {
   return (
     <div style={{ backgroundColor: '#2e77bc', borderRadius: '4px', padding: '2px 6px', display: 'inline-flex', alignItems: 'center' }}>
-      <span style={{ fontFamily: 'Oswald, sans-serif', fontWeight: 700, fontSize: '0.65rem', color: '#fff', letterSpacing: '0.04em' }}>AMEX</span>
+      <span style={{ fontFamily: 'Oswald, sans-serif', fontWeight: 700, fontSize: '0.65rem', color: '#111111', letterSpacing: '0.04em' }}>AMEX</span>
     </div>
   );
 }
@@ -282,17 +282,17 @@ function CardPreview({ s }: { s: State }) {
         {s.cardBrand === 'amex'       && <AmexLogo />}
         {!s.cardBrand && <CreditCard size={22} color="rgba(255,255,255,0.3)" />}
       </div>
-      <p style={{ fontFamily: 'monospace', fontSize: '1.05rem', letterSpacing: '0.18em', color: '#fff', marginBottom: '20px' }}>
+      <p style={{ fontFamily: 'monospace', fontSize: '1.05rem', letterSpacing: '0.18em', color: '#111111', marginBottom: '20px' }}>
         {s.cardNum || (s.cardBrand === 'amex' ? '•••• •••••• •••••' : '•••• •••• •••• ••••')}
       </p>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
-          <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.08em', fontFamily: 'Oswald, sans-serif', marginBottom: '2px' }}>CARD HOLDER</p>
-          <p style={{ fontSize: '13px', color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>{s.cardName || 'YOUR NAME'}</p>
+          <p style={{ fontSize: '9px', color: 'rgba(17,17,17,0.45)', letterSpacing: '0.08em', fontFamily: 'Oswald, sans-serif', marginBottom: '2px' }}>CARD HOLDER</p>
+          <p style={{ fontSize: '13px', color: '#111111', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>{s.cardName || 'YOUR NAME'}</p>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.08em', fontFamily: 'Oswald, sans-serif', marginBottom: '2px' }}>EXPIRES</p>
-          <p style={{ fontSize: '13px', color: '#fff', fontFamily: 'Oswald, sans-serif' }}>{s.cardExpiry || 'MM/YY'}</p>
+          <p style={{ fontSize: '9px', color: 'rgba(17,17,17,0.45)', letterSpacing: '0.08em', fontFamily: 'Oswald, sans-serif', marginBottom: '2px' }}>EXPIRES</p>
+          <p style={{ fontSize: '13px', color: '#111111', fontFamily: 'Oswald, sans-serif' }}>{s.cardExpiry || 'MM/YY'}</p>
         </div>
       </div>
     </div>
@@ -451,14 +451,14 @@ export function DonationFlow() {
         <div style={{ width: 80, height: 80, borderRadius: '50%', backgroundColor: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
           <Heart size={38} color="#dc2626" />
         </div>
-        <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '2rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '12px' }}>THANK YOU!</h3>
+        <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '2rem', letterSpacing: '0.04em', color: '#111111', marginBottom: '12px' }}>THANK YOU!</h3>
         {donationStatus === 'completed' ? (
           <p style={{ color: '#9ca3af', fontSize: '15px', lineHeight: 1.8, maxWidth: '420px', margin: '0 auto 8px' }}>
-            Your donation of <strong style={{ color: '#fff' }}>{amt}</strong> has been received. A receipt will be sent to <strong style={{ color: '#fff' }}>{s.email}</strong>.
+            Your donation of <strong style={{ color: '#111111' }}>{amt}</strong> has been received. A receipt will be sent to <strong style={{ color: '#111111' }}>{s.email}</strong>.
           </p>
         ) : (
           <p style={{ color: '#9ca3af', fontSize: '15px', lineHeight: 1.8, maxWidth: '420px', margin: '0 auto 8px' }}>
-            Your donation of <strong style={{ color: '#fff' }}>{amt}</strong> has been recorded and is awaiting confirmation — our team will verify your {s.category === 'bank' ? 'bank transfer' : 'mobile money payment'} and email a receipt to <strong style={{ color: '#fff' }}>{s.email}</strong>.
+            Your donation of <strong style={{ color: '#111111' }}>{amt}</strong> has been recorded and is awaiting confirmation — our team will verify your {s.category === 'bank' ? 'bank transfer' : 'mobile money payment'} and email a receipt to <strong style={{ color: '#111111' }}>{s.email}</strong>.
           </p>
         )}
         <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '32px' }}>Together we build One Zambia. Thank you for your support.</p>
@@ -490,7 +490,7 @@ export function DonationFlow() {
   const btnBack: CSSProperties = {
     display: 'inline-flex', alignItems: 'center', gap: '6px',
     padding: '12px 20px', cursor: 'pointer',
-    backgroundColor: '#111', color: '#9ca3af', border: '1px solid #2a2a2a',
+    backgroundcolor: '#111111', color: '#9ca3af', border: '1px solid #2a2a2a',
     fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '13px',
   };
   const btnNext = (disabled: boolean): CSSProperties => ({
@@ -510,7 +510,7 @@ export function DonationFlow() {
       ══════════════════════════════════════════════════════════════════════ */}
       {step === 1 && (
         <div>
-          <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '6px' }}>CHOOSE YOUR AMOUNT</h3>
+          <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#111111', marginBottom: '6px' }}>CHOOSE YOUR AMOUNT</h3>
           <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '28px' }}>Every kwacha goes directly to grassroots outreach across all 10 provinces.</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '16px' }}>
@@ -526,7 +526,7 @@ export function DonationFlow() {
                 }}
               >
                 <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.3rem', color: '#dc2626' }}>{t.amount}</div>
-                <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.75rem', letterSpacing: '0.06em', color: '#fff', margin: '3px 0' }}>{t.label}</div>
+                <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.75rem', letterSpacing: '0.06em', color: '#111111', margin: '3px 0' }}>{t.label}</div>
                 <div style={{ fontSize: '11px', color: '#6b7280', lineHeight: 1.5 }}>{t.perks}</div>
               </button>
             ))}
@@ -564,7 +564,7 @@ export function DonationFlow() {
       ══════════════════════════════════════════════════════════════════════ */}
       {step === 2 && (
         <div>
-          <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '6px' }}>SELECT PAYMENT METHOD</h3>
+          <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#111111', marginBottom: '6px' }}>SELECT PAYMENT METHOD</h3>
           <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '28px' }}>
             Donating <span style={{ color: '#dc2626' }}>{amt}</span> — choose how you'd like to pay.
           </p>
@@ -617,9 +617,9 @@ export function DonationFlow() {
                   outline: `1px solid ${s.category === cat ? '#dc2626' : '#1f1f1f'}`,
                 }}
               >
-                <div style={{ width: 48, height: 48, flexShrink: 0, backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</div>
+                <div style={{ width: 48, height: 48, flexShrink: 0, backgroundcolor: '#111111', border: '1px solid #2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1rem', letterSpacing: '0.06em', color: '#fff' }}>{title}</div>
+                  <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1rem', letterSpacing: '0.06em', color: '#111111' }}>{title}</div>
                   <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>{sub}</div>
                 </div>
                 {logos}
@@ -642,7 +642,7 @@ export function DonationFlow() {
           {/* ── Card ── */}
           {s.category === 'card' && (
             <>
-              <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '6px' }}>CARD PAYMENT</h3>
+              <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#111111', marginBottom: '6px' }}>CARD PAYMENT</h3>
               <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '24px' }}>
                 You'll enter your card details securely on Flutterwave's own payment screen after you confirm below —
                 nothing is collected or stored on this site.
@@ -650,13 +650,13 @@ export function DonationFlow() {
 
               <div style={{
                 display: 'flex', alignItems: 'center', gap: '16px', padding: '24px',
-                backgroundColor: '#0d0d0d', border: '1px solid #1f1f1f', marginBottom: '20px',
+                backgroundcolor: '#111111', border: '1px solid #1f1f1f', marginBottom: '20px',
               }}>
                 <div style={{ width: 56, height: 56, flexShrink: 0, borderRadius: '50%', backgroundColor: 'rgba(220,38,38,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Lock size={24} color="#dc2626" />
                 </div>
                 <div>
-                  <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '4px' }}>
+                  <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', letterSpacing: '0.04em', color: '#111111', marginBottom: '4px' }}>
                     Secured by Flutterwave
                   </p>
                   <p style={{ fontSize: '12px', color: '#6b7280', lineHeight: 1.6, margin: 0 }}>
@@ -670,7 +670,7 @@ export function DonationFlow() {
           {/* ── Bank Transfer ── */}
           {s.category === 'bank' && (
             <>
-              <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '6px' }}>BANK TRANSFER</h3>
+              <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#111111', marginBottom: '6px' }}>BANK TRANSFER</h3>
               <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '24px' }}>
                 Transfer <span style={{ color: '#dc2626' }}>{amt}</span> to the campaign account below.
               </p>
@@ -690,7 +690,7 @@ export function DonationFlow() {
                     }}
                   >
                     <div style={{ backgroundColor: info.color, borderRadius: '4px', padding: '4px 10px' }}>
-                      <span style={{ fontFamily: 'Oswald, sans-serif', fontWeight: 700, fontSize: '0.7rem', color: '#fff', letterSpacing: '0.04em' }}>{key.toUpperCase()}</span>
+                      <span style={{ fontFamily: 'Oswald, sans-serif', fontWeight: 700, fontSize: '0.7rem', color: '#111111', letterSpacing: '0.04em' }}>{key.toUpperCase()}</span>
                     </div>
                     <span style={{ fontSize: '10px', color: '#9ca3af', textAlign: 'center', lineHeight: 1.4 }}>{info.label}</span>
                   </button>
@@ -698,13 +698,13 @@ export function DonationFlow() {
               </div>
 
               {s.bank && (
-                <div style={{ backgroundColor: '#0d0d0d', border: '1px solid #1f1f1f', padding: '20px', marginBottom: '20px' }}>
+                <div style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', padding: '20px', marginBottom: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '12px', marginBottom: '4px', borderBottom: '1px solid #1a1a1a' }}>
                     <div style={{ backgroundColor: BANKS[s.bank].color, borderRadius: '4px', padding: '4px 8px' }}>
-                      <span style={{ fontFamily: 'Oswald, sans-serif', fontWeight: 700, fontSize: '0.65rem', color: '#fff' }}>{s.bank.toUpperCase()}</span>
+                      <span style={{ fontFamily: 'Oswald, sans-serif', fontWeight: 700, fontSize: '0.65rem', color: '#111111' }}>{s.bank.toUpperCase()}</span>
                     </div>
                     <div>
-                      <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#fff', letterSpacing: '0.04em' }}>Campaign Account</div>
+                      <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#111111', letterSpacing: '0.04em' }}>Campaign Account</div>
                       <div style={{ fontSize: '11px', color: '#6b7280' }}>{BANKS[s.bank].label}</div>
                     </div>
                   </div>
@@ -730,7 +730,7 @@ export function DonationFlow() {
           {/* ── Mobile Money ── */}
           {s.category === 'mobile' && (
             <>
-              <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '6px' }}>MOBILE MONEY</h3>
+              <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#111111', marginBottom: '6px' }}>MOBILE MONEY</h3>
               <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '24px' }}>
                 Send <span style={{ color: '#dc2626' }}>{amt}</span> from your mobile wallet.
               </p>
@@ -758,7 +758,7 @@ export function DonationFlow() {
               </div>
 
               {s.net && (
-                <div style={{ backgroundColor: '#0d0d0d', border: '1px solid #1f1f1f', padding: '20px', marginBottom: '20px' }}>
+                <div style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', padding: '20px', marginBottom: '20px' }}>
                   <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.12em', color: NETS[s.net].color, marginBottom: '16px' }}>
                     HOW TO SEND WITH {NETS[s.net].label.toUpperCase()}
                   </p>
@@ -801,10 +801,10 @@ export function DonationFlow() {
       ══════════════════════════════════════════════════════════════════════ */}
       {step === 4 && (
         <div>
-          <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '6px' }}>CONFIRM DONATION</h3>
+          <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#111111', marginBottom: '6px' }}>CONFIRM DONATION</h3>
           <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '28px' }}>Please review before submitting.</p>
 
-          <div style={{ backgroundColor: '#0d0d0d', border: '1px solid #1f1f1f', padding: '20px', marginBottom: '20px' }}>
+          <div style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', padding: '20px', marginBottom: '20px' }}>
             <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.15em', color: '#dc2626', marginBottom: '8px' }}>DONATION SUMMARY</p>
             <InfoRow label="DONOR"  value={s.name} />
             <InfoRow label="EMAIL"  value={s.email} />

@@ -75,10 +75,10 @@ export function LiveStreamingPage() {
   const [playingId, setPlayingId] = useState<string | null>(null);
 
   return (
-    <div style={{ backgroundColor: '#080808', fontFamily: 'Open Sans, sans-serif', color: '#fff', minHeight: '100vh' }}>
+    <div style={{ backgroundcolor: '#111111', fontFamily: 'Open Sans, sans-serif', color: '#111111', minHeight: '100vh' }}>
 
       {/* ── HERO ────────────────────────────────────────────────────────────── */}
-      <section style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#050505' }}>
+      <section style={{ position: 'relative', overflow: 'hidden', backgroundcolor: '#111111' }}>
 
         {/* Background texture */}
         <div style={{
@@ -105,10 +105,10 @@ export function LiveStreamingPage() {
             </p>
 
             {/* Stats grid — mirrors reference image */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', backgroundColor: '#1a1a1a', border: '1px solid #005020', marginBottom: '40px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', backgroundcolor: '#111111', border: '1px solid #005020', marginBottom: '40px' }}>
               {STATS.map(s => (
-                <div key={s.label} style={{ backgroundColor: '#0d0d0d', padding: '24px 20px' }}>
-                  <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', color: '#fff', letterSpacing: '0.02em', lineHeight: 1 }}>{s.value}</div>
+                <div key={s.label} style={{ backgroundcolor: '#111111', padding: '24px 20px' }}>
+                  <div style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', color: '#111111', letterSpacing: '0.02em', lineHeight: 1 }}>{s.value}</div>
                   <div style={{ fontSize: '12px', color: '#dc2626', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', marginTop: '4px' }}>{s.label}</div>
                   <div style={{ fontSize: '11px', color: '#4b5563', marginTop: '2px' }}>{s.sub}</div>
                 </div>
@@ -144,7 +144,7 @@ export function LiveStreamingPage() {
               style={{
                 position: 'relative',
                 aspectRatio: '16/9',
-                backgroundColor: '#111',
+                backgroundcolor: '#111111',
                 border: '1px solid #1f1f1f',
                 overflow: 'hidden',
                 cursor: embedActive ? 'default' : 'pointer',
@@ -171,8 +171,8 @@ export function LiveStreamingPage() {
 
                   {/* Live pill */}
                   <div style={{ position: 'absolute', top: '14px', left: '14px', display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#dc2626', padding: '4px 10px' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#fff', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-                    <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.15em', color: '#fff' }}>LIVE</span>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundcolor: '#111111', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
+                    <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.15em', color: '#111111' }}>LIVE</span>
                   </div>
 
                   {/* Play button — matches reference image circular play icon */}
@@ -185,15 +185,15 @@ export function LiveStreamingPage() {
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       boxShadow: '0 0 0 12px rgba(220,38,38,0.2)',
                     }}>
-                      <Play style={{ width: '28px', height: '28px', color: '#fff', marginLeft: '4px' }} />
+                      <Play style={{ width: '28px', height: '28px', color: '#111111', marginLeft: '4px' }} />
                     </div>
                   </div>
 
                   <div style={{ position: 'absolute', bottom: '14px', left: '14px', right: '14px' }}>
-                    <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '15px', color: '#fff', letterSpacing: '0.04em', margin: 0 }}>
+                    <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '15px', color: '#111111', letterSpacing: '0.04em', margin: 0 }}>
                       Build One Zambia — Official Live Stream
                     </p>
-                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: '4px 0 0' }}>Click to watch on this page · Opens YouTube in a new tab</p>
+                    <p style={{ fontSize: '12px', color: 'rgba(17,17,17,0.6)', margin: '4px 0 0' }}>Click to watch on this page · Opens YouTube in a new tab</p>
                   </div>
                 </>
               )}
@@ -213,7 +213,7 @@ export function LiveStreamingPage() {
       </section>
 
       {/* ── LIVE STREAM VIEWER (backend-powered) ─────────────────────────────── */}
-      <section style={{ padding: '0', backgroundColor: '#0d0d0d', borderTop: '1px solid #005020' }}>
+      <section style={{ padding: '0', backgroundcolor: '#111111', borderTop: '1px solid #005020' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
           <LiveStreamViewer />
         </div>
@@ -231,7 +231,7 @@ export function LiveStreamingPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
             {UPCOMING.map((ev, i) => (
-              <div key={ev.title} style={{ backgroundColor: '#0d0d0d', border: '1px solid #1f1f1f', overflow: 'hidden' }}>
+              <div key={ev.title} style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', overflow: 'hidden' }}>
                 <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
                   <img src={ev.thumb} alt={ev.title} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.6)' }} />
                   {i === 0 && (
@@ -249,7 +249,7 @@ export function LiveStreamingPage() {
                       <Clock style={{ width: '11px', height: '11px', color: '#dc2626' }} /> {ev.time}
                     </span>
                   </div>
-                  <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '10px', marginTop: 0, lineHeight: 1.3 }}>{ev.title}</h3>
+                  <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem', letterSpacing: '0.04em', color: '#111111', marginBottom: '10px', marginTop: 0, lineHeight: 1.3 }}>{ev.title}</h3>
                   <p style={{ fontSize: '13px', lineHeight: 1.75, color: '#6b7280', margin: '0 0 20px' }}>{ev.desc}</p>
                   <a
                     href={YOUTUBE_LIVE_URL}
@@ -267,7 +267,7 @@ export function LiveStreamingPage() {
       </section>
 
       {/* ── PAST BROADCASTS ──────────────────────────────────────────────────── */}
-      <section style={{ padding: '80px 16px', backgroundColor: '#080808', borderTop: '1px solid #005020' }}>
+      <section style={{ padding: '80px 16px', backgroundcolor: '#111111', borderTop: '1px solid #005020' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '48px', flexWrap: 'wrap', gap: '16px' }}>
             <div>
@@ -290,7 +290,7 @@ export function LiveStreamingPage() {
             {PAST.map(vid => (
               <div
                 key={vid.title}
-                style={{ backgroundColor: '#0d0d0d', border: '1px solid #1f1f1f', overflow: 'hidden', cursor: 'pointer' }}
+                style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', overflow: 'hidden', cursor: 'pointer' }}
                 onClick={() => setPlayingId(playingId === vid.id + vid.title ? null : vid.id + vid.title)}
               >
                 <div style={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden' }}>
@@ -307,7 +307,7 @@ export function LiveStreamingPage() {
                       <img src={vid.thumb} alt={vid.title} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.6)', display: 'block' }} />
                       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(220,38,38,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Play style={{ width: '18px', height: '18px', color: '#fff', marginLeft: '3px' }} />
+                          <Play style={{ width: '18px', height: '18px', color: '#111111', marginLeft: '3px' }} />
                         </div>
                       </div>
                       <div style={{ position: 'absolute', bottom: '8px', right: '8px', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(0,0,0,0.7)', padding: '3px 8px' }}>
@@ -318,7 +318,7 @@ export function LiveStreamingPage() {
                   )}
                 </div>
                 <div style={{ padding: '16px' }}>
-                  <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.04em', color: '#fff', margin: '0 0 4px', lineHeight: 1.3 }}>{vid.title}</p>
+                  <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.04em', color: '#111111', margin: '0 0 4px', lineHeight: 1.3 }}>{vid.title}</p>
                   <p style={{ fontSize: '11px', color: '#4b5563', margin: 0 }}>{vid.date}</p>
                 </div>
               </div>
@@ -329,11 +329,11 @@ export function LiveStreamingPage() {
 
       {/* ── CTA BANNER ───────────────────────────────────────────────────────── */}
       <section style={{ padding: '72px 16px', backgroundColor: '#dc2626', textAlign: 'center' }}>
-        <p style={{ fontSize: '11px', letterSpacing: '0.22em', color: 'rgba(255,255,255,0.7)', fontFamily: 'Oswald, sans-serif', marginBottom: '12px' }}>STAY CONNECTED</p>
-        <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', letterSpacing: '0.03em', color: '#fff', marginBottom: '16px' }}>
+        <p style={{ fontSize: '11px', letterSpacing: '0.22em', color: 'rgba(17,17,17,0.7)', fontFamily: 'Oswald, sans-serif', marginBottom: '12px' }}>STAY CONNECTED</p>
+        <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', letterSpacing: '0.03em', color: '#111111', marginBottom: '16px' }}>
           Never Miss a Moment
         </h2>
-        <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', marginBottom: '32px', maxWidth: '500px', margin: '0 auto 32px' }}>
+        <p style={{ color: 'rgba(17,17,17,0.8)', fontSize: '15px', marginBottom: '32px', maxWidth: '500px', margin: '0 auto 32px' }}>
           Subscribe to the Build One Zambia YouTube channel for live rallies, debates, and election night coverage.
         </p>
         <a
