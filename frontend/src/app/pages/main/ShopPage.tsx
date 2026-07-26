@@ -289,7 +289,7 @@ export function ShopPage() {
             )}
           </div>
         ) : (
-          CATEGORIES.filter(c => c !== 'ALL').map(cat => {
+          CATEGORIES.filter(c => c !== 'ALL').slice(0, 6).map(cat => {
             const rowProducts = PRODUCTS.filter(p => p.tag === cat);
             if (rowProducts.length === 0) return null;
             return (
