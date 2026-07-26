@@ -349,40 +349,48 @@ const ACTION_CARDS = [
 // formal confirmation. Their identities are redacted until officially announced.
 
 const REDACTED_PHOTO = (
-  <div className="w-full h-full flex flex-col items-center justify-center" style={{ backgroundcolor: '#111111', gap: '12px' }}>
-    <svg viewBox="0 0 80 80" width="60" height="60" fill="none">
-      <circle cx="40" cy="28" r="18" fill="#333" />
-      <ellipse cx="40" cy="72" rx="30" ry="18" fill="#333" />
+  <div className="w-full h-full flex flex-col items-center justify-center" style={{ backgroundColor: '#f4f5f7', gap: '10px' }}>
+    <svg viewBox="0 0 80 80" width="46" height="46" fill="none">
+      <circle cx="40" cy="28" r="18" fill="#d1d5db" />
+      <ellipse cx="40" cy="72" rx="30" ry="18" fill="#d1d5db" />
     </svg>
-    <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10px', letterSpacing: '0.12em', color: '#444' }}>IDENTITY PENDING</span>
+    <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '9.5px', letterSpacing: '0.12em', color: '#9ca3af' }}>IDENTITY PENDING</span>
   </div>
 );
 
 function RedactedName() {
   return (
-    <span className="inline-flex flex-col gap-1.5" aria-label="Redacted">
-      <span style={{ display: 'inline-block', width: '120px', height: '14px', backgroundcolor: '#111111', borderRadius: '3px' }} />
-      <span style={{ display: 'inline-block', width: '80px', height: '14px', backgroundcolor: '#111111', borderRadius: '3px' }} />
+    <span className="inline-flex flex-col gap-1.5 items-center" aria-label="Redacted">
+      <span style={{ display: 'inline-block', width: '120px', height: '14px', backgroundColor: '#e5e7eb', borderRadius: '3px' }} />
+      <span style={{ display: 'inline-block', width: '80px', height: '14px', backgroundColor: '#e5e7eb', borderRadius: '3px' }} />
     </span>
   );
 }
 
+// A gallery-portrait treatment: a white "mat" border frames the photo the
+// way an official/gallery portrait is presented, rather than clipping it
+// into a badge or crest shape. Same component used on the male and female
+// candidate pages for a consistent, professional presentation once real
+// photos are added.
 function GeometricFrame({ img, name, redacted = false }: { img: string; name: string; redacted?: boolean }) {
   return (
-    <div className="relative flex items-center justify-center" style={{ width: '100%', maxWidth: '460px', minHeight: '540px' }}>
-      <svg viewBox="0 0 480 560" className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }} aria-hidden>
-        <polygon points="60,40 420,40 480,480 240,560 0,480" fill={O} opacity="0.92" />
-        <polygon points="180,120 300,120 360,420 240,480 120,420" fill={NAVY} opacity="0.6" />
-        <line x1="30" y1="20" x2="200" y2="20" stroke={O} strokeWidth="4" opacity="0.7" />
-        <line x1="30" y1="20" x2="30" y2="80" stroke={O} strokeWidth="4" opacity="0.7" />
-        <line x1="450" y1="20" x2="280" y2="20" stroke={O} strokeWidth="4" opacity="0.7" />
-        <line x1="450" y1="20" x2="450" y2="80" stroke={O} strokeWidth="4" opacity="0.7" />
-      </svg>
+    <div className="relative mx-auto" style={{ width: '100%', maxWidth: '340px' }}>
       <div
-        className="relative overflow-hidden"
-        style={{ zIndex: 1, width: '72%', height: '510px', clipPath: 'polygon(15% 0%, 85% 0%, 100% 85%, 50% 100%, 0% 85%)' }}
+        className="relative"
+        style={{
+          padding: '14px', backgroundColor: '#ffffff', borderRadius: '18px',
+          boxShadow: 'var(--shadow-xl, 0 24px 48px -12px rgba(15,23,42,0.18))',
+          border: '1px solid rgba(30,45,74,0.08)',
+        }}
       >
-        {redacted ? REDACTED_PHOTO : <img src={img} alt={name} className="w-full h-full object-cover" style={{ objectPosition: 'center 15%' }} />}
+        <div className="absolute left-1/2 -translate-x-1/2 -top-[7px] h-[3px] w-16 rounded-full" style={{ backgroundColor: O }} />
+        <div className="relative overflow-hidden" style={{ borderRadius: '10px', aspectRatio: '4 / 5' }}>
+          {redacted ? REDACTED_PHOTO : (
+            <img src={img} alt={name} className="w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-[1.045]" style={{ objectPosition: 'center 15%' }} />
+          )}
+          <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.4)', borderRadius: '10px' }} />
+          <div className="absolute inset-x-0 bottom-0 h-20 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(30,45,74,0.45), transparent)' }} />
+        </div>
       </div>
     </div>
   );
@@ -390,13 +398,20 @@ function GeometricFrame({ img, name, redacted = false }: { img: string; name: st
 
 function SmallGeometry({ img, name, redacted = false }: { img: string; name: string; redacted?: boolean }) {
   return (
-    <div className="relative flex items-center justify-center" style={{ height: '260px' }}>
-      <svg viewBox="0 0 300 260" className="absolute inset-0 w-full h-full" aria-hidden>
-        <polygon points="30,10 270,10 300,240 150,260 0,240" fill={O} opacity="0.85" />
-        <polygon points="90,60 210,60 240,220 150,240 60,220" fill={NAVY} opacity="0.55" />
-      </svg>
-      <div className="relative overflow-hidden" style={{ zIndex: 1, width: '65%', height: '230px', clipPath: 'polygon(15% 0%, 85% 0%, 100% 85%, 50% 100%, 0% 85%)' }}>
-        {redacted ? REDACTED_PHOTO : <img src={img} alt={name} className="w-full h-full object-cover" style={{ objectPosition: 'center 15%' }} />}
+    <div className="relative mx-auto" style={{ width: '100%', maxWidth: '220px' }}>
+      <div
+        style={{
+          padding: '8px', backgroundColor: '#ffffff', borderRadius: '14px',
+          boxShadow: 'var(--shadow-lg, 0 12px 28px -6px rgba(15,23,42,0.12))',
+          border: '1px solid rgba(30,45,74,0.07)',
+        }}
+      >
+        <div className="relative overflow-hidden" style={{ borderRadius: '8px', aspectRatio: '4 / 5' }}>
+          {redacted ? REDACTED_PHOTO : (
+            <img src={img} alt={name} className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]" style={{ objectPosition: 'center 15%' }} />
+          )}
+          <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.4)', borderRadius: '8px' }} />
+        </div>
       </div>
     </div>
   );

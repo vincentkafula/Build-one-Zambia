@@ -60,20 +60,20 @@ const CARD_PHOTOS = [
 
 // All female shadow ministers are pending formal confirmation — identities redacted until announced
 const REDACTED_PHOTO_F = (
-  <div className="w-full h-full flex flex-col items-center justify-center" style={{ backgroundcolor: '#111111', gap: '12px' }}>
-    <svg viewBox="0 0 80 80" width="60" height="60" fill="none">
-      <circle cx="40" cy="28" r="18" fill="#333" />
-      <ellipse cx="40" cy="72" rx="30" ry="18" fill="#333" />
+  <div className="w-full h-full flex flex-col items-center justify-center" style={{ backgroundColor: '#f4f5f7', gap: '10px' }}>
+    <svg viewBox="0 0 80 80" width="46" height="46" fill="none">
+      <circle cx="40" cy="28" r="18" fill="#d1d5db" />
+      <ellipse cx="40" cy="72" rx="30" ry="18" fill="#d1d5db" />
     </svg>
-    <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10px', letterSpacing: '0.12em', color: '#444' }}>IDENTITY PENDING</span>
+    <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '9.5px', letterSpacing: '0.12em', color: '#9ca3af' }}>IDENTITY PENDING</span>
   </div>
 );
 
 function RedactedNameF() {
   return (
-    <span className="inline-flex flex-col gap-1.5" aria-label="Redacted">
-      <span style={{ display: 'inline-block', width: '120px', height: '14px', backgroundcolor: '#111111', borderRadius: '3px' }} />
-      <span style={{ display: 'inline-block', width: '80px', height: '14px', backgroundcolor: '#111111', borderRadius: '3px' }} />
+    <span className="inline-flex flex-col gap-1.5 items-center" aria-label="Redacted">
+      <span style={{ display: 'inline-block', width: '120px', height: '14px', backgroundColor: '#e5e7eb', borderRadius: '3px' }} />
+      <span style={{ display: 'inline-block', width: '80px', height: '14px', backgroundColor: '#e5e7eb', borderRadius: '3px' }} />
     </span>
   );
 }
@@ -457,18 +457,28 @@ export function FemaleCandidatesPage() {
                 onMouseEnter={e => (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 40px rgba(232,98,26,0.15)`}
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.boxShadow = i === featuredIdx ? `0 8px 40px rgba(232,98,26,0.15)` : '0 2px 16px rgba(0,0,0,0.05)'}
               >
-                <div className="relative overflow-hidden" style={{ height: '280px' }}>
-                  <div className="absolute top-0 left-0 right-0 h-1 z-10" style={{ backgroundColor: O }} />
-                  {REDACTED_PHOTO_F}
-                  <div className="absolute bottom-0 left-0 right-0 h-20" style={{ background: 'linear-gradient(to top, rgba(30,45,74,0.5), transparent)' }} />
-                  <span className="absolute bottom-3 left-4 text-xs px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(232,98,26,0.9)', color: '#111111', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
-                    {cand.constituency}
-                  </span>
+                <div className="pt-6 px-6">
+                  <div
+                    style={{
+                      padding: '8px', backgroundColor: '#ffffff', borderRadius: '14px',
+                      boxShadow: 'var(--shadow-lg, 0 12px 28px -6px rgba(15,23,42,0.12))',
+                      border: '1px solid rgba(30,45,74,0.07)',
+                    }}
+                  >
+                    <div className="relative overflow-hidden" style={{ borderRadius: '8px', aspectRatio: '4 / 5' }}>
+                      {REDACTED_PHOTO_F}
+                      <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.4)', borderRadius: '8px' }} />
+                      <div className="absolute inset-x-0 bottom-0 h-16 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(30,45,74,0.35), transparent)' }} />
+                      <span className="absolute bottom-3 left-3 text-xs px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(232,98,26,0.92)', color: '#ffffff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
+                        {cand.constituency}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="px-6 py-5">
+                <div className="px-6 pb-8 pt-4 text-center">
                   <h3 className="mb-1" style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1rem', letterSpacing: '0.04em', color: NAVY }}><RedactedNameF /></h3>
                   <p className="text-xs mb-4" style={{ color: '#9ca3af' }}>Pending confirmation</p>
-                  <div className="flex items-center gap-2 text-xs" style={{ color: O }}>
+                  <div className="flex items-center justify-center gap-2 text-xs" style={{ color: O }}>
                     <CheckCircle className="w-3.5 h-3.5 shrink-0" />
                     <span style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>{cand.focus}</span>
                   </div>
