@@ -200,7 +200,7 @@ export function SiteSearch({ open, onClose }: SiteSearchProps) {
     >
       <div
         className="w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl"
-        style={{ backgroundColor: '#0a1a10', border: '1px solid rgba(0,200,80,0.2)' }}
+        style={{ backgroundColor: '#007A30', border: '1px solid rgba(0,200,80,0.2)' }}
       >
         {/* Search input */}
         <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>

@@ -432,7 +432,7 @@ export default function DashboardLogin() {
                   onClick={() => handleSelect(dash.id)}
                   className="text-left rounded-2xl p-5 transition-all duration-200 group"
                   style={{
-                    backgroundColor: '#0d2718',
+                    backgroundColor: '#007A30',
                     border: '1px solid rgba(255,255,255,0.07)',
                   }}
                   onMouseEnter={(e) => {
@@ -443,7 +443,7 @@ export default function DashboardLogin() {
                   }}
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLElement).style.border = '1px solid rgba(255,255,255,0.07)';
-                    (e.currentTarget as HTMLElement).style.backgroundColor = '#0d2718';
+                    (e.currentTarget as HTMLElement).style.backgroundColor = '#007A30';
                     (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
                     (e.currentTarget as HTMLElement).style.boxShadow = 'none';
                   }}
@@ -502,7 +502,7 @@ export default function DashboardLogin() {
             <div
               className="rounded-2xl overflow-hidden"
               style={{
-                backgroundColor: '#0d2718',
+                backgroundColor: '#007A30',
                 border: `1px solid ${selected?.color}30`,
                 boxShadow: `0 0 60px ${selected?.color}12`,
               }}

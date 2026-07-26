@@ -393,7 +393,7 @@ export default function MemberDashboard() {
                 { label: 'ORDERS', value: String(orders.length), color: '#00712B' },
                 { label: 'WARD', value: profile.ward, color: '#00712B' },
               ].map(s => (
-                <div key={s.label} className="rounded-2xl p-4" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <div key={s.label} className="rounded-2xl p-4" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
                   <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.65rem', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.35)', marginBottom: 6 }}>{s.label}</p>
                   <p style={{ color: s.color, fontFamily: 'Oswald, sans-serif', fontSize: '0.85rem', letterSpacing: '0.04em' }}>{s.value}</p>
                 </div>

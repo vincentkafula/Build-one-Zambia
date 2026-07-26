@@ -69,9 +69,9 @@ export function MainFooter() {
                   href={href}
                   aria-label={label}
                   className="w-9 h-9 rounded flex items-center justify-center transition-colors"
-                  style={{ backgroundColor: '#0a2016', color: '#9ca3af' }}
+                  style={{ backgroundColor: '#007A30', color: '#9ca3af' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = '#dc2626'; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = '#0a2016'; (e.currentTarget as HTMLElement).style.color = '#9ca3af'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = '#007A30'; (e.currentTarget as HTMLElement).style.color = '#9ca3af'; }}
                 >
                   <Icon className="w-4 h-4" />
                 </a>
@@ -159,7 +159,7 @@ export function MainFooter() {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t" style={{ borderColor: '#0a2016' }}>
+      <div className="border-t" style={{ borderColor: '#007A30' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs" style={{ color: '#4b5563' }}>
             © 2026 Build One Zambia. All rights reserved.

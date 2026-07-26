@@ -259,7 +259,7 @@ export function PagesPage() {
       </section>
 
       {/* Quick jump links */}
-      <section style={{ backgroundColor: '#0a1a10', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px' }}>
+      <section style={{ backgroundColor: '#007A30', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
           {SITE_SECTIONS.map(s => (
             <a key={s.group} href={`#${s.group.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '')}`}
@@ -277,7 +277,7 @@ export function PagesPage() {
         <section
           key={section.group}
           id={section.group.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '')}
-          style={{ padding: '72px 16px', backgroundColor: si % 2 === 0 ? NAVY : '#0a1a10', scrollMarginTop: '80px' }}
+          style={{ padding: '72px 16px', backgroundColor: si % 2 === 0 ? NAVY : '#007A30', scrollMarginTop: '80px' }}
         >
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             {/* Section heading */}
@@ -377,7 +377,7 @@ export function PagesPage() {
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} />
 
       {/* Polling Agents */}
-      <section id="agents" style={{ padding: '96px 16px', backgroundColor: '#0a1a10', scrollMarginTop: '80px' }}>
+      <section id="agents" style={{ padding: '96px 16px', backgroundColor: '#007A30', scrollMarginTop: '80px' }}>
         <div style={{ maxWidth: '860px', margin: '0 auto' }}>
           <SectionHeader label="CIVIC OBSERVERS" title={<>OUR <span style={{ color: R }}>POLLING AGENTS</span></>} />
           <div style={{ fontSize: '15px', lineHeight: 1.9, color: '#c0c0c0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -422,7 +422,7 @@ export function PagesPage() {
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} />
 
       {/* Transparency */}
-      <section id="transparency" style={{ padding: '96px 16px', backgroundColor: '#0a1a10', scrollMarginTop: '80px' }}>
+      <section id="transparency" style={{ padding: '96px 16px', backgroundColor: '#007A30', scrollMarginTop: '80px' }}>
         <div style={{ maxWidth: '860px', margin: '0 auto' }}>
           <SectionHeader label="OUR COMMITMENTS" title={<>TRANSPARENCY <span style={{ color: R }}>PRINCIPLES</span></>} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

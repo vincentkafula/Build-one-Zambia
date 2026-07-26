@@ -209,7 +209,7 @@ export default function ChamberDashboard() {
                 { label: 'Intern Coordinator', value: '1 Assigned', icon: <GraduationCap size={20} />, color: '#00712B' },
                 { label: 'Pending Amendments', value: pendingCount, icon: <FilePenLine size={20} />, color: '#00712B' },
               ].map(s => (
-                <div key={s.label} className="rounded-xl p-4 flex items-center gap-3" style={{backgroundColor: "#123322", border: "1px solid rgba(255,255,255,0.07)"}}>
+                <div key={s.label} className="rounded-xl p-4 flex items-center gap-3" style={{backgroundColor: "#007A30", border: "1px solid rgba(255,255,255,0.07)"}}>
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white" style={{ background: s.color }}>{s.icon}</div>
                   <div>
                     <p className="text-xs text-white/40">{s.label}</p>
@@ -240,7 +240,7 @@ export default function ChamberDashboard() {
             <h2 className="text-xl mb-6" style={{ color: NAVY }}>Companies Willing to Invest</h2>
             <div className="space-y-4">
               {INVESTORS.map(inv => (
-                <div key={inv.id} className="rounded-2xl p-5" style={{backgroundColor: "#123322", border: "1px solid rgba(255,255,255,0.07)"}}>
+                <div key={inv.id} className="rounded-2xl p-5" style={{backgroundColor: "#007A30", border: "1px solid rgba(255,255,255,0.07)"}}>
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h4 className="text-white mb-0.5">{inv.company}</h4>
@@ -269,7 +269,7 @@ export default function ChamberDashboard() {
             <h2 className="text-xl mb-6" style={{ color: NAVY }}>Zambian Cooperatives in Ward</h2>
             <div className="space-y-4">
               {COOPERATIVES.map(coop => (
-                <div key={coop.id} className="rounded-2xl p-5" style={{backgroundColor: "#123322", border: "1px solid rgba(255,255,255,0.07)"}}>
+                <div key={coop.id} className="rounded-2xl p-5" style={{backgroundColor: "#007A30", border: "1px solid rgba(255,255,255,0.07)"}}>
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h4 className="text-white mb-0.5">{coop.name}</h4>
@@ -332,13 +332,13 @@ export default function ChamberDashboard() {
             </div>
 
             {amendMsg && (
-              <div className="mb-4 p-3 rounded-lg text-sm" style={amendMsg.includes('success') ? {backgroundColor:'#0a1f12',color:'#479966',border:'1px solid #47996630'} : {backgroundColor:'#200a0a',color:'#f87171',border:'1px solid #f8717130'}}>
+              <div className="mb-4 p-3 rounded-lg text-sm" style={amendMsg.includes('success') ? {backgroundColor:'#007A30',color:'#479966',border:'1px solid #47996630'} : {backgroundColor:'#200a0a',color:'#f87171',border:'1px solid #f8717130'}}>
                 {amendMsg}
               </div>
             )}
 
             {showAmendForm && (
-              <div className="rounded-xl p-6 mb-6" style={{backgroundColor:"#123322",border:"2px solid #f59e0b50"}}>
+              <div className="rounded-xl p-6 mb-6" style={{backgroundColor:"#007A30",border:"2px solid #f59e0b50"}}>
                 <h3 className="mb-4 text-sm font-semibold" style={{ color: NAVY }}>Submit Amendment Request</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
@@ -399,7 +399,7 @@ export default function ChamberDashboard() {
             {amendLoading ? (
               <p className="text-sm text-white/40">Loading amendments…</p>
             ) : amendments.length === 0 ? (
-              <div className="rounded-xl p-8 text-center" style={{backgroundColor:"#123322",border:"1px solid rgba(255,255,255,0.07)"}}>
+              <div className="rounded-xl p-8 text-center" style={{backgroundColor:"#007A30",border:"1px solid rgba(255,255,255,0.07)"}}>
                 <FilePenLine className="w-10 h-10 mx-auto mb-3 text-gray-300" />
                 <p className="text-sm text-white/38">No amendment requests yet.</p>
               </div>
@@ -413,7 +413,7 @@ export default function ChamberDashboard() {
                     rejected: { icon: <XCircle size={13} />,      color: '#dc2626', bg: '#fef2f2' },
                   }[a.status];
                   return (
-                    <div key={a.id} className="rounded-xl overflow-hidden" style={{backgroundColor:"#123322",border:"1px solid rgba(255,255,255,0.07)"}}>
+                    <div key={a.id} className="rounded-xl overflow-hidden" style={{backgroundColor:"#007A30",border:"1px solid rgba(255,255,255,0.07)"}}>
                       <button
                         className="w-full flex items-center justify-between px-5 py-4 text-left"
                         onClick={() => setExpandedAmend(isOpen ? null : a.id)}

@@ -25,9 +25,9 @@ interface DashboardShellProps {
   notifications?: number;
 }
 
-const SIDEBAR_BG = '#0a2016';
+const SIDEBAR_BG = '#007A30';
 const SIDEBAR_BORDER = 'rgba(255,255,255,0.06)';
-const TOPBAR_BG = '#0d2718';
+const TOPBAR_BG = '#007A30';
 
 export function DashboardShell({
   accentColor,
@@ -302,7 +302,7 @@ export function DashCard({ title, children, className = '' }: { title?: string; 
   return (
     <div
       className={`rounded-2xl overflow-hidden ${className}`}
-      style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}
+      style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}
     >
       {title && (
         <div
@@ -336,7 +336,7 @@ export function StatCard({
   return (
     <div
       className="rounded-2xl p-5"
-      style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}
+      style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}
     >
       <div className="flex items-start justify-between mb-3">
         <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.7rem', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.38)' }}>

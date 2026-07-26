@@ -72,7 +72,7 @@ const ALL_NAV: NavItem[] = [
   { key:'security',         label:'Security Settings',    icon:<Lock size={16}/>,            group:'PROFILE' },
 ];
 
-const SIDEBAR_BG='#0a2016', TOPBAR_BG='#0d2718', CARD_BG='#123322', BORDER='rgba(255,255,255,0.07)';
+const SIDEBAR_BG='#007A30', TOPBAR_BG='#007A30', CARD_BG='#007A30', BORDER='rgba(255,255,255,0.07)';
 
 function Field({label,value}:{label:string;value:string}) {
   return (

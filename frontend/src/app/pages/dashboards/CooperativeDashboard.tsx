@@ -225,7 +225,7 @@ function CertificateSection() {
                 </p>
               </div>
             ) : (
-              <div className="flex items-start gap-3 mb-5 rounded-lg px-4 py-3" style={{ backgroundColor: '#0a1f12', border: '1px solid rgba(0,113,43,0.3)' }}>
+              <div className="flex items-start gap-3 mb-5 rounded-lg px-4 py-3" style={{ backgroundColor: '#007A30', border: '1px solid rgba(0,113,43,0.3)' }}>
                 <ShieldCheck size={18} style={{ color: A, flexShrink: 0, marginTop: 2 }} />
                 <p className="text-sm" style={{ color: '#7fc99a' }}>
                   Populated automatically from your online cooperative application — {cert.memberCount} registered members.
@@ -284,7 +284,7 @@ export default function CooperativeDashboard() {
                 { label: 'Products Exported', value: EXPORTS.length, icon: <Globe size={20} />, color: '#00712B' },
                 { label: 'Investors', value: INVESTORS.length, icon: <Users size={20} />, color: '#00712B' },
               ].map(s => (
-                <div key={s.label} className="rounded-xl p-4 flex items-center gap-3" style={{backgroundColor: "#123322", border: "1px solid rgba(255,255,255,0.07)"}}>
+                <div key={s.label} className="rounded-xl p-4 flex items-center gap-3" style={{backgroundColor: "#007A30", border: "1px solid rgba(255,255,255,0.07)"}}>
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white" style={{ background: s.color }}>
                     {s.icon}
                   </div>
@@ -397,7 +397,7 @@ export default function CooperativeDashboard() {
                 { label: 'Total Value', value: 'ZMW 204,000' },
                 { label: 'Delivered', value: EXPORTS.filter(e => e.status === 'Delivered').length },
               ].map(s => (
-                <div key={s.label} className="rounded-xl p-4 text-center" style={{backgroundColor:"#123322",border:"1px solid rgba(255,255,255,0.07)"}}>
+                <div key={s.label} className="rounded-xl p-4 text-center" style={{backgroundColor:"#007A30",border:"1px solid rgba(255,255,255,0.07)"}}>
                   <p className="text-2xl" style={{ color: A }}>{s.value}</p>
                   <p className="text-xs text-white/40 mt-1">{s.label}</p>
                 </div>
@@ -438,7 +438,7 @@ export default function CooperativeDashboard() {
             <h2 className="text-xl mb-6" style={{ color: NAVY }}>List of Investors</h2>
             <div className="space-y-4">
               {INVESTORS.map(inv => (
-                <div key={inv.id} className="rounded-2xl p-5" style={{backgroundColor: "#123322", border: "1px solid rgba(255,255,255,0.07)"}}>
+                <div key={inv.id} className="rounded-2xl p-5" style={{backgroundColor: "#007A30", border: "1px solid rgba(255,255,255,0.07)"}}>
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h4 className="text-white mb-0.5">{inv.name}</h4>
@@ -460,7 +460,7 @@ export default function CooperativeDashboard() {
                       {inv.email}
                     </div>
                   </div>
-                  <div className="rounded-lg px-3 py-2 text-sm" style={{backgroundColor:"#0a1f12",color:"#479966"}}>
+                  <div className="rounded-lg px-3 py-2 text-sm" style={{backgroundColor:"#007A30",color:"#479966"}}>
                     <span className="text-green-600 mr-1">Interest:</span>{inv.investmentInterest}
                   </div>
                 </div>

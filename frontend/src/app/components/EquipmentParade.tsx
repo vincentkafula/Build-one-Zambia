@@ -71,7 +71,7 @@ export function EquipmentParade() {
         width: '100%',
         height: '380px',
         overflow: 'hidden',
-        backgroundColor: '#0a1a0f',
+        backgroundColor: '#007A30',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

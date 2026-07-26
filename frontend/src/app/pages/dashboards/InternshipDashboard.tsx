@@ -159,7 +159,7 @@ export default function InternshipDashboard() {
                 { label: 'Cooperatives in Ward', value: COOPERATIVES.length, icon: <Users size={20} />, color: '#00712B' },
                 { label: 'Chamber Contact', value: 'Available', icon: <Building2 size={20} />, color: '#00712B' },
               ].map(s => (
-                <div key={s.label} className="rounded-xl p-4 flex items-center gap-3" style={{backgroundColor: "#123322", border: "1px solid rgba(255,255,255,0.07)"}}>
+                <div key={s.label} className="rounded-xl p-4 flex items-center gap-3" style={{backgroundColor: "#007A30", border: "1px solid rgba(255,255,255,0.07)"}}>
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white" style={{ background: s.color }}>
                     {s.icon}
                   </div>
@@ -181,7 +181,7 @@ export default function InternshipDashboard() {
                     </div>
                   </div>
                 )}
-                <div className="flex items-start gap-3 p-3 rounded-lg" style={{backgroundColor:"#0a1f12"}}>
+                <div className="flex items-start gap-3 p-3 rounded-lg" style={{backgroundColor:"#007A30"}}>
                   <Users size={16} className="mt-0.5 text-green-600" />
                   <div>
                     <p className="text-sm text-white/85">{COOPERATIVES.length} cooperatives registered in {intern.ward}</p>
@@ -235,7 +235,7 @@ export default function InternshipDashboard() {
                     <Field label="Province" value={wardChamber.provinceName || ''} />
                   </div>
                   <h4 className="text-sm text-white/38 mb-3">Chamber Contact Information</h4>
-                  <div className="rounded-2xl p-5" style={{backgroundColor: "#123322", border: "1px solid rgba(255,255,255,0.07)"}}>
+                  <div className="rounded-2xl p-5" style={{backgroundColor: "#007A30", border: "1px solid rgba(255,255,255,0.07)"}}>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm text-white/55">
                         <Phone size={14} className="text-white/40" />{wardChamber.contactPhone}
@@ -359,7 +359,7 @@ export default function InternshipDashboard() {
               {allInternships.map(internship => {
                 const chamber = getAllChambers().find(c => c.id === internship.chamberId);
                 return (
-                  <div key={internship.id} className="rounded-2xl p-5" style={{backgroundColor: "#123322", border: "1px solid rgba(255,255,255,0.07)"}}>
+                  <div key={internship.id} className="rounded-2xl p-5" style={{backgroundColor: "#007A30", border: "1px solid rgba(255,255,255,0.07)"}}>
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <h4 className="text-white mb-0.5">{internship.title}</h4>
@@ -419,7 +419,7 @@ export default function InternshipDashboard() {
             <p className="text-sm text-white/38 mb-4">{intern.ward} — {COOPERATIVES.length} successful BOZ programme applicants</p>
             <div className="space-y-4">
               {COOPERATIVES.map(coop => (
-                <div key={coop.id} className="rounded-2xl p-5" style={{backgroundColor: "#123322", border: "1px solid rgba(255,255,255,0.07)"}}>
+                <div key={coop.id} className="rounded-2xl p-5" style={{backgroundColor: "#007A30", border: "1px solid rgba(255,255,255,0.07)"}}>
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h4 className="text-white mb-0.5">{coop.name}</h4>

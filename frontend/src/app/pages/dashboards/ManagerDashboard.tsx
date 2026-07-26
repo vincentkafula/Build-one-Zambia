@@ -152,13 +152,13 @@ function VoterTurnoutSection() {
           { label: 'Total Votes Cast', value: totalVotes.toLocaleString(), color: '#00712B' },
           { label: 'National Turnout', value: `${overallPct.toFixed(1)}%`, color: turnoutColor(overallPct) },
         ].map(s => (
-          <div key={s.label} className="rounded-2xl p-4" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div key={s.label} className="rounded-2xl p-4" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
             <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.72rem', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.1em' }}>{s.label}</p>
             <p style={{ color: s.color, fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', marginTop: 4 }}>{s.value}</p>
           </div>
         ))}
       </div>
-      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="grid grid-cols-12 px-5 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           {['Province', 'Votes Cast / Registered', 'Turnout %', 'Status'].map(h => (
             <p key={h} className="text-xs col-span-3" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.1em' }}>{h}</p>
@@ -395,7 +395,7 @@ export default function ManagerDashboard() {
             </div>
             <div className="grid grid-cols-1 gap-8">
               {(['presidential', 'parliament', 'mayoral', 'councillor'] as const).map(et => (
-                <div key={et} className="rounded-2xl p-6" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <div key={et} className="rounded-2xl p-6" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
                   <h3 className="text-base font-semibold capitalize mb-4 pb-3" style={{ color: 'rgba(255,255,255,0.7)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                     {et === 'parliament' ? 'Parliamentary' : et.charAt(0).toUpperCase() + et.slice(1)} Election
                   </h3>
@@ -416,7 +416,7 @@ export default function ManagerDashboard() {
               <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.82rem', marginTop: 4 }}>Source: ECZ — 2026 General Elections official register</p>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm rounded-2xl overflow-hidden" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <table className="w-full text-sm rounded-2xl overflow-hidden" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                     {['Province', 'Districts', 'Constituencies', 'Wards', 'Polling Stations', 'Registered Voters'].map(h => (
@@ -483,7 +483,7 @@ export default function ManagerDashboard() {
                 ].map(card => (
                   <button key={card.key} onClick={() => setActive(card.key as SectionKey)}
                     className="flex items-start gap-3 p-4 rounded-2xl text-left w-full transition-all hover:scale-[1.02]"
-                    style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}
+                    style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}
                     onMouseEnter={e => (e.currentTarget as HTMLElement).style.border = `1px solid ${card.color}40`}
                     onMouseLeave={e => (e.currentTarget as HTMLElement).style.border = '1px solid rgba(255,255,255,0.07)'}>
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
