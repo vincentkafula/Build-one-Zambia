@@ -186,25 +186,27 @@ function OpportunityCard({ opp }: { opp: typeof OPPORTUNITIES[number] }) {
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={() => setExpanded(v => !v)}
-          className="flex items-center justify-center gap-1.5 text-xs mb-6"
-          style={{ color: opp.color, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', background: 'none', border: 'none', cursor: 'pointer' }}
-        >
-          {expanded ? 'HIDE DETAILS' : 'MORE DETAILS'}
-          <ChevronDown className="w-3.5 h-3.5 transition-transform" style={{ transform: expanded ? 'rotate(180deg)' : 'none' }} />
-        </button>
+        <div className="flex items-stretch gap-3 mt-auto">
+          <button
+            type="button"
+            onClick={() => setExpanded(v => !v)}
+            className="flex items-center justify-center gap-1.5 text-xs px-4 rounded-lg transition-colors"
+            style={{ color: opp.color, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', background: 'none', border: `1.5px solid ${opp.color}`, cursor: 'pointer', whiteSpace: 'nowrap' }}
+          >
+            {expanded ? 'HIDE DETAILS' : 'MORE DETAILS'}
+            <ChevronDown className="w-3.5 h-3.5 transition-transform" style={{ transform: expanded ? 'rotate(180deg)' : 'none' }} />
+          </button>
 
-        <Link
-          to={opp.path}
-          className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg transition-all mt-auto"
-          style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.1em', backgroundColor: opp.color, color: '#fff', textDecoration: 'none' }}
-          onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.9'}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
-        >
-          APPLY NOW <ArrowRight className="w-4 h-4" />
-        </Link>
+          <Link
+            to={opp.path}
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg transition-all"
+            style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.1em', backgroundColor: opp.color, color: '#fff', textDecoration: 'none' }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.9'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
+          >
+            APPLY NOW <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
       </div>
     </div>
   );
