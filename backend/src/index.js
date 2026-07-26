@@ -279,7 +279,36 @@ app.get(`${BASE}/coop/certificate`, auth.requireAuth, (req, res) => {
 
   if (!coopId) {
     const fullUser = auth.getUser(req.user.username);
-    if (!fullUser || fullUser.registrationType !== 'cooperative' || !fullUser.registrationId) {
+    const hasRealApplication = fullUser && fullUser.registrationType === 'cooperative' && fullUser.registrationId;
+
+    if (!hasRealApplication) {
+      // Not linked to a real application. A real cooperative account should
+      // never hit this — but an admin previewing the feature should still
+      // be able to see what the template looks like, clearly marked as a
+      // sample so it's never mistaken for a real, issued certificate.
+      if (isAdmin) {
+        return res.json({
+          certificate: {
+            isSample: true,
+            certificateNo: 'BOZ/COOP/2026/00000',
+            registrationNumber: '00000',
+            dateOfIssue: new Date().toISOString(),
+            dateOfRegistration: new Date().toISOString(),
+            cooperativeName: 'Sample Cooperative Society (Preview Only)',
+            legalStatus: 'Cooperative Society Limited',
+            typeOfCooperative: 'Multi-Purpose Cooperative',
+            registeredOffice: 'Sample Village, Chief Sample, Sample District',
+            contactPerson: 'Sample Chairperson',
+            contactPhone: '+260 900 000 000',
+            memberCount: 20,
+            members: Array.from({ length: 20 }, (_, i) => ({
+              position: i + 1,
+              membershipNumber: `BOZ-SAMPLE-${String(i + 1).padStart(3, '0')}`,
+              fullName: `Sample Member ${i + 1}`,
+            })),
+          },
+        });
+      }
       return res.status(404).json({ error: 'No cooperative application linked to this account.' });
     }
     coopId = fullUser.registrationId;
@@ -305,6 +334,7 @@ app.get(`${BASE}/coop/certificate`, auth.requireAuth, (req, res) => {
 
   res.json({
     certificate: {
+      isSample: false,
       certificateNo: `BOZ/COOP/${year}/${seq}`,
       registrationNumber: seq,
       dateOfIssue: approvedAt,

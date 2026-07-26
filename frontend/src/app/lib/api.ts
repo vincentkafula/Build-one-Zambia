@@ -1820,6 +1820,7 @@ export interface CoopCertificateMember {
 }
 
 export interface CoopCertificate {
+  isSample?: boolean;
   certificateNo: string;
   registrationNumber: string;
   dateOfIssue: string;

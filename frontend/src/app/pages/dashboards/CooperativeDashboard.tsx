@@ -124,6 +124,15 @@ function CertificateVisual({ cert }: { cert: CoopCertificate }) {
       width: '100%', maxWidth: '900px', margin: '0 auto', background: '#fff', color: '#1a1a1a',
       border: `3px double ${A}`, borderRadius: '6px', padding: '40px 48px', position: 'relative',
     }}>
+      {cert.isSample && (
+        <div style={{
+          position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -50%) rotate(-30deg)',
+          fontFamily: 'Oswald, sans-serif', fontSize: '4rem', fontWeight: 700, letterSpacing: '0.1em',
+          color: 'rgba(220,38,38,0.15)', pointerEvents: 'none', whiteSpace: 'nowrap', zIndex: 1,
+        }}>
+          SAMPLE — NOT VALID
+        </div>
+      )}
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
         <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.2em', color: A }}>REPUBLIC OF ZAMBIA</p>
         <p style={{ fontSize: '11px', color: '#555' }}>Registered under the Cooperatives Act, Chapter 119 of the Laws of Zambia</p>
@@ -205,12 +214,23 @@ function CertificateSection() {
           </div>
         ) : cert ? (
           <>
-            <div className="flex items-start gap-3 mb-5 rounded-lg px-4 py-3" style={{ backgroundColor: '#0a1f12', border: '1px solid rgba(0,113,43,0.3)' }}>
-              <ShieldCheck size={18} style={{ color: A, flexShrink: 0, marginTop: 2 }} />
-              <p className="text-sm" style={{ color: '#7fc99a' }}>
-                Populated automatically from your online cooperative application — {cert.memberCount} registered members.
-              </p>
-            </div>
+            {cert.isSample ? (
+              <div className="flex items-start gap-3 mb-5 rounded-lg px-4 py-3" style={{ backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)' }}>
+                <AlertCircle size={18} style={{ color: '#f59e0b', flexShrink: 0, marginTop: 2 }} />
+                <p className="text-sm" style={{ color: '#fbbf24' }}>
+                  <strong>Template preview only</strong> — no real application is linked to this account, so this is sample data
+                  showing how the certificate will look. A real cooperative's certificate is populated from their actual
+                  approved application.
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-start gap-3 mb-5 rounded-lg px-4 py-3" style={{ backgroundColor: '#0a1f12', border: '1px solid rgba(0,113,43,0.3)' }}>
+                <ShieldCheck size={18} style={{ color: A, flexShrink: 0, marginTop: 2 }} />
+                <p className="text-sm" style={{ color: '#7fc99a' }}>
+                  Populated automatically from your online cooperative application — {cert.memberCount} registered members.
+                </p>
+              </div>
+            )}
             <div className="mb-5" style={{ backgroundColor: '#0d1810', padding: '20px', borderRadius: '8px' }}>
               <CertificateVisual cert={cert} />
             </div>
