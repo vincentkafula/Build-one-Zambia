@@ -138,6 +138,39 @@ if (!ADMIN_PASSWORD) {
   console.error('└──────────────────────────────────────────────────────────────────┘');
 }
 
+// A separate PIN, required alongside the password for irreversible actions
+// (e.g. wiping election results) as a second factor on top of an already
+// authenticated session — so a stolen or left-open session token alone
+// can't trigger something destructive. Same "never hardcode a default"
+// reasoning as the password above.
+const ADMIN_PIN = process.env.ADMIN_PIN || null;
+if (!ADMIN_PIN) {
+  console.error('┌──────────────────────────────────────────────────────────────────┐');
+  console.error('│ [auth] SECURITY WARNING: ADMIN_PIN is not set.                      │');
+  console.error(`│ Password+PIN-protected actions (e.g. resetting election results)   │`);
+  console.error(`│ are DISABLED for the '${ADMIN_USERNAME}' shortcut login until ADMIN_PIN   │`);
+  console.error('│ is set on this service.                                             │');
+  console.error('└──────────────────────────────────────────────────────────────────┘');
+}
+
+// Re-verifies both the account password AND a separate PIN. Used as a
+// step-up check immediately before an irreversible action — being logged
+// in is not sufficient on its own for those.
+export async function verifyStepUp(username, password, pin) {
+  if (!password || !pin) return false;
+
+  if (ADMIN_PASSWORD && username === ADMIN_USERNAME) {
+    if (!ADMIN_PIN) return false;
+    return password === ADMIN_PASSWORD && pin === ADMIN_PIN;
+  }
+
+  const storedHash = kv.get(`password:${username}`);
+  if (!storedHash) return false;
+  const passOk = await verifyPassword(password, storedHash);
+  if (!passOk) return false;
+  return verifyPin(username, pin);
+}
+
 export async function loginUser(username, password) {
   // Super-admin shortcut (env-based) — only active when ADMIN_PASSWORD is
   // explicitly configured; see warning above.

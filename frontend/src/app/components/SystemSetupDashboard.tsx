@@ -88,8 +88,15 @@ export function SystemSetupDashboard() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [actionResults, setActionResults] = useState<Record<string, string>>({});
   const [resetConfirmText, setResetConfirmText] = useState('');
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetPin, setResetPin] = useState('');
   const [resetting, setResetting] = useState(false);
   const [resetResult, setResetResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const [pinCurrentPassword, setPinCurrentPassword] = useState('');
+  const [pinNew, setPinNew] = useState('');
+  const [pinSaving, setPinSaving] = useState(false);
+  const [pinResult, setPinResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -126,19 +133,38 @@ export function SystemSetupDashboard() {
 
   const resetVotes = async () => {
     if (resetConfirmText !== 'RESET') return;
+    if (!resetPassword || !resetPin) { setResetResult({ ok: false, message: 'Enter your password and PIN to confirm.' }); return; }
     if (!confirm('This will permanently wipe every submitted vote/result from the system. This is meant for clearing test data before election day. Are you absolutely sure?')) return;
     setResetting(true);
     setResetResult(null);
     try {
       const res = await apiFetch<{ success: boolean; stationsCleared: number; submissionsCleared: number }>(
-        'POST', '/admin/reset-votes', { confirm: 'RESET' }
+        'POST', '/admin/reset-votes', { confirm: 'RESET', password: resetPassword, pin: resetPin }
       );
       setResetResult({ ok: true, message: `✓ Cleared ${res.stationsCleared} station result(s) and ${res.submissionsCleared} submission(s). All votes are back to zero.` });
       setResetConfirmText('');
+      setResetPassword('');
+      setResetPin('');
     } catch (e) {
       setResetResult({ ok: false, message: e instanceof Error ? e.message : 'Reset failed' });
     } finally {
       setResetting(false);
+    }
+  };
+
+  const savePin = async () => {
+    if (!pinCurrentPassword || !pinNew) { setPinResult({ ok: false, message: 'Enter your current password and a new PIN.' }); return; }
+    setPinSaving(true);
+    setPinResult(null);
+    try {
+      await apiFetch<{ success: boolean }>('POST', '/auth/set-pin', { currentPassword: pinCurrentPassword, newPin: pinNew });
+      setPinResult({ ok: true, message: 'PIN updated. Use it alongside your password for actions like resetting votes.' });
+      setPinCurrentPassword('');
+      setPinNew('');
+    } catch (e) {
+      setPinResult({ ok: false, message: e instanceof Error ? e.message : 'Could not update PIN.' });
+    } finally {
+      setPinSaving(false);
     }
   };
 
@@ -383,6 +409,50 @@ Authorization: Bearer <your-token>
         })}
       </div>
 
+      {/* Set/change PIN — needed before the reset action below can be used */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <h3 className="text-sm font-bold text-foreground mb-1 flex items-center gap-2">
+          <Key className="w-4 h-4 text-primary" /> Set / Change Your PIN
+        </h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          A 4–8 digit PIN, separate from your password, required to confirm irreversible actions like resetting votes below.
+        </p>
+        {pinResult && (
+          <p className={`text-sm px-3 py-2 rounded-lg mb-3 border ${pinResult.ok ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
+            {pinResult.message}
+          </p>
+        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="password"
+            value={pinCurrentPassword}
+            onChange={e => setPinCurrentPassword(e.target.value)}
+            placeholder="Current password"
+            className="px-3 py-2 border border-border rounded-lg text-sm bg-background w-44 focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+          <input
+            type="password"
+            inputMode="numeric"
+            value={pinNew}
+            onChange={e => setPinNew(e.target.value.replace(/\D/g, '').slice(0, 8))}
+            placeholder="New PIN"
+            className="px-3 py-2 border border-border rounded-lg text-sm bg-background w-32 focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+          <button
+            onClick={savePin}
+            disabled={pinSaving}
+            className="flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground rounded-lg text-sm font-semibold transition-colors disabled:opacity-40"
+          >
+            {pinSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Key className="w-4 h-4" />}
+            Save PIN
+          </button>
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">
+          Using the built-in shortcut super-admin login instead of a named account? Its PIN is set via the
+          <span className="font-mono bg-muted px-1 rounded mx-1">ADMIN_PIN</span> environment variable on Railway, not here.
+        </p>
+      </div>
+
       {/* Danger Zone — reset votes (super admin only, this whole page is already gated) */}
       <div className="bg-red-50/40 border-2 border-red-300 rounded-xl p-5">
         <h3 className="text-sm font-bold text-red-700 mb-1 flex items-center gap-2">
@@ -401,18 +471,33 @@ Authorization: Bearer <your-token>
         )}
 
         <label className="block text-xs font-semibold text-red-700 mb-1">
-          Type <span className="font-mono bg-red-100 px-1 rounded">RESET</span> to confirm:
+          Type <span className="font-mono bg-red-100 px-1 rounded">RESET</span>, then your password and PIN, to confirm:
         </label>
         <div className="flex flex-wrap items-center gap-2">
           <input
             value={resetConfirmText}
             onChange={e => setResetConfirmText(e.target.value)}
             placeholder="RESET"
-            className="px-3 py-2 border border-red-300 rounded-lg text-sm bg-background w-40 focus:outline-none focus:ring-1 focus:ring-red-500"
+            className="px-3 py-2 border border-red-300 rounded-lg text-sm bg-background w-32 focus:outline-none focus:ring-1 focus:ring-red-500"
+          />
+          <input
+            type="password"
+            value={resetPassword}
+            onChange={e => setResetPassword(e.target.value)}
+            placeholder="Password"
+            className="px-3 py-2 border border-red-300 rounded-lg text-sm bg-background w-36 focus:outline-none focus:ring-1 focus:ring-red-500"
+          />
+          <input
+            type="password"
+            inputMode="numeric"
+            value={resetPin}
+            onChange={e => setResetPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
+            placeholder="PIN"
+            className="px-3 py-2 border border-red-300 rounded-lg text-sm bg-background w-24 focus:outline-none focus:ring-1 focus:ring-red-500"
           />
           <button
             onClick={resetVotes}
-            disabled={resetConfirmText !== 'RESET' || resetting}
+            disabled={resetConfirmText !== 'RESET' || !resetPassword || !resetPin || resetting}
             className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {resetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}

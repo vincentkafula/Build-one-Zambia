@@ -242,6 +242,31 @@ app.post(`${BASE}/auth/register`, auth.requireAuth, auth.requireRole('admin', 's
 });
 app.get(`${BASE}/auth/users`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ users: auth.listUsers() }));
 
+// Lets an admin/super_admin set or change the PIN used as a second factor
+// on top of their password for irreversible actions (e.g. resetting
+// election results). Requires the current password to change it, same as
+// any sensitive account-security change.
+app.post(`${BASE}/auth/set-pin`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), loginLimiter, async (req, res) => {
+  try {
+    const { currentPassword, newPin } = req.body || {};
+    if (!currentPassword || !newPin) return res.status(400).json({ error: 'Current password and a new PIN are required.' });
+    if (!/^\d{4,8}$/.test(String(newPin))) return res.status(400).json({ error: 'PIN must be 4–8 digits.' });
+
+    const isEnvAdmin = req.user.username === (process.env.ADMIN_USERNAME || 'superadmin');
+    if (isEnvAdmin) {
+      return res.status(400).json({ error: `The '${req.user.username}' shortcut login's PIN is set via the ADMIN_PIN environment variable on Railway, not here.` });
+    }
+    const storedHash = kv.get(`password:${req.user.username}`);
+    const passOk = storedHash && await auth.verifyPassword(currentPassword, storedHash);
+    if (!passOk) return res.status(401).json({ error: 'Incorrect current password.' });
+
+    await auth.setPin(req.user.username, newPin);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 // Passwords and PINs are hashed (auth.js/PBKDF2) — there is no original
 // value to "resend", ever. This resets both to new random values and
 // emails the new credentials, same as any standard account-recovery flow.
@@ -1195,10 +1220,21 @@ app.get(`${BASE}/data-entry/submissions`, auth.requireAuth, (req, res) => {
 // Wipes every submitted result/vote after testing, so the system starts clean
 // on election day. Requires the caller to send { confirm: "RESET" } to avoid
 // accidental triggering.
-app.post(`${BASE}/admin/reset-votes`, auth.requireAuth, auth.requireRole('super_admin'), (req, res) => {
+// ─── Reset Votes (Super Admin only, danger zone) ───────────────────────────────
+// Wipes every submitted result/vote after testing, so the system starts clean
+// on election day. Requires: the confirm string, AND a fresh re-entry of the
+// account password + a separate PIN (auth.verifyStepUp) — being logged in as
+// super_admin is not enough on its own for something this irreversible; a
+// stolen or left-open session token can't trigger it without also knowing
+// both secrets.
+app.post(`${BASE}/admin/reset-votes`, auth.requireAuth, auth.requireRole('super_admin'), async (req, res) => {
   try {
     if (req.body?.confirm !== 'RESET') {
       return res.status(400).json({ error: 'Confirmation required — send { "confirm": "RESET" } to proceed.' });
+    }
+    const stepUpOk = await auth.verifyStepUp(req.user.username, req.body?.password, req.body?.pin);
+    if (!stepUpOk) {
+      return res.status(401).json({ error: 'Incorrect password or PIN. Re-enter both to confirm this action.' });
     }
     const stationsCleared = kv.delByPrefix('boz:results:');
     const submissionsCleared = dataEntryStore.submissions.length;

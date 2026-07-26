@@ -312,6 +312,9 @@ export const authApi = {
 
   resendLogin: (data: { email?: string; username?: string }) =>
     request<{ success: boolean; message: string }>('POST', '/auth/resend-login', data),
+
+  setPin: (currentPassword: string, newPin: string) =>
+    request<{ success: boolean }>('POST', '/auth/set-pin', { currentPassword, newPin }, true),
 };
 
 // ─── Voter Verification ────────────────────────────────────────────────────────
