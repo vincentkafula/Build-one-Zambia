@@ -470,8 +470,8 @@ function MembershipCardVisual({ card }: { card: MembershipCardInfo }) {
       boxShadow: '0 12px 32px rgba(0,0,0,0.25)', display: 'flex',
     }}>
       <div style={{ width: '38%', background: `linear-gradient(160deg, ${CARD_GREEN} 0%, #0a4d26 100%)`, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 10px' }}>
-        <div style={{ width: '56px', height: '56px', borderRadius: '50%', border: `3px solid ${CARD_ORANGE}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, color: CARD_GREEN, textAlign: 'center', lineHeight: 1.1, marginBottom: '10px' }}>
-          BOZ
+        <div style={{ width: '56px', height: '56px', borderRadius: '50%', border: `3px solid ${CARD_ORANGE}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px', overflow: 'hidden' }}>
+          <img src="/logo-boz.png" alt="Build One Zambia" style={{ width: '82%', height: '82%', objectFit: 'contain' }} />
         </div>
         {card.photoDataUrl ? (
           <img src={card.photoDataUrl} alt={card.fullName} style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', borderRadius: '8px', border: '2px solid #fff' }} />
