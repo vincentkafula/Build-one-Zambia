@@ -1,5 +1,6 @@
 import React, { useState, CSSProperties } from 'react';
 import { MapPin, Phone, Mail, Send, CheckCircle } from 'lucide-react';
+import { contactApi } from '../../lib/api';
 
 const INVOLVEMENT = [
   { label: 'Volunteer',             desc: 'Help organise in your province, district, or ward.' },
@@ -17,6 +18,8 @@ export function ContactDonatePage() {
   const [tab, setTab]           = useState<'contact' | 'volunteer'>('contact');
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState('');
 
   const inp: CSSProperties = {
     backgroundColor: '#111', border: '1px solid #2a2a2a', color: '#fff',
@@ -153,7 +156,20 @@ export function ContactDonatePage() {
                 </div>
               ) : (
                 <form
-                  onSubmit={e => { e.preventDefault(); setSubmitted(true); setFormData({ name: '', email: '', phone: '', subject: '', message: '' }); }}
+                  onSubmit={async e => {
+                    e.preventDefault();
+                    setSending(true);
+                    setSendError('');
+                    try {
+                      await contactApi.send(formData);
+                      setSubmitted(true);
+                      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+                    } catch (err) {
+                      setSendError(err instanceof Error ? err.message : 'Something went wrong — please try again or email us directly at info@bozplans.org.');
+                    } finally {
+                      setSending(false);
+                    }
+                  }}
                   style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
                 >
                   <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', letterSpacing: '0.03em', color: '#fff', marginBottom: '8px' }}>SEND A MESSAGE</h2>
@@ -164,8 +180,9 @@ export function ContactDonatePage() {
                   <input style={inp} placeholder="Phone number (optional)" value={formData.phone} onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))} />
                   <input required style={inp} placeholder="Subject" value={formData.subject} onChange={e => setFormData(p => ({ ...p, subject: e.target.value }))} />
                   <textarea required rows={5} style={{ ...inp, resize: 'none' }} placeholder="Your message…" value={formData.message} onChange={e => setFormData(p => ({ ...p, message: e.target.value }))} />
-                  <button type="submit" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 32px', backgroundColor: '#dc2626', color: '#fff', border: 'none', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '14px', cursor: 'pointer', alignSelf: 'flex-start' }}>
-                    <Send size={15} /> SEND MESSAGE
+                  {sendError && <p style={{ color: '#dc2626', fontSize: '13px', margin: 0 }}>{sendError}</p>}
+                  <button type="submit" disabled={sending} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 32px', backgroundColor: '#dc2626', color: '#fff', border: 'none', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '14px', cursor: sending ? 'default' : 'pointer', alignSelf: 'flex-start', opacity: sending ? 0.7 : 1 }}>
+                    <Send size={15} /> {sending ? 'SENDING…' : 'SEND MESSAGE'}
                   </button>
                 </form>
               )}

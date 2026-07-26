@@ -1762,7 +1762,45 @@ app.patch(`${BASE}/donations/:id/status`, auth.requireAuth, (req, res) => { cons
 // ─── Contact ──────────────────────────────────────────────────────────────────
 const contactStore = { messages: kv.get('contact') || [] };
 function saveContact() { kv.set('contact', contactStore.messages); }
-app.post(`${BASE}/contact`, (req, res) => { const msg = { ...req.body, id: `msg-${Date.now()}`, read: false, createdAt: new Date().toISOString() }; contactStore.messages.push(msg); saveContact(); res.json({ success: true, message: 'Message received' }); });
+
+async function notifyContactMessage(msg) {
+  if (!process.env.RESEND_API_KEY) { console.warn(`[notify] RESEND_API_KEY not set, skipping contact-form email for ${msg.id}`); return; }
+  try {
+    const escape = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const html = `
+      <h2>New contact form submission — Build One Zambia</h2>
+      <table style="border-collapse:collapse;">
+        <tr><td style="padding:4px 8px;font-weight:600;border:1px solid #ddd;">Name</td><td style="padding:4px 8px;border:1px solid #ddd;">${escape(msg.name)}</td></tr>
+        <tr><td style="padding:4px 8px;font-weight:600;border:1px solid #ddd;">Email</td><td style="padding:4px 8px;border:1px solid #ddd;">${escape(msg.email)}</td></tr>
+        <tr><td style="padding:4px 8px;font-weight:600;border:1px solid #ddd;">Phone</td><td style="padding:4px 8px;border:1px solid #ddd;">${escape(msg.phone) || '—'}</td></tr>
+        <tr><td style="padding:4px 8px;font-weight:600;border:1px solid #ddd;">Subject</td><td style="padding:4px 8px;border:1px solid #ddd;">${escape(msg.subject) || '—'}</td></tr>
+      </table>
+      <p style="white-space:pre-wrap;">${escape(msg.message)}</p>
+    `;
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: process.env.EMAIL_FROM_ADDRESS || 'no-reply@bozplans.org',
+        to: 'info@bozplans.org',
+        reply_to: msg.email || undefined,
+        subject: `Contact form: ${msg.subject || 'New message from ' + (msg.name || 'website visitor')}`,
+        html,
+      })
+    });
+    const data = await r.json();
+    if (!r.ok) console.error('[notify] Resend error sending contact-form email:', data);
+    else console.log(`[notify] Contact-form email sent to info@bozplans.org for ${msg.id}: ${data.id}`);
+  } catch (e) { console.error('[notify] Failed to send contact-form email:', e.message); }
+}
+
+app.post(`${BASE}/contact`, (req, res) => {
+  const msg = { ...req.body, id: `msg-${Date.now()}`, read: false, createdAt: new Date().toISOString() };
+  contactStore.messages.push(msg);
+  saveContact();
+  setImmediate(() => notifyContactMessage(msg));
+  res.json({ success: true, message: 'Message received' });
+});
 app.get(`${BASE}/contact`, auth.requireAuth, (req, res) => { const messages = contactStore.messages; res.json({ messages, count: messages.length, unread: messages.filter(m => !m.read).length }); });
 app.patch(`${BASE}/contact/:id/read`, auth.requireAuth, (req, res) => { const idx = contactStore.messages.findIndex(m => m.id === req.params.id); if (idx < 0) return res.status(404).json({ error: 'Not found' }); contactStore.messages[idx] = { ...contactStore.messages[idx], read: true }; saveContact(); res.json({ success: true }); });
 
