@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ShoppingBag, Search, ShoppingCart } from 'lucide-react';
+import { ShoppingBag, Search, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ShopCheckout, CartItem } from '../../components/ShopCheckout';
 
 const PRODUCTS = [
@@ -59,7 +59,6 @@ const INK = '#181C12';
 const RED = '#dc2626';
 const RED_DARK = '#98281A';
 const CANVAS = '#0B120A';
-const CANVAS_DEEP = '#080D07';
 
 type Product = typeof PRODUCTS[0];
 
@@ -68,6 +67,16 @@ export function ShopPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [addedId, setAddedId] = useState<number | null>(null);
+  const [heroIndex, setHeroIndex] = useState(0);
+
+  const HERO_SLIDES = [
+    { line1: 'Campaign gear', line2: 'just dropped!' },
+    { line1: 'New chitenge', line2: 'collection' },
+    { line1: 'Rally season', line2: 'essentials' },
+  ];
+  const heroPrev = () => setHeroIndex(i => (i - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+  const heroNext = () => setHeroIndex(i => (i + 1) % HERO_SLIDES.length);
+  const heroCollage = [PRODUCTS[2], PRODUCTS[0], PRODUCTS[8], PRODUCTS[9], PRODUCTS[18]];
 
   const addToCart = (product: Product) => {
     setCart(prev => {
@@ -125,8 +134,6 @@ export function ShopPage() {
         .boz-track { display: flex; gap: 18px; width: max-content; animation: bozScrollRow linear infinite; }
         .boz-track:hover { animation-play-state: paused; }
         .boz-row-mask { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); padding: 8px 0; }
-        .boz-hero-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px; align-items: center; }
-        @media (max-width: 760px) { .boz-hero-grid { grid-template-columns: 1fr; } }
         @media (prefers-reduced-motion: reduce) { .boz-track { animation: none !important; } }
       `}</style>
 
@@ -145,62 +152,63 @@ export function ShopPage() {
         <ShopCheckout cart={cart} onClose={closeCheckout} onUpdateQty={updateQty} onRemove={removeItem} />
       )}
 
-      {/* Hero */}
+      {/* Hero — compact diagonal banner */}
       <section style={{
         position: 'relative', overflow: 'hidden',
-        background: `radial-gradient(ellipse 900px 500px at 15% -10%, rgba(220,38,38,0.18), transparent 60%), radial-gradient(ellipse 700px 500px at 100% 0%, rgba(222,138,42,0.14), transparent 60%), ${CANVAS_DEEP}`,
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-        padding: 'clamp(40px, 8vh, 64px) clamp(20px, 6vw, 64px)',
+        height: 'clamp(150px, 22vh, 210px)',
+        backgroundColor: '#ffffff',
       }}>
-        <div className="boz-hero-grid" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div>
-            <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.22em', color: RED, marginBottom: '14px' }}>OFFICIAL BUILD ONE ZAMBIA MERCHANDISE</p>
-            <h1 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 4.4vw, 3.2rem)', lineHeight: 1.05, letterSpacing: '0.02em', color: '#fff', margin: '0 0 14px', maxWidth: '16ch' }}>
-              Wear the vote. Fund the movement.
-            </h1>
-            <p style={{ color: '#c9cbb8', fontSize: '14px', lineHeight: 1.65, maxWidth: '52ch', margin: '0 0 22px' }}>
-              Every kwacha from this store funds ward-level voter outreach and polling-agent kits for the 13 August 2026 general election. Dispatched from Lusaka in days.
-            </p>
-            <div style={{ display: 'flex', gap: '26px', flexWrap: 'wrap' }}>
-              <div style={{ borderLeft: '2px solid #DE8A2A', paddingLeft: '10px' }}>
-                <b style={{ display: 'block', fontFamily: 'Oswald, sans-serif', fontSize: '19px', color: '#fff' }}>{PRODUCTS.length}+</b>
-                <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10px', letterSpacing: '0.06em', color: '#9AA189', textTransform: 'uppercase' }}>Catalog items</span>
-              </div>
-              <div style={{ borderLeft: '2px solid #DE8A2A', paddingLeft: '10px' }}>
-                <b style={{ display: 'block', fontFamily: 'Oswald, sans-serif', fontSize: '19px', color: '#fff' }}>3–5d</b>
-                <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10px', letterSpacing: '0.06em', color: '#9AA189', textTransform: 'uppercase' }}>Dispatch time</span>
-              </div>
-              <div style={{ borderLeft: '2px solid #DE8A2A', paddingLeft: '10px' }}>
-                <b style={{ display: 'block', fontFamily: 'Oswald, sans-serif', fontSize: '19px', color: '#fff' }}>K0</b>
-                <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10px', letterSpacing: '0.06em', color: '#9AA189', textTransform: 'uppercase' }}>Platform fee</span>
-              </div>
-            </div>
-          </div>
+        {/* diagonal orange panel */}
+        <div style={{
+          position: 'absolute', top: 0, right: 0, bottom: 0, width: '62%',
+          background: 'linear-gradient(135deg, #F0A93C 0%, #DE8A2A 60%, #C97A22 100%)',
+          clipPath: 'polygon(20% 0, 100% 0, 100% 100%, 0% 100%)',
+        }} />
 
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <div style={{ width: 'clamp(180px, 22vw, 260px)', height: 'clamp(180px, 22vw, 260px)', color: '#DE8A2A', transform: 'rotate(-7deg)', filter: 'drop-shadow(0 16px 26px rgba(0,0,0,0.4))' }}>
-              <svg viewBox="0 0 220 220" style={{ width: '100%', height: '100%' }}>
-                <defs>
-                  <path id="bozArcTop" d="M 22 118 A 88 88 0 1 1 198 118" />
-                  <path id="bozArcBottom" d="M 40 168 A 88 88 0 0 0 180 168" />
-                </defs>
-                <circle cx="110" cy="110" r="100" fill="none" stroke="currentColor" strokeWidth="3" />
-                <circle cx="110" cy="110" r="86" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2 5" opacity="0.7" />
-                <text fontFamily="Oswald, sans-serif" fontSize="11.5" letterSpacing="2.5" fill="currentColor">
-                  <textPath href="#bozArcTop" startOffset="3">GENERAL ELECTION · ZAMBIA</textPath>
-                </text>
-                <text fontFamily="Oswald, sans-serif" fontSize="11.5" letterSpacing="2.5" fill="currentColor">
-                  <textPath href="#bozArcBottom" startOffset="3">BUILD ONE ZAMBIA</textPath>
-                </text>
-                <g transform="translate(110 108)">
-                  <rect x="-34" y="-24" width="68" height="48" rx="4" fill="none" stroke="currentColor" strokeWidth="3" />
-                  <path d="M-18 -2 L-4 12 L20 -16" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-                </g>
-                <text x="110" y="150" textAnchor="middle" fontFamily="Oswald, sans-serif" fontSize="15" fill="currentColor">13.08.2026</text>
-              </svg>
-            </div>
+        {/* left text content */}
+        <div style={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', alignItems: 'center', padding: '0 clamp(18px, 4vw, 56px)' }}>
+          <div>
+            <h1 style={{ fontFamily: 'Oswald, sans-serif', fontWeight: 700, color: '#DE8A2A', fontSize: 'clamp(1.3rem, 3.6vw, 2.3rem)', lineHeight: 1.05, letterSpacing: '0.01em', margin: 0 }}>
+              {HERO_SLIDES[heroIndex].line1}
+            </h1>
+            <h1 style={{ fontFamily: 'Oswald, sans-serif', fontWeight: 700, color: '#DE8A2A', fontSize: 'clamp(1.3rem, 3.6vw, 2.3rem)', lineHeight: 1.05, letterSpacing: '0.01em', margin: '0 0 12px' }}>
+              {HERO_SLIDES[heroIndex].line2}
+            </h1>
+            <button
+              onClick={() => document.getElementById('boz-shop-rows')?.scrollIntoView({ behavior: 'smooth' })}
+              style={{ background: '#DE8A2A', color: '#fff', border: 'none', borderRadius: '999px', padding: 'clamp(7px,1vh,10px) clamp(16px,3vw,24px)', fontFamily: 'Oswald, sans-serif', fontWeight: 600, fontSize: 'clamp(11px,1.4vw,13px)', letterSpacing: '0.04em', cursor: 'pointer' }}
+            >
+              Shop now
+            </button>
           </div>
         </div>
+
+        {/* product collage on the orange panel */}
+        <div style={{ position: 'absolute', right: 'clamp(4%, 6vw, 8%)', bottom: 0, top: 0, zIndex: 2, width: 'clamp(120px, 16vw, 200px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', bottom: '10%', left: '50%', transform: 'translateX(-50%)', width: '92%', height: '30%', background: '#B5824C', clipPath: 'polygon(8% 0, 92% 0, 100% 100%, 0% 100%)' }} />
+          {heroCollage.map((p, i) => {
+            const positions = [
+              { top: '4%',  left: '10%', w: '48%', rot: '-8deg' },
+              { top: '2%',  left: '46%', w: '46%', rot: '6deg' },
+              { top: '30%', left: '2%',  w: '42%', rot: '-4deg' },
+              { top: '34%', left: '56%', w: '42%', rot: '9deg' },
+              { top: '18%', left: '30%', w: '40%', rot: '2deg' },
+            ][i];
+            return (
+              <img key={p.id} src={p.img} alt={p.name}
+                style={{ position: 'absolute', top: positions.top, left: positions.left, width: positions.w, aspectRatio: '1/1', objectFit: 'cover', borderRadius: '6px', transform: `rotate(${positions.rot})`, boxShadow: '0 6px 14px rgba(0,0,0,0.35)', border: '2px solid #fff' }}
+              />
+            );
+          })}
+        </div>
+
+        {/* chevrons */}
+        <button onClick={heroPrev} aria-label="Previous" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', zIndex: 3, padding: '6px' }}>
+          <ChevronLeft style={{ width: '20px', height: '20px' }} />
+        </button>
+        <button onClick={heroNext} aria-label="Next" style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,0.85)', cursor: 'pointer', zIndex: 3, padding: '6px' }}>
+          <ChevronRight style={{ width: '20px', height: '20px' }} />
+        </button>
       </section>
 
       {/* Campaign fund banner */}
@@ -224,7 +232,7 @@ export function ShopPage() {
       </div>
 
       {/* Product showcase */}
-      <section style={{ padding: isSearching ? '28px 0 90px' : '20px 0 90px' }}>
+      <section id="boz-shop-rows" style={{ padding: isSearching ? '28px 0 90px' : '20px 0 90px' }}>
         {isSearching ? (
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
             {searchFiltered.length === 0 ? (
