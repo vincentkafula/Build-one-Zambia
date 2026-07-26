@@ -855,8 +855,15 @@ export const dataEntryApi = {
 export interface VoterRollRecord {
   nrc: string;
   fullName: string;
+  surname?: string;
+  firstName?: string;
   gender?: string;
+  dob?: string;
+  residentialAddress?: string;
   voterId?: string;
+  issueDate?: string;
+  expiryDate?: string;
+  pollingDistrict?: string;
 }
 
 export interface VoterRollStationStatus {
@@ -875,8 +882,15 @@ export interface VoterRollMatch {
   nrc: string;
   nrcDisplay?: string;
   fullName: string;
+  surname?: string;
+  firstName?: string;
   gender?: string;
+  dob?: string;
+  residentialAddress?: string;
   voterId?: string;
+  issueDate?: string;
+  expiryDate?: string;
+  pollingDistrict?: string;
   pollingStationId: string;
   pollingStationName: string;
   wardName?: string;
@@ -888,7 +902,7 @@ export interface VoterRollMatch {
 
 export interface VoterRollSearchResult {
   found: boolean;
-  mode: 'nrc' | 'name' | 'none';
+  mode: 'card' | 'nrc' | 'name' | 'none';
   registeredHere?: boolean;
   voter?: VoterRollMatch;
   matches?: VoterRollMatch[];
@@ -908,8 +922,9 @@ export const voterRollApi = {
   status: (pollingStationId: string) =>
     request<{ status: VoterRollStationStatus | null }>('GET', `/voter-roll/status/${encodeURIComponent(pollingStationId)}`, undefined, true),
 
-  search: (params: { nrc?: string; name?: string; pollingStationId?: string }) => {
+  search: (params: { voterId?: string; nrc?: string; name?: string; pollingStationId?: string }) => {
     const qs = new URLSearchParams();
+    if (params.voterId) qs.set('voterId', params.voterId);
     if (params.nrc) qs.set('nrc', params.nrc);
     if (params.name) qs.set('name', params.name);
     if (params.pollingStationId) qs.set('pollingStationId', params.pollingStationId);

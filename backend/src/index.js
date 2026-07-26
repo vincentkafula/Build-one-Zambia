@@ -1079,7 +1079,6 @@ app.get(`${BASE}/ecz/discrepancy-analysis/:electionType/:levelType/:levelId`, au
 
 // ─── Voter Roll ───────────────────────────────────────────────────────────────
 app.get(`${BASE}/voter-roll`, auth.requireAuth, (req, res) => res.json({ meta: null }));
-app.post(`${BASE}/voter-roll/upload`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => res.json({ success: true, message: 'Voter roll uploaded', totalRecords: 0, uploadedAt: new Date().toISOString() }));
 app.delete(`${BASE}/voter-roll`, auth.requireAuth, auth.requireRole('super_admin'), (req, res) => res.json({ success: true, message: 'Voter roll cleared' }));
 app.post(`${BASE}/voter-roll/verify`, (req, res) => { const roll = kv.get('voter-roll:data') || []; const voter = roll.find(v => v.nrc === req.body.nrc || (req.body.name && v.name?.toLowerCase().includes(req.body.name.toLowerCase()))); res.json({ found: !!voter, voter: voter || null }); });
 app.post(`${BASE}/voter/verify`, (req, res) => res.json({ valid: false, message: 'Voter not found. Please check the details and try again.' }));
@@ -1324,7 +1323,7 @@ app.get(`${BASE}/voter-roll/status/:pollingStationId`, auth.requireAuth, (req, r
   res.json({ status: voterRoll.getStationRollStatus(decodeURIComponent(req.params.pollingStationId)) });
 });
 app.get(`${BASE}/voter-roll/search`, auth.requireAuth, (req, res) => {
-  res.json(voterRoll.searchVoter({ nrc: req.query.nrc, name: req.query.name, pollingStationId: req.query.pollingStationId }));
+  res.json(voterRoll.searchVoter({ voterId: req.query.voterId, nrc: req.query.nrc, name: req.query.name, pollingStationId: req.query.pollingStationId }));
 });
 app.delete(`${BASE}/voter-roll/:pollingStationId`, auth.requireAuth, (req, res) => {
   voterRoll.deleteStationRoll(decodeURIComponent(req.params.pollingStationId));

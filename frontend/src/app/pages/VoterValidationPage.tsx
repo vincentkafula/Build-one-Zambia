@@ -3,8 +3,9 @@ import * as XLSX from 'xlsx';
 import {
   Upload, Search, CheckCircle2, XCircle, MapPin, Loader2, RefreshCw,
   FileSpreadsheet, Trash2, AlertTriangle, ShieldCheck, UserSearch,
+  User, IdCard,
 } from 'lucide-react';
-import { voterRollApi, VoterRollSearchResult } from '../lib/api';
+import { voterRollApi, VoterRollSearchResult, VoterRollMatch } from '../lib/api';
 import { provinces } from '../data/mockData';
 
 function findField(row: Record<string, unknown>, aliases: string[]): string {
@@ -18,8 +19,111 @@ function findField(row: Record<string, unknown>, aliases: string[]): string {
 
 const NRC_ALIASES = ['nrc', 'nrcnumber', 'nrcno', 'idnumber', 'nationalid', 'nationalregistrationcard', 'id'];
 const NAME_ALIASES = ['name', 'fullname', 'votername', 'voter'];
+const SURNAME_ALIASES = ['surname', 'lastname', 'familyname'];
+const FIRSTNAME_ALIASES = ['firstname', 'givenname', 'forename'];
 const GENDER_ALIASES = ['gender', 'sex'];
-const VOTERID_ALIASES = ['voterid', 'voterno', 'votercard', 'cardno'];
+const VOTERID_ALIASES = ['voterid', 'voterno', 'votercard', 'cardno', 'votercardnumber', 'cardnumber', 'barcode'];
+const DOB_ALIASES = ['dob', 'dateofbirth', 'birthdate'];
+const ADDRESS_ALIASES = ['residentialaddress', 'address', 'residence'];
+const ISSUEDATE_ALIASES = ['issuedate', 'dateissued', 'date'];
+const EXPIRYDATE_ALIASES = ['expirydate', 'dateofexpiry', 'expiry', 'expires'];
+const POLLINGDISTRICT_ALIASES = ['pollingdistrict', 'district'];
+
+function CardField({ label, value, light }: { label: string; value?: string; light?: boolean }) {
+  return (
+    <div>
+      <p style={{ fontSize: '9.5px', letterSpacing: '0.08em', fontFamily: 'Oswald, sans-serif', color: light ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.4)', marginBottom: 2 }}>
+        {label}
+      </p>
+      <p style={{ fontSize: '0.88rem', color: '#fff', fontWeight: light ? 700 : 400 }}>
+        {value?.trim() ? value : '—'}
+      </p>
+    </div>
+  );
+}
+
+// Replicates the front/back layout of the physical Zambian voter's card, plus
+// the NRC number, which is on file but isn't printed on the card itself.
+function VoterCardPanel({ voter, registeredHere }: { voter: VoterRollMatch; registeredHere: boolean }) {
+  const [surname, firstName] = (() => {
+    if (voter.surname || voter.firstName) return [voter.surname || '', voter.firstName || ''];
+    const parts = voter.fullName.trim().split(/\s+/);
+    return [parts[parts.length - 1] || '', parts.slice(0, -1).join(' ')];
+  })();
+
+  return (
+    <div className="mt-3">
+      {registeredHere ? (
+        <div className="flex items-start gap-3 px-4 py-3 rounded-xl mb-3" style={{ backgroundColor: 'rgba(22,163,74,0.12)', border: '1px solid rgba(22,163,74,0.35)' }}>
+          <CheckCircle2 size={18} style={{ color: '#16a34a', marginTop: 1, flexShrink: 0 }} />
+          <p style={{ color: '#fff', fontSize: '0.85rem' }}>
+            <strong style={{ color: '#16a34a', fontFamily: 'Oswald, sans-serif' }}>Registered at this polling station.</strong>{' '}
+            Confirm the details below match the card and photo in hand before allowing this voter to vote.
+          </p>
+        </div>
+      ) : (
+        <div className="flex items-start gap-3 px-4 py-3 rounded-xl mb-3" style={{ backgroundColor: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.35)' }}>
+          <MapPin size={18} style={{ color: '#f59e0b', marginTop: 1, flexShrink: 0 }} />
+          <p style={{ color: '#fff', fontSize: '0.85rem' }}>
+            <strong style={{ color: '#f59e0b', fontFamily: 'Oswald, sans-serif' }}>Registered at a different polling station.</strong>{' '}
+            Please direct this voter to <strong>{voter.pollingStationName}</strong>
+            {[voter.wardName, voter.constituencyName, voter.districtName, voter.provinceName].filter(Boolean).length > 0
+              ? ` (${[voter.wardName, voter.constituencyName, voter.districtName, voter.provinceName].filter(Boolean).join(', ')})`
+              : ''}.
+          </p>
+        </div>
+      )}
+
+      <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.14)' }}>
+        {/* Front — matches the orange card face */}
+        <div style={{ background: 'linear-gradient(135deg, #E8A24A 0%, #C97A22 55%, #9c5f1c 100%)', padding: '18px' }}>
+          <div className="flex items-center gap-2 mb-4">
+            <ShieldCheck size={15} color="#fff" />
+            <span style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '10px', letterSpacing: '0.12em' }}>
+              REPUBLIC OF ZAMBIA · VOTER'S CARD
+            </span>
+          </div>
+          <div className="flex gap-4 items-start mb-4">
+            <div className="flex items-center justify-center flex-shrink-0" style={{ width: 60, height: 60, borderRadius: 8, background: 'rgba(255,255,255,0.22)' }}>
+              <User size={28} color="#fff" />
+            </div>
+            <div className="flex-1 grid grid-cols-1 gap-2">
+              <CardField label="SURNAME" value={surname} light />
+              <CardField label="FIRST NAME" value={firstName} light />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <CardField label="VOTER CARD NO." value={voter.voterId} light />
+            <CardField label="POLLING STATION" value={voter.pollingStationName} light />
+          </div>
+        </div>
+
+        {/* Back — the rest of the card's fields, plus NRC on file */}
+        <div style={{ background: '#0d1810', padding: '18px' }}>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+            <CardField label="GENDER" value={voter.gender} />
+            <CardField label="DATE OF BIRTH" value={voter.dob} />
+            <div className="col-span-2">
+              <CardField label="RESIDENTIAL ADDRESS" value={voter.residentialAddress} />
+            </div>
+            <CardField label="EXPIRY DATE" value={voter.expiryDate} />
+            <CardField label="POLLING DISTRICT" value={voter.pollingDistrict} />
+          </div>
+          <div className="mt-3 pt-3 flex items-center gap-3" style={{ borderTop: '1px dashed rgba(255,255,255,0.15)' }}>
+            <IdCard size={16} style={{ color: '#16a34a', flexShrink: 0 }} />
+            <div>
+              <p style={{ fontSize: '9.5px', letterSpacing: '0.08em', fontFamily: 'Oswald, sans-serif', color: 'rgba(255,255,255,0.4)', marginBottom: 2 }}>
+                NRC NUMBER <span style={{ color: 'rgba(255,255,255,0.3)' }}>(on file — not printed on the card)</span>
+              </p>
+              <p style={{ fontSize: '0.95rem', color: '#fff', fontWeight: 700 }}>{voter.nrcDisplay || voter.nrc}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 export function VoterValidationPage() {
   const [provinceId, setProvinceId] = useState('');
@@ -41,7 +145,8 @@ export function VoterValidationPage() {
   const [uploadErr, setUploadErr] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [searchMode, setSearchMode] = useState<'nrc' | 'name'>('nrc');
+  const [searchMode, setSearchMode] = useState<'card' | 'nrc' | 'name'>('card');
+  const [cardQuery, setCardQuery] = useState('');
   const [nrcQuery, setNrcQuery] = useState('');
   const [nameQuery, setNameQuery] = useState('');
   const [searching, setSearching] = useState(false);
@@ -94,10 +199,17 @@ export function VoterValidationPage() {
       const records = rows.map(row => {
         const nrc = findField(row, NRC_ALIASES);
         const fullName = findField(row, NAME_ALIASES);
+        const surname = findField(row, SURNAME_ALIASES) || undefined;
+        const firstName = findField(row, FIRSTNAME_ALIASES) || undefined;
         const gender = findField(row, GENDER_ALIASES) || undefined;
         const voterId = findField(row, VOTERID_ALIASES) || undefined;
+        const dob = findField(row, DOB_ALIASES) || undefined;
+        const residentialAddress = findField(row, ADDRESS_ALIASES) || undefined;
+        const issueDate = findField(row, ISSUEDATE_ALIASES) || undefined;
+        const expiryDate = findField(row, EXPIRYDATE_ALIASES) || undefined;
+        const pollingDistrict = findField(row, POLLINGDISTRICT_ALIASES) || undefined;
         if (!nrc || !fullName) skipped++;
-        return { nrc, fullName, gender, voterId };
+        return { nrc, fullName, surname, firstName, gender, voterId, dob, residentialAddress, issueDate, expiryDate, pollingDistrict };
       }).filter(r => r.nrc && r.fullName);
 
       if (records.length === 0) {
@@ -143,14 +255,15 @@ export function VoterValidationPage() {
     setSearchErr('');
     setSearchResult(null);
     if (!pollingStationId) { setSearchErr('Please select a polling station first.'); return; }
+    if (searchMode === 'card' && !cardQuery.trim()) { setSearchErr("Please enter the voter's card number."); return; }
     if (searchMode === 'nrc' && !nrcQuery.trim()) { setSearchErr('Please enter an NRC number.'); return; }
     if (searchMode === 'name' && !nameQuery.trim()) { setSearchErr('Please enter a name.'); return; }
 
     setSearching(true);
     try {
       const res = await voterRollApi.search(
-        searchMode === 'nrc'
-          ? { nrc: nrcQuery.trim(), pollingStationId }
+        searchMode === 'card' ? { voterId: cardQuery.trim(), pollingStationId }
+          : searchMode === 'nrc' ? { nrc: nrcQuery.trim(), pollingStationId }
           : { name: nameQuery.trim(), pollingStationId }
       );
       setSearchResult(res);
@@ -241,7 +354,9 @@ export function VoterValidationPage() {
             </div>
             <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem', marginBottom: 16 }}>
               Upload the official voters roll (CSV or Excel) for this polling station. It must include at least an
-              NRC Number and Full Name column. Once uploaded, you can verify any voter who comes to vote here.
+              NRC Number and Full Name column. Adding columns for Voter Card Number, Gender, Date of Birth,
+              Residential Address, Expiry Date and Polling District lets agents pull up the full card on lookup.
+              Once uploaded, you can verify any voter who comes to vote here.
             </p>
 
             {status ? (
@@ -307,11 +422,12 @@ export function VoterValidationPage() {
               Verify a Voter
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem', marginBottom: 16 }}>
-              Check whether a voter is registered at this polling station, or find out where they should go instead.
+              Enter the number printed on the voter's card — every registered detail on file comes up automatically.
+              NRC or name search are there as a backup if the card is damaged or unreadable.
             </p>
 
-            <div className="flex gap-2 mb-4">
-              {(['nrc', 'name'] as const).map(m => (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {(['card', 'nrc', 'name'] as const).map(m => (
                 <button
                   key={m}
                   type="button"
@@ -324,13 +440,23 @@ export function VoterValidationPage() {
                     border: `1px solid ${searchMode === m ? '#16a34a' : 'rgba(255,255,255,0.1)'}`,
                   }}
                 >
-                  {m === 'nrc' ? 'Search by NRC' : 'Search by Name'}
+                  {m === 'card' ? 'Voter Card Number' : m === 'nrc' ? 'Search by NRC' : 'Search by Name'}
                 </button>
               ))}
             </div>
 
             <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-2">
-              {searchMode === 'nrc' ? (
+              {searchMode === 'card' ? (
+                <input
+                  type="text"
+                  value={cardQuery}
+                  onChange={e => setCardQuery(e.target.value)}
+                  placeholder="e.g. 90980571"
+                  autoFocus
+                  className="flex-1 px-3 py-2.5 rounded-lg text-sm"
+                  style={selectStyle}
+                />
+              ) : searchMode === 'nrc' ? (
                 <input
                   type="text"
                   value={nrcQuery}
@@ -366,51 +492,18 @@ export function VoterValidationPage() {
               </div>
             )}
 
-            {searchResult && searchResult.mode === 'nrc' && (
+            {searchResult && (searchResult.mode === 'card' || searchResult.mode === 'nrc') && (
               searchResult.found && searchResult.voter ? (
-                searchResult.registeredHere ? (
-                  <div className="flex items-start gap-3 px-4 py-4 rounded-xl mt-3" style={{ backgroundColor: 'rgba(22,163,74,0.1)', border: '1px solid rgba(22,163,74,0.3)' }}>
-                    <CheckCircle2 size={20} style={{ color: '#16a34a', marginTop: 2, flexShrink: 0 }} />
-                    <div>
-                      <p style={{ color: '#16a34a', fontFamily: 'Oswald, sans-serif', fontSize: '0.95rem' }}>Registered at this polling station</p>
-                      <p style={{ color: '#fff', fontSize: '0.9rem', marginTop: 4 }}>{searchResult.voter.fullName}</p>
-                      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', marginTop: 2 }}>
-                        NRC: {searchResult.voter.nrcDisplay || searchResult.voter.nrc}{searchResult.voter.gender ? ` · ${searchResult.voter.gender}` : ''}
-                      </p>
-                      <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.78rem', marginTop: 8 }}>
-                        Please confirm this name matches the voter's ID before allowing them to vote.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-start gap-3 px-4 py-4 rounded-xl mt-3" style={{ backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)' }}>
-                    <MapPin size={20} style={{ color: '#f59e0b', marginTop: 2, flexShrink: 0 }} />
-                    <div>
-                      <p style={{ color: '#f59e0b', fontFamily: 'Oswald, sans-serif', fontSize: '0.95rem' }}>Registered at a different polling station</p>
-                      <p style={{ color: '#fff', fontSize: '0.9rem', marginTop: 4 }}>{searchResult.voter.fullName}</p>
-                      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', marginTop: 2 }}>
-                        NRC: {searchResult.voter.nrcDisplay || searchResult.voter.nrc}
-                      </p>
-                      <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginTop: 8 }}>
-                        Please direct this voter to:
-                      </p>
-                      <p style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '0.95rem', marginTop: 2 }}>
-                        {searchResult.voter.pollingStationName}
-                      </p>
-                      <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.78rem' }}>
-                        {[searchResult.voter.wardName, searchResult.voter.constituencyName, searchResult.voter.districtName, searchResult.voter.provinceName].filter(Boolean).join(', ')}
-                      </p>
-                    </div>
-                  </div>
-                )
+                <VoterCardPanel voter={searchResult.voter} registeredHere={!!searchResult.registeredHere} />
               ) : (
                 <div className="flex items-start gap-3 px-4 py-4 rounded-xl mt-3" style={{ backgroundColor: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)' }}>
                   <XCircle size={20} style={{ color: '#dc2626', marginTop: 2, flexShrink: 0 }} />
                   <div>
                     <p style={{ color: '#dc2626', fontFamily: 'Oswald, sans-serif', fontSize: '0.95rem' }}>Not found in the voters roll</p>
                     <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', marginTop: 4 }}>
-                      This NRC does not appear in any uploaded voters roll. This person is not a registered voter, or their
-                      station's roll hasn't been uploaded yet.
+                      {searchResult.mode === 'card'
+                        ? "This voter card number does not appear in any uploaded voters roll. Double-check the number on the card, or the voter's station roll hasn't been uploaded yet."
+                        : "This NRC does not appear in any uploaded voters roll. This person is not a registered voter, or their station's roll hasn't been uploaded yet."}
                     </p>
                   </div>
                 </div>
@@ -428,7 +521,7 @@ export function VoterValidationPage() {
                       {m.registeredHere ? <CheckCircle2 size={18} style={{ color: '#16a34a', marginTop: 2, flexShrink: 0 }} /> : <MapPin size={18} style={{ color: '#f59e0b', marginTop: 2, flexShrink: 0 }} />}
                       <div>
                         <p style={{ color: '#fff', fontSize: '0.88rem' }}>{m.fullName}</p>
-                        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem' }}>NRC: {m.nrcDisplay || m.nrc}</p>
+                        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem' }}>NRC: {m.nrcDisplay || m.nrc}{m.voterId ? ` · Card: ${m.voterId}` : ''}</p>
                         {m.registeredHere ? (
                           <p style={{ color: '#16a34a', fontSize: '0.78rem', marginTop: 4 }}>Registered at this polling station</p>
                         ) : (
@@ -446,7 +539,7 @@ export function VoterValidationPage() {
                   <div>
                     <p style={{ color: '#dc2626', fontFamily: 'Oswald, sans-serif', fontSize: '0.95rem' }}>No matching voter found</p>
                     <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', marginTop: 4 }}>
-                      Try the exact spelling, or search by NRC number instead for a more reliable match.
+                      Try the exact spelling, or search by voter card number instead for a more reliable match.
                     </p>
                   </div>
                 </div>
