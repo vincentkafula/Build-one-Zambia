@@ -17,6 +17,30 @@ function findField(row: Record<string, unknown>, aliases: string[]): string {
   return '';
 }
 
+// Resolves the full province → district → constituency → ward → station
+// chain from just a polling station id, so an agent's own assignment
+// (known from their account) is all that's needed — nobody has to
+// re-select their location by hand.
+function findStationById(stationId: string) {
+  if (!stationId) return null;
+  for (const p of provinces) {
+    for (const d of p.districts) {
+      for (const c of d.constituencies) {
+        for (const w of c.wards) {
+          const s = w.pollingStations.find(s => s.id === stationId);
+          if (s) return { province: p, district: d, constituency: c, ward: w, station: s };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function getLoggedInAgent(): Record<string, string> | null {
+  if (typeof window === 'undefined') return null;
+  try { return JSON.parse(sessionStorage.getItem('boz_election_user') || 'null'); } catch { return null; }
+}
+
 const NRC_ALIASES = ['nrc', 'nrcnumber', 'nrcno', 'idnumber', 'nationalid', 'nationalregistrationcard', 'id'];
 const NAME_ALIASES = ['name', 'fullname', 'votername', 'voter'];
 const SURNAME_ALIASES = ['surname', 'lastname', 'familyname'];
@@ -126,17 +150,20 @@ function VoterCardPanel({ voter, registeredHere }: { voter: VoterRollMatch; regi
 
 
 export function VoterValidationPage() {
-  const [provinceId, setProvinceId] = useState('');
-  const [districtId, setDistrictId] = useState('');
-  const [constituencyId, setConstituencyId] = useState('');
-  const [wardId, setWardId] = useState('');
-  const [pollingStationId, setPollingStationId] = useState('');
+  const agent = useMemo(() => getLoggedInAgent(), []);
+  const agentStationId = agent?.pollingStationId || agent?.scopeId || '';
+  const chain = useMemo(() => findStationById(agentStationId), [agentStationId]);
 
-  const province = provinces.find(p => p.id === provinceId);
-  const district = province?.districts.find(d => d.id === districtId);
-  const constituency = district?.constituencies.find(c => c.id === constituencyId);
-  const ward = constituency?.wards.find(w => w.id === wardId);
-  const station = ward?.pollingStations.find(s => s.id === pollingStationId);
+  const province = chain?.province;
+  const district = chain?.district;
+  const constituency = chain?.constituency;
+  const ward = chain?.ward;
+  const station = chain?.station;
+  const pollingStationId = station?.id || '';
+  const wardId = ward?.id || '';
+  const constituencyId = constituency?.id || '';
+  const districtId = district?.id || '';
+  const provinceId = province?.id || '';
 
   const [status, setStatus] = useState<{ count: number; uploadedBy: string; uploadedAt: string } | null>(null);
   const [loadingStatus, setLoadingStatus] = useState(false);
@@ -152,8 +179,6 @@ export function VoterValidationPage() {
   const [searching, setSearching] = useState(false);
   const [searchResult, setSearchResult] = useState<VoterRollSearchResult | null>(null);
   const [searchErr, setSearchErr] = useState('');
-
-  useMemo(() => station, [station]); // keep station referenced for linting
 
   async function loadStatus() {
     if (!pollingStationId) { setStatus(null); return; }
@@ -274,70 +299,34 @@ export function VoterValidationPage() {
     }
   }
 
-  const selectClass = "w-full px-3 py-2.5 rounded-lg text-sm disabled:opacity-40";
   const selectStyle = { backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', outline: 'none' } as const;
 
   return (
     <div className="space-y-5">
-      {/* Location picker */}
-      <div className="rounded-2xl p-6" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
-        <h2 className="mb-1" style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem' }}>
-          <MapPin className="inline w-5 h-5 mr-2" style={{ color: '#16a34a' }} />
-          Select Your Polling Station
-        </h2>
-        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem', marginBottom: 16 }}>
-          Choose the station you're deployed at to upload its voters roll or verify a voter.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>PROVINCE</label>
-            <select className={selectClass} style={selectStyle} value={provinceId}
-              onChange={e => { setProvinceId(e.target.value); setDistrictId(''); setConstituencyId(''); setWardId(''); setPollingStationId(''); }}>
-              <option value="">Select Province</option>
-              {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>DISTRICT</label>
-            <select className={selectClass} style={selectStyle} disabled={!province} value={districtId}
-              onChange={e => { setDistrictId(e.target.value); setConstituencyId(''); setWardId(''); setPollingStationId(''); }}>
-              <option value="">Select District</option>
-              {province?.districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>CONSTITUENCY</label>
-            <select className={selectClass} style={selectStyle} disabled={!district} value={constituencyId}
-              onChange={e => { setConstituencyId(e.target.value); setWardId(''); setPollingStationId(''); }}>
-              <option value="">Select Constituency</option>
-              {district?.constituencies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>WARD</label>
-            <select className={selectClass} style={selectStyle} disabled={!constituency} value={wardId}
-              onChange={e => { setWardId(e.target.value); setPollingStationId(''); }}>
-              <option value="">Select Ward</option>
-              {constituency?.wards.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
-            </select>
-          </div>
-          <div className="sm:col-span-2">
-            <label className="block text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>POLLING STATION</label>
-            <select className={selectClass} style={selectStyle} disabled={!ward} value={pollingStationId}
-              onChange={e => setPollingStationId(e.target.value)}>
-              <option value="">Select Polling Station</option>
-              {ward?.pollingStations.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-          </div>
+      {/* Auto-detected assignment — no manual selection required */}
+      <div className="rounded-2xl p-6 flex items-start gap-3" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <MapPin className="flex-shrink-0" size={20} style={{ color: pollingStationId ? '#16a34a' : '#f59e0b', marginTop: 2 }} />
+        <div>
+          <h2 className="mb-1" style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem' }}>
+            {pollingStationId ? 'Your Polling Station' : 'No Polling Station Assigned'}
+          </h2>
+          {pollingStationId ? (
+            <>
+              <p style={{ color: '#fff', fontSize: '0.92rem', marginBottom: 2 }}>{station?.name}</p>
+              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem' }}>
+                {[ward?.name, constituency?.name, district?.name, province?.name].filter(Boolean).join(', ')}
+              </p>
+            </>
+          ) : (
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem', lineHeight: 1.6 }}>
+              Your account isn't linked to a specific polling station yet, so voter roll upload and verification
+              aren't available. Contact an admin to have your assignment set on your account.
+            </p>
+          )}
         </div>
       </div>
 
-      {!pollingStationId ? (
-        <div className="rounded-2xl p-8 flex flex-col items-center gap-2 text-center" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
-          <UserSearch size={28} style={{ color: 'rgba(255,255,255,0.3)' }} />
-          <p style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '0.95rem' }}>Select a polling station above to continue</p>
-        </div>
-      ) : (
+      {!pollingStationId ? null : (
         <>
           {/* Voters roll upload / status */}
           <div className="rounded-2xl p-6" style={{ backgroundColor: '#123322', border: '1px solid rgba(255,255,255,0.07)' }}>
