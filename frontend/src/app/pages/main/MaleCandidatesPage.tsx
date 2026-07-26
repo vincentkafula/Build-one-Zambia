@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Heart, Users, Leaf, ArrowRight, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router';
 import { candidatesApi, shadowCabinetApi, type BackendCandidate, type ShadowMember } from '../../lib/api';
+import { ShadowMinisterContactModal } from '../../components/ShadowMinisterContactModal';
 import vincentKafulaPhoto from '../../../imports/vincent_6-1.png';
 import sishuwaPhoto from '../../../imports/Dr_Sishuwa_Sishuwa.jpg';
 import makebiZuluPhoto from '../../../imports/Hon._Makebi_Zulu.jpg';
@@ -458,6 +459,7 @@ export function MaleCandidatesPage() {
   const [animating, setAnimating]     = useState(false);
   const [liveCandidates, setLiveCandidates] = useState<BackendCandidate[]>([]);
   const [shadowMembers, setShadowMembers] = useState<ShadowMember[]>([]);
+  const [contactTarget, setContactTarget] = useState<{ name: string; role: string; constituency?: string } | null>(null);
 
   useEffect(() => {
     candidatesApi.list({ gender: 'male', active: true })
@@ -718,7 +720,7 @@ export function MaleCandidatesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
               {shadowMembers.map(m => (
                 <div key={m.id} className="flex flex-col items-center text-center rounded-2xl overflow-hidden"
-                  style={{ backgroundcolor: '#111111', border: '1px solid #e0e7ff', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
+                  style={{ backgroundColor: '#ffffff', border: '1px solid #e0e7ff', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
                   <ShadowMemberPhoto id={m.id} name={m.name} />
                   <div className="px-6 pb-8 pt-5 w-full">
                     {m.constituency && (
@@ -730,14 +732,25 @@ export function MaleCandidatesPage() {
                     <h3 className="mb-1" style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem', letterSpacing: '0.04em', color: NAVY }}>{m.name}</h3>
                     <p className="text-xs mb-2" style={{ color: '#9ca3af' }}>{m.role}</p>
                     {m.focus && (
-                      <p className="text-xs" style={{ color: O }}>{m.focus}</p>
+                      <p className="text-xs mb-4" style={{ color: O }}>{m.focus}</p>
                     )}
+                    <button
+                      onClick={() => setContactTarget({ name: m.name, role: m.role, constituency: m.constituency })}
+                      className="px-5 py-2 rounded-lg text-xs"
+                      style={{ border: `1px solid ${O}`, color: O, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', backgroundColor: 'transparent' }}
+                    >
+                      CONTACT
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         </section>
+      )}
+
+      {contactTarget && (
+        <ShadowMinisterContactModal minister={contactTarget} onClose={() => setContactTarget(null)} />
       )}
 
       {/* Live candidates from Admin Panel */}
