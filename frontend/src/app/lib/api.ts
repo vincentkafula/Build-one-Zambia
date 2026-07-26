@@ -1903,6 +1903,12 @@ export const registrationApi = {
     request<{ success: boolean; registration: CoopReg }>('POST', '/registrations/cooperative', data),
   submitInternship: (data: Record<string, unknown>) =>
     request<{ success: boolean; application: InternshipReg }>('POST', '/registrations/internship', data),
+  submitChamber: (data: Record<string, unknown>) =>
+    request<{ success: boolean; registration: Record<string, unknown> }>('POST', '/registrations/chamber', data),
+  getChamberCredentials: (id: string) =>
+    request<{ success: boolean; credentials: { username: string; password: string } | null; activated?: boolean; username?: string; message?: string }>(
+      'GET', `/registrations/chamber/${id}/credentials`
+    ),
 
   // Membership validation (public — called before form submission)
   validateMembership: (number: string) =>

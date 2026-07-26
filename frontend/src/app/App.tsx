@@ -42,6 +42,7 @@ const PressStatementsPage  = lazy(() => import('./pages/main/PressStatementsPage
 // ── Registration pages ───────────────────────────────────────────────────────
 const MemberRegistration         = lazy(() => import('./pages/registration/MemberRegistration'));
 const CooperativeRegistration    = lazy(() => import('./pages/registration/CooperativeRegistration'));
+const ChamberRegistration        = lazy(() => import('./pages/registration/ChamberRegistration'));
 const InternshipRegistration     = lazy(() => import('./pages/registration/InternshipRegistration'));
 const PollingAgentRegistration   = lazy(() => import('./pages/registration/PollingAgentRegistration'));
 
@@ -112,6 +113,7 @@ const MainLayout = memo(function MainLayout() {
               {/* /home/chambers removed — chambers are private to dashboards only */}
               <Route path="/register/member"        element={<MemberRegistration />} />
               <Route path="/register/cooperative"  element={<CooperativeRegistration />} />
+              <Route path="/register/chamber"      element={<ChamberRegistration />} />
               <Route path="/register/internship"   element={<InternshipRegistration />} />
               <Route path="/register/agent"        element={<PollingAgentRegistration />} />
               <Route path="*"         element={<NotFoundPage />} />

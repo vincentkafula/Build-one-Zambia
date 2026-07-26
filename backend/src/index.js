@@ -1503,7 +1503,7 @@ app.delete(`${BASE}/events/:id`, auth.requireAuth, (req, res) => { eventsStore.e
 
 // Grant Login helper
 function generatePassword() { const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$'; let p = ''; for (let i = 0; i < 10; i++) p += chars[Math.floor(Math.random() * chars.length)]; return p; }
-const TYPE_ROLES = { agent: 'polling_agent', member: 'member', internship: 'internship', cooperative: 'cooperative' };
+const TYPE_ROLES = { agent: 'polling_agent', member: 'member', internship: 'internship', cooperative: 'cooperative', chamber: 'chamber' };
 
 // Sent by POST /auth/resend-login once new credentials have actually been
 // generated and saved — separate from sendApplicantWelcomeEmail (that one
@@ -1731,6 +1731,14 @@ consolidatedRegRoutes('internship', 'Internship', {
   getOne: registrations.getIntern,
   updateStatus: (id, status) => registrations.updateInternStatus(id, status),
   update: registrations.updateIntern,
+});
+
+consolidatedRegRoutes('chamber', 'Chamber of Commerce', {
+  register: registrations.registerChamber,
+  list: registrations.listChambers,
+  getOne: registrations.getChamber,
+  updateStatus: registrations.updateChamberStatus,
+  update: registrations.updateChamber,
 });
 
 // ─── Member registrations — consolidated onto the canonical store ─────────────

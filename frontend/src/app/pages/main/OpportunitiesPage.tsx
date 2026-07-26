@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Link } from 'react-router';
-import { Users, Briefcase, GraduationCap, Globe, ArrowRight, CheckCircle, TrendingUp } from 'lucide-react';
+import { Users, Briefcase, GraduationCap, Globe, ArrowRight, CheckCircle, TrendingUp, Building2, ChevronDown } from 'lucide-react';
 
 const O    = '#f97316';
 const R    = '#ef4444';
@@ -91,6 +92,27 @@ const OPPORTUNITIES = [
     cta: 'Apply Now',
     path: '/register/internship',
   },
+  {
+    icon: Building2,
+    title: 'Chamber of Commerce',
+    subtitle: 'Register your ward or district chamber of commerce',
+    color: '#0d9488',
+    features: [
+      'Chamber & contact details',
+      'Ward and district',
+      'Member business count',
+      'Two-factor verification',
+    ],
+    benefits: [
+      'Direct link to U.S. and Chinese business associations',
+      'Represent your local businesses internationally',
+      'Access trade delegations and investor visits',
+      'Shared export and trade infrastructure',
+      'A dedicated chamber dashboard to manage your profile',
+    ],
+    cta: 'Apply Now',
+    path: '/register/chamber',
+  },
 ];
 
 const PARTNERSHIP_STATS = [
@@ -117,6 +139,76 @@ const VISION_POINTS = [
     icon: Briefcase,
   },
 ];
+
+function OpportunityCard({ opp }: { opp: typeof OPPORTUNITIES[number] }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div
+      className="group flex flex-col rounded-2xl overflow-hidden transition-all"
+      style={{ backgroundColor: '#fafafa', border: '1px solid #f0f0f0', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}
+      onMouseEnter={e => (e.currentTarget as HTMLElement).style.boxShadow = `0 12px 48px rgba(249,115,22,0.15)`}
+      onMouseLeave={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 24px rgba(0,0,0,0.06)'}
+    >
+      {/* Header with icon */}
+      <div className="relative p-8 pb-6" style={{ background: `linear-gradient(135deg, ${opp.color} 0%, ${opp.color}dd 100%)` }}>
+        <div className="absolute top-0 right-0 w-32 h-32 opacity-10" style={{ background: `radial-gradient(circle at center, #fff 0%, transparent 70%)` }} />
+        <opp.icon className="w-12 h-12 mb-4" style={{ color: '#fff' }} />
+        <h3 className="mb-2" style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.5rem', letterSpacing: '0.04em', color: '#fff' }}>
+          {opp.title}
+        </h3>
+        <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.9)' }}>{opp.subtitle}</p>
+      </div>
+
+      <div className="p-8 pt-6 flex flex-col flex-1">
+        {/* Collapsible details */}
+        {expanded && (
+          <div className="mb-2">
+            <p className="text-xs tracking-widest mb-4" style={{ color: opp.color, fontFamily: 'Oswald, sans-serif' }}>REQUIREMENTS</p>
+            <ul className="space-y-2.5 mb-6">
+              {opp.features.map(feat => (
+                <li key={feat} className="flex items-start gap-2 text-sm" style={{ color: '#4b5563' }}>
+                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: opp.color }} />
+                  <span>{feat}</span>
+                </li>
+              ))}
+            </ul>
+
+            <p className="text-xs tracking-widest mb-4" style={{ color: opp.color, fontFamily: 'Oswald, sans-serif' }}>BENEFITS</p>
+            <ul className="space-y-2.5 mb-2">
+              {opp.benefits.map(ben => (
+                <li key={ben} className="flex items-start gap-2 text-sm" style={{ color: '#6b7280' }}>
+                  <ArrowRight className="w-3.5 h-3.5 mt-1 flex-shrink-0" style={{ color: opp.color }} />
+                  <span>{ben}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setExpanded(v => !v)}
+          className="flex items-center justify-center gap-1.5 text-xs mb-6"
+          style={{ color: opp.color, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', background: 'none', border: 'none', cursor: 'pointer' }}
+        >
+          {expanded ? 'HIDE DETAILS' : 'MORE DETAILS'}
+          <ChevronDown className="w-3.5 h-3.5 transition-transform" style={{ transform: expanded ? 'rotate(180deg)' : 'none' }} />
+        </button>
+
+        <Link
+          to={opp.path}
+          className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg transition-all mt-auto"
+          style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.1em', backgroundColor: opp.color, color: '#fff', textDecoration: 'none' }}
+          onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.9'}
+          onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
+        >
+          APPLY NOW <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 export function OpportunitiesPage() {
   return (
@@ -207,58 +299,9 @@ export function OpportunitiesPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {OPPORTUNITIES.map(opp => (
-              <div
-                key={opp.title}
-                className="group flex flex-col rounded-2xl overflow-hidden transition-all"
-                style={{ backgroundColor: '#fafafa', border: '1px solid #f0f0f0', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}
-                onMouseEnter={e => (e.currentTarget as HTMLElement).style.boxShadow = `0 12px 48px rgba(249,115,22,0.15)`}
-                onMouseLeave={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 24px rgba(0,0,0,0.06)'}
-              >
-                {/* Header with icon */}
-                <div className="relative p-8 pb-6" style={{ background: `linear-gradient(135deg, ${opp.color} 0%, ${opp.color}dd 100%)` }}>
-                  <div className="absolute top-0 right-0 w-32 h-32 opacity-10" style={{ background: `radial-gradient(circle at center, #fff 0%, transparent 70%)` }} />
-                  <opp.icon className="w-12 h-12 mb-4" style={{ color: '#fff' }} />
-                  <h3 className="mb-2" style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.5rem', letterSpacing: '0.04em', color: '#fff' }}>
-                    {opp.title}
-                  </h3>
-                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.9)' }}>{opp.subtitle}</p>
-                </div>
-
-                {/* Features */}
-                <div className="p-8 pt-6">
-                  <p className="text-xs tracking-widest mb-4" style={{ color: opp.color, fontFamily: 'Oswald, sans-serif' }}>REQUIREMENTS</p>
-                  <ul className="space-y-2.5 mb-6">
-                    {opp.features.map(feat => (
-                      <li key={feat} className="flex items-start gap-2 text-sm" style={{ color: '#4b5563' }}>
-                        <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: opp.color }} />
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <p className="text-xs tracking-widest mb-4 mt-8" style={{ color: opp.color, fontFamily: 'Oswald, sans-serif' }}>BENEFITS</p>
-                  <ul className="space-y-2.5 mb-8">
-                    {opp.benefits.map(ben => (
-                      <li key={ben} className="flex items-start gap-2 text-sm" style={{ color: '#6b7280' }}>
-                        <ArrowRight className="w-3.5 h-3.5 mt-1 flex-shrink-0" style={{ color: opp.color }} />
-                        <span>{ben}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Link
-                    to={opp.path}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg transition-all"
-                    style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.1em', backgroundColor: opp.color, color: '#fff', textDecoration: 'none' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.9'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
-                  >
-                    {opp.cta} <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              </div>
+              <OpportunityCard key={opp.title} opp={opp} />
             ))}
           </div>
         </div>

@@ -8,7 +8,7 @@ import * as auth from './auth.js';
 
 function uid(prefix) { return `${prefix}_${Date.now().toString(36)}_${randomUUID().slice(0, 6)}`; }
 
-const TYPE_ROLE = { member: 'member', agent: 'polling_agent', cooperative: 'cooperative' };
+const TYPE_ROLE = { member: 'member', agent: 'polling_agent', cooperative: 'cooperative', chamber: 'chamber' };
 
 // The public application form (PollingAgentRegistration.tsx) is actually
 // unified across all 7 election-role tiers, not just polling agents, but
@@ -376,5 +376,43 @@ export function updateCoop(id, patch) {
   if (!c) return null;
   const updated = { ...c, ...patch, updatedAt: new Date().toISOString() };
   kv.set(`boz:reg:coop:${id}`, updated);
+  return updated;
+}
+
+// ─── Chamber of Commerce Registration ───────────────────────────────────────
+
+function getChamberIndex() { return kv.get('boz:reg:chamber:index') || []; }
+
+export async function registerChamber(input) {
+  const id = uid('chamber');
+  const now = new Date().toISOString();
+  let reg = { id, ...input, status: 'pending', createdAt: now, updatedAt: now };
+  reg = await createPendingAccount('chamber', reg);
+  kv.set(`boz:reg:chamber:${id}`, reg);
+  kv.set('boz:reg:chamber:index', [...getChamberIndex(), id]);
+  return reg;
+}
+
+export function listChambers(filters = {}) {
+  let chambers = getChamberIndex().map(id => kv.get(`boz:reg:chamber:${id}`)).filter(Boolean);
+  if (filters.status) chambers = chambers.filter(c => c.status === filters.status);
+  return chambers.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+export function getChamber(id) { return kv.get(`boz:reg:chamber:${id}`); }
+
+export function updateChamberStatus(id, status, note) {
+  const c = kv.get(`boz:reg:chamber:${id}`);
+  if (!c) return null;
+  const updated = { ...c, status, statusNote: note, updatedAt: new Date().toISOString() };
+  kv.set(`boz:reg:chamber:${id}`, updated);
+  return updated;
+}
+
+export function updateChamber(id, patch) {
+  const c = kv.get(`boz:reg:chamber:${id}`);
+  if (!c) return null;
+  const updated = { ...c, ...patch, updatedAt: new Date().toISOString() };
+  kv.set(`boz:reg:chamber:${id}`, updated);
   return updated;
 }

@@ -252,15 +252,13 @@ export default function DashboardLogin() {
               backendSuccess = true;
             }
 
-            // Chamber of Commerce dashboard: there's no dedicated "chamber"
-            // applicant role in the backend yet (chamber data is managed
-            // directly by admins, not via a public registration/approval
-            // queue like the others) — so for now this only accepts an
-            // admin account.
+            // Chamber of Commerce dashboard: accepts a real 'chamber'
+            // applicant account (registered + approved via /register/chamber)
+            // or an admin account, for support/testing access.
             if (isChamberLogin && !isPending) {
-              const CHAMBER_ROLES = ['super_admin', 'admin'];
+              const CHAMBER_ROLES = ['chamber', 'super_admin', 'admin'];
               if (!CHAMBER_ROLES.includes(role)) {
-                throw new Error(`Your account role "${role}" does not have access to the Chamber of Commerce Dashboard. This dashboard currently requires an admin account.`);
+                throw new Error(`Your account role "${role}" does not have access to the Chamber of Commerce Dashboard. Please select the correct dashboard above.`);
               }
               sessionStorage.setItem('boz_session_token', data.token);
               sessionStorage.setItem('boz_election_user', JSON.stringify(data.user));
@@ -730,6 +728,7 @@ export default function DashboardLogin() {
                   if (selectedId === 'election' || selectedId === 'management') navigate('/register/agent');
                   else if (selectedId === 'cooperative') navigate('/register/cooperative');
                   else if (selectedId === 'internship') navigate('/register/internship');
+                  else if (selectedId === 'chamber') navigate('/register/chamber');
                   else navigate('/register/member');
                 }}
                 className="transition-colors"
@@ -740,6 +739,7 @@ export default function DashboardLogin() {
                 {(selectedId === 'election' || selectedId === 'management') ? 'Apply as Polling Agent'
                   : selectedId === 'cooperative' ? 'Apply as Cooperative'
                   : selectedId === 'internship' ? 'Apply for Internship'
+                  : selectedId === 'chamber' ? 'Apply as Chamber of Commerce'
                   : 'Apply for membership'}
               </button>
             </p>
