@@ -71,7 +71,7 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16">
 
           {/* Brand */}
-          <Link to="/results" className="flex items-center shrink-0">
+          <Link to="/" className="flex items-center shrink-0">
             <img src={buildOneZambiaLogo} alt="Build One Zambia" className="w-16 h-16 object-contain" />
           </Link>
 
