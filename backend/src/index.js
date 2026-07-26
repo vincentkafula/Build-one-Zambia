@@ -1794,11 +1794,49 @@ async function notifyContactMessage(msg) {
   } catch (e) { console.error('[notify] Failed to send contact-form email:', e.message); }
 }
 
+// Sends the submitter their own copy — confirms the message actually went
+// through, gives them a record of what they wrote, and tells them who to
+// expect a reply from. Runs independently of notifyContactMessage() above
+// so a failure on one side never blocks the other.
+async function confirmContactMessage(msg) {
+  if (!process.env.RESEND_API_KEY) { console.warn(`[notify] RESEND_API_KEY not set, skipping contact-form confirmation for ${msg.id}`); return; }
+  const isValidEmail = typeof msg.email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(msg.email);
+  if (!isValidEmail) { console.warn(`[notify] No valid submitter email on contact message ${msg.id}, skipping confirmation`); return; }
+  try {
+    const escape = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const firstName = (msg.name || '').trim().split(/\s+/)[0] || 'there';
+    const html = `
+      <p>Hi ${escape(firstName)},</p>
+      <p>Thanks for reaching out to Build One Zambia — we've received your message and someone from our team will get back to you within 2 business days.</p>
+      <p style="margin:20px 0;padding:14px 16px;background:#f7f7f7;border-left:3px solid #dc2626;white-space:pre-wrap;">
+        ${msg.subject ? `<strong>${escape(msg.subject)}</strong><br/>` : ''}${escape(msg.message)}
+      </p>
+      <p>If this wasn't you, or you need to add anything, just reply to this email or write to <a href="mailto:info@bozplans.org">info@bozplans.org</a>.</p>
+      <p>— Build One Zambia</p>
+    `;
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: process.env.EMAIL_FROM_ADDRESS || 'no-reply@bozplans.org',
+        to: msg.email,
+        reply_to: 'info@bozplans.org',
+        subject: `We've received your message — Build One Zambia`,
+        html,
+      })
+    });
+    const data = await r.json();
+    if (!r.ok) console.error('[notify] Resend error sending contact-form confirmation:', data);
+    else console.log(`[notify] Contact-form confirmation sent to ${msg.email} for ${msg.id}: ${data.id}`);
+  } catch (e) { console.error('[notify] Failed to send contact-form confirmation:', e.message); }
+}
+
 app.post(`${BASE}/contact`, (req, res) => {
   const msg = { ...req.body, id: `msg-${Date.now()}`, read: false, createdAt: new Date().toISOString() };
   contactStore.messages.push(msg);
   saveContact();
   setImmediate(() => notifyContactMessage(msg));
+  setImmediate(() => confirmContactMessage(msg));
   res.json({ success: true, message: 'Message received' });
 });
 app.get(`${BASE}/contact`, auth.requireAuth, (req, res) => { const messages = contactStore.messages; res.json({ messages, count: messages.length, unread: messages.filter(m => !m.read).length }); });
