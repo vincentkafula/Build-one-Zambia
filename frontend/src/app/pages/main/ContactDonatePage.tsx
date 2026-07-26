@@ -27,6 +27,12 @@ export function ContactDonatePage() {
     fontFamily: 'Open Sans, sans-serif', fontSize: '14px', outline: 'none',
   };
 
+  const inpLight: CSSProperties = {
+    backgroundColor: '#fff', border: '1px solid #d1d5db', color: '#000',
+    padding: '12px 16px', width: '100%',
+    fontFamily: 'Open Sans, sans-serif', fontSize: '14px', outline: 'none',
+  };
+
   return (
     <div style={{ backgroundColor: '#007A30', fontFamily: 'Open Sans, sans-serif', color: '#fff' }}>
 
@@ -146,12 +152,12 @@ export function ContactDonatePage() {
               <p style={{ marginTop: '24px', fontSize: '13px', color: '#4b5563' }}>bozplans.org · Vote: 14 August 2031</p>
             </div>
 
-            <div>
+            <div style={{ backgroundColor: '#fff', color: '#000', padding: '32px', borderRadius: '4px' }}>
               {submitted ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 0', textAlign: 'center' }}>
                   <CheckCircle size={64} color="#dc2626" style={{ marginBottom: '24px' }} />
-                  <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.5rem', letterSpacing: '0.04em', color: '#fff', marginBottom: '12px' }}>MESSAGE RECEIVED</h3>
-                  <p style={{ color: '#9ca3af' }}>Our team will get back to you within 2 business days.</p>
+                  <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.5rem', letterSpacing: '0.04em', color: '#000', marginBottom: '12px' }}>MESSAGE RECEIVED</h3>
+                  <p style={{ color: '#4b5563' }}>Our team will get back to you within 2 business days.</p>
                   <button onClick={() => setSubmitted(false)} style={{ marginTop: '24px', padding: '10px 28px', backgroundColor: '#dc2626', color: '#fff', border: 'none', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', cursor: 'pointer' }}>SEND ANOTHER</button>
                 </div>
               ) : (
@@ -172,14 +178,14 @@ export function ContactDonatePage() {
                   }}
                   style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
                 >
-                  <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', letterSpacing: '0.03em', color: '#fff', marginBottom: '8px' }}>SEND A MESSAGE</h2>
+                  <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', letterSpacing: '0.03em', color: '#000', marginBottom: '8px' }}>SEND A MESSAGE</h2>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <input required style={inp} placeholder="Full name" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} />
-                    <input required type="email" style={inp} placeholder="Email address" value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} />
+                    <input required style={inpLight} placeholder="Full name" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} />
+                    <input required type="email" style={inpLight} placeholder="Email address" value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} />
                   </div>
-                  <input style={inp} placeholder="Phone number (optional)" value={formData.phone} onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))} />
-                  <input required style={inp} placeholder="Subject" value={formData.subject} onChange={e => setFormData(p => ({ ...p, subject: e.target.value }))} />
-                  <textarea required rows={5} style={{ ...inp, resize: 'none' }} placeholder="Your message…" value={formData.message} onChange={e => setFormData(p => ({ ...p, message: e.target.value }))} />
+                  <input style={inpLight} placeholder="Phone number (optional)" value={formData.phone} onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))} />
+                  <input required style={inpLight} placeholder="Subject" value={formData.subject} onChange={e => setFormData(p => ({ ...p, subject: e.target.value }))} />
+                  <textarea required rows={5} style={{ ...inpLight, resize: 'none' }} placeholder="Your message…" value={formData.message} onChange={e => setFormData(p => ({ ...p, message: e.target.value }))} />
                   {sendError && <p style={{ color: '#dc2626', fontSize: '13px', margin: 0 }}>{sendError}</p>}
                   <button type="submit" disabled={sending} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 32px', backgroundColor: '#dc2626', color: '#fff', border: 'none', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', fontSize: '14px', cursor: sending ? 'default' : 'pointer', alignSelf: 'flex-start', opacity: sending ? 0.7 : 1 }}>
                     <Send size={15} /> {sending ? 'SENDING…' : 'SEND MESSAGE'}
