@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router';
 import {
   LayoutDashboard, Package, PackagePlus, Globe, Users, UserCircle, Lock, MapPin,
   CheckCircle, Clock, Edit2, Save,
-  Phone, Mail, TrendingUp, DollarSign
+  Phone, Mail, TrendingUp, DollarSign, FileText, Download, ShieldCheck
 } from 'lucide-react';
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
 
 const A = '#00712B';
 const NAVY = '#1e2d4a';
 
-type SectionKey = 'overview' | 'equip-approved' | 'equip-applied' | 'exports' | 'investors' | 'personal-details' | 'security' | 'address-book';
+type SectionKey = 'overview' | 'equip-approved' | 'equip-applied' | 'exports' | 'investors' | 'documents' | 'personal-details' | 'security' | 'address-book';
 
 const NAV: { group: string; items: { key: SectionKey; label: string; icon: React.ReactNode }[] }[] = [
   {
@@ -34,12 +34,26 @@ const NAV: { group: string; items: { key: SectionKey; label: string; icon: React
   {
     group: 'PROFILE',
     items: [
+      { key: 'documents', label: 'Registration Certificate', icon: <FileText size={16} /> },
       { key: 'personal-details', label: 'Organisation Details', icon: <UserCircle size={16} /> },
       { key: 'security', label: 'Security Settings', icon: <Lock size={16} /> },
       { key: 'address-book', label: 'Address Book', icon: <MapPin size={16} /> },
     ],
   },
 ];
+
+const CERTIFICATE = {
+  certificateNo: 'BOZ/COOP/2025/001',
+  dateOfIssue: '20 May 2025',
+  registrationNumber: '00012345',
+  dateOfRegistration: '20 May 2025',
+  legalStatus: 'Cooperative Society Limited',
+  typeOfCooperative: 'Multi-Purpose Cooperative',
+  registeredOffice: 'Plot No. 1234, Freedom Way, Lusaka, Zambia',
+  issuingAuthority: 'Ministry of Commerce, Trade and Industry — Registrar of Cooperatives',
+  act: 'The Cooperatives Act, Chapter 119 of the Laws of Zambia',
+  fileUrl: '/documents/BOZ-Cooperative-Registration-Certificate.pdf',
+};
 
 const EQUIPMENT_APPROVED = [
   { id: 'EQ-001', name: 'Maize Sheller Machine', category: 'Processing', approvedDate: '2026-03-12', condition: 'New', assignedBy: 'Ministry of Agriculture' },
@@ -313,6 +327,53 @@ export default function CooperativeDashboard() {
                 </div>
               ))}
             </div>
+          </div>
+        );
+
+      case 'documents':
+        return (
+          <div>
+            <h2 className="text-xl mb-6" style={{ color: NAVY }}>Registration Certificate</h2>
+            <DashCard title="Cooperative Registration Certificate">
+              <div className="flex items-start gap-3 mb-5 rounded-lg px-4 py-3" style={{ backgroundColor: '#0a1f12', border: '1px solid rgba(0,113,43,0.3)' }}>
+                <ShieldCheck size={18} style={{ color: A, flexShrink: 0, marginTop: 2 }} />
+                <p className="text-sm" style={{ color: '#7fc99a' }}>
+                  Registered under {CERTIFICATE.act} by the {CERTIFICATE.issuingAuthority}.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                <Field label="Certificate Number" value={CERTIFICATE.certificateNo} />
+                <Field label="Date of Issue" value={CERTIFICATE.dateOfIssue} />
+                <Field label="Registration Number" value={CERTIFICATE.registrationNumber} />
+                <Field label="Date of Registration" value={CERTIFICATE.dateOfRegistration} />
+                <Field label="Legal Status" value={CERTIFICATE.legalStatus} />
+                <Field label="Type of Cooperative" value={CERTIFICATE.typeOfCooperative} />
+                <div className="md:col-span-2">
+                  <Field label="Registered Office" value={CERTIFICATE.registeredOffice} />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href={CERTIFICATE.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm"
+                  style={{ background: A }}
+                >
+                  <FileText size={15} /> View Certificate
+                </a>
+                <a
+                  href={CERTIFICATE.fileUrl}
+                  download="BOZ-Cooperative-Registration-Certificate.pdf"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
+                  style={{ border: `1px solid ${A}`, color: A }}
+                >
+                  <Download size={15} /> Download PDF
+                </a>
+              </div>
+            </DashCard>
           </div>
         );
 
