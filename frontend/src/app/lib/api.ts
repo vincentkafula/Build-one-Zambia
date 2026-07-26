@@ -566,6 +566,36 @@ export interface ShopOrder {
   returnRequestedAt?: string;
 }
 
+export interface BuyerProfile {
+  name: string;
+  email: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  province: string;
+}
+
+export const buyerApi = {
+  register: (data: { name: string; email: string; phone: string; password: string; addressLine1: string; addressLine2?: string; city: string; province: string }) =>
+    request<{ success: boolean; token: string; buyer: BuyerProfile }>('POST', '/shop/buyer/register', data),
+
+  login: (email: string, password: string) =>
+    request<{ success: boolean; token: string; buyer: BuyerProfile }>('POST', '/shop/buyer/login', { email, password }),
+
+  me: () =>
+    request<{ buyer: BuyerProfile }>('GET', '/shop/buyer/me', undefined, true),
+
+  updateProfile: (patch: Partial<Omit<BuyerProfile, 'email'>>) =>
+    request<{ success: boolean; buyer: BuyerProfile }>('PATCH', '/shop/buyer/me', patch, true),
+
+  myOrders: () =>
+    request<{ orders: ShopOrder[]; payments: ShopPayment[] }>('GET', '/shop/buyer/orders', undefined, true),
+
+  requestReturn: (orderId: string, reason: string) =>
+    request<{ success: boolean; order: ShopOrder }>('POST', `/shop/buyer/orders/${orderId}/request-return`, { reason }, true),
+};
+
 export const shopApi = {
   // Products
   listProducts: (params?: { category?: string; search?: string; featured?: boolean; includeInactive?: boolean }) => {

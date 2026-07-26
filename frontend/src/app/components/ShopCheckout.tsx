@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, CSSProperties } from 'react';
-import { ordersApi, gatewayApi, GatewayConfig } from '../lib/api';
+import { ordersApi, gatewayApi, GatewayConfig, BuyerProfile } from '../lib/api';
 import {
   X, ShoppingCart, ChevronRight, ChevronLeft, CreditCard,
   Smartphone, Check, AlertCircle, Trash2, MapPin, Truck,
@@ -127,17 +127,18 @@ interface Props {
   onClose: () => void;
   onUpdateQty: (id: number, qty: number) => void;
   onRemove: (id: number) => void;
+  buyer?: BuyerProfile | null;
 }
 
-export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove }: Props) {
+export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove, buyer }: Props) {
   const [step, setStep]           = useState<Step>('cart');
-  const [name, setName]           = useState('');
-  const [email, setEmail]         = useState('');
-  const [phone, setPhone]         = useState('');
-  const [addressLine1, setAddr1]  = useState('');
-  const [addressLine2, setAddr2]  = useState('');
-  const [city, setCity]           = useState('');
-  const [province, setProvince]   = useState('');
+  const [name, setName]           = useState(buyer?.name || '');
+  const [email, setEmail]         = useState(buyer?.email || '');
+  const [phone, setPhone]         = useState(buyer?.phone || '');
+  const [addressLine1, setAddr1]  = useState(buyer?.addressLine1 || '');
+  const [addressLine2, setAddr2]  = useState(buyer?.addressLine2 || '');
+  const [city, setCity]           = useState(buyer?.city || '');
+  const [province, setProvince]   = useState(buyer?.province || '');
   const [method, setMethod]       = useState<PayMethod>('card');
   const [mobileNum, setMobileNum] = useState('');
 

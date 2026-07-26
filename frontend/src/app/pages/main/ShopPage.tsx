@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
-import { ShoppingBag, Search, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { ShoppingBag, Search, ShoppingCart, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import { ShopCheckout, CartItem } from '../../components/ShopCheckout';
+import { BuyerAuth } from '../../components/BuyerAuth';
+import { buyerApi, BuyerProfile, getToken } from '../../lib/api';
 
 const PRODUCTS = [
   { id: 1,  name: 'BOZ Campaign T-Shirt',         price: 'K150',  priceNum: 150,  tag: 'APPAREL',     desc: 'Branded with the party logo, slogan, and candidate\'s name. Available in all sizes.',            img: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&h=500&fit=crop&auto=format' },
@@ -139,6 +142,14 @@ export function ShopPage() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [addedId, setAddedId] = useState<number | null>(null);
   const [heroIndex, setHeroIndex] = useState(0);
+  const [buyer, setBuyer] = useState<BuyerProfile | null>(null);
+  const [showAuth, setShowAuth] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!getToken()) return;
+    buyerApi.me().then(({ buyer: me }) => setBuyer(me)).catch(() => {});
+  }, []);
 
   const HERO_SLIDES = [
     { line1: 'Campaign gear', line2: 'just dropped!' },
@@ -163,6 +174,14 @@ export function ShopPage() {
   const removeItem = (id: number) => setCart(prev => prev.filter(i => i.id !== id));
   const closeCheckout = () => { setCheckoutOpen(false); setCart([]); };
 
+  // Non-members must sign in or register a lightweight buyer account before
+  // proceeding to checkout — but they stay on the shop page the whole time,
+  // so products remain visible behind the sign-in modal.
+  const openCheckout = () => {
+    if (buyer) { setCheckoutOpen(true); return; }
+    setShowAuth(true);
+  };
+
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
   const searchFiltered = PRODUCTS.filter(p => {
@@ -178,10 +197,28 @@ export function ShopPage() {
         .boz-row-mask { overflow: hidden; padding: 8px 0; }
       `}</style>
 
+      {/* Account bar */}
+      <div style={{ backgroundColor: INK, padding: '7px clamp(16px,4vw,48px)', display: 'flex', justifyContent: 'flex-end' }}>
+        <button
+          onClick={() => (buyer ? navigate('/shop/account') : setShowAuth(true))}
+          style={{ background: 'none', border: 'none', color: '#F0EAD6', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.06em', padding: '2px 0' }}
+        >
+          <User style={{ width: '13px', height: '13px' }} />
+          {buyer ? `MY ACCOUNT — ${buyer.name.split(' ')[0]}` : 'SIGN IN / REGISTER'}
+        </button>
+      </div>
+
+      {showAuth && (
+        <BuyerAuth
+          onClose={() => setShowAuth(false)}
+          onAuthed={(b) => { setBuyer(b); setShowAuth(false); setCheckoutOpen(true); }}
+        />
+      )}
+
       {/* Sticky cart button */}
       {cartCount > 0 && !checkoutOpen && (
         <button
-          onClick={() => setCheckoutOpen(true)}
+          onClick={openCheckout}
           style={{ position: 'fixed', bottom: '28px', right: '24px', zIndex: 200, display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: RED, color: '#fff', border: 'none', padding: '14px 24px', cursor: 'pointer', fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.1em', boxShadow: '0 8px 32px rgba(220,38,38,0.45)' }}
         >
           <ShoppingCart style={{ width: '18px', height: '18px' }} />
@@ -190,7 +227,7 @@ export function ShopPage() {
       )}
 
       {checkoutOpen && (
-        <ShopCheckout cart={cart} onClose={closeCheckout} onUpdateQty={updateQty} onRemove={removeItem} />
+        <ShopCheckout cart={cart} onClose={closeCheckout} onUpdateQty={updateQty} onRemove={removeItem} buyer={buyer} />
       )}
 
       {/* Hero — compact diagonal banner */}

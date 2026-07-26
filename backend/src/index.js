@@ -644,6 +644,105 @@ app.post(`${BASE}/shop/my-orders/:orderId/request-return`, auth.requireAuth, (re
   if (error) return res.status(400).json({ error });
   res.json({ success: true, order: updated });
 });
+
+// ─── Shop Buyer Accounts ───────────────────────────────────────────────────
+// Lightweight customer accounts for people buying merchandise who are NOT
+// (necessarily) BOZ party members — a much simpler registration than
+// membership/registrationApi (no NRC, no approval queue, no area locking).
+// Reuses the same auth.js primitives (PBKDF2 password hashing + JWT) as
+// every other account type in this app, just under role: 'buyer'.
+
+function requireBuyer(req, res, next) {
+  if (!req.user || req.user.role !== 'buyer') {
+    return res.status(403).json({ error: 'A buyer account is required for this action.' });
+  }
+  next();
+}
+
+function safeBuyer(user) {
+  return {
+    name: user.name || '', email: user.email || '', phone: user.phone || '',
+    addressLine1: user.addressLine1 || '', addressLine2: user.addressLine2 || '',
+    city: user.city || '', province: user.province || '',
+  };
+}
+
+app.post(`${BASE}/shop/buyer/register`, async (req, res) => {
+  try {
+    const { name, email, phone, password, addressLine1, addressLine2, city, province } = req.body;
+    if (!name || !email || !phone || !password || !addressLine1 || !city || !province) {
+      return res.status(400).json({ error: 'Please fill in your name, email, phone, password, and delivery address.' });
+    }
+    if (String(password).length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+    const username = String(email).toLowerCase().trim();
+    if (auth.getUser(username)) {
+      return res.status(400).json({ error: 'An account with this email already exists — please sign in instead.' });
+    }
+    const user = await auth.registerUser({
+      username, role: 'buyer', name, email: username, phone,
+      addressLine1, addressLine2: addressLine2 || '', city, province,
+      active: true,
+    }, password);
+    const token = auth.createToken(user.username, user.role);
+    res.json({ success: true, token, buyer: safeBuyer(user) });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.post(`${BASE}/shop/buyer/login`, async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
+    const username = String(email).toLowerCase().trim();
+    const user = await auth.loginUser(username, password);
+    if (!user || user.role !== 'buyer') return res.status(401).json({ error: 'Invalid email or password.' });
+    const token = auth.createToken(user.username, user.role);
+    res.json({ success: true, token, buyer: safeBuyer(user) });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.get(`${BASE}/shop/buyer/me`, auth.requireAuth, requireBuyer, (req, res) => {
+  const user = auth.getUser(req.user.username);
+  if (!user) return res.status(404).json({ error: 'Account not found.' });
+  res.json({ buyer: safeBuyer(user) });
+});
+
+app.patch(`${BASE}/shop/buyer/me`, auth.requireAuth, requireBuyer, async (req, res) => {
+  try {
+    const patch = {};
+    for (const key of ['name', 'phone', 'addressLine1', 'addressLine2', 'city', 'province']) {
+      if (req.body[key] !== undefined) patch[key] = req.body[key];
+    }
+    const updated = await auth.updateUser(req.user.username, patch);
+    res.json({ success: true, buyer: safeBuyer(updated) });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.get(`${BASE}/shop/buyer/orders`, auth.requireAuth, requireBuyer, (req, res) => {
+  const user = auth.getUser(req.user.username);
+  if (!user?.email) return res.json({ orders: [], payments: [] });
+  const orders = shop.listOrders({ customerEmail: user.email });
+  const payments = shop.listPayments({ orderIds: orders.map(o => o.id) });
+  res.json({ orders, payments });
+});
+
+app.post(`${BASE}/shop/buyer/orders/:orderId/request-return`, auth.requireAuth, requireBuyer, (req, res) => {
+  const user = auth.getUser(req.user.username);
+  const order = shop.getOrder(req.params.orderId);
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+  if (!user?.email || order.customerEmail.toLowerCase() !== user.email.toLowerCase()) {
+    return res.status(403).json({ error: 'This order does not belong to your account' });
+  }
+  const { order: updated, error } = shop.requestReturn(req.params.orderId, req.body.reason);
+  if (error) return res.status(400).json({ error });
+  res.json({ success: true, order: updated });
+});
+
 app.post(`${BASE}/membership/register`, async (req, res) => { try { const member = await registrations.registerMember(req.body); setImmediate(() => notifyNewApplication('member', member)); res.json({ member }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/membership/me`, auth.requireAuth, (req, res) => { const m = registrations.getMemberByMembershipNumber(req.query.membershipNumber); if (!m) return res.status(404).json({ error: 'Member not found' }); res.json({ member: m }); });
 app.get(`${BASE}/membership/members`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => res.json({ members: registrations.listMembers() }));
