@@ -134,6 +134,7 @@ function CertificateVisual({ cert }: { cert: CoopCertificate }) {
         </div>
       )}
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <img src="/logo-boz.png" alt="Build One Zambia" style={{ width: '56px', height: '56px', objectFit: 'contain', margin: '0 auto 8px' }} />
         <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.2em', color: A }}>REPUBLIC OF ZAMBIA</p>
         <p style={{ fontSize: '11px', color: '#555' }}>Registered under the Cooperatives Act, Chapter 119 of the Laws of Zambia</p>
         <h1 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.6rem', letterSpacing: '0.08em', color: A, margin: '14px 0 4px', textTransform: 'uppercase' }}>

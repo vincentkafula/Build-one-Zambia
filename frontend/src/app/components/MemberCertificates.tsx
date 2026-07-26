@@ -69,7 +69,7 @@ function MembershipCertVisual({ cert }: { cert: MembershipCert }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '16px' }}>
           <div style={{ width: '2px', flex: 1, background: 'linear-gradient(to right, transparent, #c9a84c)' }} />
           <div style={{ display: 'flex', align: 'center', gap: '12px', flexDirection: 'column', alignItems: 'center' }}>
-            <Shield size={40} color="#c9a84c" />
+            <img src="/logo-boz.png" alt="Build One Zambia" style={{ width: '52px', height: '52px', objectFit: 'contain' }} />
             <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.3em', color: '#c9a84c', textTransform: 'uppercase' }}>Build One Zambia</span>
           </div>
           <div style={{ width: '2px', flex: 1, background: 'linear-gradient(to left, transparent, #c9a84c)' }} />
@@ -175,7 +175,7 @@ function AdoptionCertVisual({ cert }: { cert: AdoptionCert & { eligible: true } 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '16px' }}>
           <div style={{ width: '2px', flex: 1, background: 'linear-gradient(to right, transparent, #c9a84c)' }} />
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-            <Award size={44} color="#c9a84c" />
+            <img src="/logo-boz.png" alt="Build One Zambia" style={{ width: '56px', height: '56px', objectFit: 'contain' }} />
             <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.3em', color: '#c9a84c', textTransform: 'uppercase' }}>Build One Zambia</span>
           </div>
           <div style={{ width: '2px', flex: 1, background: 'linear-gradient(to left, transparent, #c9a84c)' }} />
@@ -317,7 +317,7 @@ function AppointmentCertVisual({ cert }: { cert: AppointmentCert & { eligible: t
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '16px' }}>
           <div style={{ width: '2px', flex: 1, background: 'linear-gradient(to right, transparent, #c9a84c)' }} />
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-            <Shield size={44} color="#c9a84c" />
+            <img src="/logo-boz.png" alt="Build One Zambia" style={{ width: '56px', height: '56px', objectFit: 'contain' }} />
             <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.3em', color: '#c9a84c', textTransform: 'uppercase' }}>Build One Zambia</span>
           </div>
           <div style={{ width: '2px', flex: 1, background: 'linear-gradient(to left, transparent, #c9a84c)' }} />
