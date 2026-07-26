@@ -1218,10 +1218,6 @@ app.get(`${BASE}/data-entry/submissions`, auth.requireAuth, (req, res) => {
 
 // ─── Reset Votes (Super Admin only, danger zone) ───────────────────────────────
 // Wipes every submitted result/vote after testing, so the system starts clean
-// on election day. Requires the caller to send { confirm: "RESET" } to avoid
-// accidental triggering.
-// ─── Reset Votes (Super Admin only, danger zone) ───────────────────────────────
-// Wipes every submitted result/vote after testing, so the system starts clean
 // on election day. Requires: the confirm string, AND a fresh re-entry of the
 // account password + a separate PIN (auth.verifyStepUp) — being logged in as
 // super_admin is not enough on its own for something this irreversible; a
@@ -1253,6 +1249,42 @@ app.post(`${BASE}/admin/reset-votes`, auth.requireAuth, auth.requireRole('super_
     res.status(500).json({ error: err.message });
   }
 });
+
+// ─── Reset Election Agents (Super Admin only, danger zone) ────────────────────
+// Permanently deletes every login account whose role is in the "election
+// agent" tier (polling_agent / agent / election_agent) — NOT the ward/
+// constituency/district/provincial manager roles, which are a separate tier
+// and untouched by this. Their original registration/application records
+// are left intact (so who applied and was approved stays on file); only the
+// ability to log in is removed. Same confirm + password + PIN step-up gate
+// as reset-votes above, since this is equally irreversible.
+const ELECTION_AGENT_ROLES = ['polling_agent', 'agent', 'election_agent'];
+app.post(`${BASE}/admin/reset-agents`, auth.requireAuth, auth.requireRole('super_admin'), async (req, res) => {
+  try {
+    if (req.body?.confirm !== 'RESET AGENTS') {
+      return res.status(400).json({ error: 'Confirmation required — send { "confirm": "RESET AGENTS" } to proceed.' });
+    }
+    const stepUpOk = await auth.verifyStepUp(req.user.username, req.body?.password, req.body?.pin);
+    if (!stepUpOk) {
+      return res.status(401).json({ error: 'Incorrect password or PIN. Re-enter both to confirm this action.' });
+    }
+    const targets = auth.listUsers().filter(u => ELECTION_AGENT_ROLES.includes(u.role));
+    for (const u of targets) auth.deleteUser(u.username);
+    dataEntryStore.auditLog.push({
+      id: `audit-${Date.now()}`,
+      action: 'reset_agents',
+      by: req.user.username,
+      at: new Date().toISOString(),
+      accountsDeleted: targets.length,
+      roles: ELECTION_AGENT_ROLES,
+    });
+    saveDataEntry();
+    res.json({ success: true, accountsDeleted: targets.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get(`${BASE}/data-entry/submissions/:id`, auth.requireAuth, (req, res) => { const sub = dataEntryStore.submissions.find(s => s.id === req.params.id); if (!sub) return res.status(404).json({ error: 'Not found' }); res.json({ submission: sub }); });
 app.patch(`${BASE}/data-entry/submissions/:id/status`, auth.requireAuth, (req, res) => { const idx = dataEntryStore.submissions.findIndex(s => s.id === req.params.id); if (idx < 0) return res.status(404).json({ error: 'Not found' }); const now = new Date().toISOString(); const updated = { ...dataEntryStore.submissions[idx], status: req.body.status, notes: req.body.notes, reviewedAt: now, reviewedBy: req.user?.username }; dataEntryStore.submissions[idx] = updated; saveDataEntry(); const category = updated.electionType === 'parliament' ? 'parliamentary' : updated.electionType; const key = `boz:results:${category}:station:${updated.pollingStationId}`; const existing = kv.get(key); if (existing) kv.set(key, { ...existing, status: req.body.status, verified: req.body.status === 'approved' || req.body.status === 'verified', verifiedBy: req.user?.username, updatedAt: now }); res.json({ success: true, submission: updated }); });
 app.get(`${BASE}/data-entry/stats`, auth.requireAuth, (req, res) => { const subs = dataEntryStore.submissions; res.json({ stats: { total: subs.length, pending: subs.filter(s => s.status === 'pending').length, approved: subs.filter(s => s.status === 'approved').length, rejected: subs.filter(s => s.status === 'rejected').length } }); });

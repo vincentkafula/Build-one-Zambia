@@ -93,6 +93,12 @@ export function SystemSetupDashboard() {
   const [resetting, setResetting] = useState(false);
   const [resetResult, setResetResult] = useState<{ ok: boolean; message: string } | null>(null);
 
+  const [agentsConfirmText, setAgentsConfirmText] = useState('');
+  const [agentsPassword, setAgentsPassword] = useState('');
+  const [agentsPin, setAgentsPin] = useState('');
+  const [agentsResetting, setAgentsResetting] = useState(false);
+  const [agentsResult, setAgentsResult] = useState<{ ok: boolean; message: string } | null>(null);
+
   const [pinCurrentPassword, setPinCurrentPassword] = useState('');
   const [pinNew, setPinNew] = useState('');
   const [pinSaving, setPinSaving] = useState(false);
@@ -165,6 +171,27 @@ export function SystemSetupDashboard() {
       setPinResult({ ok: false, message: e instanceof Error ? e.message : 'Could not update PIN.' });
     } finally {
       setPinSaving(false);
+    }
+  };
+
+  const resetAgents = async () => {
+    if (agentsConfirmText !== 'RESET AGENTS') return;
+    if (!agentsPassword || !agentsPin) { setAgentsResult({ ok: false, message: 'Enter your password and PIN to confirm.' }); return; }
+    if (!confirm('This will PERMANENTLY DELETE every polling agent / election agent login account. They will not be able to log in again until re-registered and re-approved from scratch. Ward/constituency/district/provincial manager accounts are NOT affected. Are you absolutely sure?')) return;
+    setAgentsResetting(true);
+    setAgentsResult(null);
+    try {
+      const res = await apiFetch<{ success: boolean; accountsDeleted: number }>(
+        'POST', '/admin/reset-agents', { confirm: 'RESET AGENTS', password: agentsPassword, pin: agentsPin }
+      );
+      setAgentsResult({ ok: true, message: `✓ Deleted ${res.accountsDeleted} agent account(s). They'll need to re-register.` });
+      setAgentsConfirmText('');
+      setAgentsPassword('');
+      setAgentsPin('');
+    } catch (e) {
+      setAgentsResult({ ok: false, message: e instanceof Error ? e.message : 'Reset failed' });
+    } finally {
+      setAgentsResetting(false);
     }
   };
 
@@ -502,6 +529,59 @@ Authorization: Bearer <your-token>
           >
             {resetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}
             Reset All Votes to Zero
+          </button>
+        </div>
+      </div>
+
+      {/* Danger Zone — reset election agents (super admin only) */}
+      <div className="bg-red-50/40 border-2 border-red-300 rounded-xl p-5">
+        <h3 className="text-sm font-bold text-red-700 mb-1 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4" /> Danger Zone — Delete All Election Agent Accounts
+        </h3>
+        <p className="text-sm text-red-700/80 mb-4">
+          Permanently deletes every polling agent / election agent login account. They will need to re-register
+          and be re-approved from scratch to log in again. Ward, constituency, district, and provincial manager
+          accounts are <strong>not</strong> affected — only the agent tier. This cannot be undone.
+        </p>
+
+        {agentsResult && (
+          <p className={`text-sm px-3 py-2 rounded-lg mb-3 border ${agentsResult.ok ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
+            {agentsResult.message}
+          </p>
+        )}
+
+        <label className="block text-xs font-semibold text-red-700 mb-1">
+          Type <span className="font-mono bg-red-100 px-1 rounded">RESET AGENTS</span>, then your password and PIN, to confirm:
+        </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            value={agentsConfirmText}
+            onChange={e => setAgentsConfirmText(e.target.value)}
+            placeholder="RESET AGENTS"
+            className="px-3 py-2 border border-red-300 rounded-lg text-sm bg-background w-40 focus:outline-none focus:ring-1 focus:ring-red-500"
+          />
+          <input
+            type="password"
+            value={agentsPassword}
+            onChange={e => setAgentsPassword(e.target.value)}
+            placeholder="Password"
+            className="px-3 py-2 border border-red-300 rounded-lg text-sm bg-background w-36 focus:outline-none focus:ring-1 focus:ring-red-500"
+          />
+          <input
+            type="password"
+            inputMode="numeric"
+            value={agentsPin}
+            onChange={e => setAgentsPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
+            placeholder="PIN"
+            className="px-3 py-2 border border-red-300 rounded-lg text-sm bg-background w-24 focus:outline-none focus:ring-1 focus:ring-red-500"
+          />
+          <button
+            onClick={resetAgents}
+            disabled={agentsConfirmText !== 'RESET AGENTS' || !agentsPassword || !agentsPin || agentsResetting}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {agentsResetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}
+            Delete All Agent Accounts
           </button>
         </div>
       </div>
