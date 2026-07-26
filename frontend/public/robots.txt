@@ -5,4 +5,4 @@ Disallow: /login
 Disallow: /data-entry
 Disallow: /ecz-entry
 
-Sitemap: /sitemap.xml
+Sitemap: https://www.bozplans.org/sitemap.xml
