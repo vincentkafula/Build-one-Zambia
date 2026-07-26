@@ -208,4 +208,96 @@
     color: #111827;
     background-color: #ffffff;
   }
+
+  /* ---------------------------------------------------------------------
+     Global polish pass — motion, depth, and typographic refinement only.
+     No brand colors are introduced or changed here; every value below
+     reuses the existing palette or is a neutral (shadow/timing/rendering).
+     --------------------------------------------------------------------- */
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Crisper, more premium default motion on every interactive element —
+     buttons/links/cards feel considered instead of snapping instantly. */
+  a, button, [role="button"], input, select, textarea {
+    transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease,
+      box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease;
+  }
+
+  button, [role="button"] {
+    cursor: pointer;
+  }
+
+  /* Subtle, consistent depth scale available anywhere via var(--shadow-*),
+     tuned for a light UI (soft, low-opacity, multi-layer — not a single
+     harsh drop shadow). Cards/panels can opt in without hardcoding values. */
+  :root {
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+    --shadow-lg: 0 12px 28px -6px rgba(15, 23, 42, 0.12), 0 4px 10px -4px rgba(15, 23, 42, 0.06);
+    --shadow-xl: 0 24px 48px -12px rgba(15, 23, 42, 0.18);
+  }
+
+  /* Refined focus ring: visible and accessible, but a soft glow instead of
+     a hard rectangle — reads as designed rather than a browser default. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Text selection tinted to the brand accent instead of the browser's
+     default blue, a small detail that reads as intentional. */
+  ::selection {
+    background-color: color-mix(in srgb, var(--primary) 25%, transparent);
+    color: var(--foreground);
+  }
+
+  /* Slim, unobtrusive scrollbar (WebKit) matching the muted palette
+     already in use, rather than the bulky OS default. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: color-mix(in srgb, var(--foreground) 18%, transparent);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+    background-clip: content-box;
+  }
+
+  /* Images/media default to a gentle rounded corner + no baseline gap
+     unless a component explicitly overrides it — avoids the "raw <img>"
+     look on any picture that didn't get individually styled. */
+  img, video {
+    display: block;
+    max-width: 100%;
+  }
+
+  /* Respect reduced-motion preferences: drop the smooth-scroll and
+     transition flourishes above for anyone who's asked for less motion. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    a, button, [role="button"], input, select, textarea {
+      transition: none;
+    }
+  }
 }
