@@ -177,7 +177,7 @@ export function SystemSetupDashboard() {
   const resetAgents = async () => {
     if (agentsConfirmText !== 'RESET AGENTS') return;
     if (!agentsPassword || !agentsPin) { setAgentsResult({ ok: false, message: 'Enter your password and PIN to confirm.' }); return; }
-    if (!confirm('This will PERMANENTLY DELETE every polling agent / election agent login account. They will not be able to log in again until re-registered and re-approved from scratch. Ward/constituency/district/provincial manager accounts are NOT affected. Are you absolutely sure?')) return;
+    if (!confirm('This will PERMANENTLY DELETE every election-role login account — polling agents through ward, constituency, district, provincial, and national managers. They will not be able to log in again until re-registered and re-approved from scratch. Admin/super_admin accounts are NOT affected. Are you absolutely sure?')) return;
     setAgentsResetting(true);
     setAgentsResult(null);
     try {
@@ -536,12 +536,12 @@ Authorization: Bearer <your-token>
       {/* Danger Zone — reset election agents (super admin only) */}
       <div className="bg-red-50/40 border-2 border-red-300 rounded-xl p-5">
         <h3 className="text-sm font-bold text-red-700 mb-1 flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4" /> Danger Zone — Delete All Election Agent Accounts
+          <AlertTriangle className="w-4 h-4" /> Danger Zone — Delete All Election Role Accounts
         </h3>
         <p className="text-sm text-red-700/80 mb-4">
-          Permanently deletes every polling agent / election agent login account. They will need to re-register
-          and be re-approved from scratch to log in again. Ward, constituency, district, and provincial manager
-          accounts are <strong>not</strong> affected — only the agent tier. This cannot be undone.
+          Permanently deletes every election-role login account: polling agents, plus ward, constituency, district,
+          provincial, and national managers. They will need to re-register and be re-approved from scratch to log
+          in again. Admin/super_admin accounts are <strong>not</strong> affected. This cannot be undone.
         </p>
 
         {agentsResult && (
@@ -581,7 +581,7 @@ Authorization: Bearer <your-token>
             className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {agentsResetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}
-            Delete All Agent Accounts
+            Delete All Election Role Accounts
           </button>
         </div>
       </div>

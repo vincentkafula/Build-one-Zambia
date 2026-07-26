@@ -1251,14 +1251,17 @@ app.post(`${BASE}/admin/reset-votes`, auth.requireAuth, auth.requireRole('super_
 });
 
 // ─── Reset Election Agents (Super Admin only, danger zone) ────────────────────
-// Permanently deletes every login account whose role is in the "election
-// agent" tier (polling_agent / agent / election_agent) — NOT the ward/
-// constituency/district/provincial manager roles, which are a separate tier
-// and untouched by this. Their original registration/application records
-// are left intact (so who applied and was approved stays on file); only the
+// Permanently deletes every login account across the full election-role
+// hierarchy: polling agents up through ward, constituency, district,
+// provincial, and national managers. admin/super_admin accounts are NOT
+// included — those are administrative accounts, not election roles. Their
+// original registration/application records are left intact; only the
 // ability to log in is removed. Same confirm + password + PIN step-up gate
 // as reset-votes above, since this is equally irreversible.
-const ELECTION_AGENT_ROLES = ['polling_agent', 'agent', 'election_agent'];
+const ELECTION_AGENT_ROLES = [
+  'polling_agent', 'agent', 'election_agent',
+  'ward_manager', 'constituency_manager', 'district_manager', 'provincial_manager', 'national_manager',
+];
 app.post(`${BASE}/admin/reset-agents`, auth.requireAuth, auth.requireRole('super_admin'), async (req, res) => {
   try {
     if (req.body?.confirm !== 'RESET AGENTS') {
