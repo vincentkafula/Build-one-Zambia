@@ -30,7 +30,6 @@ interface NavLink {
 }
 
 const NAV_LINKS: NavLink[] = [
-  { label: 'HOME',      path: '/',         hasDropdown: false },
   { label: 'ABOUT US',  path: '/about',    hasDropdown: true,  dropdownType: 'about' },
   { label: 'CAMPAIGN',  path: '/campaign', hasDropdown: false },
   { label: 'PAGES',     path: '/pages',    hasDropdown: false },
