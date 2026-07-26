@@ -267,6 +267,60 @@ app.post(`${BASE}/auth/set-pin`, auth.requireAuth, auth.requireRole('admin', 'su
   }
 });
 
+// ─── Cooperative Registration Certificate ──────────────────────────────────
+// Populates a certificate from the actual online application a cooperative
+// submitted — cooperative name, the 20 BOZ member names (resolved from
+// their membership numbers), contact person, address, and approval date —
+// rather than a static uploaded document. A cooperative account sees their
+// own certificate; super_admin/admin can look up any coop via ?coopId=.
+app.get(`${BASE}/coop/certificate`, auth.requireAuth, (req, res) => {
+  const isAdmin = req.user.role === 'super_admin' || req.user.role === 'admin';
+  let coopId = isAdmin ? (req.query.coopId || null) : null;
+
+  if (!coopId) {
+    const fullUser = auth.getUser(req.user.username);
+    if (!fullUser || fullUser.registrationType !== 'cooperative' || !fullUser.registrationId) {
+      return res.status(404).json({ error: 'No cooperative application linked to this account.' });
+    }
+    coopId = fullUser.registrationId;
+  }
+
+  const coop = registrations.getCoop(coopId);
+  if (!coop) return res.status(404).json({ error: 'Cooperative application not found.' });
+  if (coop.status !== 'approved') {
+    return res.status(400).json({ error: `Certificate is only available once the application is approved. Current status: ${coop.status}.` });
+  }
+
+  const members = (coop.membershipNumbers || []).map((num, i) => {
+    const m = registrations.getMemberByMembershipNumber(num);
+    return { position: i + 1, membershipNumber: num, fullName: m ? `${m.firstName} ${m.lastName}` : null };
+  });
+
+  const TYPE_LABELS = { agricultural: 'Agricultural Cooperative', 'multi-purpose': 'Multi-Purpose Cooperative' };
+  const approvedAt = coop.updatedAt || coop.createdAt;
+  const year = new Date(approvedAt).getFullYear();
+  // Deterministic certificate number from the registration id, so the same
+  // application always produces the same number rather than a random one.
+  const seq = String(Math.abs([...coopId].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0)) % 100000).padStart(5, '0');
+
+  res.json({
+    certificate: {
+      certificateNo: `BOZ/COOP/${year}/${seq}`,
+      registrationNumber: seq,
+      dateOfIssue: approvedAt,
+      dateOfRegistration: approvedAt,
+      cooperativeName: coop.cooperativeName,
+      legalStatus: 'Cooperative Society Limited',
+      typeOfCooperative: TYPE_LABELS[coop.type] || 'Multi-Purpose Cooperative',
+      registeredOffice: coop.address || '',
+      contactPerson: coop.contactPerson || '',
+      contactPhone: coop.contactPhone || '',
+      memberCount: members.length,
+      members,
+    },
+  });
+});
+
 // Passwords and PINs are hashed (auth.js/PBKDF2) — there is no original
 // value to "resend", ever. This resets both to new random values and
 // emails the new credentials, same as any standard account-recovery flow.

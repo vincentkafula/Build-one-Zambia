@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import {
   LayoutDashboard, Package, PackagePlus, Globe, Users, UserCircle, Lock, MapPin,
   CheckCircle, Clock, Edit2, Save,
-  Phone, Mail, TrendingUp, DollarSign, FileText, Download, ShieldCheck
+  Phone, Mail, TrendingUp, DollarSign, FileText, Download, ShieldCheck, Loader2, AlertCircle
 } from 'lucide-react';
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
+import { registrationApi, CoopCertificate } from '../../lib/api';
 
 const A = '#00712B';
 const NAVY = '#1e2d4a';
@@ -41,19 +42,6 @@ const NAV: { group: string; items: { key: SectionKey; label: string; icon: React
     ],
   },
 ];
-
-const CERTIFICATE = {
-  certificateNo: 'BOZ/COOP/2025/001',
-  dateOfIssue: '20 May 2025',
-  registrationNumber: '00012345',
-  dateOfRegistration: '20 May 2025',
-  legalStatus: 'Cooperative Society Limited',
-  typeOfCooperative: 'Multi-Purpose Cooperative',
-  registeredOffice: 'Plot No. 1234, Freedom Way, Lusaka, Zambia',
-  issuingAuthority: 'Ministry of Commerce, Trade and Industry — Registrar of Cooperatives',
-  act: 'The Cooperatives Act, Chapter 119 of the Laws of Zambia',
-  fileUrl: '/documents/BOZ-Cooperative-Registration-Certificate.pdf',
-};
 
 const EQUIPMENT_APPROVED = [
   { id: 'EQ-001', name: 'Maize Sheller Machine', category: 'Processing', approvedDate: '2026-03-12', condition: 'New', assignedBy: 'Ministry of Agriculture' },
@@ -110,6 +98,130 @@ function Field({ label, value }: { label: string; value: string }) {
     <div>
       <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em' }}>{label}</p>
       <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem' }}>{value}</p>
+    </div>
+  );
+}
+
+function printCertificate() {
+  const el = document.getElementById('coop-cert-print');
+  if (!el) return;
+  const html = `<!DOCTYPE html><html><head><title>BOZ Cooperative Certificate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Open+Sans&display=swap" rel="stylesheet">
+    <style>*{margin:0;padding:0;box-sizing:border-box}body{background:#fff;font-family:'Open Sans',sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}@page{size:A4 landscape;margin:0}</style>
+    </head><body>${el.outerHTML}</body></html>`;
+  const w = window.open('', '_blank');
+  if (!w) return;
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(() => { w.print(); w.close(); }, 600);
+}
+
+function CertificateVisual({ cert }: { cert: CoopCertificate }) {
+  const issued = new Date(cert.dateOfIssue).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  return (
+    <div id="coop-cert-print" style={{
+      width: '100%', maxWidth: '900px', margin: '0 auto', background: '#fff', color: '#1a1a1a',
+      border: `3px double ${A}`, borderRadius: '6px', padding: '40px 48px', position: 'relative',
+    }}>
+      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '11px', letterSpacing: '0.2em', color: A }}>REPUBLIC OF ZAMBIA</p>
+        <p style={{ fontSize: '11px', color: '#555' }}>Registered under the Cooperatives Act, Chapter 119 of the Laws of Zambia</p>
+        <h1 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.6rem', letterSpacing: '0.08em', color: A, margin: '14px 0 4px', textTransform: 'uppercase' }}>
+          Cooperative Registration Certificate
+        </h1>
+      </div>
+
+      <p style={{ textAlign: 'center', fontStyle: 'italic', color: '#555', marginBottom: '8px' }}>This is to certify that</p>
+      <p style={{ textAlign: 'center', fontFamily: 'Oswald, sans-serif', fontSize: '1.8rem', color: '#1a1a1a', margin: '0 0 6px', textTransform: 'uppercase' }}>{cert.cooperativeName}</p>
+      <p style={{ textAlign: 'center', color: '#555', marginBottom: '20px', fontSize: '0.9rem' }}>
+        has been duly registered as a {cert.legalStatus} and is entitled to all rights, privileges and obligations conferred by law.
+      </p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 24px', fontSize: '0.85rem', marginBottom: '20px', borderTop: '1px solid #ddd', borderBottom: '1px solid #ddd', padding: '16px 0' }}>
+        <p><strong>Certificate No:</strong> {cert.certificateNo}</p>
+        <p><strong>Registration No:</strong> {cert.registrationNumber}</p>
+        <p><strong>Date of Registration:</strong> {issued}</p>
+        <p><strong>Type of Cooperative:</strong> {cert.typeOfCooperative}</p>
+        <p style={{ gridColumn: '1 / -1' }}><strong>Registered Office:</strong> {cert.registeredOffice}</p>
+        <p style={{ gridColumn: '1 / -1' }}><strong>Group Chairperson / Contact:</strong> {cert.contactPerson} · {cert.contactPhone}</p>
+      </div>
+
+      <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.8rem', letterSpacing: '0.06em', color: A, marginBottom: '8px' }}>
+        REGISTERED MEMBERS ({cert.memberCount})
+      </p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2px 20px', fontSize: '0.78rem', marginBottom: '24px' }}>
+        {cert.members.map(m => (
+          <p key={m.membershipNumber} style={{ margin: 0 }}>
+            {m.position}. {m.fullName || <span style={{ color: '#b91c1c' }}>Unknown member ({m.membershipNumber})</span>}
+            <span style={{ color: '#888' }}> — {m.membershipNumber}</span>
+          </p>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid #ddd', paddingTop: '16px' }}>
+        <div>
+          <div style={{ width: '140px', height: '1px', backgroundColor: '#1a1a1a', marginBottom: '6px' }} />
+          <p style={{ fontSize: '0.7rem', color: '#555' }}>Registrar of Cooperatives</p>
+        </div>
+        <p style={{ fontSize: '0.68rem', color: '#888', textAlign: 'right' }}>
+          Issued {issued} · bozplans.org<br />This certificate is the property of the Registrar of Cooperatives.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function CertificateSection() {
+  const [cert, setCert] = useState<CoopCertificate | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await registrationApi.getCoopCertificate();
+        setCert(res.certificate);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Could not load your certificate.');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  return (
+    <div>
+      <h2 className="text-xl mb-6" style={{ color: NAVY }}>Registration Certificate</h2>
+      <DashCard title="Cooperative Registration Certificate">
+        {loading ? (
+          <div className="flex items-center gap-2 py-10 justify-center text-white/50">
+            <Loader2 size={18} className="animate-spin" /> Loading your certificate…
+          </div>
+        ) : error ? (
+          <div className="flex items-start gap-3 rounded-lg px-4 py-3" style={{ backgroundColor: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.25)' }}>
+            <AlertCircle size={18} style={{ color: '#dc2626', flexShrink: 0, marginTop: 2 }} />
+            <p className="text-sm" style={{ color: '#f87171' }}>{error}</p>
+          </div>
+        ) : cert ? (
+          <>
+            <div className="flex items-start gap-3 mb-5 rounded-lg px-4 py-3" style={{ backgroundColor: '#0a1f12', border: '1px solid rgba(0,113,43,0.3)' }}>
+              <ShieldCheck size={18} style={{ color: A, flexShrink: 0, marginTop: 2 }} />
+              <p className="text-sm" style={{ color: '#7fc99a' }}>
+                Populated automatically from your online cooperative application — {cert.memberCount} registered members.
+              </p>
+            </div>
+            <div className="mb-5" style={{ backgroundColor: '#0d1810', padding: '20px', borderRadius: '8px' }}>
+              <CertificateVisual cert={cert} />
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <button onClick={printCertificate} className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm" style={{ background: A }}>
+                <Download size={15} /> Download / Print Certificate
+              </button>
+            </div>
+          </>
+        ) : null}
+      </DashCard>
     </div>
   );
 }
@@ -337,51 +449,7 @@ export default function CooperativeDashboard() {
         );
 
       case 'documents':
-        return (
-          <div>
-            <h2 className="text-xl mb-6" style={{ color: NAVY }}>Registration Certificate</h2>
-            <DashCard title="Cooperative Registration Certificate">
-              <div className="flex items-start gap-3 mb-5 rounded-lg px-4 py-3" style={{ backgroundColor: '#0a1f12', border: '1px solid rgba(0,113,43,0.3)' }}>
-                <ShieldCheck size={18} style={{ color: A, flexShrink: 0, marginTop: 2 }} />
-                <p className="text-sm" style={{ color: '#7fc99a' }}>
-                  Registered under {CERTIFICATE.act} by the {CERTIFICATE.issuingAuthority}.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-                <Field label="Certificate Number" value={CERTIFICATE.certificateNo} />
-                <Field label="Date of Issue" value={CERTIFICATE.dateOfIssue} />
-                <Field label="Registration Number" value={CERTIFICATE.registrationNumber} />
-                <Field label="Date of Registration" value={CERTIFICATE.dateOfRegistration} />
-                <Field label="Legal Status" value={CERTIFICATE.legalStatus} />
-                <Field label="Type of Cooperative" value={CERTIFICATE.typeOfCooperative} />
-                <div className="md:col-span-2">
-                  <Field label="Registered Office" value={CERTIFICATE.registeredOffice} />
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <a
-                  href={CERTIFICATE.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm"
-                  style={{ background: A }}
-                >
-                  <FileText size={15} /> View Certificate
-                </a>
-                <a
-                  href={CERTIFICATE.fileUrl}
-                  download="BOZ-Cooperative-Registration-Certificate.pdf"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
-                  style={{ border: `1px solid ${A}`, color: A }}
-                >
-                  <Download size={15} /> Download PDF
-                </a>
-              </div>
-            </DashCard>
-          </div>
-        );
+        return <CertificateSection />;
 
       case 'personal-details':
         return (

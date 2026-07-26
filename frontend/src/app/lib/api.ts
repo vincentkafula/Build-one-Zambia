@@ -1813,9 +1813,33 @@ export interface RegStats {
   agent:       { pending: number; approved: number; rejected: number; total: number };
 }
 
+export interface CoopCertificateMember {
+  position: number;
+  membershipNumber: string;
+  fullName: string | null;
+}
+
+export interface CoopCertificate {
+  certificateNo: string;
+  registrationNumber: string;
+  dateOfIssue: string;
+  dateOfRegistration: string;
+  cooperativeName: string;
+  legalStatus: string;
+  typeOfCooperative: string;
+  registeredOffice: string;
+  contactPerson: string;
+  contactPhone: string;
+  memberCount: number;
+  members: CoopCertificateMember[];
+}
+
 export const registrationApi = {
   getStats: () =>
     request<{ success: boolean; stats: RegStats }>('GET', '/registrations/stats', undefined, true),
+
+  getCoopCertificate: (coopId?: string) =>
+    request<{ certificate: CoopCertificate }>('GET', `/coop/certificate${coopId ? `?coopId=${encodeURIComponent(coopId)}` : ''}`, undefined, true),
 
   // Member
   listMembers: (status?: RegStatus) => {
