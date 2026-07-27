@@ -6,7 +6,7 @@
  * (admin/super_admin), Cooperative, Internship, and Chamber of Commerce.
  *
  * There is no "pick your dashboard first" step. The person just signs in
- * with their email and password, and the backend's response — the role
+ * with their email/username and password, and the backend's response — the role
  * assigned to their account when it was approved — tells this page which
  * dashboard to send them to. Nobody needs to know or choose their own
  * role; it's detected automatically from their credentials.
@@ -73,7 +73,7 @@ export default function DashboardLogin() {
     e.preventDefault();
     setError('');
     if (!email.trim() || !password) {
-      setError('Please enter your email and password.');
+      setError('Please enter your email/username and password.');
       return;
     }
     setLoading(true);
@@ -180,14 +180,14 @@ export default function DashboardLogin() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.92)' }}>Email Address</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.92)' }}>Email or Username</label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.75)' }} />
                   <input
-                    type="email"
+                    type="text"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    placeholder="youremail@example.com"
+                    placeholder="youremail@example.com or username"
                     autoComplete="username"
                     className="w-full pl-10 pr-4 py-3 rounded-lg text-sm"
                     style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.35)', color: '#fff', outline: 'none' }}
