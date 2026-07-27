@@ -307,7 +307,7 @@ export function FemaleCandidatesPage() {
       </section>
 
       {/* ── ROTATING FEATURED CANDIDATE ─────────────────────────── */}
-      <section className="py-20 px-4" style={{ backgroundcolor: '#111111', borderLeft: `4px solid ${O}` }}>
+      <section className="py-20 px-4" style={{ backgroundColor: '#ffffff', borderLeft: `4px solid ${O}` }}>
         <div className="max-w-6xl mx-auto">
 
           {/* Label + controls */}
@@ -425,7 +425,7 @@ export function FemaleCandidatesPage() {
           {ACTION_CARDS.map(card => (
             <Link key={card.title} to={card.path}
               className="group flex flex-col items-center text-center p-8 rounded-2xl transition-all"
-              style={{ backgroundcolor: '#111111', boxShadow: '0 4px 24px rgba(0,0,0,0.07)', border: '1px solid #f0f0f0', textDecoration: 'none' }}
+              style={{ backgroundColor: '#ffffff', boxShadow: '0 4px 24px rgba(0,0,0,0.07)', border: '1px solid #f0f0f0', textDecoration: 'none' }}
               onMouseEnter={e => (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 40px rgba(232,98,26,0.18)`}
               onMouseLeave={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 24px rgba(0,0,0,0.07)'}
             >
@@ -446,7 +446,7 @@ export function FemaleCandidatesPage() {
       </section>
 
       {/* Candidate grid */}
-      <section className="py-20 px-4" style={{ backgroundcolor: '#111111' }}>
+      <section className="py-20 px-4" style={{ backgroundColor: '#ffffff' }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-xs tracking-widest mb-3" style={{ color: O, fontFamily: 'Oswald, sans-serif' }}>SHADOW CABINET</p>
@@ -558,7 +558,7 @@ export function FemaleCandidatesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
               {liveCandidates.map(c => (
                 <div key={c.id} className="group flex flex-col items-center text-center rounded-2xl overflow-hidden"
-                  style={{ backgroundcolor: '#111111', border: '1px solid #f0f0f0', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
+                  style={{ backgroundColor: '#ffffff', border: '1px solid #f0f0f0', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
                   <LiveCandidatePhoto id={c.id} name={c.name} />
                   <div className="px-6 pb-8 pt-5 w-full">
                     {c.scopeName && (
@@ -586,7 +586,7 @@ export function FemaleCandidatesPage() {
             Volunteer, donate, or simply spread the word. Together we can build a Zambia where women's voices lead the way to a better future.
           </p>
           <Link to="/register/member" className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full transition-all"
-            style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.12em', backgroundcolor: '#111111', color: O, textDecoration: 'none' }}
+            style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.12em', backgroundColor: '#ffffff', color: O, textDecoration: 'none' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = NAVY; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = '#fff'; (e.currentTarget as HTMLElement).style.color = O; }}
           >
