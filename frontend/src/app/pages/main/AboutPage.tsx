@@ -432,20 +432,22 @@ function LeadershipAccordion() {
             {/* Section Header */}
             <button
               onClick={() => toggleSection(level.id)}
-              className="w-full mb-6 px-6 py-5 flex items-center justify-between text-left transition-all"
+              className="w-full mb-6 px-6 py-5 flex items-center justify-between text-left transition-all rounded-xl"
               style={{
-                backgroundColor: '#EE4A3C',
-                border: '1px solid #1f1f1f',
+                backgroundColor: '#ffffff',
+                border: `1px solid ${isOpen ? '#00712B33' : '#e7e9e1'}`,
+                borderLeft: `4px solid ${isOpen ? '#00712B' : '#e7e9e1'}`,
+                boxShadow: isOpen ? '0 8px 20px -8px rgba(0,113,43,0.25)' : '0 2px 8px rgba(15,23,42,0.06)',
               }}
             >
               <div>
                 <h3
-                  className="text-black mb-1"
+                  className="text-[#14210f] mb-1"
                   style={{
                     fontFamily: 'Oswald, sans-serif',
                     fontSize: '1.5rem',
                     letterSpacing: '0.06em',
-                    color: isOpen ? '#dc2626' : '#000',
+                    color: isOpen ? '#00712B' : '#14210f',
                   }}
                 >
                   {level.title}
@@ -464,7 +466,7 @@ function LeadershipAccordion() {
                 className={`w-6 h-6 transition-transform duration-300 shrink-0 ml-4 ${
                   isOpen ? 'rotate-180' : ''
                 }`}
-                style={{ color: '#dc2626' }}
+                style={{ color: '#00712B' }}
               />
             </button>
 
@@ -479,37 +481,37 @@ function LeadershipAccordion() {
               {/* Province selector — only shown for the provincial section */}
               {level.id === 'provincial' && (
                 <div className="mb-8">
-                  <p className="mb-3 text-xs uppercase tracking-widest" style={{ color: '#dc2626', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.2em' }}>
+                  <p className="mb-3 text-xs uppercase tracking-widest" style={{ color: '#00712B', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.2em' }}>
                     Select Province
                   </p>
                   <div className="relative inline-block w-full max-w-sm">
                     <select
                       value={selectedProvince}
                       onChange={(e) => setSelectedProvince(e.target.value as ZambiaProvince)}
-                      className="w-full appearance-none px-5 py-3 pr-12 text-black cursor-pointer outline-none"
+                      className="w-full appearance-none px-5 py-3 pr-12 text-[#14210f] cursor-pointer outline-none rounded-lg"
                       style={{
-                        backgroundColor: '#EE4A3C',
-                        border: '1px solid #dc2626',
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #d9dccf',
                         fontFamily: 'Oswald, sans-serif',
                         fontSize: '1rem',
                         letterSpacing: '0.06em',
-                        color: '#000',
+                        color: '#14210f',
                       }}
                     >
                       {ZAMBIA_PROVINCES.map((prov) => (
-                        <option key={prov} value={prov} style={{ backgroundColor: '#EE4A3C', color: '#000' }}>
+                        <option key={prov} value={prov} style={{ backgroundColor: '#ffffff', color: '#14210f' }}>
                           {prov}
                         </option>
                       ))}
                     </select>
                     {/* Custom dropdown arrow */}
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4" style={{ backgroundColor: '#dc2626' }}>
-                      <ChevronDown className="w-5 h-5 text-black" />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 rounded-r-lg" style={{ backgroundColor: '#00712B' }}>
+                      <ChevronDown className="w-5 h-5 text-white" />
                     </div>
                   </div>
-                  <div className="mt-4 mb-6 h-px" style={{ backgroundcolor: '#111111' }} />
+                  <div className="mt-4 mb-6 h-px" style={{ backgroundColor: '#e5e7eb' }} />
                   <p className="text-sm" style={{ color: '#1a1a1a', fontStyle: 'italic' }}>
-                    Showing leadership for <span style={{ color: '#000' }}>{selectedProvince}</span>
+                    Showing leadership for <span style={{ color: '#14210f' }}>{selectedProvince}</span>
                   </p>
                 </div>
               )}
@@ -517,40 +519,40 @@ function LeadershipAccordion() {
               {/* District selector */}
               {level.id === 'district' && (
                 <div className="mb-8">
-                  <p className="mb-3 text-xs uppercase tracking-widest" style={{ color: '#dc2626', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.2em' }}>
+                  <p className="mb-3 text-xs uppercase tracking-widest" style={{ color: '#00712B', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.2em' }}>
                     Select District
                   </p>
                   <div className="relative inline-block w-full max-w-sm">
                     <select
                       value={selectedDistrict}
                       onChange={(e) => setSelectedDistrict(e.target.value)}
-                      className="w-full appearance-none px-5 py-3 pr-12 cursor-pointer outline-none"
+                      className="w-full appearance-none px-5 py-3 pr-12 cursor-pointer outline-none rounded-lg"
                       style={{
-                        backgroundColor: '#EE4A3C',
-                        border: '1px solid #dc2626',
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #d9dccf',
                         fontFamily: 'Oswald, sans-serif',
                         fontSize: '1rem',
                         letterSpacing: '0.06em',
-                        color: '#000',
+                        color: '#14210f',
                       }}
                     >
                       {ZAMBIA_PROVINCES.map((prov) => (
-                        <optgroup key={prov} label={prov} style={{ backgroundColor: '#EE4A3C', color: '#dc2626', fontFamily: 'Oswald, sans-serif' }}>
+                        <optgroup key={prov} label={prov} style={{ backgroundColor: '#ffffff', color: '#00712B', fontFamily: 'Oswald, sans-serif' }}>
                           {ZAMBIA_DISTRICTS[prov].map((dist) => (
-                            <option key={dist} value={dist} style={{ backgroundColor: '#EE4A3C', color: '#000' }}>
+                            <option key={dist} value={dist} style={{ backgroundColor: '#ffffff', color: '#14210f' }}>
                               {dist}
                             </option>
                           ))}
                         </optgroup>
                       ))}
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4" style={{ backgroundColor: '#dc2626' }}>
-                      <ChevronDown className="w-5 h-5 text-black" />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 rounded-r-lg" style={{ backgroundColor: '#00712B' }}>
+                      <ChevronDown className="w-5 h-5 text-white" />
                     </div>
                   </div>
-                  <div className="mt-4 mb-6 h-px" style={{ backgroundcolor: '#111111' }} />
+                  <div className="mt-4 mb-6 h-px" style={{ backgroundColor: '#e5e7eb' }} />
                   <p className="text-sm" style={{ color: '#1a1a1a', fontStyle: 'italic' }}>
-                    Showing leadership for <span style={{ color: '#000' }}>{selectedDistrict} District</span>
+                    Showing leadership for <span style={{ color: '#14210f' }}>{selectedDistrict} District</span>
                   </p>
                 </div>
               )}
@@ -558,7 +560,7 @@ function LeadershipAccordion() {
               {/* Branch cascading selectors */}
               {level.id === 'branch' && (
                 <div className="mb-8">
-                  <p className="mb-4 text-xs uppercase tracking-widest" style={{ color: '#dc2626', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.2em' }}>
+                  <p className="mb-4 text-xs uppercase tracking-widest" style={{ color: '#00712B', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.2em' }}>
                     Select Your Ward
                   </p>
 
@@ -577,15 +579,15 @@ function LeadershipAccordion() {
                             setBranchConstituency('');
                             setBranchWard('');
                           }}
-                          className="w-full appearance-none px-4 py-3 pr-10 cursor-pointer outline-none"
-                          style={{ backgroundColor: '#EE4A3C', border: '1px solid #dc2626', fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#000' }}
+                          className="w-full appearance-none px-4 py-3 pr-10 cursor-pointer outline-none rounded-lg"
+                          style={{ backgroundColor: '#ffffff', border: '1px solid #d9dccf', fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#14210f' }}
                         >
                           {ZAMBIA_HIERARCHY.map(p => (
-                            <option key={p.name} value={p.name} style={{ backgroundColor: '#EE4A3C' }}>{p.name}</option>
+                            <option key={p.name} value={p.name} style={{ backgroundColor: '#ffffff' }}>{p.name}</option>
                           ))}
                         </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3" style={{ backgroundColor: '#dc2626' }}>
-                          <ChevronDown className="w-4 h-4 text-black" />
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 rounded-r-lg" style={{ backgroundColor: '#00712B' }}>
+                          <ChevronDown className="w-4 h-4 text-white" />
                         </div>
                       </div>
                     </div>
@@ -604,16 +606,16 @@ function LeadershipAccordion() {
                             setBranchWard('');
                           }}
                           disabled={!branchProvince}
-                          className="w-full appearance-none px-4 py-3 pr-10 cursor-pointer outline-none disabled:opacity-40"
-                          style={{ backgroundColor: '#EE4A3C', border: `1px solid ${branchDistrict ? '#dc2626' : '#333'}`, fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#000' }}
+                          className="w-full appearance-none px-4 py-3 pr-10 cursor-pointer outline-none rounded-lg disabled:opacity-40"
+                          style={{ backgroundColor: '#ffffff', border: `1px solid ${branchDistrict ? '#00712B' : '#d9dccf'}`, fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#14210f' }}
                         >
-                          <option value="" style={{ backgroundColor: '#EE4A3C' }}>— Select District —</option>
+                          <option value="" style={{ backgroundColor: '#ffffff' }}>— Select District —</option>
                           {branchDistricts.map(d => (
-                            <option key={d.name} value={d.name} style={{ backgroundColor: '#EE4A3C' }}>{d.name}</option>
+                            <option key={d.name} value={d.name} style={{ backgroundColor: '#ffffff' }}>{d.name}</option>
                           ))}
                         </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3" style={{ backgroundColor: branchDistrict ? '#dc2626' : '#222' }}>
-                          <ChevronDown className="w-4 h-4 text-black" />
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 rounded-r-lg" style={{ backgroundColor: branchDistrict ? '#00712B' : '#f3f4ef' }}>
+                          <ChevronDown className="w-4 h-4" style={{ color: branchDistrict ? '#ffffff' : '#6b7280' }} />
                         </div>
                       </div>
                     </div>
@@ -631,16 +633,16 @@ function LeadershipAccordion() {
                             setBranchWard('');
                           }}
                           disabled={!branchDistrict}
-                          className="w-full appearance-none px-4 py-3 pr-10 cursor-pointer outline-none disabled:opacity-40"
-                          style={{ backgroundColor: '#EE4A3C', border: `1px solid ${branchConstituency ? '#dc2626' : '#333'}`, fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#000' }}
+                          className="w-full appearance-none px-4 py-3 pr-10 cursor-pointer outline-none rounded-lg disabled:opacity-40"
+                          style={{ backgroundColor: '#ffffff', border: `1px solid ${branchConstituency ? '#00712B' : '#d9dccf'}`, fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#14210f' }}
                         >
-                          <option value="" style={{ backgroundColor: '#EE4A3C' }}>— Select Constituency —</option>
+                          <option value="" style={{ backgroundColor: '#ffffff' }}>— Select Constituency —</option>
                           {branchConstituencies.map(c => (
-                            <option key={c.id} value={c.id} style={{ backgroundColor: '#EE4A3C' }}>{c.name}</option>
+                            <option key={c.id} value={c.id} style={{ backgroundColor: '#ffffff' }}>{c.name}</option>
                           ))}
                         </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3" style={{ backgroundColor: branchConstituency ? '#dc2626' : '#222' }}>
-                          <ChevronDown className="w-4 h-4 text-black" />
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 rounded-r-lg" style={{ backgroundColor: branchConstituency ? '#00712B' : '#f3f4ef' }}>
+                          <ChevronDown className="w-4 h-4" style={{ color: branchConstituency ? '#ffffff' : '#6b7280' }} />
                         </div>
                       </div>
                     </div>
@@ -655,27 +657,27 @@ function LeadershipAccordion() {
                           value={branchWard}
                           onChange={(e) => setBranchWard(e.target.value)}
                           disabled={!branchConstituency}
-                          className="w-full appearance-none px-4 py-3 pr-10 cursor-pointer outline-none disabled:opacity-40"
-                          style={{ backgroundColor: '#EE4A3C', border: `1px solid ${branchWard ? '#dc2626' : '#333'}`, fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#000' }}
+                          className="w-full appearance-none px-4 py-3 pr-10 cursor-pointer outline-none rounded-lg disabled:opacity-40"
+                          style={{ backgroundColor: '#ffffff', border: `1px solid ${branchWard ? '#00712B' : '#d9dccf'}`, fontFamily: 'Oswald, sans-serif', fontSize: '0.9rem', color: '#14210f' }}
                         >
-                          <option value="" style={{ backgroundColor: '#EE4A3C' }}>— Select Ward —</option>
+                          <option value="" style={{ backgroundColor: '#ffffff' }}>— Select Ward —</option>
                           {branchWards.map(w => (
-                            <option key={w.id} value={w.id} style={{ backgroundColor: '#EE4A3C' }}>{w.name}</option>
+                            <option key={w.id} value={w.id} style={{ backgroundColor: '#ffffff' }}>{w.name}</option>
                           ))}
                         </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3" style={{ backgroundColor: branchWard ? '#dc2626' : '#222' }}>
-                          <ChevronDown className="w-4 h-4 text-black" />
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 rounded-r-lg" style={{ backgroundColor: branchWard ? '#00712B' : '#f3f4ef' }}>
+                          <ChevronDown className="w-4 h-4" style={{ color: branchWard ? '#ffffff' : '#6b7280' }} />
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mb-6 h-px" style={{ backgroundcolor: '#111111' }} />
+                  <div className="mb-6 h-px" style={{ backgroundColor: '#e5e7eb' }} />
 
                   {branchWard && selectedWardObj ? (
                     <p className="text-sm" style={{ color: '#1a1a1a', fontStyle: 'italic' }}>
                       Showing Branch Leadership for{' '}
-                      <span style={{ color: '#000' }}>{selectedWardObj.name}</span>
+                      <span style={{ color: '#14210f' }}>{selectedWardObj.name}</span>
                       {' '}—{' '}
                       <span style={{ color: '#1a1a1a' }}>{selectedWardObj.constituencyName} Constituency, {selectedWardObj.districtName} District, {selectedWardObj.provinceName}</span>
                     </p>
@@ -690,8 +692,8 @@ function LeadershipAccordion() {
               {level.id === 'branch' ? (
                 !branchWard ? (
                   <div className="flex flex-col items-center justify-center py-16 pb-8">
-                    <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#EE4A3C', border: '1px solid #2a2a2a' }}>
-                      <ChevronDown className="w-8 h-8" style={{ color: '#dc2626' }} />
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#ffffff', border: '1px solid #d9dccf' }}>
+                      <ChevronDown className="w-8 h-8" style={{ color: '#00712B' }} />
                     </div>
                     <p style={{ color: '#1a1a1a', fontFamily: 'Oswald, sans-serif', fontSize: '1rem', letterSpacing: '0.06em' }}>
                       Select a ward to view its branch leadership
