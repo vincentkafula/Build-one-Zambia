@@ -642,7 +642,13 @@ export default function ElectionDashboard() {
   }
 
   const SidebarContent = (
-    <aside className="flex flex-col h-full" style={{width:260,backgroundColor:SIDEBAR_BG,borderRight:`1px solid ${BORDER}`}}>
+    <aside className="relative flex flex-col h-full overflow-hidden" style={{width:260,background:`linear-gradient(160deg, ${SIDEBAR_BG} 0%, #065A22 100%)`,borderRight:`1px solid ${BORDER}`}}>
+      <svg className="absolute inset-0 w-full h-full opacity-[0.1] pointer-events-none" style={{zIndex:-1}} preserveAspectRatio="xMidYMid slice">
+        <pattern id="election-sidebar-dots" width="14" height="14" patternUnits="userSpaceOnUse">
+          <circle cx="2" cy="2" r="1.4" fill="#ffffff" />
+        </pattern>
+        <rect width="100%" height="100%" fill="url(#election-sidebar-dots)" />
+      </svg>
       <div className="px-5 pt-6 pb-5 flex flex-col items-center text-center" style={{borderBottom:`1px solid ${BORDER}`}}>
         <img src="/logo-boz.png" alt="Build One Zambia" className="w-14 h-14 object-contain mb-2" />
         <span style={{fontFamily:'Oswald, sans-serif',fontSize:'0.65rem',letterSpacing:'0.16em',color:'rgba(255,255,255,0.6)'}}>BUILD ONE ZAMBIA</span>

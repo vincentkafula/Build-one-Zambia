@@ -72,15 +72,23 @@ export function DashboardShell({
 
       {/* Sidebar */}
       <aside
-        className="fixed top-0 left-0 h-full z-50 flex flex-col lg:relative lg:translate-x-0 transition-transform duration-300"
+        className="fixed top-0 left-0 h-full z-50 flex flex-col lg:relative lg:translate-x-0 transition-transform duration-300 overflow-hidden"
         style={{
           width: 264,
-          backgroundColor: SIDEBAR_BG,
+          background: `linear-gradient(160deg, ${SIDEBAR_BG} 0%, #065A22 100%)`,
           borderRight: `1px solid ${SIDEBAR_BORDER}`,
           transform: sidebarOpen ? 'translateX(0)' : undefined,
           flexShrink: 0,
         }}
       >
+        {/* Dotted world-map texture, matching the login panel */}
+        <svg className="absolute inset-0 w-full h-full opacity-[0.1] pointer-events-none" style={{ zIndex: -1 }} preserveAspectRatio="xMidYMid slice">
+          <pattern id={`dash-dots-${accentColor.replace('#', '')}`} width="14" height="14" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.4" fill="#ffffff" />
+          </pattern>
+          <rect width="100%" height="100%" fill={`url(#dash-dots-${accentColor.replace('#', '')})`} />
+        </svg>
+
         {/* Logo area */}
         <div
           className="flex items-center justify-between px-5 py-5"
