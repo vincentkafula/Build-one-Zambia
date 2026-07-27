@@ -16,3 +16,6 @@ cmds = [
 
 [start]
 cmd = "node server.js"
+
+[variables]
+NIXPACKS_CACHE_KEY = "redeploy-fix-build-20260727a"
