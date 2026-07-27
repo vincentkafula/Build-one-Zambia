@@ -28,7 +28,16 @@ const PRODUCTS = [
   { id: 20, name: 'BOZ 2031 Calendar',            price: 'K95',   priceNum: 95,   tag: 'PRINT',       desc: 'Annual wall calendar featuring party imagery, key election dates, and campaign milestones.',      img: 'https://images.unsplash.com/photo-1506784365847-bbad939e9501?w=500&h=500&fit=crop&auto=format' },
   { id: 21, name: 'BOZ Water Bottle',             price: 'K110',  priceNum: 110,  tag: 'HOMEWARE',    desc: 'Reusable stainless steel water bottle with party logo. 750ml capacity.',                          img: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&h=500&fit=crop&auto=format' },
   { id: 22, name: 'BOZ Campaign Jersey',          price: 'K320',  priceNum: 320,  tag: 'APPAREL',     desc: 'Sports-style jersey in party colours with logo and candidate\'s name. Premium fundraising item.',  img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=500&fit=crop&auto=format' },
-  { id: 23, name: 'BOZ Branded Jacket',           price: 'K580',  priceNum: 580,  tag: 'APPAREL',     desc: 'Embroidered windbreaker/bomber jacket with party logo and colours. Premium collectible.',           img: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&h=500&fit=crop&auto=format' },
+  { id: 23, name: 'BOZ Branded Jacket',           price: 'K580',  priceNum: 580,  tag: 'APPAREL',     desc: 'Embroidered windbreaker/bomber jacket with party logo and colours. Premium collectible.',           img: '/products/jacket-black.jpg',
+    colors: [
+      { name: 'Black',  swatch: '#111111', img: '/products/jacket-black.jpg' },
+      { name: 'Green',  swatch: '#00712B', img: '/products/jacket-green.jpg' },
+      { name: 'Gold',   swatch: '#F0B429', img: '/products/jacket-gold.jpg' },
+      { name: 'Blue',   swatch: '#1D4ED8', img: '/products/jacket-blue.jpg' },
+      { name: 'Orange', swatch: '#EA580C', img: '/products/jacket-orange.jpg' },
+      { name: 'Red',    swatch: '#C81E3A', img: '/products/jacket-red.jpg' },
+    ],
+  },
   { id: 24, name: 'BOZ Novelty Socks',            price: 'K45',   priceNum: 45,   tag: 'APPAREL',     desc: 'Fun novelty socks featuring party colours and logo patterns.',                                    img: 'https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?w=500&h=500&fit=crop&auto=format' },
   { id: 25, name: 'Manifesto & Policy Books',     price: 'K20',   priceNum: 20,   tag: 'PRINT',       desc: 'The full 2031 manifesto, policy pamphlets, and ideology guides — sold as collectibles.',           img: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&h=500&fit=crop&auto=format' },
   { id: 26, name: 'BOZ Umbrella',                 price: 'K220',  priceNum: 220,  tag: 'ACCESSORIES', desc: 'Full-size automatic umbrella in party colours with the Build One Zambia logo printed on each panel. Ideal for outdoor rallies and events.', img: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=500&h=500&fit=crop&auto=format' },
@@ -103,12 +112,39 @@ function Stars({ rating }: { rating: number }) {
 }
 
 function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt?: 'left' | 'right'; cart: CartItem[]; addedId: number | null; onAdd: (p: Product) => void }) {
-  const inCart = cart.find(ci => ci.id === product.id);
-  const justAdded = addedId === product.id;
+  const hasColors = !!product.colors && product.colors.length > 0;
+  // Colour variants live under synthetic ids (product.id * 100 + variant + 1),
+  // so "in cart" / "just added" need to check the whole family of ids for
+  // this product, not just the base id.
+  const inCartQty = hasColors
+    ? cart.filter(ci => Math.floor(ci.id / 100) === product.id).reduce((s, ci) => s + ci.qty, 0)
+    : (cart.find(ci => ci.id === product.id)?.qty ?? 0);
+  const justAdded = addedId !== null && (hasColors ? Math.floor(addedId / 100) === product.id : addedId === product.id);
   const [hover, setHover] = useState(false);
+  const [selectedColor, setSelectedColor] = useState<number | null>(null);
+  const [colorWarning, setColorWarning] = useState(false);
   const meta = productMeta(product.id);
   const priceNum = product.priceNum;
   const wasPrice = meta.hasDiscount ? Math.round(priceNum / (1 - meta.discountPct / 100)) : null;
+
+  const activeColor = hasColors && selectedColor !== null ? product.colors![selectedColor] : null;
+  const displayImg = activeColor?.img ?? product.img;
+
+  function handleAdd() {
+    if (hasColors && selectedColor === null) {
+      setColorWarning(true);
+      setTimeout(() => setColorWarning(false), 2000);
+      return;
+    }
+    if (hasColors && activeColor) {
+      // Each colour becomes its own cart line (distinct id), so the exact
+      // colour the buyer picked carries through to checkout instead of
+      // collapsing into a single generic "jacket" line.
+      onAdd({ ...product, id: product.id * 100 + selectedColor! + 1, name: `${product.name} — ${activeColor.name}`, img: activeColor.img });
+    } else {
+      onAdd(product);
+    }
+  }
 
   return (
     <div
@@ -121,15 +157,15 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
           {meta.badge}
         </div>
       )}
-      {inCart && (
+      {inCartQty > 0 && (
         <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 2, background: RED, color: '#fff', fontSize: '9px', fontFamily: 'Oswald, sans-serif', padding: '2px 6px', borderRadius: '10px' }}>
-          ×{inCart.qty}
+          ×{inCartQty}
         </div>
       )}
 
       <div style={{ height: '130px', borderRadius: '4px', overflow: 'hidden', marginBottom: '10px', background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <img
-          src={product.img} alt={product.name}
+          src={displayImg} alt={product.name}
           style={{ width: '82%', height: '82%', objectFit: 'contain', transition: 'transform 0.25s ease', transform: hover ? 'scale(1.06)' : 'scale(1)' }}
         />
       </div>
@@ -143,6 +179,31 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
         <span style={{ fontSize: '10.5px', color: '#007185' }}>{meta.reviews.toLocaleString()}</span>
       </div>
 
+      {hasColors && (
+        <div style={{ marginBottom: '8px' }}>
+          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '3px' }}>
+            {product.colors!.map((c, i) => (
+              <button
+                key={c.name}
+                type="button"
+                onClick={() => { setSelectedColor(i); setColorWarning(false); }}
+                title={c.name}
+                aria-label={`Select colour ${c.name}`}
+                style={{
+                  width: '18px', height: '18px', borderRadius: '50%', background: c.swatch, cursor: 'pointer',
+                  border: selectedColor === i ? '2px solid #0F1111' : '1px solid rgba(0,0,0,0.2)',
+                  outline: selectedColor === i ? `2px solid ${BUY_YELLOW}` : 'none', outlineOffset: '1px',
+                  padding: 0, flexShrink: 0,
+                }}
+              />
+            ))}
+          </div>
+          <p style={{ fontSize: '9.5px', color: colorWarning ? RED : '#565959', margin: 0, fontWeight: colorWarning ? 700 : 400 }}>
+            {colorWarning ? 'Please select a colour' : (activeColor ? `Colour: ${activeColor.name}` : 'Select a colour')}
+          </p>
+        </div>
+      )}
+
       <div style={{ marginBottom: '4px' }}>
         {meta.hasDiscount && (
           <span style={{ fontSize: '11px', color: RED, fontWeight: 700, marginRight: '6px' }}>-{meta.discountPct}%</span>
@@ -155,7 +216,7 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
       <p style={{ fontSize: '10px', color: '#007600', margin: '0 0 10px' }}>In stock</p>
 
       <button
-        onClick={() => onAdd(product)}
+        onClick={handleAdd}
         style={{ width: '100%', background: justAdded ? '#2E7D32' : BUY_YELLOW, color: justAdded ? '#fff' : '#0F1111', border: `1px solid ${justAdded ? '#2E7D32' : '#FCD200'}`, borderRadius: '20px', padding: '7px 0', fontSize: '11.5px', fontWeight: 600, letterSpacing: '0.01em', cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', transition: 'background 0.15s ease' }}
         onMouseEnter={e => { if (!justAdded) (e.currentTarget as HTMLElement).style.background = BUY_YELLOW_HOVER; }}
         onMouseLeave={e => { if (!justAdded) (e.currentTarget as HTMLElement).style.background = BUY_YELLOW; }}
