@@ -73,29 +73,33 @@ const ALL_NAV: NavItem[] = [
   { key:'security',         label:'Security Settings',    icon:<Lock size={16}/>,            group:'PROFILE' },
 ];
 
-const SIDEBAR_BG='#007A30', TOPBAR_BG='#EC6D01', TOPBAR_BG_DARK='#D46200', CARD_BG='#0d1f14', BORDER='rgba(255,255,255,0.07)';
+const SIDEBAR_BG='#007A30', TOPBAR_BG='#EC6D01', TOPBAR_BG_DARK='#D46200';
+// Exactly two background colors used everywhere in this dashboard: green
+// (content/chart panels) and orange (stat cards + action tiles) — no
+// third neutral/near-black tone, per the reference design.
+const CARD_GREEN='#0A5D25', CARD_ORANGE='#EC6D01', CARD_BG='#0A5D25', BORDER='rgba(255,255,255,0.12)';
 
 function Field({label,value}:{label:string;value:string}) {
   return (
     <div>
-      <p className="text-xs mb-1" style={{color:'rgba(255,255,255,0.35)',fontFamily:'Oswald, sans-serif',letterSpacing:'0.09em'}}>{label}</p>
+      <p className="text-xs mb-1" style={{color:'rgba(255,255,255,0.75)',fontFamily:'Oswald, sans-serif',letterSpacing:'0.09em'}}>{label}</p>
       <p style={{color:'rgba(255,255,255,0.85)',fontSize:'0.88rem'}}>{value||'—'}</p>
     </div>
   );
 }
 function Card({title,children}:{title?:string;children:React.ReactNode}) {
   return (
-    <div className="rounded-2xl p-5" style={{backgroundColor:CARD_BG,border:`1px solid ${BORDER}`}}>
-      {title&&<p className="mb-4 text-xs" style={{fontFamily:'Oswald, sans-serif',letterSpacing:'0.12em',color:'rgba(255,255,255,0.4)'}}>{title.toUpperCase()}</p>}
+    <div className="rounded-2xl p-5" style={{backgroundColor:CARD_GREEN,border:`1px solid ${BORDER}`}}>
+      {title&&<p className="mb-4 text-xs" style={{fontFamily:'Oswald, sans-serif',letterSpacing:'0.12em',color:'rgba(255,255,255,0.75)'}}>{title.toUpperCase()}</p>}
       {children}
     </div>
   );
 }
 function Stat({label,value,color}:{label:string;value:string|number;color:string}) {
   return (
-    <div className="rounded-2xl p-4 text-center" style={{backgroundColor:CARD_BG,border:`1px solid ${color}25`}}>
-      <p style={{color,fontSize:'1.8rem',fontFamily:'Oswald, sans-serif',lineHeight:1}}>{value}</p>
-      <p style={{color:'rgba(255,255,255,0.4)',fontSize:'0.7rem',marginTop:6}}>{label}</p>
+    <div className="rounded-2xl p-4 text-center" style={{backgroundColor:CARD_ORANGE}}>
+      <p style={{color:'#fff',fontSize:'1.8rem',fontFamily:'Oswald, sans-serif',lineHeight:1}}>{value}</p>
+      <p style={{color:'rgba(255,255,255,0.85)',fontSize:'0.7rem',marginTop:6}}>{label}</p>
     </div>
   );
 }
@@ -104,7 +108,7 @@ function RestrictedNotice({notAllowed}:{notAllowed:string[]}) {
   return (
     <div className="mt-4 flex items-start gap-3 px-4 py-3 rounded-xl" style={{backgroundColor:'rgba(245,158,11,0.08)',border:'1px solid rgba(245,158,11,0.2)'}}>
       <Shield size={15} style={{color:'#f59e0b',marginTop:2,flexShrink:0}}/>
-      <p style={{color:'rgba(255,255,255,0.5)',fontSize:'0.78rem',lineHeight:1.5}}>
+      <p style={{color:'rgba(255,255,255,0.85)',fontSize:'0.78rem',lineHeight:1.5}}>
         <span style={{color:'#f59e0b',fontFamily:'Oswald, sans-serif',letterSpacing:'0.06em'}}>RESTRICTED: </span>
         This role is not permitted to enter results at {notAllowed.join(', ')} level{notAllowed.length>1?'s':''}.
       </p>
@@ -130,7 +134,7 @@ function MatchGauge({ percent, color }: { percent: number | null; color: string 
           <path d={`M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y}`} fill="none" stroke={gaugeColor} strokeWidth="14" strokeLinecap="round" />
         )}
         <text x={cx} y={cy - 6} textAnchor="middle" style={{ fontFamily: 'Oswald, sans-serif', fontSize: 26, fill: '#fff' }}>{percent !== null ? `${percent}%` : '—'}</text>
-        <text x={cx} y={cy + 14} textAnchor="middle" style={{ fontSize: 10, fill: 'rgba(255,255,255,0.4)' }}>Match Accuracy</text>
+        <text x={cx} y={cy + 14} textAnchor="middle" style={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}>Match Accuracy</text>
       </svg>
     </div>
   );
@@ -202,9 +206,9 @@ function ElectionOverviewCharts({ levelType, levelId, color }: { levelType: Leve
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-              <XAxis dataKey="hour" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
-              <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
-              <Tooltip contentStyle={{ backgroundColor: '#0a0f0c', border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 12 }} labelStyle={{ color: '#fff' }} />
+              <XAxis dataKey="hour" tick={{ fill: 'rgba(255,255,255,0.8)', fontSize: 10 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+              <YAxis tick={{ fill: 'rgba(255,255,255,0.8)', fontSize: 10 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+              <Tooltip contentStyle={{ backgroundColor: '#064019', border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 12 }} labelStyle={{ color: '#fff' }} />
               <Line type="monotone" dataKey="votes" stroke={color} strokeWidth={2} dot={{ r: 3, fill: color }} />
             </LineChart>
           </ResponsiveContainer>
@@ -220,7 +224,7 @@ function ElectionOverviewCharts({ levelType, levelId, color }: { levelType: Leve
               <Pie data={partyData} dataKey="value" nameKey="name" innerRadius={45} outerRadius={75} paddingAngle={2}>
                 {partyData.map((p, i) => <Cell key={i} fill={p.color} />)}
               </Pie>
-              <Tooltip contentStyle={{ backgroundColor: '#0a0f0c', border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 12 }} />
+              <Tooltip contentStyle={{ backgroundColor: '#064019', border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 12 }} />
               <Legend wrapperStyle={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }} />
             </PieChart>
           </ResponsiveContainer>
@@ -233,7 +237,7 @@ function ElectionOverviewCharts({ levelType, levelId, color }: { levelType: Leve
         ) : (
           <div className="flex flex-col items-center py-2">
             <MatchGauge percent={agreement?.percent ?? null} color={color} />
-            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem', marginTop: 4 }}>
+            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.72rem', marginTop: 4 }}>
               How closely BOZ-collected figures match ECZ's announced figures at this level.
             </p>
           </div>
@@ -246,8 +250,8 @@ function ElectionOverviewCharts({ levelType, levelId, color }: { levelType: Leve
 function EmptyChartState({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
     <div className="flex flex-col items-center justify-center text-center py-10 gap-2" style={{ minHeight: 200 }}>
-      <span style={{ color: 'rgba(255,255,255,0.25)' }}>{icon}</span>
-      <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.78rem', maxWidth: 220 }}>{text}</p>
+      <span style={{ color: 'rgba(255,255,255,0.7)' }}>{icon}</span>
+      <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.78rem', maxWidth: 220 }}>{text}</p>
     </div>
   );
 }
@@ -359,14 +363,14 @@ export default function ElectionDashboard() {
                     </div>
                   </div>
                   <div>
-                    <p style={{color:'rgba(255,255,255,0.45)',fontSize:'0.78rem'}}>Welcome back,</p>
+                    <p style={{color:'rgba(255,255,255,0.82)',fontSize:'0.78rem'}}>Welcome back,</p>
                     <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.5rem',letterSpacing:'0.03em',color:'#fff'}}>
                       {profile.name||profile.username} <span style={{fontSize:'1.1rem'}}>👋</span>
                     </h2>
-                    <p style={{color:'rgba(255,255,255,0.45)',fontSize:'0.8rem',marginTop:2}}>
+                    <p style={{color:'rgba(255,255,255,0.82)',fontSize:'0.8rem',marginTop:2}}>
                       {conf.label} · {profile.scopeName}
                     </p>
-                    <p style={{color:'rgba(255,255,255,0.3)',fontSize:'0.75rem'}}>2026 Zambian General Election</p>
+                    <p style={{color:'rgba(255,255,255,0.72)',fontSize:'0.75rem'}}>2026 Zambian General Election</p>
                   </div>
                 </div>
               </div>
@@ -382,21 +386,21 @@ export default function ElectionDashboard() {
               <Suspense fallback={null}><TotalRegisteredVotersStat color={conf.color}/></Suspense>
             </div>
             <div>
-              <p className="mb-3 text-xs" style={{fontFamily:'Oswald, sans-serif',letterSpacing:'0.1em',color:'rgba(255,255,255,0.35)'}}>LIVE RESULTS</p>
+              <p className="mb-3 text-xs" style={{fontFamily:'Oswald, sans-serif',letterSpacing:'0.1em',color:'rgba(255,255,255,0.75)'}}>LIVE RESULTS</p>
               <ElectionOverviewCharts levelType={chartLevelType} levelId={chartLevelId} color={conf.color}/>
             </div>
             <div>
-              <p className="mb-3 text-xs" style={{fontFamily:'Oswald, sans-serif',letterSpacing:'0.1em',color:'rgba(255,255,255,0.35)'}}>QUICK ACCESS</p>
+              <p className="mb-3 text-xs" style={{fontFamily:'Oswald, sans-serif',letterSpacing:'0.1em',color:'rgba(255,255,255,0.75)'}}>QUICK ACCESS</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {ALL_NAV.filter(n=>allowed.has(n.key)&&n.key!=='overview').map(n=>(
                   <button key={n.key} onClick={()=>handleNav(n.key)}
                     className="flex items-center gap-3 p-4 rounded-2xl text-left w-full transition-all"
-                    style={{backgroundColor:CARD_BG,border:`1px solid ${BORDER}`}}
-                    onMouseEnter={e=>(e.currentTarget as HTMLElement).style.borderColor=`${conf.color}50`}
-                    onMouseLeave={e=>(e.currentTarget as HTMLElement).style.borderColor=BORDER}>
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{background:`${conf.color}18`,color:conf.color}}>{n.icon}</div>
+                    style={{backgroundColor:CARD_ORANGE}}
+                    onMouseEnter={e=>(e.currentTarget as HTMLElement).style.opacity='0.92'}
+                    onMouseLeave={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{background:'rgba(255,255,255,0.2)',color:'#fff'}}>{n.icon}</div>
                     <span style={{color:'#fff',fontSize:'0.88rem',fontFamily:'Oswald, sans-serif',letterSpacing:'0.04em'}}>{n.label}</span>
-                    <ChevronRight size={15} className="ml-auto" style={{color:'rgba(255,255,255,0.3)'}}/>
+                    <ChevronRight size={15} className="ml-auto" style={{color:'rgba(255,255,255,0.75)'}}/>
                   </button>
                 ))}
               </div>
@@ -411,7 +415,7 @@ export default function ElectionDashboard() {
             <div className="flex flex-col items-center py-10 gap-3 text-center">
               <Shield size={36} style={{color:'#f59e0b'}}/>
               <p style={{color:'#fff',fontFamily:'Oswald, sans-serif',fontSize:'1.1rem'}}>Not Permitted</p>
-              <p style={{color:'rgba(255,255,255,0.45)',fontSize:'0.85rem',maxWidth:380}}>
+              <p style={{color:'rgba(255,255,255,0.82)',fontSize:'0.85rem',maxWidth:380}}>
                 As a {conf.label}, you are not authorised to enter polling station results.
                 Only assigned polling station agents may enter results at station level.
               </p>
@@ -422,7 +426,7 @@ export default function ElectionDashboard() {
           <div>
             <div className="mb-5">
               <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.4rem',letterSpacing:'0.04em',color:'#fff'}}>Data Entry — Polling Station Results</h2>
-              <p style={{color:'rgba(255,255,255,0.38)',fontSize:'0.82rem',marginTop:4}}>
+              <p style={{color:'rgba(255,255,255,0.78)',fontSize:'0.82rem',marginTop:4}}>
                 Enter the official vote counts for your assigned polling station: <strong style={{color:conf.color}}>{profile.scopeName}</strong>
               </p>
             </div>
@@ -435,7 +439,7 @@ export default function ElectionDashboard() {
           <div>
             <div className="mb-5">
               <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.4rem',letterSpacing:'0.04em',color:'#fff'}}>Voter Validation</h2>
-              <p style={{color:'rgba(255,255,255,0.38)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
+              <p style={{color:'rgba(255,255,255,0.78)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
                 Upload the official voters roll for your polling station, then check whether a voter is registered
                 there — or find out which polling station to direct them to instead.
               </p>
@@ -449,7 +453,7 @@ export default function ElectionDashboard() {
           <div>
             <div className="mb-5">
               <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.4rem',letterSpacing:'0.04em',color:'#fff'}}>Polling Agents Figures</h2>
-              <p style={{color:'rgba(255,255,255,0.38)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
+              <p style={{color:'rgba(255,255,255,0.78)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
                 Review the figures submitted by each polling agent in <strong style={{color:conf.color}}>{profile.scopeName}</strong>.
                 Mark each entry Approved or Not Approved once you've checked it against the polling agent's form.
               </p>
@@ -463,7 +467,7 @@ export default function ElectionDashboard() {
           <div>
             <div className="mb-5">
               <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.4rem',letterSpacing:'0.04em',color:'#fff'}}>Ward Manager Figures</h2>
-              <p style={{color:'rgba(255,255,255,0.38)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
+              <p style={{color:'rgba(255,255,255,0.78)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
                 Review the ECZ figures each ward manager has entered for the wards in <strong style={{color:conf.color}}>{profile.scopeName}</strong>.
                 Mark each ward's figures Approved or Not Approved once you've checked them.
               </p>
@@ -477,7 +481,7 @@ export default function ElectionDashboard() {
           <div>
             <div className="mb-5">
               <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.4rem',letterSpacing:'0.04em',color:'#fff'}}>Constituency Manager Figures</h2>
-              <p style={{color:'rgba(255,255,255,0.38)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
+              <p style={{color:'rgba(255,255,255,0.78)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
                 Review the ECZ figures each constituency manager has entered for the constituencies in <strong style={{color:conf.color}}>{profile.scopeName}</strong>.
                 Mark each constituency's figures Approved or Not Approved once you've checked them.
               </p>
@@ -491,7 +495,7 @@ export default function ElectionDashboard() {
           <div>
             <div className="mb-5">
               <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.4rem',letterSpacing:'0.04em',color:'#fff'}}>District Manager Figures</h2>
-              <p style={{color:'rgba(255,255,255,0.38)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
+              <p style={{color:'rgba(255,255,255,0.78)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
                 Review the ECZ figures each district manager has entered for the districts in <strong style={{color:conf.color}}>{profile.scopeName}</strong>.
                 Mark each district's figures Approved or Not Approved once you've checked them.
               </p>
@@ -505,7 +509,7 @@ export default function ElectionDashboard() {
           <div>
             <div className="mb-5">
               <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.4rem',letterSpacing:'0.04em',color:'#fff'}}>Province Manager Figures</h2>
-              <p style={{color:'rgba(255,255,255,0.38)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
+              <p style={{color:'rgba(255,255,255,0.78)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
                 Review the ECZ figures each provincial manager has entered for their province, across the Nation.
                 Mark each province's figures Approved or Not Approved once you've checked them.
               </p>
@@ -519,7 +523,7 @@ export default function ElectionDashboard() {
           <div>
             <div className="mb-5">
               <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.4rem',letterSpacing:'0.04em',color:'#fff'}}>{conf.eczEntryTitle}</h2>
-              <p style={{color:'rgba(255,255,255,0.38)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
+              <p style={{color:'rgba(255,255,255,0.78)',fontSize:'0.82rem',marginTop:4,maxWidth:600}}>
                 Enter the figures officially announced by the Electoral Commission of Zambia (ECZ) at each level.
                 These will be compared against agent-captured polling station data to identify any discrepancies.
               </p>
@@ -546,7 +550,7 @@ export default function ElectionDashboard() {
           <div>
             <div className="mb-5">
               <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.4rem',letterSpacing:'0.04em',color:'#fff'}}>{conf.comparisonTitle}</h2>
-              <p style={{color:'rgba(255,255,255,0.38)',fontSize:'0.82rem',marginTop:4}}>
+              <p style={{color:'rgba(255,255,255,0.78)',fontSize:'0.82rem',marginTop:4}}>
                 Side-by-side comparison of agent-submitted results vs ECZ officially announced figures. Discrepancies are automatically flagged.
               </p>
             </div>
@@ -559,7 +563,7 @@ export default function ElectionDashboard() {
           <div>
             <div className="mb-5">
               <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.4rem',letterSpacing:'0.04em',color:'#fff'}}>Discrepancy Notices</h2>
-              <p style={{color:'rgba(255,255,255,0.38)',fontSize:'0.82rem',marginTop:4}}>
+              <p style={{color:'rgba(255,255,255,0.78)',fontSize:'0.82rem',marginTop:4}}>
                 Automatic alerts raised when agent-submitted data does not match ECZ announced figures.
               </p>
             </div>
@@ -567,7 +571,7 @@ export default function ElectionDashboard() {
               <div className="flex flex-col items-center py-10 gap-3 text-center">
                 <CheckCircle2 size={36} style={{color:'#00712B'}}/>
                 <p style={{color:'#fff',fontFamily:'Oswald, sans-serif',fontSize:'1rem'}}>No discrepancies detected</p>
-                <p style={{color:'rgba(255,255,255,0.4)',fontSize:'0.82rem',maxWidth:400}}>
+                <p style={{color:'rgba(255,255,255,0.8)',fontSize:'0.82rem',maxWidth:400}}>
                   Discrepancy notices appear here automatically when BOZ agent results differ from ECZ official figures.
                   Ensure ECZ figures are entered to enable comparison.
                 </p>
@@ -593,7 +597,7 @@ export default function ElectionDashboard() {
                   const labels:{[k:string]:string}={name:'FULL NAME',username:'USERNAME',email:'EMAIL',phone:'PHONE',scopeName:'ASSIGNED AREA',scopeType:'AREA TYPE'};
                   return editing&&!['username','scopeName','scopeType'].includes(key)?(
                     <div key={key}>
-                      <label className="block text-xs mb-1" style={{color:'rgba(255,255,255,0.35)',fontFamily:'Oswald, sans-serif',letterSpacing:'0.1em'}}>{labels[key]}</label>
+                      <label className="block text-xs mb-1" style={{color:'rgba(255,255,255,0.75)',fontFamily:'Oswald, sans-serif',letterSpacing:'0.1em'}}>{labels[key]}</label>
                       <input className="w-full px-3 py-2.5 rounded-xl text-sm" value={profile[key]}
                         onChange={e=>setProfile(p=>({...p,[key]:e.target.value}))}
                         style={{backgroundColor:'rgba(255,255,255,0.06)',border:`1px solid ${conf.color}40`,color:'#fff',outline:'none'}}/>
@@ -616,7 +620,7 @@ export default function ElectionDashboard() {
               <form onSubmit={handlePasswordChange} className="max-w-md space-y-4">
                 {[{f:'current',l:'CURRENT PASSWORD'},{f:'next',l:'NEW PASSWORD'},{f:'confirm',l:'CONFIRM NEW PASSWORD'}].map(({f,l})=>(
                   <div key={f}>
-                    <label className="block text-xs mb-1" style={{color:'rgba(255,255,255,0.35)',fontFamily:'Oswald, sans-serif',letterSpacing:'0.1em'}}>{l}</label>
+                    <label className="block text-xs mb-1" style={{color:'rgba(255,255,255,0.75)',fontFamily:'Oswald, sans-serif',letterSpacing:'0.1em'}}>{l}</label>
                     <input type="password" placeholder="••••••••"
                       value={pwFields[f as keyof typeof pwFields]}
                       onChange={e=>setPwFields(p=>({...p,[f]:e.target.value}))}
@@ -647,19 +651,19 @@ export default function ElectionDashboard() {
       <div className="mx-3 mt-4 p-3 rounded-xl" style={{backgroundColor:`${conf.color}12`,border:`1px solid ${conf.color}25`}}>
         <p style={{color:'#fff',fontFamily:'Oswald, sans-serif',fontSize:'0.82rem',letterSpacing:'0.04em'}}>{profile.name||profile.username}</p>
         <p style={{color:conf.color,fontSize:'0.7rem',marginTop:2,fontFamily:'Oswald, sans-serif',letterSpacing:'0.06em'}}>{conf.label.toUpperCase()}</p>
-        <p style={{color:'rgba(255,255,255,0.35)',fontSize:'0.68rem',marginTop:1}}>{profile.scopeName}</p>
+        <p style={{color:'rgba(255,255,255,0.75)',fontSize:'0.68rem',marginTop:1}}>{profile.scopeName}</p>
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
         {navGroups.map(([group,items])=>(
           <div key={group}>
-            <p className="px-2 mb-1.5 text-xs" style={{fontFamily:'Oswald, sans-serif',letterSpacing:'0.14em',color:'rgba(255,255,255,0.25)'}}>{group}</p>
+            <p className="px-2 mb-1.5 text-xs" style={{fontFamily:'Oswald, sans-serif',letterSpacing:'0.14em',color:'rgba(255,255,255,0.7)'}}>{group}</p>
             {items.map(item=>{
               const isActive=active===item.key;
               return (
                 <button key={item.key} onClick={()=>handleNav(item.key)}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-left transition-all"
-                  style={{backgroundColor:isActive?`${conf.color}20`:'transparent',border:`1px solid ${isActive?conf.color+'35':'transparent'}`,color:isActive?'#fff':'rgba(255,255,255,0.45)'}}>
-                  <span style={{color:isActive?conf.color:'rgba(255,255,255,0.3)'}}>{item.icon}</span>
+                  style={{backgroundColor:isActive?`${conf.color}20`:'transparent',border:`1px solid ${isActive?conf.color+'35':'transparent'}`,color:isActive?'#fff':'rgba(255,255,255,0.82)'}}>
+                  <span style={{color:isActive?conf.color:'rgba(255,255,255,0.72)'}}>{item.icon}</span>
                   <span style={{fontFamily:'Oswald, sans-serif',fontSize:'0.8rem',letterSpacing:'0.05em'}}>{item.label}</span>
                 </button>
               );
@@ -670,9 +674,9 @@ export default function ElectionDashboard() {
       <div className="p-3" style={{borderTop:`1px solid ${BORDER}`}}>
         <button onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
-          style={{color:'rgba(255,255,255,0.4)'}}
+          style={{color:'rgba(255,255,255,0.8)'}}
           onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color='#ef4444'}
-          onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color='rgba(255,255,255,0.4)'}>
+          onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color='rgba(255,255,255,0.8)'}>
           <LogOut size={16}/>
           <span style={{fontFamily:'Oswald, sans-serif',fontSize:'0.8rem',letterSpacing:'0.06em'}}>SIGN OUT</span>
         </button>
@@ -681,7 +685,7 @@ export default function ElectionDashboard() {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{backgroundColor:'#04130c'}}>
+    <div className="flex h-screen overflow-hidden" style={{backgroundColor:CARD_GREEN}}>
       {sidebarOpen&&(
         <div className="fixed inset-0 z-40 lg:hidden" style={{backgroundColor:'rgba(0,0,0,0.65)',backdropFilter:'blur(4px)'}}
           onClick={()=>setSidebarOpen(false)}/>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { dataEntryApi } from '../../lib/api';
 import { provinces } from '../../data/mockData';
 
-const CARD_BG = '#0d1f14';
+const CARD_BG = '#EC6D01';
 
 interface Submission {
   pollingStationId?: string;
@@ -25,11 +25,11 @@ function findStation(stationId: string) {
   return null;
 }
 
-function StatCard({ label, value, color }: { label: string; value: string | number; color: string }) {
+function StatCard({ label, value }: { label: string; value: string | number; color: string }) {
   return (
-    <div className="rounded-2xl p-4 text-center" style={{ backgroundColor: CARD_BG, border: `1px solid ${color}25` }}>
-      <p style={{ color, fontSize: '1.8rem', fontFamily: 'Oswald, sans-serif', lineHeight: 1 }}>{value}</p>
-      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem', marginTop: 6 }}>{label}</p>
+    <div className="rounded-2xl p-4 text-center" style={{ backgroundColor: CARD_BG }}>
+      <p style={{ color: '#fff', fontSize: '1.8rem', fontFamily: 'Oswald, sans-serif', lineHeight: 1 }}>{value}</p>
+      <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.7rem', marginTop: 6 }}>{label}</p>
     </div>
   );
 }

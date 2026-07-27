@@ -204,7 +204,7 @@ export function ConstituencyECZEntryPage() {
 
   if (!constituencyId) {
     return (
-      <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center" style={{ backgroundColor: '#0d1f14', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center" style={{ backgroundColor: '#0A5D25', border: '1px solid rgba(255,255,255,0.07)' }}>
         <ShieldAlert size={32} style={{ color: '#f59e0b' }} />
         <p style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '1rem' }}>Constituency Not Configured</p>
         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', maxWidth: 420 }}>
@@ -272,7 +272,7 @@ export function ConstituencyECZEntryPage() {
 
       <form onSubmit={handleSave} className="space-y-5">
         <fieldset disabled={isCouncillor} style={{ opacity: isCouncillor ? 0.5 : 1 }} className="space-y-5">
-        <div className="rounded-2xl p-6" style={{ backgroundColor: '#0d1f14', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: '#0A5D25', border: '1px solid rgba(255,255,255,0.07)' }}>
           <h2 className="mb-4" style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem' }}>
             <Scale className="inline w-5 h-5 mr-2" style={{ color: '#16a34a' }} />
             ECZ Announced Votes per Candidate
@@ -363,7 +363,7 @@ export function ConstituencyECZEntryPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl p-6" style={{ backgroundColor: '#0d1f14', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: '#0A5D25', border: '1px solid rgba(255,255,255,0.07)' }}>
           <label className="block text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
             NAME OF PERSON ENTERING THESE FIGURES
           </label>
