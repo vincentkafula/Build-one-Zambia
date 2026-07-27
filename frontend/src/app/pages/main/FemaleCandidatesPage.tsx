@@ -220,15 +220,20 @@ const ACTION_CARDS = [
 function ShadowMemberPhoto({ id, name }: { id: string; name: string }) {
   const [imgError, setImgError] = useState(false);
   return (
-    <div className="w-full aspect-[4/5] overflow-hidden bg-gray-100">
-      {!imgError ? (
-        <img src={shadowCabinetApi.photoUrl(id, 'female')} alt={name}
-          onError={() => setImgError(true)} className="w-full h-full object-cover" />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center" style={{ color: '#d1d5db' }}>
-          <Users className="w-12 h-12" />
-        </div>
-      )}
+    <div className="p-3 pb-0">
+      <div className="relative overflow-hidden rounded-lg" style={{ aspectRatio: '4 / 5', backgroundColor: '#F7F5EF' }}>
+        {!imgError ? (
+          <img src={shadowCabinetApi.photoUrl(id, 'female')} alt={name}
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
+            style={{ objectPosition: 'center 15%' }} />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center" style={{ color: '#d1d5db' }}>
+            <Users className="w-12 h-12" />
+          </div>
+        )}
+        <div className="absolute inset-0 pointer-events-none rounded-lg" style={{ boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.06)' }} />
+      </div>
     </div>
   );
 }
@@ -236,19 +241,23 @@ function ShadowMemberPhoto({ id, name }: { id: string; name: string }) {
 function LiveCandidatePhoto({ id, name }: { id: string; name: string }) {
   const [imgError, setImgError] = useState(false);
   return (
-    <div className="w-full aspect-[4/5] overflow-hidden bg-gray-100">
-      {!imgError ? (
-        <img
-          src={candidatesApi.photoUrl(id)}
-          alt={name}
-          onError={() => setImgError(true)}
-          className="w-full h-full object-cover"
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center" style={{ color: '#d1d5db' }}>
-          <Users className="w-12 h-12" />
-        </div>
-      )}
+    <div className="p-3 pb-0">
+      <div className="relative overflow-hidden rounded-lg" style={{ aspectRatio: '4 / 5', backgroundColor: '#F7F5EF' }}>
+        {!imgError ? (
+          <img
+            src={candidatesApi.photoUrl(id)}
+            alt={name}
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
+            style={{ objectPosition: 'center 15%' }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center" style={{ color: '#d1d5db' }}>
+            <Users className="w-12 h-12" />
+          </div>
+        )}
+        <div className="absolute inset-0 pointer-events-none rounded-lg" style={{ boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.06)' }} />
+      </div>
     </div>
   );
 }
@@ -506,7 +515,7 @@ export function FemaleCandidatesPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
               {shadowMembers.map(m => (
-                <div key={m.id} className="flex flex-col items-center text-center rounded-2xl overflow-hidden cursor-pointer transition-transform hover:-translate-y-1"
+                <div key={m.id} className="group flex flex-col items-center text-center rounded-2xl overflow-hidden cursor-pointer transition-transform hover:-translate-y-1"
                   style={{ backgroundColor: '#ffffff', border: '1px solid #e0e7ff', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}
                   onClick={() => setProfileTarget(m)}
                 >
