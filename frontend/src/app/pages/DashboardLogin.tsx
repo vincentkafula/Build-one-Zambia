@@ -126,9 +126,7 @@ export default function DashboardLogin() {
 
           <div className="relative z-10 flex flex-col h-full">
             <div className="flex flex-col items-center text-center mb-8">
-              <div className="w-28 h-28 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: '#ffffff', boxShadow: '0 12px 32px rgba(0,0,0,0.25)' }}>
-                <img src="/logo-boz.png" alt="Build One Zambia" className="w-20 h-20 object-contain" />
-              </div>
+              <img src="/logo-boz.png" alt="Build One Zambia" className="w-24 h-24 object-contain mb-6" style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.35))' }} />
               <h1 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '2.2rem', letterSpacing: '0.02em', color: '#ffffff' }}>
                 BOZ <span style={{ color: '#0a1f12' }}>PORTAL</span>
               </h1>
