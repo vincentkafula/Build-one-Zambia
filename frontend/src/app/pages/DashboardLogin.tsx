@@ -1,753 +1,251 @@
 /**
- * BUILD ONE ZAMBIA — Dashboard Login
+ * BUILD ONE ZAMBIA — BOZ Portal Login
  *
- * Step 1: pick which dashboard you're logging into
- *   (Member / Cooperative / Chamber / Internship / Election / Management)
- * Step 2: enter username + password
+ * A single, unified sign-in for every dashboard type: Member, Election
+ * (polling agents through provincial/national managers), Management
+ * (admin/super_admin), Cooperative, Internship, and Chamber of Commerce.
  *
- * For the Election dashboard specifically: NO manual role or area picking.
- * On successful login the backend returns the user's role + assigned scope
- * exactly as granted by the super admin in the Election Users manager
- * (Management Dashboard -> Admin Panel -> Election Users). The frontend
- * reads that response and routes straight into /dashboard/election, where
- * ElectionDashboard.tsx auto-configures itself (sidebar sections, ECZ level,
- * permissions) based on the detected role. The user never needs to know or
- * select their own role/area — it's fully automatic.
+ * There is no "pick your dashboard first" step. The person just signs in
+ * with their email and password, and the backend's response — the role
+ * assigned to their account when it was approved — tells this page which
+ * dashboard to send them to. Nobody needs to know or choose their own
+ * role; it's detected automatically from their credentials.
  */
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import {
-  User, Building2, Building, GraduationCap, BarChart2, ShieldCheck,
-  ArrowRight, Lock, Eye, EyeOff, Zap, ChevronLeft, Clock,
-} from 'lucide-react';
-import { API_BASE } from '@/app/lib/apiBase';
-import { authApi } from '../lib/api';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Users, BarChart3, Loader2, AlertCircle } from 'lucide-react';
+import { authApi, setToken } from '../lib/api';
 
-// ── API base resolver ──────────────────────────────────────────────────────
-function getApiBaseUrl(): string {
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    return '/make-server-8fca9621';
-  }
-  return API_BASE;
+const GREEN = '#007A30';
+const GREEN_DARK = '#065A22';
+
+// Where each backend role lands. Every dashboard-facing role in the system
+// must resolve to something here — if a role isn't listed, the person sees
+// a clear "contact an administrator" message instead of a silent failure.
+function routeForRole(role: string): string | null {
+  const ELECTION_ROLES = [
+    'polling_agent', 'agent', 'election_agent',
+    'ward_manager', 'constituency_manager', 'district_manager',
+    'provincial_manager', 'province_manager', 'national_manager',
+  ];
+  const MANAGEMENT_ROLES = ['super_admin', 'admin', 'manager'];
+
+  if (role === 'member') return '/dashboard/member';
+  if (role === 'cooperative') return '/dashboard/cooperative';
+  if (role === 'internship') return '/dashboard/internship';
+  if (role === 'chamber') return '/dashboard/chamber';
+  if (ELECTION_ROLES.includes(role)) return '/dashboard/election';
+  if (MANAGEMENT_ROLES.includes(role)) return '/dashboard/manager';
+  return null;
 }
 
-async function safeFetch(url: string, options?: RequestInit) {
-  const res = await fetch(url, options);
-  const ct = res.headers.get('content-type') || '';
-  if (!ct.includes('application/json')) {
-    const text = await res.text();
-    if (res.status === 429) throw new Error('Rate limit exceeded — please wait a moment and try again.');
-    if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
-    return { ok: res.ok, status: res.status, json: async () => ({}) };
-  }
-  return res;
-}
+const REMEMBERED_EMAIL_KEY = 'boz_remembered_email';
 
-// ── Dashboard types shown on the picker screen ─────────────────────────────
-
-const ELECTION_BACKEND_ROLES = [
-  'agent', 'polling_agent', 'election_agent',
-  'ward_manager', 'constituency_manager', 'district_manager',
-  'provincial_manager', 'province_manager',
-  'national_manager', 'super_admin', 'admin', 'manager',
+const FEATURES = [
+  { icon: ShieldCheck, title: 'Secure & Trusted', text: 'Enterprise-grade security protects your data and privacy.' },
+  { icon: Users, title: 'Role-Based Access', text: 'Your account automatically opens the right dashboard for your role.' },
+  { icon: BarChart3, title: 'All in One Platform', text: 'Membership, elections, cooperatives, and more in one secure place.' },
 ];
-
-const DASHBOARD_TYPES = [
-  {
-    id: 'member',
-    title: 'Member Portal',
-    description: 'Access your BOZ membership, elections & benefits',
-    icon: User,
-    color: '#00712B',
-    route: '/dashboard/member',
-  },
-  {
-    id: 'cooperative',
-    title: 'Cooperative',
-    description: 'Equipment, exports, investors & cooperative data',
-    icon: Building2,
-    color: '#00712B',
-    route: '/dashboard/cooperative',
-  },
-  {
-    id: 'chamber',
-    title: 'Chamber of Commerce',
-    description: 'Ward chamber, investments & cooperative directory',
-    icon: Building,
-    color: '#00712B',
-    route: '/dashboard/chamber',
-  },
-  {
-    id: 'internship',
-    title: 'Internship Portal',
-    description: 'Zambia–US partnership internship management',
-    icon: GraduationCap,
-    color: '#00712B',
-    route: '/dashboard/internship',
-  },
-  {
-    id: 'election',
-    title: 'Election Dashboard',
-    description: 'Polling agents & all levels of election managers — role detected automatically',
-    icon: BarChart2,
-    color: '#00712B',
-    route: '/dashboard/election',
-  },
-  {
-    id: 'management',
-    title: 'Management Dashboard',
-    description: 'Super admin — full system, content & election control',
-    icon: ShieldCheck,
-    color: '#00712B',
-    route: '/dashboard/manager',
-  },
-] as const;
-
-type DashId = typeof DASHBOARD_TYPES[number]['id'];
-
-const VALID_USERNAME = 'Bozplans';
-const VALID_PASSWORD = 'Wakuca55';
 
 export default function DashboardLogin() {
   const navigate = useNavigate();
-  const [selectedId, setSelectedId] = useState<DashId | null>(null);
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPass, setShowPass] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [pendingAccount, setPendingAccount] = useState<null | { name: string; role: string; scopeName?: string; username: string }>(null);
-  const [showResendPanel, setShowResendPanel] = useState(false);
-  const [resendEmail, setResendEmail] = useState('');
-  const [resendMsg, setResendMsg] = useState('');
-  const [resendLoading, setResendLoading] = useState(false);
 
-  const selected = DASHBOARD_TYPES.find(d => d.id === selectedId);
-  const isElectionLogin   = selectedId === 'election';
-  const isManagementLogin = selectedId === 'management';
-  // Member Portal previously fell through to the hardcoded master
-  // username/password check below (meant only as an offline fallback),
-  // so no real member could ever sign in with their own generated
-  // credentials — it now authenticates against the real backend like
-  // Election/Management already do.
-  const isMemberLogin     = selectedId === 'member';
-  const isCooperativeLogin = selectedId === 'cooperative';
-  const isChamberLogin = selectedId === 'chamber';
-  const isInternshipLogin = selectedId === 'internship';
-  const usesBackendAuth = isElectionLogin || isManagementLogin || isMemberLogin || isCooperativeLogin || isChamberLogin || isInternshipLogin;
+  useEffect(() => {
+    const saved = localStorage.getItem(REMEMBERED_EMAIL_KEY);
+    if (saved) {
+      setEmail(saved);
+      setRemember(true);
+    }
+  }, []);
 
-  function handleSelect(id: DashId) {
-    setSelectedId(id);
-    setError('');
-    setUsername('');
-    setPassword('');
-  }
-
-  async function handleLogin(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!selectedId) return;
-    if (!username || !password) { setError('Please enter your credentials'); return; }
-
-    setIsLoading(true);
     setError('');
-
+    if (!email.trim() || !password) {
+      setError('Please enter your email and password.');
+      return;
+    }
+    setLoading(true);
     try {
-      if (usesBackendAuth) {
-        // ── Real backend authentication — role & scope auto-detected ──
-        let backendSuccess = false;
-        try {
-          const res = await safeFetch(`${getApiBaseUrl()}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password }),
-          });
-          const data = await res.json();
+      const res = await authApi.login(email.trim(), password);
+      const user = res.user as unknown as { role: string; active?: boolean };
 
-          if (res.ok && data.token) {
-            const role: string = data.user?.role ?? '';
-
-            // Correct credentials, but the application hasn't been approved
-            // by an admin yet — show a clear status screen instead of either
-            // blocking with a confusing "Invalid credentials" error or (far
-            // worse) actually routing them into a working dashboard.
-            const isPending = data.user?.active === false;
-            if (isPending) {
-              setPendingAccount({
-                name: data.user.name,
-                role: data.user.role,
-                scopeName: data.user.scopeName ?? data.user.pollingStationName,
-                username: data.user.username,
-              });
-              backendSuccess = true;
-            }
-
-            // Election dashboard: accept any election-tier role, route
-            // automatically based on what the super admin assigned.
-            if (isElectionLogin && !isPending) {
-              if (!ELECTION_BACKEND_ROLES.includes(role)) {
-                throw new Error(`Your account role "${role}" does not have access to the Election Dashboard. Please select the correct dashboard above.`);
-              }
-              sessionStorage.setItem('boz_session_token', data.token);
-              sessionStorage.setItem('boz_election_user', JSON.stringify({
-                ...data.user,
-                // scopeName/scopeType/scopeId come straight from the backend —
-                // exactly as set by the super admin in Election Users manager.
-                // pollingStationName is used as a fallback display label for agents.
-                scopeName: data.user?.scopeName ?? data.user?.pollingStationName ?? 'National',
-                scopeType: data.user?.scopeType ?? (role === 'agent' || role === 'polling_agent' || role === 'election_agent' ? 'polling_station' : 'national'),
-              }));
-              navigate('/dashboard/election');
-              backendSuccess = true;
-            }
-
-            // Management dashboard: requires elevated/admin-tier role.
-            if (isManagementLogin && !isPending) {
-              const MANAGEMENT_ROLES = ['super_admin', 'admin', 'national_manager', 'manager'];
-              if (!MANAGEMENT_ROLES.includes(role)) {
-                throw new Error(`Your account role "${role}" does not have access to the Management Dashboard.`);
-              }
-              sessionStorage.setItem('boz_session_token', data.token);
-              sessionStorage.setItem('boz_election_user', JSON.stringify(data.user));
-              navigate('/dashboard/manager');
-              backendSuccess = true;
-            }
-
-            // Member Portal: requires the member role granted on approval
-            // (or an admin account, for support/testing access).
-            if (isMemberLogin && !isPending) {
-              const MEMBER_ROLES = ['member', 'super_admin', 'admin'];
-              if (!MEMBER_ROLES.includes(role)) {
-                throw new Error(`Your account role "${role}" does not have access to the Member Portal. Please select the correct dashboard above.`);
-              }
-              sessionStorage.setItem('boz_session_token', data.token);
-              sessionStorage.setItem('boz_election_user', JSON.stringify(data.user));
-              navigate('/dashboard/member');
-              backendSuccess = true;
-            }
-
-            // Cooperative dashboard: requires the cooperative role granted on
-            // approval (or an admin account, for support/testing access).
-            if (isCooperativeLogin && !isPending) {
-              const COOPERATIVE_ROLES = ['cooperative', 'super_admin', 'admin'];
-              if (!COOPERATIVE_ROLES.includes(role)) {
-                throw new Error(`Your account role "${role}" does not have access to the Cooperative Dashboard. Please select the correct dashboard above.`);
-              }
-              sessionStorage.setItem('boz_session_token', data.token);
-              sessionStorage.setItem('boz_election_user', JSON.stringify(data.user));
-              navigate('/dashboard/cooperative');
-              backendSuccess = true;
-            }
-
-            // Internship dashboard: requires the internship role granted on
-            // approval (or an admin account, for support/testing access).
-            if (isInternshipLogin && !isPending) {
-              const INTERNSHIP_ROLES = ['internship', 'super_admin', 'admin'];
-              if (!INTERNSHIP_ROLES.includes(role)) {
-                throw new Error(`Your account role "${role}" does not have access to the Internship Dashboard. Please select the correct dashboard above.`);
-              }
-              sessionStorage.setItem('boz_session_token', data.token);
-              sessionStorage.setItem('boz_election_user', JSON.stringify(data.user));
-              navigate('/dashboard/internship');
-              backendSuccess = true;
-            }
-
-            // Chamber of Commerce dashboard: accepts a real 'chamber'
-            // applicant account (registered + approved via /register/chamber)
-            // or an admin account, for support/testing access.
-            if (isChamberLogin && !isPending) {
-              const CHAMBER_ROLES = ['chamber', 'super_admin', 'admin'];
-              if (!CHAMBER_ROLES.includes(role)) {
-                throw new Error(`Your account role "${role}" does not have access to the Chamber of Commerce Dashboard. Please select the correct dashboard above.`);
-              }
-              sessionStorage.setItem('boz_session_token', data.token);
-              sessionStorage.setItem('boz_election_user', JSON.stringify(data.user));
-              navigate('/dashboard/chamber');
-              backendSuccess = true;
-            }
-          } else {
-            throw new Error(data.error || data.details || 'Invalid username or password');
-          }
-        } catch (fetchErr) {
-          // ── Network/CORS failure — fall back to local hardcoded super admin ──
-          if (fetchErr instanceof TypeError && fetchErr.message.includes('fetch')) {
-            if (username === VALID_USERNAME && password === VALID_PASSWORD) {
-              const localUser = {
-                username: VALID_USERNAME,
-                role: 'super_admin',
-                name: 'Super National Manager',
-                email: 'admin@bozplans.org',
-                scopeName: 'National',
-                scopeType: 'national',
-              };
-              sessionStorage.setItem('boz_election_user', JSON.stringify(localUser));
-              navigate(
-                isElectionLogin ? '/dashboard/election'
-                : isMemberLogin ? '/dashboard/member'
-                : isCooperativeLogin ? '/dashboard/cooperative'
-                : isInternshipLogin ? '/dashboard/internship'
-                : isChamberLogin ? '/dashboard/chamber'
-                : '/dashboard/manager'
-              );
-              backendSuccess = true;
-            } else {
-              throw new Error('Cannot reach the authentication server. If you are the system administrator, use your master credentials. All other users require network access.');
-            }
-          } else {
-            throw fetchErr;
-          }
-        }
-
-        if (!backendSuccess) {
-          throw new Error('Login failed. Please try again.');
-        }
-      } else {
-        // ── Legacy hardcoded auth for non-election/non-management dashboards ──
-        if (username !== VALID_USERNAME || password !== VALID_PASSWORD) {
-          throw new Error('Invalid username or password');
-        }
-        if (selected) navigate(selected.route);
+      if (user.active === false) {
+        setError('Your account is pending approval. You\u2019ll be able to sign in once an administrator approves your application.');
+        setLoading(false);
+        return;
       }
+
+      const destination = routeForRole(user.role);
+      if (!destination) {
+        setError(`Your account role ("${user.role}") isn\u2019t linked to a dashboard yet. Please contact an administrator.`);
+        setLoading(false);
+        return;
+      }
+
+      setToken(res.token);
+      sessionStorage.setItem('boz_session_token', res.token);
+      sessionStorage.setItem('boz_election_user', JSON.stringify(res.user));
+
+      if (remember) localStorage.setItem(REMEMBERED_EMAIL_KEY, email.trim());
+      else localStorage.removeItem(REMEMBERED_EMAIL_KEY);
+
+      navigate(destination);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
-      setIsLoading(false);
+      setError(err instanceof Error ? err.message : 'Invalid email or password.');
+      setLoading(false);
     }
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden"
-      style={{ backgroundColor: '#04130c' }}
-    >
-      {/* Background grid */}
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#04130c' }}>
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)
-          `,
-          backgroundSize: '48px 48px',
-        }}
-      />
+        className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 overflow-hidden"
+        style={{ borderRadius: '24px', boxShadow: '0 30px 80px -20px rgba(0,0,0,0.6)', minHeight: '640px' }}
+      >
+        {/* Left — brand panel */}
+        <div className="relative hidden lg:flex flex-col p-10 overflow-hidden" style={{ background: `linear-gradient(160deg, ${GREEN} 0%, ${GREEN_DARK} 100%)` }}>
+          {/* dotted world-map texture */}
+          <svg className="absolute inset-0 w-full h-full opacity-[0.12] pointer-events-none" preserveAspectRatio="xMidYMid slice">
+            <pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse">
+              <circle cx="2" cy="2" r="1.4" fill="#ffffff" />
+            </pattern>
+            <rect width="100%" height="100%" fill="url(#dots)" />
+          </svg>
 
-      {/* Glow orbs */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          top: '-10%', left: '30%',
-          width: 600, height: 400,
-          background: 'radial-gradient(ellipse, rgba(34,197,94,0.09) 0%, transparent 70%)',
-        }}
-      />
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          bottom: '-5%', right: '20%',
-          width: 500, height: 300,
-          background: 'radial-gradient(ellipse, rgba(16,185,129,0.07) 0%, transparent 70%)',
-        }}
-      />
-
-      <div className="relative w-full max-w-5xl">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 mb-5 px-4 py-2 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <Zap size={13} style={{ color: '#00712B' }} />
-            <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.7rem', letterSpacing: '0.18em', color: 'rgba(255,255,255,0.5)' }}>
-              BUILD ONE ZAMBIA — SECURE ACCESS
-            </span>
-          </div>
-          <h1
-            style={{
-              fontFamily: 'Oswald, sans-serif',
-              fontSize: 'clamp(2rem, 5vw, 3rem)',
-              letterSpacing: '0.04em',
-              color: '#fff',
-              lineHeight: 1.1,
-            }}
-          >
-            PORTAL{' '}
-            <span style={{ background: 'linear-gradient(90deg, #00712B, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              DASHBOARD
-            </span>
-          </h1>
-          <p className="mt-3" style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.9rem' }}>
-            Select your dashboard to continue
-          </p>
-        </div>
-
-        {pendingAccount ? (
-          /* ── Pending approval status screen ── */
-          <div className="max-w-md mx-auto text-center rounded-2xl p-8" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5" style={{ backgroundColor: 'rgba(245,158,11,0.15)' }}>
-              <Clock size={26} style={{ color: '#f59e0b' }} />
+          <div className="relative z-10 flex flex-col h-full">
+            <div className="flex flex-col items-center text-center mb-8">
+              <div className="w-28 h-28 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: '#ffffff', boxShadow: '0 12px 32px rgba(0,0,0,0.25)' }}>
+                <img src="/logo-boz.png" alt="Build One Zambia" className="w-20 h-20 object-contain" />
+              </div>
+              <h1 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '2.2rem', letterSpacing: '0.02em', color: '#ffffff' }}>
+                BOZ <span style={{ color: '#0a1f12' }}>PORTAL</span>
+              </h1>
+              <p className="text-sm mt-2 max-w-xs" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                Your gateway to membership, elections, cooperative data &amp; more.
+              </p>
             </div>
-            <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.5rem', color: '#fff', letterSpacing: '0.02em' }}>
-              Application Pending Approval
-            </h2>
-            <p className="mt-3 mb-6" style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', lineHeight: 1.6 }}>
-              Your login was successful, but your application hasn't been reviewed by an admin yet. You'll be able to
-              access your dashboard as soon as it's approved.
-            </p>
-            <div className="text-left rounded-xl p-4 mb-6 space-y-2" style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <div className="flex justify-between text-sm">
-                <span style={{ color: 'rgba(255,255,255,0.4)' }}>Name</span>
-                <span style={{ color: '#fff' }}>{pendingAccount.name}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span style={{ color: 'rgba(255,255,255,0.4)' }}>Role</span>
-                <span style={{ color: '#fff' }}>{pendingAccount.role.replace(/_/g, ' ')}</span>
-              </div>
-              {pendingAccount.scopeName && (
-                <div className="flex justify-between text-sm">
-                  <span style={{ color: 'rgba(255,255,255,0.4)' }}>Assigned Area</span>
-                  <span style={{ color: '#fff' }}>{pendingAccount.scopeName}</span>
+
+            <div className="h-px w-full mb-8" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }} />
+
+            <div className="flex flex-col gap-6">
+              {FEATURES.map(f => (
+                <div key={f.title} className="flex items-start gap-4">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.14)' }}>
+                    <f.icon className="w-5 h-5" style={{ color: '#ffffff' }} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: '#ffffff' }}>{f.title}</p>
+                    <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>{f.text}</p>
+                  </div>
                 </div>
-              )}
-              <div className="flex justify-between text-sm">
-                <span style={{ color: 'rgba(255,255,255,0.4)' }}>Username</span>
-                <span style={{ color: '#fff' }}>{pendingAccount.username}</span>
-              </div>
-              <div className="flex justify-between text-sm pt-2 mt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <span style={{ color: 'rgba(255,255,255,0.4)' }}>Status</span>
-                <span style={{ color: '#f59e0b', fontWeight: 600 }}>Awaiting Approval</span>
-              </div>
-            </div>
-            <button
-              onClick={() => { setPendingAccount(null); setUsername(''); setPassword(''); setSelectedId(null); }}
-              className="w-full py-3 rounded-lg font-semibold text-sm transition-colors"
-              style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
-            >
-              Back to Login
-            </button>
-          </div>
-        ) : !selectedId ? (
-          /* ── Dashboard selection grid ── */
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {DASHBOARD_TYPES.map((dash) => (
-                <button
-                  key={dash.id}
-                  onClick={() => handleSelect(dash.id)}
-                  className="text-left rounded-2xl p-5 transition-all duration-200 group"
-                  style={{
-                    backgroundColor: '#007A30',
-                    border: '1px solid rgba(255,255,255,0.07)',
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.border = `1px solid ${dash.color}50`;
-                    (e.currentTarget as HTMLElement).style.backgroundColor = '#163d2a';
-                    (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)';
-                    (e.currentTarget as HTMLElement).style.boxShadow = `0 12px 40px ${dash.color}18`;
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.border = '1px solid rgba(255,255,255,0.07)';
-                    (e.currentTarget as HTMLElement).style.backgroundColor = '#007A30';
-                    (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-                    (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-                  }}
-                >
-                  <div className="flex items-start gap-4">
-                    <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-                      style={{
-                        background: `linear-gradient(135deg, ${dash.color}22, ${dash.color}0a)`,
-                        border: `1px solid ${dash.color}30`,
-                      }}
-                    >
-                      <dash.icon size={20} style={{ color: dash.color }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p
-                        style={{
-                          fontFamily: 'Oswald, sans-serif',
-                          fontSize: '1rem',
-                          letterSpacing: '0.04em',
-                          color: '#fff',
-                          marginBottom: '4px',
-                        }}
-                      >
-                        {dash.title}
-                      </p>
-                      <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.38)', lineHeight: 1.5 }}>
-                        {dash.description}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 mt-4" style={{ color: dash.color }}>
-                    <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '0.72rem', letterSpacing: '0.1em' }}>ACCESS</span>
-                    <ArrowRight size={13} />
-                  </div>
-                </button>
               ))}
             </div>
 
-            <div className="mt-8 text-center">
-              <button
-                onClick={() => navigate('/')}
-                className="text-sm transition-colors"
-                style={{ color: 'rgba(255,255,255,0.3)' }}
-                onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.6)'}
-                onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.3)'}
-              >
-                ← Back to home
-              </button>
+            <div className="mt-auto pt-8 flex justify-center opacity-70">
+              <svg viewBox="0 0 260 100" className="w-56" fill="none" stroke="#ffffff" strokeWidth="1.2">
+                <rect x="30" y="30" width="80" height="60" />
+                <rect x="115" y="15" width="55" height="75" />
+                <rect x="175" y="40" width="60" height="50" />
+                <line x1="30" y1="90" x2="235" y2="90" />
+                {[42, 62, 82].map(x => <rect key={x} x={x} y="45" width="10" height="12" />)}
+                {[130, 148].map(x => <rect key={x} x={x} y="30" width="9" height="11" />)}
+                {[187, 203, 219].map(x => <rect key={x} x={x} y="55" width="9" height="11" />)}
+              </svg>
             </div>
-          </>
-        ) : (
-          /* ── Login form ── */
-          <div className="max-w-md mx-auto">
-            {/* Card */}
-            <div
-              className="rounded-2xl overflow-hidden"
-              style={{
-                backgroundColor: '#007A30',
-                border: `1px solid ${selected?.color}30`,
-                boxShadow: `0 0 60px ${selected?.color}12`,
-              }}
-            >
-              {/* Dashboard header strip */}
-              <div
-                className="px-7 pt-7 pb-6"
-                style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-              >
-                <div className="flex items-center gap-4 mb-3">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center"
-                    style={{
-                      background: `linear-gradient(135deg, ${selected?.color}30, ${selected?.color}10)`,
-                      border: `1px solid ${selected?.color}40`,
-                    }}
-                  >
-                    {selected && <selected.icon size={22} style={{ color: selected.color }} />}
-                  </div>
-                  <div>
-                    <p
-                      style={{
-                        fontFamily: 'Oswald, sans-serif',
-                        fontSize: '1.1rem',
-                        letterSpacing: '0.04em',
-                        color: '#fff',
-                      }}
-                    >
-                      {selected?.title}
-                    </p>
-                    <p style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.38)' }}>
-                      {usesBackendAuth ? 'Your role & access level are detected automatically after login' : 'Secure sign in required'}
-                    </p>
-                  </div>
+          </div>
+        </div>
+
+        {/* Right — login form */}
+        <div className="flex flex-col justify-center px-6 py-12 sm:px-14" style={{ backgroundColor: '#0b0f0d' }}>
+          <div className="w-full max-w-sm mx-auto">
+            <div className="flex flex-col items-center text-center mb-8">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: GREEN }}>
+                <Lock className="w-6 h-6" style={{ color: '#fff' }} />
+              </div>
+              <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.5rem', color: '#fff' }}>Welcome Back</h2>
+              <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.45)' }}>Sign in to access your dashboard</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.6)' }}>Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.35)' }} />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="youremail@example.com"
+                    autoComplete="username"
+                    className="w-full pl-10 pr-4 py-3 rounded-lg text-sm"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', outline: 'none' }}
+                  />
                 </div>
               </div>
 
-              {/* Form */}
-              <form onSubmit={handleLogin} className="px-7 py-6">
-                {error && (
-                  <div
-                    className="mb-5 px-4 py-3 rounded-xl text-sm"
-                    style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }}
-                  >
-                    {error}
-                  </div>
-                )}
-
-                {/* Username */}
-                <div className="mb-4">
-                  <label
-                    className="block mb-2 text-xs"
-                    style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.4)' }}
-                  >
-                    USERNAME
-                  </label>
-                  <div className="relative">
-                    <User
-                      size={15}
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2"
-                      style={{ color: 'rgba(255,255,255,0.25)' }}
-                    />
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Enter username"
-                      autoComplete="username"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl text-sm transition-all"
-                      style={{
-                        backgroundColor: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        color: '#fff',
-                        outline: 'none',
-                      }}
-                      onFocus={(e) => (e.target.style.borderColor = `${selected?.color}70`)}
-                      onBlur={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
-                    />
-                  </div>
-                </div>
-
-                {/* Password */}
-                <div className="mb-6">
-                  <label
-                    className="block mb-2 text-xs"
-                    style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.4)' }}
-                  >
-                    PASSWORD
-                  </label>
-                  <div className="relative">
-                    <Lock
-                      size={15}
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2"
-                      style={{ color: 'rgba(255,255,255,0.25)' }}
-                    />
-                    <input
-                      type={showPass ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter password"
-                      autoComplete="current-password"
-                      className="w-full pl-10 pr-12 py-3 rounded-xl text-sm transition-all"
-                      style={{
-                        backgroundColor: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        color: '#fff',
-                        outline: 'none',
-                      }}
-                      onFocus={(e) => (e.target.style.borderColor = `${selected?.color}70`)}
-                      onBlur={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2"
-                      style={{ color: 'rgba(255,255,255,0.3)' }}
-                      onClick={() => setShowPass(!showPass)}
-                    >
-                      {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Forgot username / password */}
-                <div className="mb-5 text-right">
-                  <button
-                    type="button"
-                    onClick={() => { setShowResendPanel(v => !v); setResendMsg(''); }}
-                    className="text-xs"
-                    style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}
-                  >
-                    Forgot your username or password?
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.6)' }}>Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.35)' }} />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    className="w-full pl-10 pr-11 py-3 rounded-lg text-sm"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', outline: 'none' }}
+                  />
+                  <button type="button" onClick={() => setShowPassword(s => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+              </div>
 
-                {showResendPanel && (
-                  <div className="mb-5 p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                      Enter the email you applied with — if an account matches, we'll send new login details to it.
-                    </p>
-                    <div className="flex gap-2">
-                      <input
-                        type="email"
-                        value={resendEmail}
-                        onChange={(e) => setResendEmail(e.target.value)}
-                        placeholder="you@example.com"
-                        className="flex-1 px-3 py-2 rounded-lg text-sm"
-                        style={{ backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', outline: 'none' }}
-                      />
-                      <button
-                        type="button"
-                        disabled={resendLoading || !resendEmail}
-                        onClick={async () => {
-                          setResendLoading(true);
-                          setResendMsg('');
-                          try {
-                            const res = await authApi.resendLogin({ email: resendEmail });
-                            setResendMsg(res.message);
-                          } catch (err) {
-                            setResendMsg(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
-                          } finally {
-                            setResendLoading(false);
-                          }
-                        }}
-                        className="px-4 py-2 rounded-lg text-xs font-semibold"
-                        style={{ backgroundColor: selected?.color || '#22c55e', color: '#fff', opacity: resendLoading || !resendEmail ? 0.6 : 1 }}
-                      >
-                        {resendLoading ? 'Sending…' : 'Send'}
-                      </button>
-                    </div>
-                    {resendMsg && (
-                      <p className="text-xs mt-2" style={{ color: 'rgba(255,255,255,0.6)' }}>{resendMsg}</p>
-                    )}
-                  </div>
-                )}
+              <div className="flex items-center justify-between text-xs">
+                <label className="flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                  <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} />
+                  Remember me
+                </label>
+                <Link to="/contact" className="hover:underline" style={{ color: GREEN }}>Forgot password?</Link>
+              </div>
 
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl transition-all"
-                  style={{
-                    background: isLoading
-                      ? `${selected?.color}60`
-                      : `linear-gradient(135deg, ${selected?.color}, ${selected?.color}cc)`,
-                    color: '#fff',
-                    fontFamily: 'Oswald, sans-serif',
-                    letterSpacing: '0.1em',
-                    fontSize: '0.85rem',
-                    boxShadow: isLoading ? 'none' : `0 4px 24px ${selected?.color}40`,
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  {isLoading ? (
-                    <>
-                      <span
-                        className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
-                        style={{ animation: 'spin 0.7s linear infinite', display: 'inline-block' }}
-                      />
-                      AUTHENTICATING...
-                    </>
-                  ) : (
-                    <>SIGN IN <ArrowRight size={15} /></>
-                  )}
-                </button>
+              {error && (
+                <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg text-xs" style={{ backgroundColor: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', color: '#f87171' }}>
+                  <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
 
-                <button
-                  type="button"
-                  onClick={() => { setSelectedId(null); setError(''); }}
-                  className="w-full mt-4 flex items-center justify-center gap-1.5 py-2.5 text-sm transition-colors"
-                  style={{ color: 'rgba(255,255,255,0.3)' }}
-                  onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.6)'}
-                  onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.3)'}
-                >
-                  <ChevronLeft size={14} /> Choose different dashboard
-                </button>
-              </form>
-            </div>
-
-            <p className="text-center mt-5 text-sm" style={{ color: 'rgba(255,255,255,0.22)' }}>
-              Not registered?{' '}
               <button
-                onClick={() => {
-                  if (selectedId === 'election' || selectedId === 'management') navigate('/register/agent');
-                  else if (selectedId === 'cooperative') navigate('/register/cooperative');
-                  else if (selectedId === 'internship') navigate('/register/internship');
-                  else if (selectedId === 'chamber') navigate('/register/chamber');
-                  else navigate('/register/member');
-                }}
-                className="transition-colors"
-                style={{ color: selected?.color || '#3b82f6' }}
-                onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.opacity = '0.75'}
-                onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.opacity = '1'}
+                type="submit"
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-lg font-semibold text-sm disabled:opacity-60"
+                style={{ backgroundColor: GREEN, color: '#fff' }}
               >
-                {(selectedId === 'election' || selectedId === 'management') ? 'Apply as Polling Agent'
-                  : selectedId === 'cooperative' ? 'Apply as Cooperative'
-                  : selectedId === 'internship' ? 'Apply for Internship'
-                  : selectedId === 'chamber' ? 'Apply as Chamber of Commerce'
-                  : 'Apply for membership'}
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Sign In <ArrowRight className="w-4 h-4" /></>}
               </button>
-            </p>
-          </div>
-        )}
-      </div>
+            </form>
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <div className="mt-8 text-center text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              New to Build One Zambia?{' '}
+              <Link to="/home/opportunities" className="font-medium hover:underline" style={{ color: GREEN }}>Register here</Link>
+            </div>
+            <div className="mt-2 text-center text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              Trouble signing in?{' '}
+              <Link to="/contact" className="font-medium hover:underline" style={{ color: GREEN }}>Contact Administrator</Link>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
