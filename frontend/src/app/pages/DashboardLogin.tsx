@@ -19,9 +19,10 @@ import { authApi, setToken } from '../lib/api';
 
 const GREEN = '#007A30';
 const GREEN_DARK = '#065A22';
-// Sampled directly from the logo's own orange half.
-const ORANGE = '#FF751F';
-const ORANGE_DARK = '#2A1206';
+// Sampled directly from the reference design's right panel — a vivid,
+// saturated orange, not a darkened/browned-down version of it.
+const ORANGE = '#EC6D01';
+const ORANGE_DARK = '#D46200';
 
 // Where each backend role lands. Every dashboard-facing role in the system
 // must resolve to something here — if a role isn't listed, the person sees
@@ -108,7 +109,7 @@ export default function DashboardLogin() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: `linear-gradient(160deg, ${ORANGE_DARK} 0%, #150a03 100%)` }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: `linear-gradient(160deg, ${ORANGE} 0%, ${ORANGE_DARK} 100%)` }}>
       <div
         className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 overflow-hidden"
         style={{ borderRadius: '24px', boxShadow: '0 30px 80px -20px rgba(0,0,0,0.6)', minHeight: '640px' }}
@@ -167,21 +168,21 @@ export default function DashboardLogin() {
         </div>
 
         {/* Right — login form */}
-        <div className="flex flex-col justify-center px-6 py-12 sm:px-14" style={{ background: `linear-gradient(200deg, #241004 0%, ${ORANGE_DARK} 60%, #1a0c03 100%)` }}>
+        <div className="flex flex-col justify-center px-6 py-12 sm:px-14" style={{ background: `linear-gradient(200deg, ${ORANGE} 0%, ${ORANGE_DARK} 100%)` }}>
           <div className="w-full max-w-sm mx-auto">
             <div className="flex flex-col items-center text-center mb-8">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: ORANGE }}>
+              <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
                 <Lock className="w-6 h-6" style={{ color: '#fff' }} />
               </div>
               <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.5rem', color: '#fff' }}>Welcome Back</h2>
-              <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.45)' }}>Sign in to access your dashboard</p>
+              <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.85)' }}>Sign in to access your dashboard</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.6)' }}>Email Address</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.92)' }}>Email Address</label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.35)' }} />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.75)' }} />
                   <input
                     type="email"
                     value={email}
@@ -189,17 +190,17 @@ export default function DashboardLogin() {
                     placeholder="youremail@example.com"
                     autoComplete="username"
                     className="w-full pl-10 pr-4 py-3 rounded-lg text-sm"
-                    style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', outline: 'none' }}
-                    onFocus={e => { e.currentTarget.style.borderColor = ORANGE; e.currentTarget.style.boxShadow = `0 0 0 3px ${ORANGE}22`; }}
-                    onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.35)', color: '#fff', outline: 'none' }}
+                    onFocus={e => { e.currentTarget.style.borderColor = '#ffffff'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.25)'; }}
+                    onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; e.currentTarget.style.boxShadow = 'none'; }}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.6)' }}>Password</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.92)' }}>Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.35)' }} />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.75)' }} />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
@@ -207,22 +208,22 @@ export default function DashboardLogin() {
                     placeholder="Enter your password"
                     autoComplete="current-password"
                     className="w-full pl-10 pr-11 py-3 rounded-lg text-sm"
-                    style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', outline: 'none' }}
-                    onFocus={e => { e.currentTarget.style.borderColor = ORANGE; e.currentTarget.style.boxShadow = `0 0 0 3px ${ORANGE}22`; }}
-                    onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.35)', color: '#fff', outline: 'none' }}
+                    onFocus={e => { e.currentTarget.style.borderColor = '#ffffff'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.25)'; }}
+                    onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; e.currentTarget.style.boxShadow = 'none'; }}
                   />
-                  <button type="button" onClick={() => setShowPassword(s => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  <button type="button" onClick={() => setShowPassword(s => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.75)' }}>
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
               <div className="flex items-center justify-between text-xs">
-                <label className="flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                  <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} style={{ accentColor: ORANGE }} />
+                <label className="flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                  <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} style={{ accentColor: GREEN }} />
                   Remember me
                 </label>
-                <Link to="/contact" className="hover:underline" style={{ color: ORANGE }}>Forgot password?</Link>
+                <Link to="/contact" className="hover:underline" style={{ color: '#ffffff' }}>Forgot password?</Link>
               </div>
 
               {error && (
@@ -236,19 +237,19 @@ export default function DashboardLogin() {
                 type="submit"
                 disabled={loading}
                 className="w-full flex items-center justify-center gap-2 py-3.5 rounded-lg font-semibold text-sm disabled:opacity-60"
-                style={{ backgroundColor: ORANGE, color: '#fff' }}
+                style={{ background: `linear-gradient(135deg, ${GREEN} 0%, ${GREEN_DARK} 100%)`, color: '#fff' }}
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Sign In <ArrowRight className="w-4 h-4" /></>}
               </button>
             </form>
 
-            <div className="mt-8 text-center text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <div className="mt-8 text-center text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>
               New to Build One Zambia?{' '}
-              <Link to="/home/opportunities" className="font-medium hover:underline" style={{ color: ORANGE }}>Register here</Link>
+              <Link to="/home/opportunities" className="font-medium hover:underline" style={{ color: '#ffffff' }}>Register here</Link>
             </div>
-            <div className="mt-2 text-center text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <div className="mt-2 text-center text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>
               Trouble signing in?{' '}
-              <Link to="/contact" className="font-medium hover:underline" style={{ color: ORANGE }}>Contact Administrator</Link>
+              <Link to="/contact" className="font-medium hover:underline" style={{ color: '#ffffff' }}>Contact Administrator</Link>
             </div>
           </div>
         </div>
