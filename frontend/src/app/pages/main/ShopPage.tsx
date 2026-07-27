@@ -138,6 +138,7 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
   const [hover, setHover] = useState(false);
   const [selectedColor, setSelectedColor] = useState<number | null>(null);
   const [colorWarning, setColorWarning] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
   const meta = productMeta(product.id);
   const priceNum = product.priceNum;
   const wasPrice = meta.hasDiscount ? Math.round(priceNum / (1 - meta.discountPct / 100)) : null;
@@ -181,7 +182,10 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
         </div>
       )}
 
-      <div style={{ height: '130px', borderRadius: '4px', overflow: 'hidden', marginBottom: '10px', background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+      <div
+        onClick={() => setShowDetail(true)}
+        style={{ height: '130px', borderRadius: '4px', overflow: 'hidden', marginBottom: '10px', background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer' }}
+      >
         <img
           src={displayImg} alt={product.name}
           style={{ width: '82%', height: '82%', objectFit: 'contain', transition: 'transform 0.25s ease, filter 0.2s ease', transform: hover ? 'scale(1.06)' : 'scale(1)', filter: showTint ? 'grayscale(0.5) brightness(1.05)' : 'none' }}
@@ -199,9 +203,19 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
         )}
       </div>
 
-      <p style={{ fontSize: '12.5px', lineHeight: 1.3, fontWeight: 400, margin: '0 0 4px', minHeight: '32px', color: hover ? RED_DARK : '#0F1111', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+      <p
+        onClick={() => setShowDetail(true)}
+        style={{ fontSize: '12.5px', lineHeight: 1.3, fontWeight: 400, margin: '0 0 4px', minHeight: '32px', color: hover ? RED_DARK : '#0F1111', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', cursor: 'pointer' }}
+      >
         {product.name}
       </p>
+      <button
+        type="button"
+        onClick={() => setShowDetail(true)}
+        style={{ background: 'none', border: 'none', padding: 0, margin: '0 0 6px', fontSize: '10px', color: '#007185', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Open Sans, sans-serif' }}
+      >
+        View details
+      </button>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '6px' }}>
         <Stars rating={meta.rating} />
@@ -252,6 +266,123 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
       >
         {justAdded ? '✓ Added to cart' : 'Add to Cart'}
       </button>
+
+      {showDetail && (
+        <ProductDetailModal
+          product={product}
+          activeColor={activeColor}
+          displayImg={displayImg}
+          showTint={showTint}
+          selectedColor={selectedColor}
+          onSelectColor={i => { setSelectedColor(i); setColorWarning(false); }}
+          meta={meta}
+          wasPrice={wasPrice}
+          justAdded={justAdded}
+          colorWarning={colorWarning}
+          onAdd={handleAdd}
+          onClose={() => setShowDetail(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+function ProductDetailModal({
+  product, activeColor, displayImg, showTint, selectedColor, onSelectColor, meta, wasPrice, justAdded, colorWarning, onAdd, onClose,
+}: {
+  product: Product;
+  activeColor: { name: string; swatch: string; img?: string } | null;
+  displayImg: string;
+  showTint: boolean;
+  selectedColor: number | null;
+  onSelectColor: (i: number) => void;
+  meta: ReturnType<typeof productMeta>;
+  wasPrice: number | null;
+  justAdded: boolean;
+  colorWarning: boolean;
+  onAdd: () => void;
+  onClose: () => void;
+}) {
+  const hasColors = !!product.colors && product.colors.length > 0;
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, zIndex: 300, backgroundColor: 'rgba(15,17,17,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{ background: '#fff', color: '#0F1111', width: '100%', maxWidth: '640px', maxHeight: '88vh', overflowY: 'auto', borderRadius: '10px', position: 'relative' }}
+      >
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 2, width: '28px', height: '28px', borderRadius: '50%', border: 'none', background: 'rgba(15,17,17,0.06)', cursor: 'pointer', fontSize: '16px', lineHeight: 1 }}
+        >
+          ✕
+        </button>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2" style={{ display: 'grid' }}>
+          <div style={{ position: 'relative', background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '260px', padding: '24px' }}>
+            <img src={displayImg} alt={product.name} style={{ width: '100%', maxWidth: '260px', objectFit: 'contain', filter: showTint ? 'grayscale(0.5) brightness(1.05)' : 'none' }} />
+            {showTint && activeColor && (
+              <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: activeColor.swatch, opacity: 0.32, mixBlendMode: 'multiply' }} />
+            )}
+          </div>
+
+          <div style={{ padding: '24px' }}>
+            <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '9px', letterSpacing: '0.08em', color: RED_DARK, margin: '0 0 6px' }}>{product.tag}</p>
+            <h2 style={{ fontSize: '1.05rem', fontWeight: 600, lineHeight: 1.3, margin: '0 0 8px' }}>{product.name}</h2>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+              <Stars rating={meta.rating} />
+              <span style={{ fontSize: '11px', color: '#007185' }}>{meta.reviews.toLocaleString()} ratings</span>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              {meta.hasDiscount && <span style={{ fontSize: '12px', color: RED, fontWeight: 700, marginRight: '8px' }}>-{meta.discountPct}%</span>}
+              <span style={{ fontSize: '22px', fontWeight: 700 }}>{product.price}</span>
+              {wasPrice && <span style={{ fontSize: '12px', color: '#565959', textDecoration: 'line-through', marginLeft: '8px' }}>K{wasPrice.toLocaleString()}</span>}
+            </div>
+            <p style={{ fontSize: '11px', color: '#007600', margin: '0 0 14px' }}>In stock</p>
+
+            <p style={{ fontSize: '11px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', color: '#565959', margin: '0 0 4px' }}>ABOUT THIS ITEM</p>
+            <p style={{ fontSize: '13px', lineHeight: 1.6, color: '#333', margin: '0 0 16px' }}>{product.desc}</p>
+
+            {hasColors && (
+              <div style={{ marginBottom: '16px' }}>
+                <p style={{ fontSize: '11px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', color: '#565959', margin: '0 0 6px' }}>
+                  COLOUR{activeColor ? `: ${activeColor.name}` : ''}
+                </p>
+                <div style={{ display: 'flex', gap: '7px', flexWrap: 'wrap' }}>
+                  {product.colors!.map((c, i) => (
+                    <button
+                      key={c.name}
+                      type="button"
+                      onClick={() => onSelectColor(i)}
+                      title={c.name}
+                      aria-label={`Select colour ${c.name}`}
+                      style={{
+                        width: '24px', height: '24px', borderRadius: '50%', background: c.swatch, cursor: 'pointer',
+                        border: selectedColor === i ? '2px solid #0F1111' : '1px solid rgba(0,0,0,0.2)',
+                        outline: selectedColor === i ? `2px solid ${BUY_YELLOW}` : 'none', outlineOffset: '1px',
+                        padding: 0, flexShrink: 0,
+                      }}
+                    />
+                  ))}
+                </div>
+                {colorWarning && <p style={{ fontSize: '11px', color: RED, fontWeight: 700, marginTop: '6px' }}>Please select a colour</p>}
+              </div>
+            )}
+
+            <button
+              onClick={onAdd}
+              style={{ width: '100%', background: justAdded ? '#2E7D32' : BUY_YELLOW, color: justAdded ? '#fff' : '#0F1111', border: `1px solid ${justAdded ? '#2E7D32' : '#FCD200'}`, borderRadius: '20px', padding: '11px 0', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif' }}
+            >
+              {justAdded ? '✓ Added to cart' : 'Add to Cart'}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
