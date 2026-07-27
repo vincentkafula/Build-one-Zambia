@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { dataEntryApi } from '../../lib/api';
 import { provinces } from '../../data/mockData';
 
-const CARD_BG = '#007A30';
+const CARD_BG = '#0d1f14';
 
 interface Submission {
   pollingStationId?: string;

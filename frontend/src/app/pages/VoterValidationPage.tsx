@@ -304,7 +304,7 @@ export function VoterValidationPage() {
   return (
     <div className="space-y-5">
       {/* Auto-detected assignment — no manual selection required */}
-      <div className="rounded-2xl p-6 flex items-start gap-3" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="rounded-2xl p-6 flex items-start gap-3" style={{ backgroundColor: '#0d1f14', border: '1px solid rgba(255,255,255,0.07)' }}>
         <MapPin className="flex-shrink-0" size={20} style={{ color: pollingStationId ? '#16a34a' : '#f59e0b', marginTop: 2 }} />
         <div>
           <h2 className="mb-1" style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem' }}>
@@ -329,7 +329,7 @@ export function VoterValidationPage() {
       {!pollingStationId ? null : (
         <>
           {/* Voters roll upload / status */}
-          <div className="rounded-2xl p-6" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="rounded-2xl p-6" style={{ backgroundColor: '#0d1f14', border: '1px solid rgba(255,255,255,0.07)' }}>
             <div className="flex items-center justify-between gap-3 mb-1">
               <h2 style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem' }}>
                 <FileSpreadsheet className="inline w-5 h-5 mr-2" style={{ color: '#16a34a' }} />
@@ -405,7 +405,7 @@ export function VoterValidationPage() {
           </div>
 
           {/* Voter verification */}
-          <div className="rounded-2xl p-6" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="rounded-2xl p-6" style={{ backgroundColor: '#0d1f14', border: '1px solid rgba(255,255,255,0.07)' }}>
             <h2 className="mb-1" style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem' }}>
               <UserSearch className="inline w-5 h-5 mr-2" style={{ color: '#16a34a' }} />
               Verify a Voter

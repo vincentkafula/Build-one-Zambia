@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import {
   LayoutDashboard, ClipboardList, UserCircle, Lock,
   Scale, AlertTriangle, BarChart2, LogOut, ChevronRight,
-  Menu, X, Zap, Shield, CheckCircle2, Users, UserCheck,
+  Menu, X, Shield, CheckCircle2, Users, UserCheck,
 } from 'lucide-react';
 import { clearToken } from '../../lib/api';
 
@@ -72,7 +72,7 @@ const ALL_NAV: NavItem[] = [
   { key:'security',         label:'Security Settings',    icon:<Lock size={16}/>,            group:'PROFILE' },
 ];
 
-const SIDEBAR_BG='#007A30', TOPBAR_BG='#007A30', CARD_BG='#007A30', BORDER='rgba(255,255,255,0.07)';
+const SIDEBAR_BG='#007A30', TOPBAR_BG='#EC6D01', TOPBAR_BG_DARK='#D46200', CARD_BG='#0d1f14', BORDER='rgba(255,255,255,0.07)';
 
 function Field({label,value}:{label:string;value:string}) {
   return (
@@ -195,18 +195,24 @@ export default function ElectionDashboard() {
       case 'overview':
         return (
           <div className="space-y-6">
-            <div className="rounded-2xl p-6" style={{background:`linear-gradient(135deg, ${conf.color}18, ${conf.color}06)`,border:`1px solid ${conf.color}30`}}>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg" style={{background:conf.color}}>
-                  {(profile.name||profile.username).charAt(0).toUpperCase()||'U'}
-                </div>
-                <div>
-                  <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.4rem',letterSpacing:'0.04em',color:'#fff'}}>
-                    Welcome, {profile.name||profile.username}
-                  </h2>
-                  <p style={{color:'rgba(255,255,255,0.4)',fontSize:'0.82rem'}}>
-                    {conf.label} · {profile.scopeName} · 2026 Zambian General Election
-                  </p>
+            <div className="rounded-2xl p-6" style={{backgroundColor:CARD_BG,border:`1px solid ${BORDER}`}}>
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="relative flex items-center justify-center rounded-full" style={{width:56,height:56,border:`2px solid ${conf.color}`,boxShadow:`0 0 18px ${conf.color}55`}}>
+                    <div className="w-full h-full rounded-full flex items-center justify-center text-white font-bold text-lg" style={{background:conf.color}}>
+                      {(profile.name||profile.username).charAt(0).toUpperCase()||'U'}
+                    </div>
+                  </div>
+                  <div>
+                    <p style={{color:'rgba(255,255,255,0.45)',fontSize:'0.78rem'}}>Welcome back,</p>
+                    <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.5rem',letterSpacing:'0.03em',color:'#fff'}}>
+                      {profile.name||profile.username} <span style={{fontSize:'1.1rem'}}>👋</span>
+                    </h2>
+                    <p style={{color:'rgba(255,255,255,0.45)',fontSize:'0.8rem',marginTop:2}}>
+                      {conf.label} · {profile.scopeName}
+                    </p>
+                    <p style={{color:'rgba(255,255,255,0.3)',fontSize:'0.75rem'}}>2026 Zambian General Election</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -474,12 +480,10 @@ export default function ElectionDashboard() {
 
   const SidebarContent = (
     <aside className="flex flex-col h-full" style={{width:260,backgroundColor:SIDEBAR_BG,borderRight:`1px solid ${BORDER}`}}>
-      <div className="px-5 pt-6 pb-5" style={{borderBottom:`1px solid ${BORDER}`}}>
-        <div className="flex items-center gap-2 mb-1">
-          <Zap size={14} style={{color:conf.color}}/>
-          <span style={{fontFamily:'Oswald, sans-serif',fontSize:'0.65rem',letterSpacing:'0.2em',color:'rgba(255,255,255,0.4)'}}>BUILD ONE ZAMBIA</span>
-        </div>
-        <p style={{fontFamily:'Oswald, sans-serif',fontSize:'0.8rem',letterSpacing:'0.1em',color:'#fff'}}>Election Dashboard</p>
+      <div className="px-5 pt-6 pb-5 flex flex-col items-center text-center" style={{borderBottom:`1px solid ${BORDER}`}}>
+        <img src="/logo-boz.png" alt="Build One Zambia" className="w-14 h-14 object-contain mb-2" />
+        <span style={{fontFamily:'Oswald, sans-serif',fontSize:'0.65rem',letterSpacing:'0.16em',color:'rgba(255,255,255,0.6)'}}>BUILD ONE ZAMBIA</span>
+        <p style={{fontFamily:'Oswald, sans-serif',fontSize:'0.95rem',letterSpacing:'0.06em',color:'#fff',marginTop:2}}>Election Dashboard</p>
       </div>
       <div className="mx-3 mt-4 p-3 rounded-xl" style={{backgroundColor:`${conf.color}12`,border:`1px solid ${conf.color}25`}}>
         <p style={{color:'#fff',fontFamily:'Oswald, sans-serif',fontSize:'0.82rem',letterSpacing:'0.04em'}}>{profile.name||profile.username}</p>
@@ -529,28 +533,27 @@ export default function ElectionDashboard() {
       </div>
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="flex items-center justify-between px-5 py-3 shrink-0"
-          style={{backgroundColor:TOPBAR_BG,borderBottom:`1px solid ${BORDER}`,height:60}}>
+          style={{background:`linear-gradient(90deg, ${TOPBAR_BG} 0%, ${TOPBAR_BG_DARK} 100%)`,borderBottom:`1px solid ${BORDER}`,height:64}}>
           <div className="flex items-center gap-3">
             <button className="lg:hidden p-1.5 rounded-lg" onClick={()=>setSidebarOpen(o=>!o)} style={{color:'rgba(255,255,255,0.6)'}}>
               {sidebarOpen?<X size={20}/>:<Menu size={20}/>}
             </button>
             <div>
-              <p style={{fontFamily:'Oswald, sans-serif',fontSize:'0.85rem',letterSpacing:'0.06em',color:'#fff'}}>
+              <p style={{fontFamily:'Oswald, sans-serif',fontSize:'0.95rem',letterSpacing:'0.06em',color:'#fff'}}>
                 {ALL_NAV.find(n=>n.key===active)?.label??'Overview'}
               </p>
-              <p style={{fontSize:'0.7rem',color:'rgba(255,255,255,0.35)'}}>{conf.label} · {profile.scopeName}</p>
+              <p style={{fontSize:'0.72rem',color:'rgba(255,255,255,0.85)'}}>{conf.label} · {profile.scopeName}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full"
-              style={{backgroundColor:`${conf.color}15`,border:`1px solid ${conf.color}30`}}>
-              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{backgroundColor:conf.color}}/>
-              <span style={{color:conf.color,fontSize:'0.68rem',fontFamily:'Oswald, sans-serif',letterSpacing:'0.1em'}}>{conf.label.toUpperCase()}</span>
+            <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full" style={{backgroundColor:SIDEBAR_BG}}>
+              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{backgroundColor:'#fff'}}/>
+              <span style={{color:'#fff',fontSize:'0.68rem',fontFamily:'Oswald, sans-serif',letterSpacing:'0.1em'}}>{conf.label.toUpperCase()}</span>
             </div>
             <button onClick={handleLogout} className="p-2 rounded-lg transition-all"
-              style={{color:'rgba(255,255,255,0.4)'}} title="Sign Out"
-              onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color='#ef4444'}
-              onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color='rgba(255,255,255,0.4)'}>
+              style={{color:'rgba(255,255,255,0.75)'}} title="Sign Out"
+              onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color='#fff'}
+              onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color='rgba(255,255,255,0.75)'}>
               <LogOut size={18}/>
             </button>
           </div>
