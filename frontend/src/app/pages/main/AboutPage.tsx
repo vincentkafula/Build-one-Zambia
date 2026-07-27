@@ -5,6 +5,7 @@ import { ImageWithFallback } from '../../components/figma/ImageWithFallback';
 import { mukubesaMundia, mulazaKaira, scartChansa, garyNkombo, willahMudolo, christopherKangombe, josephKalimbwe } from '../../data/leaderPhotos';
 import vincentKafulaLeaderPhoto from '../../../imports/vincent_kafula_leadership.jpg';
 import { leadershipApi, Leader } from '../../lib/api';
+import { WaveBackground } from '../../components/WaveBackground';
 import {
   ZAMBIA_HIERARCHY,
   getDistricts,
@@ -847,15 +848,18 @@ export function AboutPage() {
       </section>
 
       {/* Leadership */}
-      <section id="leadership" className="py-24 px-4">
-        <div className="max-w-4xl mx-auto">
-          <SectionLabel text="OUR LEADERSHIP" />
-          <H2>Leadership</H2>
-          <BodyText className="mb-10">
-            Build One Zambia is led by dedicated leaders at every level — from national to branch — working together to bring our vision to life across the country.
-          </BodyText>
+      <section id="leadership" className="py-24 px-4" style={{ position: 'relative', overflow: 'hidden' }}>
+        <WaveBackground />
+        <div className="max-w-4xl mx-auto" style={{ position: 'relative', zIndex: 1 }}>
+          <div className="rounded-2xl p-8 sm:p-12" style={{ backgroundColor: '#ffffff', boxShadow: '0 20px 50px -12px rgba(0,0,0,0.4)' }}>
+            <SectionLabel text="OUR LEADERSHIP" />
+            <H2>Leadership</H2>
+            <BodyText className="mb-10">
+              Build One Zambia is led by dedicated leaders at every level — from national to branch — working together to bring our vision to life across the country.
+            </BodyText>
 
-          <LeadershipAccordion />
+            <LeadershipAccordion />
+          </div>
         </div>
       </section>
 

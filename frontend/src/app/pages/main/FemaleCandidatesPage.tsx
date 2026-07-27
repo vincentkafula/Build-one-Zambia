@@ -3,6 +3,7 @@ import { Heart, Users, Leaf, ArrowRight, CheckCircle, ChevronLeft, ChevronRight 
 import { Link } from 'react-router';
 import { candidatesApi, shadowCabinetApi, type BackendCandidate, type ShadowMember } from '../../lib/api';
 import { ShadowMinisterContactModal } from '../../components/ShadowMinisterContactModal';
+import { WaveBackground } from '../../components/WaveBackground';
 import { ShadowMinisterProfileModal } from '../../components/ShadowMinisterProfileModal';
 import chilesheKapwepwePhoto from '../../../imports/Chileshe.png';
 import mwituaMushibwePhoto from '../../../imports/image-26.png';
@@ -495,11 +496,12 @@ export function FemaleCandidatesPage() {
 
       {/* Shadow Cabinet from Admin Panel */}
       {shadowMembers.length > 0 && (
-        <section className="py-20 px-4" style={{ backgroundColor: '#f0f4ff' }}>
-          <div className="max-w-6xl mx-auto">
+        <section className="py-20 px-4" style={{ position: 'relative', overflow: 'hidden' }}>
+          <WaveBackground />
+          <div className="max-w-6xl mx-auto" style={{ position: 'relative', zIndex: 1 }}>
             <div className="text-center mb-14">
-              <p className="text-xs tracking-widest mb-3" style={{ color: O, fontFamily: 'Oswald, sans-serif' }}>SHADOW CABINET</p>
-              <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', letterSpacing: '0.03em', color: NAVY }}>ADDITIONAL FEMALE SHADOW MINISTERS</h2>
+              <p className="text-xs tracking-widest mb-3" style={{ color: '#F4C066', fontFamily: 'Oswald, sans-serif' }}>SHADOW CABINET</p>
+              <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', letterSpacing: '0.03em', color: '#ffffff' }}>ADDITIONAL FEMALE SHADOW MINISTERS</h2>
               <div className="w-16 h-1 mx-auto mt-4 rounded-full" style={{ backgroundColor: O }} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
