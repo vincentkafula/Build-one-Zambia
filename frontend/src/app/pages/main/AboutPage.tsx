@@ -77,74 +77,73 @@ interface Leader {
 function LeaderCard({ leader }: { leader: Leader }) {
   return (
     <div
-      className="group overflow-hidden transition-all duration-300"
+      className="group overflow-hidden transition-all duration-300 rounded-xl"
       style={{
-        backgroundColor: '#EE4A3C',
-        border: '1px solid #1f1f1f',
+        backgroundColor: '#ffffff',
+        border: '1px solid #eef0e9',
+        boxShadow: '0 10px 28px -10px rgba(15,23,42,0.18)',
       }}
     >
-      {/* Leader Photo */}
-      <div
-        className="relative overflow-hidden"
-        style={{ height: '280px', backgroundColor: leader.redacted ? '#EE4A3C' : leader.whiteBg ? '#ffffff' : undefined }}
-      >
-        {leader.redacted ? (
-          <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-            <svg viewBox="0 0 80 80" width="64" height="64" fill="none">
-              <circle cx="40" cy="28" r="18" fill="#2a2a2a" />
-              <ellipse cx="40" cy="72" rx="30" ry="18" fill="#2a2a2a" />
-            </svg>
-            <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '10px', letterSpacing: '0.14em', color: '#1a1a1a' }}>IDENTITY PENDING</span>
-          </div>
-        ) : (
-          <ImageWithFallback
-            src={leader.image}
-            alt={leader.name}
-            className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
-            style={{ objectPosition: 'center' }}
-          />
-        )}
-        <div
-          className="absolute inset-0 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
-          style={{
-            background: 'linear-gradient(to top, rgba(220,38,38,0.4) 0%, transparent 60%)',
-          }}
-        />
+      {/* Leader Photo — gallery-portrait mat, matching the candidate pages */}
+      <div className="p-3 pb-0">
+        <div className="relative overflow-hidden rounded-lg" style={{ aspectRatio: '4 / 5', backgroundColor: '#F7F5EF' }}>
+          {leader.redacted ? (
+            <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+              <svg viewBox="0 0 80 80" width="56" height="56" fill="none">
+                <circle cx="40" cy="28" r="18" fill="#d1d5db" />
+                <ellipse cx="40" cy="72" rx="30" ry="18" fill="#d1d5db" />
+              </svg>
+              <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '9.5px', letterSpacing: '0.12em', color: '#9ca3af' }}>IDENTITY PENDING</span>
+            </div>
+          ) : (
+            <ImageWithFallback
+              src={leader.image}
+              alt={leader.name}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
+              style={{ objectPosition: 'center 15%' }}
+            />
+          )}
+          <div className="absolute inset-0 pointer-events-none rounded-lg" style={{ boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.06)' }} />
+        </div>
       </div>
 
       {/* Leader Info */}
       <div className="p-5">
         <h4
-          className="mb-1 text-black"
+          className="mb-1.5"
           style={{
             fontFamily: 'Oswald, sans-serif',
-            fontSize: '1.1rem',
-            letterSpacing: '0.06em',
+            fontSize: '1.05rem',
+            letterSpacing: '0.03em',
             fontWeight: 600,
+            color: '#14210f',
           }}
         >
           {leader.redacted ? (
             <span className="inline-flex flex-col gap-1.5">
-              <span style={{ display: 'inline-block', width: '110px', height: '13px', backgroundColor: '#2a2a2a', borderRadius: '3px' }} />
-              <span style={{ display: 'inline-block', width: '75px', height: '13px', backgroundColor: '#2a2a2a', borderRadius: '3px' }} />
+              <span style={{ display: 'inline-block', width: '110px', height: '13px', backgroundColor: '#e5e7eb', borderRadius: '3px' }} />
+              <span style={{ display: 'inline-block', width: '75px', height: '13px', backgroundColor: '#e5e7eb', borderRadius: '3px' }} />
             </span>
           ) : leader.name}
         </h4>
         <p
-          className="mb-3"
+          className="mb-3 inline-block"
           style={{
             fontFamily: 'Oswald, sans-serif',
-            fontSize: '0.85rem',
+            fontSize: '0.7rem',
             letterSpacing: '0.08em',
-            color: '#dc2626',
+            color: '#00712B',
             textTransform: 'uppercase',
+            backgroundColor: 'rgba(0,113,43,0.08)',
+            padding: '3px 9px',
+            borderRadius: '999px',
           }}
         >
           {leader.position}
         </p>
         <p
           style={{
-            color: '#1a1a1a',
+            color: '#565f52',
             fontSize: '13px',
             lineHeight: 1.7,
           }}
