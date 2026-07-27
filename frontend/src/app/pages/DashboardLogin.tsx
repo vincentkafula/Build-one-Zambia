@@ -39,6 +39,7 @@ function routeForRole(role: string): string | null {
   if (role === 'cooperative') return '/dashboard/cooperative';
   if (role === 'internship') return '/dashboard/internship';
   if (role === 'chamber') return '/dashboard/chamber';
+  if (role === 'intl_party') return '/dashboard/intl-party';
   if (ELECTION_ROLES.includes(role)) return '/dashboard/election';
   if (MANAGEMENT_ROLES.includes(role)) return '/dashboard/manager';
   return null;
@@ -243,7 +244,7 @@ export default function DashboardLogin() {
 
             <div className="mt-8 text-center text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>
               New to Build One Zambia?{' '}
-              <Link to="/home/opportunities" className="font-medium hover:underline" style={{ color: '#ffffff' }}>Register here</Link>
+              <Link to="/home/opportunities#registration-options" className="font-medium hover:underline" style={{ color: '#ffffff' }}>Register here</Link>
             </div>
             <div className="mt-2 text-center text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>
               Trouble signing in?{' '}

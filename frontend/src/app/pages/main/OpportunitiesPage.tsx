@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { Users, Briefcase, GraduationCap, Globe, ArrowRight, CheckCircle, TrendingUp, Building2, ChevronDown } from 'lucide-react';
 
@@ -113,6 +113,27 @@ const OPPORTUNITIES = [
     cta: 'Apply Now',
     path: '/register/chamber',
   },
+  {
+    icon: Globe,
+    title: 'International Political Party',
+    subtitle: 'Apply to formally affiliate or partner with Build One Zambia',
+    color: '#2563eb',
+    features: [
+      'Party & contact details',
+      'Country and headquarters',
+      'Type of affiliation sought',
+      'Two-factor verification',
+    ],
+    benefits: [
+      'Sister-party and observer relationships',
+      'Delegation and policy exchange visits',
+      'Election-monitoring partnerships',
+      'A dedicated portal to manage your party profile',
+      'Direct liaison with BOZ international relations',
+    ],
+    cta: 'Apply Now',
+    path: '/register/intl-party',
+  },
 ];
 
 const PARTNERSHIP_STATS = [
@@ -213,6 +234,19 @@ function OpportunityCard({ opp }: { opp: typeof OPPORTUNITIES[number] }) {
 }
 
 export function OpportunitiesPage() {
+  // "Register here" / "Apply Now" links elsewhere in the app point here
+  // with a #registration-options hash so people land exactly on the
+  // registration cards, not the hero above them. React Router doesn't
+  // auto-scroll to hash anchors on navigation, so it's done explicitly —
+  // 'auto' (instant) rather than 'smooth', so there's no visible scroll
+  // animation to sit through, just landing there directly.
+  useEffect(() => {
+    if (window.location.hash === '#registration-options') {
+      const el = document.getElementById('registration-options');
+      el?.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }
+  }, []);
+
   return (
     <div style={{ backgroundColor: '#fafafa', fontFamily: 'Open Sans, sans-serif', color: NAVY }}>
 
@@ -289,7 +323,7 @@ export function OpportunitiesPage() {
       </section>
 
       {/* Registration types */}
-      <section className="py-20 px-4" style={{ backgroundColor: '#fff' }}>
+      <section id="registration-options" className="py-20 px-4" style={{ backgroundColor: '#fff', scrollMarginTop: '96px' }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-xs tracking-widest mb-3" style={{ color: O, fontFamily: 'Oswald, sans-serif' }}>GET STARTED</p>

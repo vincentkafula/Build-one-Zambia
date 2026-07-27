@@ -43,6 +43,7 @@ const PressStatementsPage  = lazy(() => import('./pages/main/PressStatementsPage
 const MemberRegistration         = lazy(() => import('./pages/registration/MemberRegistration'));
 const CooperativeRegistration    = lazy(() => import('./pages/registration/CooperativeRegistration'));
 const ChamberRegistration        = lazy(() => import('./pages/registration/ChamberRegistration'));
+const IntlPartyRegistration      = lazy(() => import('./pages/registration/IntlPartyRegistration'));
 const InternshipRegistration     = lazy(() => import('./pages/registration/InternshipRegistration'));
 const PollingAgentRegistration   = lazy(() => import('./pages/registration/PollingAgentRegistration'));
 
@@ -51,6 +52,7 @@ const DashboardLogin       = lazy(() => import('./pages/DashboardLogin'));
 const MemberDashboard      = lazy(() => import('./pages/dashboards/MemberDashboard'));
 const CooperativeDashboard = lazy(() => import('./pages/dashboards/CooperativeDashboard'));
 const ChamberDashboard     = lazy(() => import('./pages/dashboards/ChamberDashboard'));
+const IntlPartyDashboard   = lazy(() => import('./pages/dashboards/IntlPartyDashboard'));
 const InternshipDashboard  = lazy(() => import('./pages/dashboards/InternshipDashboard'));
 const ElectionAgentDashboard = lazy(() => import('./pages/dashboards/ElectionAgentDashboard'));
 const ManagerDashboard     = lazy(() => import('./pages/dashboards/ManagerDashboard'));
@@ -114,6 +116,7 @@ const MainLayout = memo(function MainLayout() {
               <Route path="/register/member"        element={<MemberRegistration />} />
               <Route path="/register/cooperative"  element={<CooperativeRegistration />} />
               <Route path="/register/chamber"      element={<ChamberRegistration />} />
+              <Route path="/register/intl-party"   element={<IntlPartyRegistration />} />
               <Route path="/register/internship"   element={<InternshipRegistration />} />
               <Route path="/register/agent"        element={<PollingAgentRegistration />} />
               <Route path="*"         element={<NotFoundPage />} />
@@ -167,6 +170,7 @@ function AppRoutes() {
         <Route path="/dashboard/member" element={<MemberDashboard />} />
         <Route path="/dashboard/cooperative" element={<CooperativeDashboard />} />
         <Route path="/dashboard/chamber" element={<ChamberDashboard />} />
+        <Route path="/dashboard/intl-party" element={<IntlPartyDashboard />} />
         <Route path="/dashboard/internship" element={<InternshipDashboard />} />
         <Route path="/dashboard/agent"      element={<ElectionAgentDashboard />} />
         <Route path="/dashboard/manager"    element={<ManagerDashboard />} />

@@ -1916,6 +1916,13 @@ export const registrationApi = {
       'GET', `/registrations/chamber/${id}/credentials`
     ),
 
+  submitIntlParty: (data: Record<string, unknown>) =>
+    request<{ success: boolean; registration: Record<string, unknown> }>('POST', '/registrations/intlparty', data),
+  getIntlPartyCredentials: (id: string) =>
+    request<{ success: boolean; credentials: { username: string; password: string } | null; activated?: boolean; username?: string; message?: string }>(
+      'GET', `/registrations/intlparty/${id}/credentials`
+    ),
+
   // Membership validation (public — called before form submission)
   validateMembership: (number: string) =>
     request<{ valid: boolean; fullName?: string; membershipNumber?: string; status?: string; error?: string }>(

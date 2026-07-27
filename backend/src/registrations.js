@@ -8,7 +8,7 @@ import * as auth from './auth.js';
 
 function uid(prefix) { return `${prefix}_${Date.now().toString(36)}_${randomUUID().slice(0, 6)}`; }
 
-const TYPE_ROLE = { member: 'member', agent: 'polling_agent', cooperative: 'cooperative', chamber: 'chamber' };
+const TYPE_ROLE = { member: 'member', agent: 'polling_agent', cooperative: 'cooperative', chamber: 'chamber', intlparty: 'intl_party' };
 
 // The public application form (PollingAgentRegistration.tsx) is actually
 // unified across all 7 election-role tiers, not just polling agents, but
@@ -414,5 +414,47 @@ export function updateChamber(id, patch) {
   if (!c) return null;
   const updated = { ...c, ...patch, updatedAt: new Date().toISOString() };
   kv.set(`boz:reg:chamber:${id}`, updated);
+  return updated;
+}
+
+// ─── International Political Party Registration ────────────────────────────
+// For foreign/international political parties applying to formally affiliate
+// or partner with Build One Zambia. Same shape as the other registration
+// types (applicant chooses their own password+PIN, account created pending,
+// activated on admin approval).
+
+function getIntlPartyIndex() { return kv.get('boz:reg:intlparty:index') || []; }
+
+export async function registerIntlParty(input) {
+  const id = uid('intlparty');
+  const now = new Date().toISOString();
+  let reg = { id, ...input, status: 'pending', createdAt: now, updatedAt: now };
+  reg = await createPendingAccount('intlparty', reg);
+  kv.set(`boz:reg:intlparty:${id}`, reg);
+  kv.set('boz:reg:intlparty:index', [...getIntlPartyIndex(), id]);
+  return reg;
+}
+
+export function listIntlParties(filters = {}) {
+  let parties = getIntlPartyIndex().map(id => kv.get(`boz:reg:intlparty:${id}`)).filter(Boolean);
+  if (filters.status) parties = parties.filter(p => p.status === filters.status);
+  return parties.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+export function getIntlParty(id) { return kv.get(`boz:reg:intlparty:${id}`); }
+
+export function updateIntlPartyStatus(id, status, note) {
+  const p = kv.get(`boz:reg:intlparty:${id}`);
+  if (!p) return null;
+  const updated = { ...p, status, statusNote: note, updatedAt: new Date().toISOString() };
+  kv.set(`boz:reg:intlparty:${id}`, updated);
+  return updated;
+}
+
+export function updateIntlParty(id, patch) {
+  const p = kv.get(`boz:reg:intlparty:${id}`);
+  if (!p) return null;
+  const updated = { ...p, ...patch, updatedAt: new Date().toISOString() };
+  kv.set(`boz:reg:intlparty:${id}`, updated);
   return updated;
 }
