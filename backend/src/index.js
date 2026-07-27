@@ -1172,18 +1172,68 @@ app.get(`${BASE}/results/export-breakdown/:electionType/:levelType/:levelId?`, (
 app.get(`${BASE}/results/leaderboard/:electionType`, (req, res) => res.json({ leaderboard: results.getLeaderboard(req.params.electionType) }));
 app.get(`${BASE}/results/coverage`, (req, res) => res.json({ stats: results.getCoverage(req.query.electionType) }));
 app.get(`${BASE}/results/heatmap/:electionType`, (req, res) => res.json({ heatmap: results.getHeatmap(req.params.electionType) }));
-app.get(`${BASE}/results/trend/:electionType`, (req, res) => res.json({ trend: results.getTrend(req.params.electionType) }));
+app.get(`${BASE}/results/trend/:electionType`, (req, res) => res.json({ trend: results.getTrend(req.params.electionType, req.query.levelType, req.query.levelId ? decodeURIComponent(req.query.levelId) : undefined) }));
 app.get(`${BASE}/results/live-feed`, (req, res) => res.json({ feed: results.getLiveFeed(parseInt(req.query.limit || '20', 10), req.query.electionType) }));
-app.get(`${BASE}/results/compare/:electionType/:levelType/:levelId`, auth.requireAuth, (req, res) => res.json({ comparison: { electionType: req.params.electionType, boz: results.getLevel(req.params.electionType, req.params.levelType, decodeURIComponent(req.params.levelId)), ecz: null, agreementPercent: 100, flagged: false } }));
+app.get(`${BASE}/results/compare/:electionType/:levelType/:levelId`, auth.requireAuth, (req, res) => {
+  const { electionType, levelType } = req.params;
+  const levelId = decodeURIComponent(req.params.levelId);
+  const boz = results.getLevel(electionType, levelType, levelId);
+  const eczFig = eczStore.figures.find(f => f.electionType === electionType && f.levelType === levelType && f.levelId === levelId);
+  if (!eczFig) {
+    return res.json({ comparison: { electionType, levelType, levelId, boz, ecz: null, agreementPercent: null, flagged: false, message: 'No ECZ figures entered yet for this level.' } });
+  }
+  const { agreementPercent, hasDiscrepancy } = computeEczAgreement(electionType, levelType, levelId, eczFig.figures || []);
+  res.json({ comparison: { electionType, levelType, levelId, boz, ecz: eczFig, agreementPercent, flagged: hasDiscrepancy && agreementPercent < 95 } });
+});
 app.post(`${BASE}/results/cache/invalidate`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => res.json({ success: true, message: 'Cache invalidated' }));
 app.get(`${BASE}/results/debug`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => { const keys = kv.getKeysByPrefix('boz:results:'); const entries = keys.map(k => { const v = kv.get(k); return { key: k, electionType: v?.electionType, pollingStationId: v?.pollingStationId, status: v?.status, candidateCount: (v?.candidateVotes || v?.candidateResults || []).length, totalVotesCast: v?.totalVotesCast || 0, submittedAt: v?.submittedAt }; }); res.json({ total: keys.length, entries }); });
 
 // ─── ECZ Comparisons ──────────────────────────────────────────────────────────
-const eczStore = { figures: [] };
+// Was previously an in-memory array only — every figure entered by an agent
+// was silently lost on the next deploy/restart. Now persisted like everything
+// else. hasDiscrepancy/isFlagged/agreementPercent are computed here, from the
+// actual BOZ-collected results at save time, rather than trusting whatever
+// the client sends — the server is the source of truth for the comparison.
+const eczStore = { figures: kv.get('boz:ecz:figures') || [] };
+function saveEczFigures() { kv.set('boz:ecz:figures', eczStore.figures); }
+
+function computeEczAgreement(electionType, levelType, levelId, eczFigures) {
+  const boz = results.getLevel(electionType, levelType, levelId);
+  const bozVotes = {};
+  for (const c of boz.candidates) bozVotes[c.candidateId] = c.votes;
+  const eczVotes = {};
+  for (const f of eczFigures) eczVotes[f.candidateId] = f.votes;
+
+  const allIds = new Set([...Object.keys(bozVotes), ...Object.keys(eczVotes)]);
+  let totalEcz = 0, totalDiff = 0;
+  for (const id of allIds) {
+    const b = bozVotes[id] || 0, e = eczVotes[id] || 0;
+    totalEcz += e;
+    totalDiff += Math.abs(b - e);
+  }
+  const agreementPercent = totalEcz > 0 ? Math.max(0, Math.round((1 - totalDiff / totalEcz) * 1000) / 10) : (allIds.size === 0 ? 100 : 0);
+  const hasDiscrepancy = totalDiff > 0;
+  return { agreementPercent, hasDiscrepancy, bozStationsReporting: boz.stationsReporting };
+}
+
 app.get(`${BASE}/ecz/summary`, auth.requireAuth, (req, res) => { const f = eczStore.figures; const byElectionType = {}; const byLevelType = {}; f.forEach(x => { byElectionType[x.electionType] = (byElectionType[x.electionType]||0)+1; byLevelType[x.levelType] = (byLevelType[x.levelType]||0)+1; }); res.json({ summary: { total: f.length, byElectionType, byLevelType }, count: f.length }); });
 app.get(`${BASE}/ecz/comparisons`, auth.requireAuth, (req, res) => { let f = [...eczStore.figures]; if (req.query.electionType) f = f.filter(x => x.electionType === req.query.electionType); if (req.query.levelType) f = f.filter(x => x.levelType === req.query.levelType); if (req.query.flaggedOnly === 'true') f = f.filter(x => x.isFlagged); res.json({ comparisons: f, meta: { total: f.length, withDiscrepancy: f.filter(x => x.hasDiscrepancy).length, flagged: f.filter(x => x.isFlagged).length, fullyMatching: f.filter(x => !x.hasDiscrepancy).length } }); });
 app.get(`${BASE}/ecz/comparison/:electionType/:levelType/:levelId`, auth.requireAuth, (req, res) => { const fig = eczStore.figures.find(f => f.electionType === req.params.electionType && f.levelType === req.params.levelType && f.levelId === decodeURIComponent(req.params.levelId)); if (!fig) return res.status(404).json({ error: 'No ECZ comparison found' }); res.json({ comparison: fig }); });
-app.post(`${BASE}/ecz/bulk-save`, auth.requireAuth, (req, res) => { let saved = 0, failed = 0; const errors = []; (req.body.figures||[]).forEach(f => { try { const now = new Date().toISOString(); const idx = eczStore.figures.findIndex(e => e.electionType===f.electionType && e.levelType===f.levelType && e.levelId===f.levelId); const entry = { ...f, id: f.id||`ecz-${Date.now()}`, updatedAt: now, enteredBy: req.user.username }; if (idx>=0) eczStore.figures[idx]=entry; else eczStore.figures.push(entry); saved++; } catch(e) { failed++; errors.push(e.message); } }); res.json({ success: true, saved, failed, errors }); });
+app.post(`${BASE}/ecz/bulk-save`, auth.requireAuth, (req, res) => {
+  let saved = 0, failed = 0; const errors = [];
+  (req.body.figures || []).forEach(f => {
+    try {
+      const now = new Date().toISOString();
+      const { agreementPercent, hasDiscrepancy } = computeEczAgreement(f.electionType, f.levelType, f.levelId, f.figures || []);
+      const idx = eczStore.figures.findIndex(e => e.electionType === f.electionType && e.levelType === f.levelType && e.levelId === f.levelId);
+      const entry = { ...f, id: f.id || `ecz-${Date.now()}`, updatedAt: now, enteredBy: req.user.username, agreementPercent, hasDiscrepancy, isFlagged: hasDiscrepancy && agreementPercent < 95 };
+      if (idx >= 0) eczStore.figures[idx] = entry; else eczStore.figures.push(entry);
+      saved++;
+    } catch (e) { failed++; errors.push(e.message); }
+  });
+  saveEczFigures();
+  res.json({ success: true, saved, failed, errors });
+});
 app.get(`${BASE}/ecz/discrepancy-analysis/:electionType/:levelType/:levelId`, auth.requireAuth, (req, res) => res.json({ electionType: req.params.electionType, candidates: [], summary: { totalDiff: 0, hasDiscrepancy: false } }));
 
 // ─── Voter Roll ───────────────────────────────────────────────────────────────

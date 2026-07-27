@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router';
 import {
   LayoutDashboard, ClipboardList, UserCircle, Lock,
   Scale, AlertTriangle, BarChart2, LogOut, ChevronRight,
-  Menu, X, Shield, CheckCircle2, Users, UserCheck,
+  Menu, X, Shield, CheckCircle2, Users, UserCheck, TrendingUp, Target,
 } from 'lucide-react';
-import { clearToken } from '../../lib/api';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { clearToken, resultsApi, candidatesApi, type LevelType, type VoteTrendPoint } from '../../lib/api';
 
 const DataEntryPage          = lazy(() => import('../DataEntryPage'));
 const VoterValidationPage    = lazy(() => import('../VoterValidationPage'));
@@ -111,6 +112,146 @@ function RestrictedNotice({notAllowed}:{notAllowed:string[]}) {
   );
 }
 
+const PARTY_FALLBACK_COLORS = ['#00712B', '#dc2626', '#2563eb', '#f59e0b', '#6b7280', '#9333ea'];
+
+function MatchGauge({ percent, color }: { percent: number | null; color: string }) {
+  const pct = percent ?? 0;
+  const angle = (pct / 100) * 180;
+  const r = 70, cx = 90, cy = 90;
+  const toXY = (deg: number) => { const rad = (Math.PI / 180) * (180 - deg); return { x: cx - r * Math.cos(rad), y: cy - r * Math.sin(rad) }; };
+  const start = toXY(0), end = toXY(angle);
+  const largeArc = angle > 180 ? 1 : 0;
+  const gaugeColor = pct >= 90 ? '#00712B' : pct >= 70 ? '#f59e0b' : '#dc2626';
+  return (
+    <div className="flex flex-col items-center">
+      <svg viewBox="0 0 180 110" width="180" height="110">
+        <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 1 1 ${cx + r} ${cy}`} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="14" strokeLinecap="round" />
+        {percent !== null && (
+          <path d={`M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y}`} fill="none" stroke={gaugeColor} strokeWidth="14" strokeLinecap="round" />
+        )}
+        <text x={cx} y={cy - 6} textAnchor="middle" style={{ fontFamily: 'Oswald, sans-serif', fontSize: 26, fill: '#fff' }}>{percent !== null ? `${percent}%` : '—'}</text>
+        <text x={cx} y={cy + 14} textAnchor="middle" style={{ fontSize: 10, fill: 'rgba(255,255,255,0.4)' }}>Match Accuracy</text>
+      </svg>
+    </div>
+  );
+}
+
+// Real charts, wired to the actual results/ECZ-comparison backend — not
+// placeholder data. Scoped automatically to whatever ECZ level the logged-in
+// role can see (their own polling station, ward, constituency, district,
+// province, or nationally for admin/national-manager tiers), via the same
+// results.getLevel()/getTrend()/compare() engine every other results page
+// in this app already uses.
+function ElectionOverviewCharts({ levelType, levelId, color }: { levelType: LevelType; levelId: string; color: string }) {
+  const [trend, setTrend] = useState<VoteTrendPoint[] | null>(null);
+  const [partyData, setPartyData] = useState<{ name: string; value: number; color: string }[] | null>(null);
+  const [agreement, setAgreement] = useState<{ percent: number | null; message?: string } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    (async () => {
+      try {
+        const [trendRes, levelRes, candRes, compareRes] = await Promise.all([
+          resultsApi.trend('parliament', levelType, levelId),
+          resultsApi.level('parliament', levelType, levelId),
+          candidatesApi.list({ electionType: 'parliament', scopeId: levelId }),
+          resultsApi.compare('parliament', levelType, levelId),
+        ]);
+        if (cancelled) return;
+        setTrend(trendRes.trend);
+
+        const nameById: Record<string, { name: string; color: string }> = {};
+        (candRes.candidates || []).forEach((c: any, i: number) => {
+          nameById[c.id] = { name: c.party || c.name, color: c.partyColor || PARTY_FALLBACK_COLORS[i % PARTY_FALLBACK_COLORS.length] };
+        });
+        const parties = (levelRes.result?.candidates || []).map((c: any, i: number) => ({
+          name: nameById[c.candidateId]?.name || `Candidate ${c.rank}`,
+          value: c.votes,
+          color: nameById[c.candidateId]?.color || PARTY_FALLBACK_COLORS[i % PARTY_FALLBACK_COLORS.length],
+        }));
+        setPartyData(parties);
+
+        setAgreement({ percent: compareRes.comparison.agreementPercent, message: compareRes.comparison.message });
+      } catch {
+        if (!cancelled) { setTrend([]); setPartyData([]); setAgreement({ percent: null }); }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [levelType, levelId]);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {[0, 1, 2].map(i => <div key={i} className="rounded-2xl h-64 animate-pulse" style={{ backgroundColor: CARD_BG, border: `1px solid ${BORDER}` }} />)}
+      </div>
+    );
+  }
+
+  const chartData = (trend || []).map(t => ({ hour: t.hour.slice(-5), votes: t.cumulativeTotal }));
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <Card title="Cumulative Votes Over Time (Parliament)">
+        {chartData.length === 0 ? (
+          <EmptyChartState icon={<TrendingUp size={22} />} text="No submissions recorded yet at this level." />
+        ) : (
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+              <XAxis dataKey="hour" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+              <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+              <Tooltip contentStyle={{ backgroundColor: '#0a0f0c', border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 12 }} labelStyle={{ color: '#fff' }} />
+              <Line type="monotone" dataKey="votes" stroke={color} strokeWidth={2} dot={{ r: 3, fill: color }} />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </Card>
+
+      <Card title="Votes by Party (Parliament)">
+        {!partyData || partyData.length === 0 ? (
+          <EmptyChartState icon={<BarChart2 size={22} />} text="No parliamentary results submitted yet at this level." />
+        ) : (
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Pie data={partyData} dataKey="value" nameKey="name" innerRadius={45} outerRadius={75} paddingAngle={2}>
+                {partyData.map((p, i) => <Cell key={i} fill={p.color} />)}
+              </Pie>
+              <Tooltip contentStyle={{ backgroundColor: '#0a0f0c', border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }} />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
+      </Card>
+
+      <Card title="Results vs ECZ">
+        {agreement?.percent === null ? (
+          <EmptyChartState icon={<Target size={22} />} text={agreement?.message || 'No official ECZ figures entered yet for this level.'} />
+        ) : (
+          <div className="flex flex-col items-center py-2">
+            <MatchGauge percent={agreement?.percent ?? null} color={color} />
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem', marginTop: 4 }}>
+              How closely BOZ-collected figures match ECZ's announced figures at this level.
+            </p>
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+function EmptyChartState({ icon, text }: { icon: React.ReactNode; text: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center text-center py-10 gap-2" style={{ minHeight: 200 }}>
+      <span style={{ color: 'rgba(255,255,255,0.25)' }}>{icon}</span>
+      <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.78rem', maxWidth: 220 }}>{text}</p>
+    </div>
+  );
+}
+
 function getRestrictedLevels(role: string): string[] {
   const levels: string[] = [];
   const all = ['ward_manager','constituency_manager','district_manager','provincial_manager','province_manager','national_manager','super_admin','admin','manager'];
@@ -153,6 +294,20 @@ export default function ElectionDashboard() {
     scopeName: user.scopeName ?? user.pollingStationName ?? 'Not assigned',
     scopeType: user.scopeType ?? conf.eczLevel,
   });
+
+  // Maps this role's ECZ level to the results API's level scope, so the
+  // Overview charts show exactly the area this role is allowed to see —
+  // their own polling station, ward, constituency, district, province, or
+  // nationally for admin/national-manager tiers (levelId is irrelevant
+  // when levelType is 'national', getLevel() ignores it in that case).
+  const eczLevelToApiLevel: Record<string, LevelType> = {
+    polling_station: 'station', ward: 'ward', constituency: 'constituency',
+    district: 'district', province: 'province', national: 'national',
+  };
+  const chartLevelType: LevelType = eczLevelToApiLevel[conf.eczLevel] ?? 'national';
+  const chartLevelId: string = chartLevelType === 'station'
+    ? (user.pollingStationId || user.scopeId || '')
+    : (user.scopeId || 'national');
 
   const groupMap: Record<string, NavItem[]> = {};
   for (const item of ALL_NAV) {
@@ -225,6 +380,10 @@ export default function ElectionDashboard() {
                 <Suspense fallback={null}><AgentOverviewStats color={conf.color}/></Suspense>
               )}
               <Suspense fallback={null}><TotalRegisteredVotersStat color={conf.color}/></Suspense>
+            </div>
+            <div>
+              <p className="mb-3 text-xs" style={{fontFamily:'Oswald, sans-serif',letterSpacing:'0.1em',color:'rgba(255,255,255,0.35)'}}>LIVE RESULTS</p>
+              <ElectionOverviewCharts levelType={chartLevelType} levelId={chartLevelId} color={conf.color}/>
             </div>
             <div>
               <p className="mb-3 text-xs" style={{fontFamily:'Oswald, sans-serif',letterSpacing:'0.1em',color:'rgba(255,255,255,0.35)'}}>QUICK ACCESS</p>

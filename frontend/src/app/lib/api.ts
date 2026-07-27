@@ -1057,8 +1057,9 @@ export interface ComparisonResult {
   discrepancies: Discrepancy[];
   totalVotesDiff: number;
   totalVotesDiffPercent: number;
-  agreementPercent: number;
+  agreementPercent: number | null;
   flagged: boolean;
+  message?: string;
 }
 
 export interface LiveFeedEntry {
@@ -1173,8 +1174,13 @@ export const resultsApi = {
   heatmap: (electionType: ElectionCategory) =>
     request<{ heatmap: HeatMapPoint[] }>('GET', `/results/heatmap/${electionType}`),
 
-  trend: (electionType: ElectionCategory) =>
-    request<{ trend: VoteTrendPoint[] }>('GET', `/results/trend/${electionType}`),
+  trend: (electionType: ElectionCategory, levelType?: LevelType, levelId?: string) => {
+    const qs = new URLSearchParams();
+    if (levelType) qs.set('levelType', levelType);
+    if (levelId) qs.set('levelId', levelId);
+    const q = qs.toString();
+    return request<{ trend: VoteTrendPoint[] }>('GET', `/results/trend/${electionType}${q ? `?${q}` : ''}`);
+  },
 
   liveFeed: (limit?: number, electionType?: ElectionCategory) => {
     const qs = new URLSearchParams();

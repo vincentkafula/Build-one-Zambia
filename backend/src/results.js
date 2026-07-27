@@ -162,8 +162,11 @@ export function getHeatmap(electionType) {
   return Object.entries(breakdown).map(([levelId, r]) => ({ levelId, leadingCandidateId: r.leadingCandidateId, turnoutPercent: r.turnoutPercent, stationsReporting: r.stationsReporting, totalVotesCast: r.totalVotesCast }));
 }
 
-export function getTrend(electionType) {
-  const subs = getAllSubmissions(electionType);
+export function getTrend(electionType, levelType, levelId) {
+  const fieldMap = { province: 'provinceId', district: 'districtId', constituency: 'constituencyId', ward: 'wardId', station: 'pollingStationId' };
+  const field = levelType && fieldMap[levelType];
+  let subs = getAllSubmissions(electionType);
+  if (field && levelId) subs = subs.filter(s => s[field] === levelId);
   const hourBuckets = {};
   for (const s of subs) {
     const hour = (s.submittedAt || s.createdAt || new Date().toISOString()).slice(0, 13);
