@@ -169,7 +169,7 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
     <div
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      style={{ background: '#fff', color: '#0F1111', width: '190px', flex: '0 0 190px', borderRadius: '6px', padding: '12px', position: 'relative', border: `1px solid ${CARD_BORDER}`, boxShadow: hover ? '0 6px 16px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.08)', transition: 'box-shadow 0.18s ease' }}
+      style={{ background: '#fff', color: '#0F1111', width: '190px', flex: '0 0 190px', borderRadius: '8px', padding: '12px', position: 'relative', border: `1px solid ${CARD_BORDER}`, boxShadow: hover ? '0 14px 32px -6px rgba(0,0,0,0.35), 0 4px 10px rgba(0,0,0,0.12)' : '0 8px 20px -4px rgba(0,0,0,0.25), 0 2px 6px rgba(0,0,0,0.08)', transform: hover ? 'translateY(-3px)' : 'translateY(0)', transition: 'box-shadow 0.2s ease, transform 0.2s ease' }}
     >
       {meta.badge && (
         <div style={{ position: 'absolute', top: '8px', left: '8px', zIndex: 2, background: meta.badge === 'BESTSELLER' ? '#232F3E' : RED, color: '#fff', fontSize: '8.5px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.04em', padding: '3px 6px', borderRadius: '2px' }}>
@@ -488,10 +488,53 @@ export function ShopPage() {
   const isSearching = search.trim().length > 0;
 
   return (
-    <div style={{ backgroundColor: CANVAS, fontFamily: 'Open Sans, sans-serif', color: INK, position: 'relative' }}>
+    <div style={{ backgroundColor: '#0b3d1f', fontFamily: 'Open Sans, sans-serif', color: INK, position: 'relative' }}>
       <style>{`
         .boz-row-mask { overflow: hidden; padding: 8px 0; }
+        .boz-wave-bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        .boz-shop-content { position: relative; z-index: 1; }
       `}</style>
+
+      {/* Decorative wave backdrop — green/orange, gold hairline accents, fixed behind all scrolling content */}
+      <svg className="boz-wave-bg" viewBox="0 0 1536 1024" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <linearGradient id="bozWaveGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#0f4d27" />
+            <stop offset="100%" stopColor="#08301a" />
+          </linearGradient>
+          <radialGradient id="bozWaveOrange" cx="70%" cy="70%" r="75%">
+            <stop offset="0%" stopColor="#F0A140" />
+            <stop offset="55%" stopColor="#DE8A2A" />
+            <stop offset="100%" stopColor="#B8681A" />
+          </radialGradient>
+          <radialGradient id="bozWaveOrangeSmall" cx="30%" cy="90%" r="60%">
+            <stop offset="0%" stopColor="#EC9A3C" />
+            <stop offset="100%" stopColor="#C4711F" />
+          </radialGradient>
+        </defs>
+
+        <rect width="1536" height="1024" fill="url(#bozWaveGreen)" />
+
+        {/* faint echo ribbon for layered depth */}
+        <path d="M 1536,260 C 1280,210 1120,430 940,560 C 760,690 640,650 500,800 C 400,910 330,960 240,1024 L 1536,1024 Z"
+          fill="#0d4322" opacity="0.55" />
+
+        {/* main flowing orange sweep */}
+        <path d="M 1536,360 C 1300,300 1160,520 970,650 C 780,780 660,730 520,880 C 420,990 350,1010 260,1024 L 1536,1024 Z"
+          fill="url(#bozWaveOrange)" />
+        <path d="M 1536,360 C 1300,300 1160,520 970,650 C 780,780 660,730 520,880 C 420,990 350,1010 260,1024"
+          fill="none" stroke="#F4C066" strokeWidth="2.5" opacity="0.8" />
+
+        {/* small orange bulge, bottom-left */}
+        <path d="M 0,760 C 90,820 190,900 130,1024 L 0,1024 Z" fill="url(#bozWaveOrangeSmall)" />
+        <path d="M 0,760 C 90,820 190,900 130,1024" fill="none" stroke="#F4C066" strokeWidth="2" opacity="0.7" />
+
+        {/* thin gold ring accent, top-left */}
+        <circle cx="20" cy="20" r="230" fill="none" stroke="#F4C066" strokeWidth="1.2" opacity="0.35" />
+        <circle cx="20" cy="20" r="210" fill="none" stroke="#F4C066" strokeWidth="1" opacity="0.2" />
+      </svg>
+
+      <div className="boz-shop-content">
 
       {/* Account bar */}
       <div style={{ backgroundColor: INK, padding: '7px clamp(16px,4vw,48px)', display: 'flex', justifyContent: 'flex-end' }}>
@@ -586,11 +629,11 @@ export function ShopPage() {
       </section>
 
       {/* Campaign fund banner */}
-      <section style={{ backgroundColor: 'rgba(255,255,255,0.18)', borderBottom: '1px solid rgba(255,255,255,0.35)', padding: '16px' }}>
+      <section style={{ backgroundColor: 'rgba(0,0,0,0.22)', borderBottom: '1px solid rgba(255,255,255,0.15)', padding: '16px' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', textAlign: 'center' }}>
-          <ShoppingBag style={{ width: '16px', height: '16px', color: RED, flexShrink: 0 }} />
-          <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '12px', letterSpacing: '0.08em', color: INK, margin: 0 }}>
-            ALL PROCEEDS FROM SHOP SALES GO DIRECTLY TO THE <span style={{ color: RED }}>BUILD ONE ZAMBIA CAMPAIGN FUND</span>
+          <ShoppingBag style={{ width: '16px', height: '16px', color: '#F4C066', flexShrink: 0 }} />
+          <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '12px', letterSpacing: '0.08em', color: '#fff', margin: 0 }}>
+            ALL PROCEEDS FROM SHOP SALES GO DIRECTLY TO THE <span style={{ color: '#F4C066' }}>BUILD ONE ZAMBIA CAMPAIGN FUND</span>
           </p>
         </div>
       </section>
@@ -633,6 +676,7 @@ export function ShopPage() {
           })
         )}
       </section>
+      </div>
     </div>
   );
 }
