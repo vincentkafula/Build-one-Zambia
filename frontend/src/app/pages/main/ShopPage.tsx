@@ -83,7 +83,16 @@ const PRODUCTS = [
   { id: 41, name: 'BOZ Phone Grip',               price: 'K35',   priceNum: 35,   tag: 'TECH',        desc: 'Collapsible phone grip and stand with the party logo.',                                          img: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 42, name: 'BOZ Laptop Sleeve',            price: 'K165',  priceNum: 165,  tag: 'BAGS',        desc: 'Padded 13–15" laptop sleeve with embroidered BOZ logo.',                                         img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 43, name: 'Campaign Duffel Bag',          price: 'K420',  priceNum: 420,  tag: 'BAGS',        desc: 'Large duffel bag for agents and volunteers travelling between wards.',                          img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
-  { id: 44, name: 'BOZ Windbreaker',              price: 'K380',  priceNum: 380,  tag: 'APPAREL',     desc: 'Lightweight windbreaker in party colours, ideal for outdoor canvassing.',                       img: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 44, name: 'BOZ Windbreaker',              price: 'K380',  priceNum: 380,  tag: 'APPAREL',     desc: 'Lightweight windbreaker in party colours, ideal for outdoor canvassing.',                       img: '/products/windbreaker-green.jpg',
+    colors: [
+      { name: 'Green',  swatch: '#00712B', img: '/products/windbreaker-green.jpg' },
+      { name: 'Black',  swatch: '#111111' },
+      { name: 'Gold',   swatch: '#F0B429' },
+      { name: 'Blue',   swatch: '#1D4ED8' },
+      { name: 'Orange', swatch: '#EA580C' },
+      { name: 'Red',    swatch: '#C81E3A' },
+    ],
+  },
   { id: 45, name: 'BOZ Snapback Cap',             price: 'K130',  priceNum: 130,  tag: 'ACCESSORIES', desc: 'Flat-brim snapback cap with an embroidered front logo.',                                        img: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
 ];
 
