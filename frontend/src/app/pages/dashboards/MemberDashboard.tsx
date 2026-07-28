@@ -168,6 +168,96 @@ function ElectionSection({ title, icon: Icon, candidate, runningMate, party, slo
   );
 }
 
+function MemberShopCard({
+  product, index, cart, productImgSrc, onAdd, accent, navy,
+}: {
+  product: ShopProduct;
+  index: number;
+  cart: CartItem[];
+  productImgSrc: (p: ShopProduct) => string;
+  onAdd: (product: ShopProduct, index: number, colorIndex: number | null, colorName?: string, colorImg?: string) => void;
+  accent: string;
+  navy: string;
+}) {
+  const raw = SHOP_PRODUCTS.find(p => String(p.id) === product.id);
+  const colors = raw?.colors ?? [];
+  const hasColors = colors.length > 0;
+  const [selectedColor, setSelectedColor] = useState<number | null>(null);
+  const [warning, setWarning] = useState(false);
+
+  const active = hasColors && selectedColor !== null ? colors[selectedColor] : null;
+  const displayImg = active && 'img' in active && active.img ? active.img : productImgSrc(product);
+
+  // Colour variants live under composite cart ids (index*100 + colourIdx+1),
+  // so "in cart" needs to sum across the whole colour family for this
+  // product, not just the base index.
+  const inCartQty = hasColors
+    ? cart.filter(i => Math.floor(i.id / 100) === index).reduce((s, i) => s + i.qty, 0)
+    : (cart.find(i => i.id === index)?.qty ?? 0);
+
+  const outOfStock = !product.inStock || (product.stockQty != null && product.stockQty <= 0);
+
+  function handleAdd() {
+    if (hasColors && selectedColor === null) {
+      setWarning(true);
+      setTimeout(() => setWarning(false), 2000);
+      return;
+    }
+    onAdd(product, index, hasColors ? selectedColor : null, active?.name, active && 'img' in active ? active.img : undefined);
+  }
+
+  return (
+    <div className="rounded-xl p-5 border flex flex-col gap-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+      <div className="w-full rounded-lg flex items-center justify-center" style={{ height: '160px', backgroundColor: '#F7F5EF', padding: '10px' }}>
+        <img src={displayImg} alt={product.name} className="max-w-full max-h-full" style={{ objectFit: 'contain' }} />
+      </div>
+      <div>
+        <h4 style={{ color: navy, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.04em' }}>{product.name}</h4>
+        {product.description && <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>{product.description}</p>}
+
+        {hasColors && (
+          <div className="mt-3">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {colors.map((c, i) => (
+                <button
+                  key={c.name}
+                  type="button"
+                  onClick={() => { setSelectedColor(i); setWarning(false); }}
+                  title={c.name}
+                  className="rounded-full"
+                  style={{
+                    width: 20, height: 20, backgroundColor: c.swatch,
+                    border: selectedColor === i ? '2px solid #fff' : '1px solid rgba(255,255,255,0.3)',
+                    outline: selectedColor === i ? `2px solid ${accent}` : 'none', outlineOffset: 1,
+                    cursor: 'pointer', padding: 0,
+                  }}
+                />
+              ))}
+            </div>
+            <p className="text-xs mt-1.5" style={{ color: warning ? '#f87171' : 'rgba(255,255,255,0.4)', fontWeight: warning ? 700 : 400 }}>
+              {warning ? 'Please select a colour' : active ? `Colour: ${active.name}` : 'Select a colour'}
+            </p>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between mt-2">
+          <span style={{ color: accent, fontFamily: 'Oswald, sans-serif', fontSize: '1.1rem' }}>{product.price}</span>
+          <span className="text-xs px-2 py-0.5 rounded-full" style={{
+            backgroundColor: outOfStock ? '#fee2e2' : (product.stockQty != null && product.stockQty <= 5) ? '#fef3c7' : '#E0EEE6',
+            color: outOfStock ? '#991b1b' : (product.stockQty != null && product.stockQty <= 5) ? '#92400e' : '#065f46',
+          }}>
+            {outOfStock ? 'Out of Stock' : product.stockQty != null ? `${product.stockQty} left` : 'In Stock'}
+          </span>
+        </div>
+      </div>
+      <button onClick={handleAdd} disabled={outOfStock}
+        className="w-full py-2 rounded-lg text-sm mt-auto" style={{ backgroundColor: outOfStock ? '#9ca3af' : accent, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', cursor: outOfStock ? 'not-allowed' : 'pointer' }}>
+        {inCartQty > 0 ? `IN CART (${inCartQty}) · ADD ANOTHER` : 'ADD TO CART'}
+      </button>
+    </div>
+  );
+}
+
 export default function MemberDashboard() {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<SectionKey>('overview');
@@ -284,11 +374,16 @@ export default function MemberDashboard() {
   // CartItem.id (shared with the public shop's checkout) is numeric; real
   // product ids are strings (prod_xxx), so map each product's position in
   // the fetched list to a stable numeric surrogate for cart purposes only.
-  const addToCart = (product: ShopProduct, index: number) => {
+  const addToCart = (product: ShopProduct, index: number, colorIndex: number | null, colorName?: string, colorImg?: string) => {
+    // Same scheme as the public shop: each colour becomes its own cart
+    // line (distinct id), so which colour was actually chosen carries
+    // through to checkout instead of collapsing into one generic line.
+    const cartId = colorIndex !== null ? index * 100 + colorIndex + 1 : index;
+    const displayName = colorName ? `${product.name} — ${colorName}` : product.name;
     setCart(prev => {
-      const existing = prev.find(i => i.id === index);
-      if (existing) return prev.map(i => i.id === index ? { ...i, qty: i.qty + 1 } : i);
-      return [...prev, { id: index, name: product.name, price: product.price, priceNum: product.priceNum, img: productImgSrc(product), tag: product.category, qty: 1 }];
+      const existing = prev.find(i => i.id === cartId);
+      if (existing) return prev.map(i => i.id === cartId ? { ...i, qty: i.qty + 1 } : i);
+      return [...prev, { id: cartId, name: displayName, price: product.price, priceNum: product.priceNum, img: colorImg || productImgSrc(product), tag: product.category, qty: 1 }];
     });
   };
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
@@ -485,32 +580,18 @@ export default function MemberDashboard() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {products.map((product, index) => {
-                  const inCartQty = cart.find(i => i.id === index)?.qty || 0;
-                  const outOfStock = !product.inStock || (product.stockQty != null && product.stockQty <= 0);
-                  return (
-                    <div key={product.id} className="rounded-xl p-5 border flex flex-col gap-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-                      <img src={productImgSrc(product)} alt={product.name} className="w-full rounded-lg" style={{ height: '140px', objectFit: 'cover', backgroundColor: '#f3f4f6' }} />
-                      <div>
-                        <h4 style={{ color: NAVY, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.04em' }}>{product.name}</h4>
-                        {product.description && <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>{product.description}</p>}
-                        <div className="flex items-center justify-between mt-2">
-                          <span style={{ color: A, fontFamily: 'Oswald, sans-serif', fontSize: '1.1rem' }}>{product.price}</span>
-                          <span className="text-xs px-2 py-0.5 rounded-full" style={{
-                            backgroundColor: outOfStock ? '#fee2e2' : (product.stockQty != null && product.stockQty <= 5) ? '#fef3c7' : '#E0EEE6',
-                            color: outOfStock ? '#991b1b' : (product.stockQty != null && product.stockQty <= 5) ? '#92400e' : '#065f46',
-                          }}>
-                            {outOfStock ? 'Out of Stock' : product.stockQty != null ? `${product.stockQty} left` : 'In Stock'}
-                          </span>
-                        </div>
-                      </div>
-                      <button onClick={() => addToCart(product, index)} disabled={outOfStock}
-                        className="w-full py-2 rounded-lg text-sm mt-auto" style={{ backgroundColor: outOfStock ? '#9ca3af' : A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', cursor: outOfStock ? 'not-allowed' : 'pointer' }}>
-                        {inCartQty > 0 ? `IN CART (${inCartQty}) · ADD ANOTHER` : 'ADD TO CART'}
-                      </button>
-                    </div>
-                  );
-                })}
+                {products.map((product, index) => (
+                  <MemberShopCard
+                    key={product.id}
+                    product={product}
+                    index={index}
+                    cart={cart}
+                    productImgSrc={productImgSrc}
+                    onAdd={addToCart}
+                    accent={A}
+                    navy={NAVY}
+                  />
+                ))}
               </div>
             )}
             {showCheckout && (
