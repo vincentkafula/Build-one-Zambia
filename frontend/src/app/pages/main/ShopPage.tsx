@@ -12,7 +12,7 @@ import { buyerApi, BuyerProfile, getToken } from '../../lib/api';
 // apply a colour tint over the single existing photo instead of swapping
 // to a (non-existent) separate photo. Buyers still must pick one before
 // checkout either way.
-const SHOP_COLORS = [
+export const SHOP_COLORS = [
   { name: 'Black',  swatch: '#111111' },
   { name: 'Green',  swatch: '#00712B' },
   { name: 'Gold',   swatch: '#F0B429' },
@@ -21,7 +21,7 @@ const SHOP_COLORS = [
   { name: 'Red',    swatch: '#C81E3A' },
 ];
 
-const PRODUCTS = [
+export const PRODUCTS = [
   { id: 1,  name: 'BOZ Campaign T-Shirt',         price: 'K150',  priceNum: 150,  tag: 'APPAREL',     desc: 'Branded with the party logo, slogan, and candidate\'s name. Available in all sizes.',            img: '/products/tshirt-gold.png',
     colors: [
       { name: 'Gold',   swatch: '#F0B429', img: '/products/tshirt-gold.png' },

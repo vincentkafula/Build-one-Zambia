@@ -10,6 +10,7 @@ import {
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
 import { MembershipCertSection, MembershipCardSection, AdoptionCertSection, AppointmentCertSection } from '../../components/MemberCertificates';
 import { ShopCheckout, CartItem } from '../../components/ShopCheckout';
+import { PRODUCTS as SHOP_PRODUCTS } from '../main/ShopPage';
 import { membershipApi, shopApi, securityApi, ShopOrder, ShopPayment, ShopProduct } from '../../lib/api';
 
 const A = '#00712B';
@@ -245,18 +246,31 @@ export default function MemberDashboard() {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const { products: p } = await shopApi.listProducts();
-        if (!cancelled) setProducts(p);
-      } catch {
-        // Shop temporarily unavailable — leave empty, not fatal.
-      } finally {
-        if (!cancelled) setProductsLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
+    // shopApi.listProducts() reads from a backend catalog that's never
+    // actually been populated with the real product range (its seed
+    // function only had 3 generic placeholders) — completely disconnected
+    // from the real 45-product catalog with real photos the public Shop
+    // page has always shown. Using that same catalog here instead, so
+    // this panel matches what customers actually see.
+    const mapped: ShopProduct[] = SHOP_PRODUCTS.map(p => ({
+      id: String(p.id),
+      name: p.name,
+      description: p.desc,
+      price: p.price,
+      priceNum: p.priceNum,
+      category: p.tag,
+      imageUrl: p.img,
+      hasCustomImage: true,
+      inStock: true,
+      stockQty: null,
+      tags: [p.tag],
+      active: true,
+      featured: false,
+      createdAt: '',
+      updatedAt: '',
+    }));
+    setProducts(mapped);
+    setProductsLoading(false);
   }, []);
 
   // Real product images are only served when an admin has uploaded one
@@ -265,7 +279,7 @@ export default function MemberDashboard() {
   const PLACEHOLDER_IMG = 'data:image/svg+xml,' + encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#e5e7eb"/><text x="100" y="105" font-family="sans-serif" font-size="14" fill="#9ca3af" text-anchor="middle">No image</text></svg>`
   );
-  const productImgSrc = (p: ShopProduct) => p.hasCustomImage ? shopApi.productImageUrl(p.id) : PLACEHOLDER_IMG;
+  const productImgSrc = (p: ShopProduct) => p.hasCustomImage && p.imageUrl ? p.imageUrl : PLACEHOLDER_IMG;
 
   // CartItem.id (shared with the public shop's checkout) is numeric; real
   // product ids are strings (prod_xxx), so map each product's position in
