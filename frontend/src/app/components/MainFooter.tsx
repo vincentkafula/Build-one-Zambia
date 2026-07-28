@@ -27,7 +27,7 @@ const ELECTION_LINKS = [
 
 function AppleIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff">
       <path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.572-2.27 1.206-2.98.804-.94 2.142-1.64 3.248-1.68.03.13.05.28.05.43zm4.565 15.71c-.03.07-.463 1.58-1.518 3.12-.945 1.34-1.94 2.71-3.43 2.71-1.517 0-1.9-.88-3.63-.88-1.698 0-2.302.91-3.67.91-1.377 0-2.332-1.26-3.428-2.8-1.287-1.82-2.323-4.63-2.323-7.28 0-4.28 2.797-6.55 5.552-6.55 1.448 0 2.652.95 3.559.95.865 0 2.21-1.01 3.85-1.01.622 0 2.86.06 4.335 2.2-.115.07-2.582 1.51-2.582 4.63 0 3.7 3.279 4.99 3.315 5.01z" />
     </svg>
   );
@@ -35,7 +35,7 @@ function AppleIcon() {
 
 function PlayIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24">
+    <svg width="18" height="18" viewBox="0 0 24 24">
       <defs>
         <linearGradient id="playBlue" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#00c6ff" /><stop offset="100%" stopColor="#0072ff" />
@@ -61,9 +61,9 @@ function PlayIcon() {
 function StoreBadge({ icon, topLine, bottomLine }: { icon: React.ReactNode; topLine: string; bottomLine: string }) {
   return (
     <div
-      className="group relative flex items-center gap-3 pl-3 pr-4 py-2.5 rounded-xl w-fit cursor-not-allowed select-none transition-all duration-200"
+      className="group relative flex items-center gap-2 pl-2.5 pr-3 py-2 rounded-xl w-fit cursor-not-allowed select-none transition-all duration-200"
       style={{
-        background: 'linear-gradient(155deg, #1a1a1a 0%, #000 65%)',
+        background: 'linear-gradient(155deg, #0a9440 0%, #00551f 65%)',
         border: '1px solid rgba(255,255,255,0.12)',
         boxShadow: '0 6px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
       }}
@@ -71,12 +71,12 @@ function StoreBadge({ icon, topLine, bottomLine }: { icon: React.ReactNode; topL
       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.25)'; }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)'; }}
     >
-      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
+      <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
         {icon}
       </div>
       <div className="leading-none">
         <p className="text-[9px] tracking-wide" style={{ color: 'rgba(255,255,255,0.55)' }}>{topLine}</p>
-        <p className="text-white font-semibold mt-0.5" style={{ fontSize: '14px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.015em' }}>{bottomLine}</p>
+        <p className="text-white font-semibold mt-0.5" style={{ fontSize: '12.5px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.01em' }}>{bottomLine}</p>
       </div>
       <span
         className="absolute -top-2.5 -right-2 flex items-center gap-1 text-[8px] font-bold pl-1.5 pr-2 py-1 rounded-full"
@@ -225,7 +225,7 @@ export function MainFooter() {
             <p className="text-xs font-semibold mt-6 mb-3" style={{ color: '#9ca3af', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
               GET THE APP
             </p>
-            <div className="flex flex-row flex-wrap gap-2.5">
+            <div className="flex flex-row flex-nowrap gap-2.5">
               <StoreBadge
                 icon={<AppleIcon />}
                 topLine="Download on the"
