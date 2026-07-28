@@ -7,7 +7,7 @@ import {
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
 import { getAllChambers, getInternshipsByChamberId, getOpenInternships } from '../../data/allChambers';
 import { suggestUSPartners, USChamber } from '../../data/usChambers';
-import { chambersApi, ChamberInfo } from '../../lib/api';
+import { ChamberInfo, registrationApi, orgResourcesApi } from '../../lib/api';
 
 const A = '#00712B';
 const NAVY = '#1e2d4a';
@@ -45,47 +45,63 @@ const NAV: { group: string; items: { key: SectionKey; label: string; icon: React
 
 // Chamber data will be fetched based on intern's ward assignment
 
-const COOPERATIVES = [
-  {
-    id: 'COOP-001',
-    name: 'Monze Valley Agri Cooperative',
-    sector: 'Agriculture / Maize & Sunflower',
-    status: 'Successful Applicant',
-    contactPerson: 'Mrs. Agnes Mwale',
-    phone: '+260 966 112 233',
-    email: 'agnes@monzevalley.zm',
-    members: 42,
-    ward: 'Monze Ward',
-  },
-  {
-    id: 'COOP-002',
-    name: 'Southern Beekeepers Cooperative',
-    sector: 'Apiculture / Honey Processing',
-    status: 'Successful Applicant',
-    contactPerson: 'Mr. Peter Siame',
-    phone: '+260 955 443 221',
-    email: 'psiame@southernbee.zm',
-    members: 28,
-    ward: 'Monze Ward',
-  },
-  {
-    id: 'COOP-003',
-    name: 'Women in Trade Cooperative (WITCO)',
-    sector: 'Retail & Cottage Industry',
-    status: 'Successful Applicant',
-    contactPerson: 'Ms. Dorothy Banda',
-    phone: '+260 971 887 654',
-    email: 'dorothy@witco.zm',
-    members: 60,
-    ward: 'Monze Ward',
-  },
-];
-
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em' }}>{label}</p>
       <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem' }}>{value}</p>
+    </div>
+  );
+}
+
+function InternshipCooperativesSection() {
+  const [items, setItems] = useState<Record<string, unknown>[]>([]);
+  const [district, setDistrict] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    orgResourcesApi.internshipCooperatives()
+      .then(res => { setItems(res.cooperatives); setDistrict(res.district); })
+      .catch(e => setError(e instanceof Error ? e.message : 'Could not load cooperatives.'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div>
+      <h2 className="text-xl mb-6" style={{ color: NAVY }}>Cooperatives in Your District</h2>
+      {loading ? (
+        <p className="text-sm py-10 text-center text-white/40">Loading…</p>
+      ) : error ? (
+        <p className="text-sm py-6 text-center" style={{ color: '#f87171' }}>{error}</p>
+      ) : (
+        <>
+          <p className="text-sm text-white/38 mb-4">{district || 'Your district'} — {items.length} registered cooperative{items.length === 1 ? '' : 's'}</p>
+          {items.length === 0 ? (
+            <div className="rounded-2xl p-8 text-center" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <p className="text-sm text-white/50">No approved cooperatives registered in your district yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {items.map((coop) => (
+                <div key={String(coop.id)} className="rounded-2xl p-5" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h4 className="text-white mb-0.5">{String(coop.cooperativeName || 'Cooperative')}</h4>
+                      <p className="text-xs text-white/40">{coop.membershipNumbers ? `${(coop.membershipNumbers as unknown[]).length} Members` : ''}</p>
+                    </div>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">Active</span>
+                  </div>
+                  <div className="border-t border-gray-100 pt-3 space-y-1.5">
+                    <p className="text-xs text-white/40 mb-1">Contact Person: <strong className="text-white/70">{String(coop.contactPerson || '—')}</strong></p>
+                    <div className="flex items-center gap-2 text-sm text-white/55"><Phone size={13} className="text-white/40" />{String(coop.contactPhone || '—')}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -105,21 +121,60 @@ export default function InternshipDashboard() {
     idNumber: 'NRC-234567/89/1',
   });
 
+  // Real identity, loaded from the logged-in account's own internship
+  // registration — replaces fields that were previously always the same
+  // hardcoded "Mutale Chipalo / Monze Central" placeholder for every intern.
+  useEffect(() => {
+    registrationApi.mySelf('internship').then(res => {
+      const reg = res.registration;
+      const [firstName, ...rest] = String(reg.fullName || '').split(' ');
+      setIntern(prev => ({
+        ...prev,
+        firstName: firstName || prev.firstName,
+        lastName: rest.join(' ') || prev.lastName,
+        phone: String(reg.phone || prev.phone),
+        email: String(reg.email || prev.email),
+        district: String(reg.district || prev.district),
+        province: String(reg.province || prev.province),
+        idNumber: String(reg.nrcId || reg.membershipNumber || prev.idNumber),
+      }));
+    }).catch(() => { /* no real application linked — keep placeholder so the UI still renders */ });
+  }, []);
+
   // Backend-loaded ward chamber
   const [backendChamber, setBackendChamber] = useState<ChamberInfo | null | undefined>(undefined); // undefined = loading
   const [chamberError, setChamberError] = useState('');
 
-  useEffect(() => {
-    async function fetchWardChamber() {
-      try {
-        const res = await chambersApi.getByWard(intern.wardId);
-        setBackendChamber(res.chamber); // null = no chamber assigned
-      } catch {
-        setChamberError('Could not load chamber from server. Showing local data.');
-        setBackendChamber(null);
-      }
+  async function refreshWardChamber() {
+    try {
+      const res = await orgResourcesApi.internshipChamber();
+      const reg = res.chamber;
+      setBackendChamber(reg ? {
+        id: String(reg.id || ''),
+        name: String(reg.chamberName || ''),
+        location: String(reg.district || reg.ward || ''),
+        type: 'district',
+        memberBusinesses: Number(reg.memberBusinesses) || undefined,
+        contactEmail: String(reg.email || ''),
+        contactPhone: String(reg.contactPhone || reg.phone || ''),
+        website: String(reg.website || ''),
+        description: `Chamber of Commerce for ${reg.district || reg.ward || 'this area'}.`,
+        sectors: [],
+        createdAt: String(reg.createdAt || ''),
+        updatedAt: String(reg.updatedAt || ''),
+      } as ChamberInfo : null);
+    } catch {
+      setChamberError('Could not load chamber from server. Showing local data.');
+      setBackendChamber(null);
     }
-    fetchWardChamber();
+  }
+
+  useEffect(() => {
+    // chambersApi.getByWard() hit a route that always returned an empty
+    // list regardless of ward — replaced with the real endpoint built off
+    // actual chamber registrations, matched by district (internship
+    // applications only ever collect a district, not a ward).
+    refreshWardChamber();
   }, [intern.wardId]);
 
   // Fallback: local data chamber if backend not yet available
@@ -201,8 +256,7 @@ export default function InternshipDashboard() {
               <button
                 onClick={async () => {
                   setBackendChamber(undefined);
-                  try { const r = await chambersApi.getByWard(intern.wardId); setBackendChamber(r.chamber); }
-                  catch { setBackendChamber(null); }
+                  await refreshWardChamber();
                 }}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-gray-300 rounded-lg hover:bg-white/5"
               >
@@ -413,34 +467,7 @@ export default function InternshipDashboard() {
         );
 
       case 'cooperatives':
-        return (
-          <div>
-            <h2 className="text-xl mb-6" style={{ color: NAVY }}>Cooperatives in Your Ward</h2>
-            <p className="text-sm text-white/38 mb-4">{intern.ward} — {COOPERATIVES.length} successful BOZ programme applicants</p>
-            <div className="space-y-4">
-              {COOPERATIVES.map(coop => (
-                <div key={coop.id} className="rounded-2xl p-5" style={{backgroundColor: "#007A30", border: "1px solid rgba(255,255,255,0.07)"}}>
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h4 className="text-white mb-0.5">{coop.name}</h4>
-                      <p className="text-xs text-white/40">{coop.sector}</p>
-                    </div>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">{coop.status}</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 mb-3 text-sm text-white/55">
-                    <div className="flex items-center gap-2"><Users size={13} className="text-white/40" /> {coop.members} Members</div>
-                    <div className="flex items-center gap-2"><MapPin size={13} className="text-white/40" /> {coop.ward}</div>
-                  </div>
-                  <div className="border-t border-gray-100 pt-3 space-y-1.5">
-                    <p className="text-xs text-white/40 mb-1">Contact Person: <strong className="text-white/70">{coop.contactPerson}</strong></p>
-                    <div className="flex items-center gap-2 text-sm text-white/55"><Phone size={13} className="text-white/40" />{coop.phone}</div>
-                    <div className="flex items-center gap-2 text-sm text-white/55"><Mail size={13} className="text-white/40" />{coop.email}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
+        return <InternshipCooperativesSection />;
 
       case 'personal-details':
         return (

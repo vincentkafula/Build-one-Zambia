@@ -5,7 +5,7 @@ import {
   Phone, Mail, Edit2, Save, Building2, DollarSign,
   FilePenLine, CheckCircle, Clock, XCircle, Plus, ChevronDown, ChevronUp,
 } from 'lucide-react';
-import { chambersApi, ChamberAmendment, AmendmentField } from '../../lib/api';
+import { chambersApi, ChamberAmendment, AmendmentField, registrationApi, orgResourcesApi, InvestorRecord, WardCoordinator } from '../../lib/api';
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
 
 const A = '#00712B';
@@ -13,9 +13,11 @@ const NAVY = '#1e2d4a';
 
 type SectionKey = 'overview' | 'investors' | 'cooperatives' | 'intern-coordinator' | 'amendments' | 'personal-details' | 'security' | 'address-book';
 
-// Stub chamber ID — in production this comes from the logged-in chamber session
-const MY_CHAMBER_ID = 'chamber-monze-ward-001';
-const MY_CHAMBER_NAME = 'Monze Ward Chamber of Commerce';
+// Previously hardcoded MY_CHAMBER_ID/MY_CHAMBER_NAME constants meant every
+// chamber account's amendments were submitted against the same fake
+// "Monze Ward Chamber of Commerce" record regardless of who was actually
+// logged in. Real identity is now loaded via registrationApi.mySelf('chamber')
+// in the component below.
 
 const AMENDMENT_FIELDS: { field: AmendmentField; label: string }[] = [
   { field: 'name',            label: 'Chamber Name' },
@@ -56,52 +58,6 @@ const NAV: { group: string; items: { key: SectionKey; label: string; icon: React
   },
 ];
 
-const INVESTORS = [
-  {
-    id: 'INV-001', company: 'Pioneer Seeds International', country: 'USA', sector: 'Agri-inputs',
-    contactPerson: 'Mr. Robert Miller', phone: '+1 (312) 555-0178', email: 'r.miller@pioneerseeds.us',
-    investmentType: 'Seed supply franchise', ward: 'Monze Ward', status: 'Confirmed',
-  },
-  {
-    id: 'INV-002', company: 'SolarPower Africa Corp', country: 'USA', sector: 'Renewable Energy',
-    contactPerson: 'Ms. Amara Johnson', phone: '+1 (415) 555-0234', email: 'amara@solarafricacorp.com',
-    investmentType: 'Solar irrigation infrastructure', ward: 'Monze Ward', status: 'Pending',
-  },
-  {
-    id: 'INV-003', company: 'AgroTech Holdings LLC', country: 'USA', sector: 'Food processing',
-    contactPerson: 'Mr. Daniel Carter', phone: '+1 (646) 555-0312', email: 'dcarter@agrotech.us',
-    investmentType: 'Maize milling partnership', ward: 'Monze Ward', status: 'Under Review',
-  },
-];
-
-const COOPERATIVES = [
-  {
-    id: 'COOP-001', name: 'Monze Valley Agri Cooperative', sector: 'Agriculture',
-    contactPerson: 'Mrs. Agnes Mwale', phone: '+260 966 112 233', email: 'agnes@monzevalley.zm',
-    members: 42, products: 'Maize, Sunflower Oil', ward: 'Monze Ward', status: 'Active',
-  },
-  {
-    id: 'COOP-002', name: 'Southern Beekeepers Cooperative', sector: 'Apiculture',
-    contactPerson: 'Mr. Peter Siame', phone: '+260 955 443 221', email: 'psiame@southernbee.zm',
-    members: 28, products: 'Honey, Beeswax', ward: 'Monze Ward', status: 'Active',
-  },
-  {
-    id: 'COOP-003', name: 'Women in Trade Cooperative (WITCO)', sector: 'Retail & Cottage',
-    contactPerson: 'Ms. Dorothy Banda', phone: '+260 971 887 654', email: 'dorothy@witco.zm',
-    members: 60, products: 'Crafts, Processed foods', ward: 'Monze Ward', status: 'Active',
-  },
-];
-
-const INTERN = {
-  name: 'Mutale Chipalo',
-  title: 'BOZ Ward Intern Coordinator',
-  ward: 'Monze Ward',
-  phone: '+260 977 345 678',
-  email: 'mutale.chipalo@intern.boz.zm',
-  availableHours: 'Monday – Friday, 08:00 – 16:00 CAT',
-  note: 'Contact the intern coordinator to arrange introductions with local cooperatives or to schedule ward investment visits.',
-};
-
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = { Confirmed: '#00712B', Active: '#00712B', Pending: '#f59e0b', 'Under Review': A };
   const c = colors[status] || 'rgba(255,255,255,0.4)';
@@ -113,6 +69,151 @@ function Field({ label, value }: { label: string; value: string }) {
     <div>
       <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em' }}>{label}</p>
       <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem' }}>{value}</p>
+    </div>
+  );
+}
+
+function ChamberInvestorsSection() {
+  const [items, setItems] = useState<InvestorRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    orgResourcesApi.chamberInvestors()
+      .then(res => setItems(res.investors))
+      .catch(e => setError(e instanceof Error ? e.message : 'Could not load investors.'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div>
+      <h2 className="text-xl mb-6" style={{ color: NAVY }}>Companies Willing to Invest</h2>
+      {loading ? (
+        <p className="text-sm py-10 text-center text-white/40">Loading…</p>
+      ) : error ? (
+        <p className="text-sm py-6 text-center" style={{ color: '#f87171' }}>{error}</p>
+      ) : items.length === 0 ? (
+        <div className="rounded-2xl p-8 text-center" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <p className="text-sm text-white/50">No investors have been connected to your chamber yet. BOZ's investor-relations team links real investor contacts here as they express interest in your ward.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {items.map(inv => (
+            <div key={inv.id} className="rounded-2xl p-5" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h4 className="text-white mb-0.5">{inv.name}</h4>
+                  <p className="text-xs text-white/40">{inv.country} · {inv.sector}</p>
+                </div>
+                <StatusBadge status={inv.status} />
+              </div>
+              {inv.investmentInterest && (
+                <div className="rounded-lg px-3 py-2 text-sm mb-3" style={{ backgroundColor: '#2a1a00', color: '#fbbf24' }}>
+                  <span className="text-amber-600 mr-1">Investment Interest:</span>{inv.investmentInterest}
+                </div>
+              )}
+              <div className="space-y-1.5 text-sm text-white/55">
+                <div className="flex items-center gap-2"><Users size={13} className="text-white/40" /> {inv.contactPerson || '—'}</div>
+                <div className="flex items-center gap-2"><Phone size={13} className="text-white/40" /> {inv.phone || '—'}</div>
+                <div className="flex items-center gap-2"><Mail size={13} className="text-white/40" /> {inv.email || '—'}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ChamberCooperativesSection() {
+  const [items, setItems] = useState<Record<string, unknown>[]>([]);
+  const [ward, setWard] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    orgResourcesApi.chamberCooperatives()
+      .then(res => { setItems(res.cooperatives); setWard(res.ward); })
+      .catch(e => setError(e instanceof Error ? e.message : 'Could not load cooperatives.'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div>
+      <h2 className="text-xl mb-6" style={{ color: NAVY }}>Zambian Cooperatives in Ward{ward ? ` (${ward})` : ''}</h2>
+      {loading ? (
+        <p className="text-sm py-10 text-center text-white/40">Loading…</p>
+      ) : error ? (
+        <p className="text-sm py-6 text-center" style={{ color: '#f87171' }}>{error}</p>
+      ) : items.length === 0 ? (
+        <div className="rounded-2xl p-8 text-center" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <p className="text-sm text-white/50">No approved cooperatives registered in your ward yet.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {items.map((coop) => (
+            <div key={String(coop.id)} className="rounded-2xl p-5" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h4 className="text-white mb-0.5">{String(coop.cooperativeName || 'Cooperative')}</h4>
+                  <p className="text-xs text-white/40">{coop.membershipNumbers ? `${(coop.membershipNumbers as unknown[]).length} Members` : ''}</p>
+                </div>
+                <StatusBadge status="Active" />
+              </div>
+              <div className="space-y-1.5 text-sm text-white/55">
+                <div className="flex items-center gap-2"><Users size={13} className="text-white/40" /> {String(coop.contactPerson || '—')}</div>
+                <div className="flex items-center gap-2"><Phone size={13} className="text-white/40" /> {String(coop.contactPhone || '—')}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ChamberCoordinatorSection() {
+  const [coordinator, setCoordinator] = useState<WardCoordinator | null>(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    orgResourcesApi.wardCoordinator()
+      .then(res => setCoordinator(res.coordinator))
+      .catch(e => setError(e instanceof Error ? e.message : 'No intern coordinator has been assigned to your ward yet.'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div>
+      <h2 className="text-xl mb-6" style={{ color: NAVY }}>Intern Coordinator Contact</h2>
+      <DashCard title="Ward Intern Coordinator">
+        {loading ? (
+          <p className="text-sm py-6 text-center text-white/40">Loading…</p>
+        ) : error || !coordinator ? (
+          <p className="text-sm text-white/50">{error || 'No intern coordinator has been assigned to your ward yet.'}</p>
+        ) : (
+          <>
+            {coordinator.note && (
+              <div className="rounded-lg p-3 text-sm mb-4" style={{ backgroundColor: '#1a0f2e', color: '#c4b5fd' }}>{coordinator.note}</div>
+            )}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center text-white" style={{ background: '#8b5cf6' }}>
+                {coordinator.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+              </div>
+              <div>
+                <p className="text-white">{coordinator.name}</p>
+                <p className="text-xs text-white/40">{coordinator.title}</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {coordinator.availableHours && <Field label="Available Hours" value={coordinator.availableHours} />}
+              <div className="flex items-center gap-2 text-sm text-white/55"><Phone size={13} className="text-white/40" />{coordinator.phone || '—'}</div>
+              <div className="flex items-center gap-2 text-sm text-white/55"><Mail size={13} className="text-white/40" />{coordinator.email || '—'}</div>
+            </div>
+          </>
+        )}
+      </DashCard>
     </div>
   );
 }
@@ -131,6 +232,29 @@ export default function ChamberDashboard() {
     province: 'Southern Province',
   });
 
+  // Real chamber identity, loaded from the logged-in account's own
+  // registration — replaces the old hardcoded MY_CHAMBER_ID/MY_CHAMBER_NAME
+  // that misattributed every chamber's amendments to the same fake record.
+  const [myChamberId, setMyChamberId] = useState('');
+  const [myChamberName, setMyChamberName] = useState('');
+  useEffect(() => {
+    registrationApi.mySelf('chamber').then(res => {
+      const reg = res.registration;
+      setMyChamberId(String(reg.id || ''));
+      setMyChamberName(String(reg.chamberName || ''));
+      setAdmin(prev => ({
+        ...prev,
+        firstName: String(reg.contactPerson || prev.firstName).split(' ')[0] || prev.firstName,
+        lastName: String(reg.contactPerson || '').split(' ').slice(1).join(' ') || prev.lastName,
+        title: String(reg.contactTitle || prev.title),
+        phone: String(reg.phone || prev.phone),
+        email: String(reg.email || prev.email),
+        ward: String(reg.ward || prev.ward),
+        district: String(reg.district || prev.district),
+      }));
+    }).catch(() => { /* no real application linked — keep placeholder so the UI still renders */ });
+  }, []);
+
   // ── Amendments state
   const [amendments, setAmendments] = useState<ChamberAmendment[]>([]);
   const [amendLoading, setAmendLoading] = useState(false);
@@ -145,13 +269,13 @@ export default function ChamberDashboard() {
   const pendingCount = amendments.filter(a => a.status === 'pending').length;
 
   useEffect(() => {
-    if (active === 'amendments') loadAmendments();
-  }, [active]);
+    if (active === 'amendments' && myChamberId) loadAmendments();
+  }, [active, myChamberId]);
 
   async function loadAmendments() {
     setAmendLoading(true);
     try {
-      const res = await chambersApi.listAmendments({ chamberId: MY_CHAMBER_ID });
+      const res = await chambersApi.listAmendments({ chamberId: myChamberId });
       setAmendments(res.amendments || []);
     } catch {
       // use empty list on error
@@ -165,13 +289,17 @@ export default function ChamberDashboard() {
       setAmendMsg('Please fill in all fields.');
       return;
     }
+    if (!myChamberId) {
+      setAmendMsg('No chamber application is linked to this account, so an amendment can\u2019t be submitted.');
+      return;
+    }
     setAmendSubmitting(true);
     setAmendMsg('');
     try {
       const fieldLabel = AMENDMENT_FIELDS.find(f => f.field === amendField)?.label || amendField;
       await chambersApi.submitAmendment({
-        chamberId: MY_CHAMBER_ID,
-        chamberName: MY_CHAMBER_NAME,
+        chamberId: myChamberId,
+        chamberName: myChamberName,
         field: amendField,
         fieldLabel,
         currentValue: amendCurrent,
@@ -235,84 +363,13 @@ export default function ChamberDashboard() {
         );
 
       case 'investors':
-        return (
-          <div>
-            <h2 className="text-xl mb-6" style={{ color: NAVY }}>Companies Willing to Invest</h2>
-            <div className="space-y-4">
-              {INVESTORS.map(inv => (
-                <div key={inv.id} className="rounded-2xl p-5" style={{backgroundColor: "#007A30", border: "1px solid rgba(255,255,255,0.07)"}}>
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h4 className="text-white mb-0.5">{inv.company}</h4>
-                      <p className="text-xs text-white/40">{inv.country} · {inv.sector}</p>
-                    </div>
-                    <StatusBadge status={inv.status} />
-                  </div>
-                  <div className="rounded-lg px-3 py-2 text-sm mb-3" style={{backgroundColor:"#2a1a00",color:"#fbbf24"}}>
-                    <span className="text-amber-600 mr-1">Investment Type:</span>{inv.investmentType}
-                  </div>
-                  <div className="space-y-1.5 text-sm text-white/55">
-                    <div className="flex items-center gap-2"><Users size={13} className="text-white/40" /> {inv.contactPerson}</div>
-                    <div className="flex items-center gap-2"><Phone size={13} className="text-white/40" /> {inv.phone}</div>
-                    <div className="flex items-center gap-2"><Mail size={13} className="text-white/40" /> {inv.email}</div>
-                    <div className="flex items-center gap-2"><MapPin size={13} className="text-white/40" /> {inv.ward}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
+        return <ChamberInvestorsSection />;
 
       case 'cooperatives':
-        return (
-          <div>
-            <h2 className="text-xl mb-6" style={{ color: NAVY }}>Zambian Cooperatives in Ward</h2>
-            <div className="space-y-4">
-              {COOPERATIVES.map(coop => (
-                <div key={coop.id} className="rounded-2xl p-5" style={{backgroundColor: "#007A30", border: "1px solid rgba(255,255,255,0.07)"}}>
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h4 className="text-white mb-0.5">{coop.name}</h4>
-                      <p className="text-xs text-white/40">{coop.sector} · {coop.members} Members</p>
-                    </div>
-                    <StatusBadge status={coop.status} />
-                  </div>
-                  <p className="text-sm text-white/55 mb-3"><span className="text-white/40">Products: </span>{coop.products}</p>
-                  <div className="space-y-1.5 text-sm text-white/55">
-                    <div className="flex items-center gap-2"><Users size={13} className="text-white/40" /> {coop.contactPerson}</div>
-                    <div className="flex items-center gap-2"><Phone size={13} className="text-white/40" /> {coop.phone}</div>
-                    <div className="flex items-center gap-2"><Mail size={13} className="text-white/40" /> {coop.email}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
+        return <ChamberCooperativesSection />;
 
       case 'intern-coordinator':
-        return (
-          <div>
-            <h2 className="text-xl mb-6" style={{ color: NAVY }}>Intern Coordinator Contact</h2>
-            <DashCard title="Ward Intern Coordinator">
-              <div className="rounded-lg p-3 text-sm mb-4" style={{backgroundColor:"#1a0f2e",color:"#c4b5fd"}}>{INTERN.note}</div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-white" style={{ background: '#8b5cf6' }}>
-                  {INTERN.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                </div>
-                <div>
-                  <p className="text-white">{INTERN.name}</p>
-                  <p className="text-xs text-white/40">{INTERN.title}</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Field label="Ward" value={INTERN.ward} />
-                <Field label="Available Hours" value={INTERN.availableHours} />
-                <div className="flex items-center gap-2 text-sm text-white/55"><Phone size={13} className="text-white/40" />{INTERN.phone}</div>
-                <div className="flex items-center gap-2 text-sm text-white/55"><Mail size={13} className="text-white/40" />{INTERN.email}</div>
-              </div>
-            </DashCard>
-          </div>
-        );
+        return <ChamberCoordinatorSection />;
 
       case 'amendments':
         return (

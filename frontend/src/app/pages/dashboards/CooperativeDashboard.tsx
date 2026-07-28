@@ -6,7 +6,7 @@ import {
   Phone, Mail, TrendingUp, DollarSign, FileText, Download, ShieldCheck, Loader2, AlertCircle
 } from 'lucide-react';
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
-import { registrationApi, CoopCertificate } from '../../lib/api';
+import { registrationApi, CoopCertificate, orgResourcesApi, EquipmentRecord, ExportRecord, InvestorRecord } from '../../lib/api';
 
 const A = '#00712B';
 const NAVY = '#1e2d4a';
@@ -43,41 +43,7 @@ const NAV: { group: string; items: { key: SectionKey; label: string; icon: React
   },
 ];
 
-const EQUIPMENT_APPROVED = [
-  { id: 'EQ-001', name: 'Maize Sheller Machine', category: 'Processing', approvedDate: '2026-03-12', condition: 'New', assignedBy: 'Ministry of Agriculture' },
-  { id: 'EQ-002', name: 'Solar-Powered Water Pump', category: 'Irrigation', approvedDate: '2026-04-05', condition: 'Refurbished', assignedBy: 'ZAWA Cooperative Fund' },
-  { id: 'EQ-003', name: 'Tractor (20HP)', category: 'Farming', approvedDate: '2026-05-18', condition: 'New', assignedBy: 'BOZ Development Fund' },
-];
 
-const EQUIPMENT_APPLIED = [
-  { id: 'APP-001', name: 'Cold Storage Unit (5 Ton)', category: 'Storage', appliedDate: '2026-05-20', status: 'Pending' },
-  { id: 'APP-002', name: 'Rice Milling Machine', category: 'Processing', appliedDate: '2026-06-01', status: 'Under Review' },
-  { id: 'APP-003', name: 'Drip Irrigation Kit (2 Acres)', category: 'Irrigation', appliedDate: '2026-06-05', status: 'Approved' },
-];
-
-const EXPORTS = [
-  { id: 'EXP-001', product: 'Dried Kapenta', destination: 'Zimbabwe', quantity: '500 kg', value: 'ZMW 45,000', date: '2026-04-10', status: 'Delivered' },
-  { id: 'EXP-002', product: 'Groundnuts (Processed)', destination: 'South Africa', quantity: '1,200 kg', value: 'ZMW 132,000', date: '2026-05-02', status: 'In Transit' },
-  { id: 'EXP-003', product: 'Honey (Raw)', destination: 'Botswana', quantity: '300 kg', value: 'ZMW 27,000', date: '2026-06-01', status: 'Processing' },
-];
-
-const INVESTORS = [
-  {
-    id: 'INV-001', name: 'AgriVest Africa Ltd', country: 'Kenya', sector: 'Agri-processing',
-    contactPerson: 'Mr. David Otieno', phone: '+254 712 345 678', email: 'otieno@agrivest.co.ke',
-    investmentInterest: 'Maize processing plant — ZMW 2.5M', status: 'Active',
-  },
-  {
-    id: 'INV-002', name: 'GreenField Zambia Investments', country: 'Zambia', sector: 'Irrigation',
-    contactPerson: 'Ms. Ruth Chanda', phone: '+260 977 654 321', email: 'ruth@greenfield.zm',
-    investmentInterest: 'Solar irrigation systems — ZMW 1.8M', status: 'Negotiating',
-  },
-  {
-    id: 'INV-003', name: 'Nordic Agro Partners', country: 'Sweden', sector: 'Organic exports',
-    contactPerson: 'Ms. Ingrid Larsson', phone: '+46 70 123 4567', email: 'ingrid@nordicagro.se',
-    investmentInterest: 'Organic honey & kapenta exports — ZMW 900K', status: 'Interested',
-  },
-];
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
@@ -178,6 +144,277 @@ function CertificateVisual({ cert }: { cert: CoopCertificate }) {
           Issued {issued} · bozplans.org<br />This certificate is the property of the Registrar of Cooperatives.
         </p>
       </div>
+    </div>
+  );
+}
+
+function EquipmentSection({ view }: { view: 'approved' | 'applied' }) {
+  const [items, setItems] = useState<EquipmentRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ name: '', category: '', condition: '', justification: '' });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitMsg, setSubmitMsg] = useState('');
+
+  const load = () => {
+    setLoading(true);
+    orgResourcesApi.listEquipment()
+      .then(res => setItems(res.equipment))
+      .catch(e => setError(e instanceof Error ? e.message : 'Could not load equipment records.'))
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => { load(); }, []);
+
+  const filtered = view === 'approved' ? items.filter(i => i.status === 'approved') : items;
+
+  const submit = async () => {
+    if (!form.name.trim() || !form.category.trim()) { setSubmitMsg('Equipment name and category are required.'); return; }
+    setSubmitting(true);
+    setSubmitMsg('');
+    try {
+      await orgResourcesApi.applyForEquipment(form);
+      setSubmitMsg('Application submitted successfully.');
+      setForm({ name: '', category: '', condition: '', justification: '' });
+      setShowForm(false);
+      load();
+    } catch (e) {
+      setSubmitMsg(e instanceof Error ? e.message : 'Failed to submit. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl" style={{ color: NAVY }}>{view === 'approved' ? 'Equipment Approved' : 'Equipment Applied'}</h2>
+        {view === 'applied' && (
+          <button onClick={() => { setShowForm(s => !s); setSubmitMsg(''); }} className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm" style={{ background: A }}>
+            <PackagePlus size={16} /> Apply for Equipment
+          </button>
+        )}
+      </div>
+
+      {showForm && (
+        <DashCard title="New Equipment Application">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <input placeholder="Equipment name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="px-3 py-2 rounded-lg text-sm" style={{ backgroundColor: '#fff', border: '1px solid #d1d5db', color: '#111' }} />
+            <input placeholder="Category (e.g. Irrigation, Processing)" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="px-3 py-2 rounded-lg text-sm" style={{ backgroundColor: '#fff', border: '1px solid #d1d5db', color: '#111' }} />
+            <textarea placeholder="Why does your cooperative need this?" value={form.justification} onChange={e => setForm(f => ({ ...f, justification: e.target.value }))} className="px-3 py-2 rounded-lg text-sm md:col-span-2" style={{ backgroundColor: '#fff', border: '1px solid #d1d5db', color: '#111', minHeight: 70 }} />
+          </div>
+          {submitMsg && <p className="text-sm mb-3" style={{ color: submitMsg.includes('success') ? A : '#dc2626' }}>{submitMsg}</p>}
+          <button onClick={submit} disabled={submitting} className="px-4 py-2 rounded-lg text-white text-sm" style={{ background: A }}>
+            {submitting ? 'Submitting…' : 'Submit Application'}
+          </button>
+        </DashCard>
+      )}
+
+      <div className="mt-4">
+        <DashCard title={`${filtered.length} ${view === 'approved' ? 'Items Approved' : 'Applications'}`}>
+          {loading ? (
+            <div className="flex items-center gap-2 py-10 justify-center text-white/50"><Loader2 size={18} className="animate-spin" /> Loading…</div>
+          ) : error ? (
+            <p className="text-sm py-6 text-center" style={{ color: '#f87171' }}>{error}</p>
+          ) : filtered.length === 0 ? (
+            <p className="text-sm py-10 text-center text-white/40">No {view === 'approved' ? 'approved equipment yet' : 'equipment applications yet'}.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    {(view === 'approved' ? ['Equipment', 'Category', 'Approved Date', 'Condition', 'Assigned By'] : ['Equipment', 'Category', 'Applied Date', 'Status']).map(h => (
+                      <th key={h} className="text-left text-xs text-white/40 pb-2 pr-4">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map(eq => (
+                    <tr key={eq.id} className="border-b hover:bg-white/5" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+                      <td className="py-3 pr-4 text-white/85">{eq.name}</td>
+                      <td className="py-3 pr-4 text-white/55">{eq.category}</td>
+                      {view === 'approved' ? (
+                        <>
+                          <td className="py-3 pr-4 text-white/55">{eq.approvedDate ? new Date(eq.approvedDate).toLocaleDateString() : '—'}</td>
+                          <td className="py-3 pr-4"><StatusBadge status={eq.condition} /></td>
+                          <td className="py-3 text-white/55">{eq.assignedBy || '—'}</td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="py-3 pr-4 text-white/55">{new Date(eq.appliedDate).toLocaleDateString()}</td>
+                          <td className="py-3"><StatusBadge status={eq.status === 'under_review' ? 'Under Review' : eq.status.charAt(0).toUpperCase() + eq.status.slice(1)} /></td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </DashCard>
+      </div>
+    </div>
+  );
+}
+
+function ExportsSection() {
+  const [items, setItems] = useState<ExportRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ product: '', destination: '', quantity: '', value: '', date: '' });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitMsg, setSubmitMsg] = useState('');
+
+  const load = () => {
+    setLoading(true);
+    orgResourcesApi.listExports()
+      .then(res => setItems(res.exports))
+      .catch(e => setError(e instanceof Error ? e.message : 'Could not load export records.'))
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => { load(); }, []);
+
+  const totalValue = items.reduce((s, e) => s + (parseFloat(String(e.value).replace(/[^0-9.]/g, '')) || 0), 0);
+  const delivered = items.filter(e => e.status === 'Delivered').length;
+
+  const submit = async () => {
+    if (!form.product.trim() || !form.destination.trim()) { setSubmitMsg('Product and destination are required.'); return; }
+    setSubmitting(true);
+    setSubmitMsg('');
+    try {
+      await orgResourcesApi.logExport(form);
+      setSubmitMsg('Export record added.');
+      setForm({ product: '', destination: '', quantity: '', value: '', date: '' });
+      setShowForm(false);
+      load();
+    } catch (e) {
+      setSubmitMsg(e instanceof Error ? e.message : 'Failed to save. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl" style={{ color: NAVY }}>Products Exported</h2>
+        <button onClick={() => { setShowForm(s => !s); setSubmitMsg(''); }} className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm" style={{ background: A }}>
+          <Globe size={16} /> Log Export
+        </button>
+      </div>
+
+      {showForm && (
+        <DashCard title="New Export Record">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <input placeholder="Product" value={form.product} onChange={e => setForm(f => ({ ...f, product: e.target.value }))} className="px-3 py-2 rounded-lg text-sm" style={{ backgroundColor: '#fff', border: '1px solid #d1d5db', color: '#111' }} />
+            <input placeholder="Destination country" value={form.destination} onChange={e => setForm(f => ({ ...f, destination: e.target.value }))} className="px-3 py-2 rounded-lg text-sm" style={{ backgroundColor: '#fff', border: '1px solid #d1d5db', color: '#111' }} />
+            <input placeholder="Quantity (e.g. 500 kg)" value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))} className="px-3 py-2 rounded-lg text-sm" style={{ backgroundColor: '#fff', border: '1px solid #d1d5db', color: '#111' }} />
+            <input placeholder="Value (e.g. ZMW 45,000)" value={form.value} onChange={e => setForm(f => ({ ...f, value: e.target.value }))} className="px-3 py-2 rounded-lg text-sm" style={{ backgroundColor: '#fff', border: '1px solid #d1d5db', color: '#111' }} />
+          </div>
+          {submitMsg && <p className="text-sm mb-3" style={{ color: submitMsg.includes('added') ? A : '#dc2626' }}>{submitMsg}</p>}
+          <button onClick={submit} disabled={submitting} className="px-4 py-2 rounded-lg text-white text-sm" style={{ background: A }}>
+            {submitting ? 'Saving…' : 'Save Export Record'}
+          </button>
+        </DashCard>
+      )}
+
+      <div className="grid grid-cols-3 gap-4 my-6">
+        {[
+          { label: 'Total Exports', value: items.length },
+          { label: 'Total Value', value: `ZMW ${totalValue.toLocaleString()}` },
+          { label: 'Delivered', value: delivered },
+        ].map(s => (
+          <div key={s.label} className="rounded-xl p-4 text-center" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <p className="text-2xl" style={{ color: A }}>{s.value}</p>
+            <p className="text-xs text-white/40 mt-1">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <DashCard title="Export Records">
+        {loading ? (
+          <div className="flex items-center gap-2 py-10 justify-center text-white/50"><Loader2 size={18} className="animate-spin" /> Loading…</div>
+        ) : error ? (
+          <p className="text-sm py-6 text-center" style={{ color: '#f87171' }}>{error}</p>
+        ) : items.length === 0 ? (
+          <p className="text-sm py-10 text-center text-white/40">No export records logged yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  {['Product', 'Destination', 'Quantity', 'Value', 'Date', 'Status'].map(h => (
+                    <th key={h} className="text-left text-xs text-white/40 pb-2 pr-4">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {items.map(ex => (
+                  <tr key={ex.id} className="border-b hover:bg-white/5" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+                    <td className="py-3 pr-4 text-white/85">{ex.product}</td>
+                    <td className="py-3 pr-4 text-white/55">{ex.destination}</td>
+                    <td className="py-3 pr-4 text-white/55">{ex.quantity}</td>
+                    <td className="py-3 pr-4 text-white/85">{ex.value}</td>
+                    <td className="py-3 pr-4 text-white/55">{new Date(ex.date).toLocaleDateString()}</td>
+                    <td className="py-3"><StatusBadge status={ex.status} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </DashCard>
+    </div>
+  );
+}
+
+function InvestorsSection({ source }: { source: 'coop' | 'chamber' }) {
+  const [items, setItems] = useState<InvestorRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const call = source === 'coop' ? orgResourcesApi.coopInvestors() : orgResourcesApi.chamberInvestors();
+    call.then(res => setItems(res.investors)).catch(e => setError(e instanceof Error ? e.message : 'Could not load investors.')).finally(() => setLoading(false));
+  }, [source]);
+
+  return (
+    <div>
+      <h2 className="text-xl mb-6" style={{ color: NAVY }}>List of Investors</h2>
+      {loading ? (
+        <div className="flex items-center gap-2 py-10 justify-center text-white/50"><Loader2 size={18} className="animate-spin" /> Loading…</div>
+      ) : error ? (
+        <p className="text-sm py-6 text-center" style={{ color: '#f87171' }}>{error}</p>
+      ) : items.length === 0 ? (
+        <div className="rounded-2xl p-8 text-center" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <p className="text-sm text-white/50">No investors have been connected to you yet. BOZ's investor-relations team links real investor contacts here as they express interest.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {items.map(inv => (
+            <div key={inv.id} className="rounded-2xl p-5" style={{ backgroundColor: '#007A30', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h4 className="text-white mb-0.5">{inv.name}</h4>
+                  <p className="text-xs text-white/40">{inv.country} · {inv.sector}</p>
+                </div>
+                <StatusBadge status={inv.status} />
+              </div>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="flex items-center gap-2 text-sm text-white/55"><Users size={14} className="text-white/40" />{inv.contactPerson || '—'}</div>
+                <div className="flex items-center gap-2 text-sm text-white/55"><Phone size={14} className="text-white/40" />{inv.phone || '—'}</div>
+                <div className="flex items-center gap-2 text-sm text-white/55 col-span-2"><Mail size={14} className="text-white/40" />{inv.email || '—'}</div>
+              </div>
+              {inv.investmentInterest && (
+                <div className="rounded-lg px-3 py-2 text-sm" style={{ backgroundColor: '#007A30', color: '#479966' }}>
+                  <span className="text-green-600 mr-1">Interest:</span>{inv.investmentInterest}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -317,157 +554,16 @@ export default function CooperativeDashboard() {
         );
 
       case 'equip-approved':
-        return (
-          <div>
-            <h2 className="text-xl mb-6" style={{ color: NAVY }}>Equipment Approved</h2>
-            <DashCard title={`${EQUIPMENT_APPROVED.length} Items Approved`}>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-100">
-                      {['ID', 'Equipment', 'Category', 'Approved Date', 'Condition', 'Assigned By'].map(h => (
-                        <th key={h} className="text-left text-xs text-white/40 pb-2 pr-4">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {EQUIPMENT_APPROVED.map(eq => (
-                      <tr key={eq.id} className="border-b hover:bg-white/5" style={{borderColor:"rgba(255,255,255,0.05)"}}>
-                        <td className="py-3 pr-4 text-xs text-white/40">{eq.id}</td>
-                        <td className="py-3 pr-4 text-white/85">{eq.name}</td>
-                        <td className="py-3 pr-4 text-white/55">{eq.category}</td>
-                        <td className="py-3 pr-4 text-white/55">{eq.approvedDate}</td>
-                        <td className="py-3 pr-4"><StatusBadge status={eq.condition} /></td>
-                        <td className="py-3 text-white/55">{eq.assignedBy}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </DashCard>
-          </div>
-        );
+        return <EquipmentSection view="approved" />;
 
       case 'equip-applied':
-        return (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl" style={{ color: NAVY }}>Equipment Applied</h2>
-              <button
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm"
-                style={{ background: A }}
-              >
-                <PackagePlus size={16} /> Apply for Equipment
-              </button>
-            </div>
-            <DashCard title={`${EQUIPMENT_APPLIED.length} Applications`}>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-100">
-                      {['ID', 'Equipment', 'Category', 'Applied Date', 'Status'].map(h => (
-                        <th key={h} className="text-left text-xs text-white/40 pb-2 pr-4">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {EQUIPMENT_APPLIED.map(eq => (
-                      <tr key={eq.id} className="border-b hover:bg-white/5" style={{borderColor:"rgba(255,255,255,0.05)"}}>
-                        <td className="py-3 pr-4 text-xs text-white/40">{eq.id}</td>
-                        <td className="py-3 pr-4 text-white/85">{eq.name}</td>
-                        <td className="py-3 pr-4 text-white/55">{eq.category}</td>
-                        <td className="py-3 pr-4 text-white/55">{eq.appliedDate}</td>
-                        <td className="py-3"><StatusBadge status={eq.status} /></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </DashCard>
-          </div>
-        );
+        return <EquipmentSection view="applied" />;
 
       case 'exports':
-        return (
-          <div>
-            <h2 className="text-xl mb-6" style={{ color: NAVY }}>Products Exported</h2>
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              {[
-                { label: 'Total Exports', value: EXPORTS.length },
-                { label: 'Total Value', value: 'ZMW 204,000' },
-                { label: 'Delivered', value: EXPORTS.filter(e => e.status === 'Delivered').length },
-              ].map(s => (
-                <div key={s.label} className="rounded-xl p-4 text-center" style={{backgroundColor:"#007A30",border:"1px solid rgba(255,255,255,0.07)"}}>
-                  <p className="text-2xl" style={{ color: A }}>{s.value}</p>
-                  <p className="text-xs text-white/40 mt-1">{s.label}</p>
-                </div>
-              ))}
-            </div>
-            <DashCard title="Export Records">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-100">
-                      {['ID', 'Product', 'Destination', 'Quantity', 'Value', 'Date', 'Status'].map(h => (
-                        <th key={h} className="text-left text-xs text-white/40 pb-2 pr-4">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {EXPORTS.map(ex => (
-                      <tr key={ex.id} className="border-b hover:bg-white/5" style={{borderColor:"rgba(255,255,255,0.05)"}}>
-                        <td className="py-3 pr-4 text-xs text-white/40">{ex.id}</td>
-                        <td className="py-3 pr-4 text-white/85">{ex.product}</td>
-                        <td className="py-3 pr-4 text-white/55">{ex.destination}</td>
-                        <td className="py-3 pr-4 text-white/55">{ex.quantity}</td>
-                        <td className="py-3 pr-4 text-white/85">{ex.value}</td>
-                        <td className="py-3 pr-4 text-white/55">{ex.date}</td>
-                        <td className="py-3"><StatusBadge status={ex.status} /></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </DashCard>
-          </div>
-        );
+        return <ExportsSection />;
 
       case 'investors':
-        return (
-          <div>
-            <h2 className="text-xl mb-6" style={{ color: NAVY }}>List of Investors</h2>
-            <div className="space-y-4">
-              {INVESTORS.map(inv => (
-                <div key={inv.id} className="rounded-2xl p-5" style={{backgroundColor: "#007A30", border: "1px solid rgba(255,255,255,0.07)"}}>
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h4 className="text-white mb-0.5">{inv.name}</h4>
-                      <p className="text-xs text-white/40">{inv.country} · {inv.sector}</p>
-                    </div>
-                    <StatusBadge status={inv.status} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div className="flex items-center gap-2 text-sm text-white/55">
-                      <Users size={14} className="text-white/40" />
-                      {inv.contactPerson}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-white/55">
-                      <Phone size={14} className="text-white/40" />
-                      {inv.phone}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-white/55 col-span-2">
-                      <Mail size={14} className="text-white/40" />
-                      {inv.email}
-                    </div>
-                  </div>
-                  <div className="rounded-lg px-3 py-2 text-sm" style={{backgroundColor:"#007A30",color:"#479966"}}>
-                    <span className="text-green-600 mr-1">Interest:</span>{inv.investmentInterest}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
+        return <InvestorsSection source="coop" />;
 
       case 'documents':
         return <CertificateSection />;

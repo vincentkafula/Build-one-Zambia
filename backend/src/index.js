@@ -15,6 +15,7 @@ import * as leadership from './leadership.js';
 import * as news from './news.js';
 import * as candidates from './candidates.js';
 import * as registrations from './registrations.js';
+import * as orgResources from './orgResources.js';
 import * as press from './press.js';
 import * as elections from './elections.js';
 import * as docs from './documents.js';
@@ -375,6 +376,169 @@ app.get(`${BASE}/coop/certificate`, auth.requireAuth, (req, res) => {
       members,
     },
   });
+});
+
+// ─── Cooperative Equipment Applications ──────────────────────────────────
+// Real replacement for the website's old hardcoded EQUIPMENT_APPROVED /
+// EQUIPMENT_APPLIED mock arrays. Same self-service-by-own-token pattern as
+// /coop/certificate above — a cooperative applies for equipment and sees
+// its own applications; "approved" and "applied/pending" are just this
+// same list filtered by status, not two separate systems.
+function requireOwnCoop(req, res) {
+  const fullUser = auth.getUser(req.user.username);
+  if (!fullUser || fullUser.registrationType !== 'cooperative' || !fullUser.registrationId) {
+    res.status(404).json({ error: 'No cooperative application linked to this account.' });
+    return null;
+  }
+  const coop = registrations.getCoop(fullUser.registrationId);
+  if (!coop) { res.status(404).json({ error: 'Cooperative application not found.' }); return null; }
+  return coop;
+}
+
+app.get(`${BASE}/coop/equipment`, auth.requireAuth, (req, res) => {
+  const coop = requireOwnCoop(req, res);
+  if (!coop) return;
+  res.json({ equipment: orgResources.listEquipmentForCoop(coop.id) });
+});
+app.post(`${BASE}/coop/equipment`, auth.requireAuth, (req, res) => {
+  const coop = requireOwnCoop(req, res);
+  if (!coop) return;
+  if (!req.body?.name || !req.body?.category) return res.status(400).json({ error: 'Equipment name and category are required.' });
+  const record = orgResources.applyForEquipment(coop.id, coop.cooperativeName, req.body);
+  res.json({ success: true, equipment: record });
+});
+app.get(`${BASE}/admin/equipment`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  res.json({ equipment: orgResources.listAllEquipment({ status: req.query.status }) });
+});
+app.patch(`${BASE}/admin/equipment/:id/status`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  const updated = orgResources.updateEquipmentStatus(req.params.id, req.body.status, { assignedBy: req.body.assignedBy || req.user.username, reviewNotes: req.body.reviewNotes });
+  if (!updated) return res.status(404).json({ error: 'Equipment application not found.' });
+  res.json({ success: true, equipment: updated });
+});
+
+// ─── Cooperative Export Records ──────────────────────────────────────────
+// Real replacement for the old hardcoded EXPORTS array — the cooperative's
+// own self-reported export ledger, not admin-gated (this is their own
+// record-keeping, same as any business logging its own shipments).
+app.get(`${BASE}/coop/exports`, auth.requireAuth, (req, res) => {
+  const coop = requireOwnCoop(req, res);
+  if (!coop) return;
+  res.json({ exports: orgResources.listExportsForCoop(coop.id) });
+});
+app.post(`${BASE}/coop/exports`, auth.requireAuth, (req, res) => {
+  const coop = requireOwnCoop(req, res);
+  if (!coop) return;
+  if (!req.body?.product || !req.body?.destination) return res.status(400).json({ error: 'Product and destination are required.' });
+  const record = orgResources.logExport(coop.id, coop.cooperativeName, req.body);
+  res.json({ success: true, export: record });
+});
+app.patch(`${BASE}/coop/exports/:id`, auth.requireAuth, (req, res) => {
+  const coop = requireOwnCoop(req, res);
+  if (!coop) return;
+  const updated = orgResources.updateExport(req.params.id, coop.id, req.body);
+  if (!updated) return res.status(404).json({ error: 'Export record not found.' });
+  res.json({ success: true, export: updated });
+});
+
+// ─── Investor Directory (admin-managed, linked to a coop/chamber/ward) ──
+// Real replacement for the old hardcoded INVESTORS arrays on both the
+// Cooperative and Chamber dashboards. BOZ's investor-relations team
+// manages the real contacts; a cooperative/chamber only ever sees the
+// ones actually connected to them, never all of them.
+app.get(`${BASE}/coop/investors`, auth.requireAuth, (req, res) => {
+  const coop = requireOwnCoop(req, res);
+  if (!coop) return;
+  res.json({ investors: orgResources.listInvestorsFor({ type: 'cooperative', id: coop.id, wardId: coop.ward }) });
+});
+app.get(`${BASE}/chamber/investors`, auth.requireAuth, (req, res) => {
+  const fullUser = auth.getUser(req.user.username);
+  if (!fullUser || fullUser.registrationType !== 'chamber' || !fullUser.registrationId) {
+    return res.status(404).json({ error: 'No chamber application linked to this account.' });
+  }
+  const chamber = registrations.getChamber(fullUser.registrationId);
+  if (!chamber) return res.status(404).json({ error: 'Chamber application not found.' });
+  res.json({ investors: orgResources.listInvestorsFor({ type: 'chamber', id: chamber.id, wardId: chamber.ward }) });
+});
+app.get(`${BASE}/admin/investors`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  res.json({ investors: orgResources.listAllInvestors() });
+});
+app.post(`${BASE}/admin/investors`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  if (!req.body?.name) return res.status(400).json({ error: 'Investor name is required.' });
+  res.json({ success: true, investor: orgResources.createInvestor(req.body, req.user.username) });
+});
+app.patch(`${BASE}/admin/investors/:id`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  const updated = orgResources.updateInvestor(req.params.id, req.body);
+  if (!updated) return res.status(404).json({ error: 'Investor not found.' });
+  res.json({ success: true, investor: updated });
+});
+app.delete(`${BASE}/admin/investors/:id`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  orgResources.deleteInvestor(req.params.id);
+  res.json({ success: true });
+});
+
+// ─── Real cooperatives in my ward/district (Chamber + Internship dashboards) ─
+// Real replacement for the old hardcoded COOPERATIVES mock arrays on both
+// dashboards. Chamber registrations collect a ward, so chamber matches by
+// ward; internship registrations only ever collect a district (no ward
+// field exists on that form), so internship matches by district instead —
+// matching on a field that doesn't exist on the record would silently
+// return nothing for every real intern.
+function coopsInWard(wardId) {
+  if (!wardId) return [];
+  return registrations.listCoops({ status: 'approved' }).filter(c => c.ward === wardId);
+}
+function coopsInDistrict(district) {
+  if (!district) return [];
+  return registrations.listCoops({ status: 'approved' }).filter(c => c.district === district);
+}
+app.get(`${BASE}/chamber/cooperatives`, auth.requireAuth, (req, res) => {
+  const fullUser = auth.getUser(req.user.username);
+  if (!fullUser || fullUser.registrationType !== 'chamber' || !fullUser.registrationId) {
+    return res.status(404).json({ error: 'No chamber application linked to this account.' });
+  }
+  const chamber = registrations.getChamber(fullUser.registrationId);
+  if (!chamber) return res.status(404).json({ error: 'Chamber application not found.' });
+  res.json({ cooperatives: coopsInWard(chamber.ward), ward: chamber.ward });
+});
+app.get(`${BASE}/internship/cooperatives`, auth.requireAuth, (req, res) => {
+  const fullUser = auth.getUser(req.user.username);
+  if (!fullUser || fullUser.registrationType !== 'internship' || !fullUser.registrationId) {
+    return res.status(404).json({ error: 'No internship application linked to this account.' });
+  }
+  const intern = registrations.getIntern(fullUser.registrationId);
+  if (!intern) return res.status(404).json({ error: 'Internship application not found.' });
+  res.json({ cooperatives: coopsInDistrict(intern.district), district: intern.district });
+});
+// Real replacement for Internship's old hardcoded chamber mock — the
+// actual approved chamber in the intern's own district, if one exists.
+app.get(`${BASE}/internship/chamber`, auth.requireAuth, (req, res) => {
+  const fullUser = auth.getUser(req.user.username);
+  if (!fullUser || fullUser.registrationType !== 'internship' || !fullUser.registrationId) {
+    return res.status(404).json({ error: 'No internship application linked to this account.' });
+  }
+  const intern = registrations.getIntern(fullUser.registrationId);
+  if (!intern) return res.status(404).json({ error: 'Internship application not found.' });
+  const chamber = registrations.listChambers({ status: 'approved' }).find(c => c.district === intern.district);
+  res.json({ chamber: chamber || null, district: intern.district });
+});
+
+
+// Real replacement for the old hardcoded INTERN constant on the Chamber
+// dashboard — the actual BOZ contact assigned to that chamber's ward.
+app.get(`${BASE}/chamber/ward-coordinator`, auth.requireAuth, (req, res) => {
+  const fullUser = auth.getUser(req.user.username);
+  if (!fullUser || fullUser.registrationType !== 'chamber' || !fullUser.registrationId) {
+    return res.status(404).json({ error: 'No chamber application linked to this account.' });
+  }
+  const chamber = registrations.getChamber(fullUser.registrationId);
+  if (!chamber) return res.status(404).json({ error: 'Chamber application not found.' });
+  const coordinator = orgResources.getWardCoordinator(chamber.ward);
+  if (!coordinator) return res.status(404).json({ error: 'No intern coordinator has been assigned to your ward yet.' });
+  res.json({ coordinator });
+});
+app.post(`${BASE}/admin/ward-coordinator/:wardId`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  if (!req.body?.name) return res.status(400).json({ error: 'Coordinator name is required.' });
+  res.json({ success: true, coordinator: orgResources.setWardCoordinator(req.params.wardId, req.body) });
 });
 
 // Passwords and PINs are hashed (auth.js/PBKDF2) — there is no original

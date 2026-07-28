@@ -1852,6 +1852,14 @@ export const registrationApi = {
   getCoopCertificate: (coopId?: string) =>
     request<{ certificate: CoopCertificate }>('GET', `/coop/certificate${coopId ? `?coopId=${encodeURIComponent(coopId)}` : ''}`, undefined, true),
 
+  // Self-service: the logged-in applicant's own registration record, found
+  // via their own auth token rather than an admin passing an id. Same
+  // pattern as GET /membership/my-profile.
+  mySelf: (type: 'cooperative' | 'chamber' | 'internship' | 'intlparty') =>
+    request<{ registration: Record<string, unknown> }>('GET', `/registrations/${type}/my`, undefined, true),
+  updateMySelf: (type: 'cooperative' | 'chamber' | 'internship' | 'intlparty', patch: Record<string, unknown>) =>
+    request<{ success: boolean; registration: Record<string, unknown> }>('PATCH', `/registrations/${type}/my`, patch, true),
+
   // Member
   listMembers: (status?: RegStatus) => {
     const q = status ? `?status=${status}` : '';
@@ -1935,6 +1943,63 @@ export const registrationApi = {
     request<{ results: Record<string, { valid: boolean; fullName?: string; error?: string }>; invalidCount: number; invalidNumbers: string[] }>(
       'POST', '/registrations/validate-memberships', { numbers }
     ),
+};
+
+// ─── Cooperative equipment / exports / investors ───────────────────────────────
+// Real replacements for the dashboards' old hardcoded EQUIPMENT_APPROVED,
+// EQUIPMENT_APPLIED, EXPORTS, and INVESTORS mock arrays.
+export interface EquipmentRecord {
+  id: string; name: string; category: string; condition: string;
+  status: 'pending' | 'under_review' | 'approved' | 'rejected';
+  appliedDate: string; approvedDate: string | null; assignedBy: string | null;
+  justification?: string; reviewNotes?: string | null;
+}
+export interface ExportRecord {
+  id: string; product: string; destination: string; quantity: string; value: string;
+  date: string; status: string;
+}
+export interface InvestorRecord {
+  id: string; name: string; country?: string; sector?: string;
+  contactPerson?: string; phone?: string; email?: string;
+  investmentInterest?: string; status: string;
+}
+export interface WardCoordinator {
+  wardId: string; name: string; title: string; phone?: string; email?: string;
+  availableHours?: string; note?: string;
+}
+
+export const orgResourcesApi = {
+  listEquipment: () => request<{ equipment: EquipmentRecord[] }>('GET', '/coop/equipment', undefined, true),
+  applyForEquipment: (data: { name: string; category: string; condition?: string; justification?: string }) =>
+    request<{ success: boolean; equipment: EquipmentRecord }>('POST', '/coop/equipment', data, true),
+
+  listExports: () => request<{ exports: ExportRecord[] }>('GET', '/coop/exports', undefined, true),
+  logExport: (data: { product: string; destination: string; quantity: string; value: string; date?: string; status?: string }) =>
+    request<{ success: boolean; export: ExportRecord }>('POST', '/coop/exports', data, true),
+  updateExport: (id: string, patch: Partial<ExportRecord>) =>
+    request<{ success: boolean; export: ExportRecord }>('PATCH', `/coop/exports/${id}`, patch, true),
+
+  coopInvestors: () => request<{ investors: InvestorRecord[] }>('GET', '/coop/investors', undefined, true),
+  chamberInvestors: () => request<{ investors: InvestorRecord[] }>('GET', '/chamber/investors', undefined, true),
+
+  chamberCooperatives: () => request<{ cooperatives: Record<string, unknown>[]; ward: string }>('GET', '/chamber/cooperatives', undefined, true),
+  internshipCooperatives: () => request<{ cooperatives: Record<string, unknown>[]; district: string }>('GET', '/internship/cooperatives', undefined, true),
+  internshipChamber: () => request<{ chamber: Record<string, unknown> | null; district: string }>('GET', '/internship/chamber', undefined, true),
+
+  wardCoordinator: () => request<{ coordinator: WardCoordinator }>('GET', '/chamber/ward-coordinator', undefined, true),
+
+  // Admin management
+  adminListEquipment: (status?: string) => request<{ equipment: EquipmentRecord[] }>('GET', `/admin/equipment${status ? `?status=${status}` : ''}`, undefined, true),
+  adminUpdateEquipmentStatus: (id: string, status: string, assignedBy?: string, reviewNotes?: string) =>
+    request<{ success: boolean; equipment: EquipmentRecord }>('PATCH', `/admin/equipment/${id}/status`, { status, assignedBy, reviewNotes }, true),
+  adminListInvestors: () => request<{ investors: InvestorRecord[] }>('GET', '/admin/investors', undefined, true),
+  adminCreateInvestor: (data: Partial<InvestorRecord> & { linkedType?: string; linkedId?: string; wardId?: string }) =>
+    request<{ success: boolean; investor: InvestorRecord }>('POST', '/admin/investors', data, true),
+  adminUpdateInvestor: (id: string, patch: Partial<InvestorRecord>) =>
+    request<{ success: boolean; investor: InvestorRecord }>('PATCH', `/admin/investors/${id}`, patch, true),
+  adminDeleteInvestor: (id: string) => request<{ success: boolean }>('DELETE', `/admin/investors/${id}`, undefined, true),
+  adminSetWardCoordinator: (wardId: string, data: Partial<WardCoordinator>) =>
+    request<{ success: boolean; coordinator: WardCoordinator }>('POST', `/admin/ward-coordinator/${encodeURIComponent(wardId)}`, data, true),
 };
 
 // ─── Security API ─────────────────────────────────────────────────────────────
