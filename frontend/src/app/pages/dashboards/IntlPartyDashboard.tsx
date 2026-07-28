@@ -3,6 +3,7 @@ import {
   LayoutDashboard, Lock, MapPin, Globe2, CheckCircle2, Clock,
 } from 'lucide-react';
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
+import { securityApi } from '../../lib/api';
 
 const A = '#00712B';
 const NAVY = '#1e2d4a';
@@ -36,6 +37,28 @@ function getSessionUser(): Record<string, string> | null {
 
 export default function IntlPartyDashboard() {
   const [active, setActive] = useState<SectionKey>('overview');
+  const [pwCurrent, setPwCurrent] = useState('');
+  const [pwNew, setPwNew] = useState('');
+  const [pwConfirm, setPwConfirm] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMsg, setPwMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  async function submitPasswordChange() {
+    setPwMsg(null);
+    if (!pwCurrent || !pwNew) { setPwMsg({ type: 'error', text: 'Enter your current and new password.' }); return; }
+    if (pwNew !== pwConfirm) { setPwMsg({ type: 'error', text: "New passwords don't match." }); return; }
+    if (pwNew.length < 8) { setPwMsg({ type: 'error', text: 'New password must be at least 8 characters.' }); return; }
+    setPwSaving(true);
+    try {
+      await securityApi.changePassword(pwCurrent, pwNew);
+      setPwMsg({ type: 'success', text: 'Password updated.' });
+      setPwCurrent(''); setPwNew(''); setPwConfirm('');
+    } catch (e) {
+      setPwMsg({ type: 'error', text: e instanceof Error ? e.message : 'Failed to update password.' });
+    } finally {
+      setPwSaving(false);
+    }
+  }
   const sessionUser = getSessionUser();
   const isAdminAccess = sessionUser?.role === 'super_admin' || sessionUser?.role === 'admin';
 
@@ -123,13 +146,21 @@ export default function IntlPartyDashboard() {
             <h2 className="text-xl mb-6" style={{ color: NAVY }}>Security Settings</h2>
             <DashCard title="Change Password">
               <div className="max-w-md space-y-4">
-                {['Current Password', 'New Password', 'Confirm New Password'].map(label => (
+                {[
+                  { label: 'Current Password', value: pwCurrent, onChange: setPwCurrent },
+                  { label: 'New Password', value: pwNew, onChange: setPwNew },
+                  { label: 'Confirm New Password', value: pwConfirm, onChange: setPwConfirm },
+                ].map(({ label, value, onChange }) => (
                   <div key={label}>
                     <label className="text-xs mb-1 block" style={{ color: 'rgba(255,255,255,0.7)' }}>{label}</label>
-                    <input type="password" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="••••••••" />
+                    <input type="password" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="••••••••"
+                      value={value} onChange={e => onChange(e.target.value)} />
                   </div>
                 ))}
-                <button className="px-5 py-2 rounded-lg text-white text-sm" style={{ background: A }}>Update Password</button>
+                {pwMsg && <p className="text-sm" style={{ color: pwMsg.type === 'success' ? A : '#dc2626' }}>{pwMsg.text}</p>}
+                <button onClick={submitPasswordChange} disabled={pwSaving} className="px-5 py-2 rounded-lg text-white text-sm" style={{ background: A, opacity: pwSaving ? 0.6 : 1 }}>
+                  {pwSaving ? 'Updating…' : 'Update Password'}
+                </button>
               </div>
             </DashCard>
           </div>

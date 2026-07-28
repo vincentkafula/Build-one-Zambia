@@ -7,6 +7,7 @@ import {
 import { DashboardShell, DashCard, StatCard } from '../../components/DashboardShell';
 import { SuperAdminGate, getSuperAdminToken } from '../../components/SuperAdminGate';
 import { PersistenceStatusBanner } from '../../components/PersistenceStatusBanner';
+import { securityApi } from '../../lib/api';
 import { provinces } from '../../data/mockData';
 
 // Lazy-load all heavy components to avoid circular dependency at build time
@@ -246,6 +247,28 @@ function computeProvinceStats() {
 export default function ManagerDashboard() {
   const navigate = useNavigate();
   const [active, setActive] = useState<SectionKey>('overview');
+  const [pwCurrent, setPwCurrent] = useState('');
+  const [pwNew, setPwNew] = useState('');
+  const [pwConfirm, setPwConfirm] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMsg, setPwMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  async function submitPasswordChange() {
+    setPwMsg(null);
+    if (!pwCurrent || !pwNew) { setPwMsg({ type: 'error', text: 'Enter your current and new password.' }); return; }
+    if (pwNew !== pwConfirm) { setPwMsg({ type: 'error', text: "New passwords don't match." }); return; }
+    if (pwNew.length < 8) { setPwMsg({ type: 'error', text: 'New password must be at least 8 characters.' }); return; }
+    setPwSaving(true);
+    try {
+      await securityApi.changePassword(pwCurrent, pwNew);
+      setPwMsg({ type: 'success', text: 'Password updated.' });
+      setPwCurrent(''); setPwNew(''); setPwConfirm('');
+    } catch (e) {
+      setPwMsg({ type: 'error', text: e instanceof Error ? e.message : 'Failed to update password.' });
+    } finally {
+      setPwSaving(false);
+    }
+  }
   const [editing, setEditing] = useState(false);
 
   const electionUser = (() => {
@@ -541,14 +564,22 @@ export default function ManagerDashboard() {
             <h2 className="mb-6" style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.4rem', letterSpacing: '0.04em', color: '#fff' }}>Security Settings</h2>
             <DashCard title="Change Password">
               <div className="max-w-md space-y-4">
-                {['Current Password', 'New Password', 'Confirm New Password'].map(label => (
+                {[
+                  { label: 'Current Password', value: pwCurrent, onChange: setPwCurrent },
+                  { label: 'New Password', value: pwNew, onChange: setPwNew },
+                  { label: 'Confirm New Password', value: pwConfirm, onChange: setPwConfirm },
+                ].map(({ label, value, onChange }) => (
                   <div key={label}>
                     <label className="text-xs mb-1 block" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.1em' }}>{label.toUpperCase()}</label>
                     <input type="password" className="w-full px-3 py-2.5 rounded-xl text-sm" placeholder="••••••••"
+                      value={value} onChange={e => onChange(e.target.value)}
                       style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', outline: 'none' }} />
                   </div>
                 ))}
-                <button className="px-5 py-2.5 rounded-xl text-sm" style={{ background: A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>UPDATE PASSWORD</button>
+                {pwMsg && <p className="text-sm" style={{ color: pwMsg.type === 'success' ? '#00712B' : '#f87171' }}>{pwMsg.text}</p>}
+                <button onClick={submitPasswordChange} disabled={pwSaving} className="px-5 py-2.5 rounded-xl text-sm" style={{ background: A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', opacity: pwSaving ? 0.6 : 1 }}>
+                  {pwSaving ? 'UPDATING…' : 'UPDATE PASSWORD'}
+                </button>
               </div>
             </DashCard>
           </div>

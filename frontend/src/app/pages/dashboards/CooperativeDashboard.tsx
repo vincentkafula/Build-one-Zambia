@@ -6,7 +6,7 @@ import {
   Phone, Mail, TrendingUp, DollarSign, FileText, Download, ShieldCheck, Loader2, AlertCircle
 } from 'lucide-react';
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
-import { registrationApi, CoopCertificate, orgResourcesApi, EquipmentRecord, ExportRecord, InvestorRecord } from '../../lib/api';
+import { registrationApi, CoopCertificate, orgResourcesApi, EquipmentRecord, ExportRecord, InvestorRecord, securityApi } from '../../lib/api';
 
 const A = '#00712B';
 const NAVY = '#1e2d4a';
@@ -486,6 +486,28 @@ function CertificateSection() {
 
 export default function CooperativeDashboard() {
   const [active, setActive] = useState<SectionKey>('overview');
+  const [pwCurrent, setPwCurrent] = useState('');
+  const [pwNew, setPwNew] = useState('');
+  const [pwConfirm, setPwConfirm] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMsg, setPwMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  async function submitPasswordChange() {
+    setPwMsg(null);
+    if (!pwCurrent || !pwNew) { setPwMsg({ type: 'error', text: 'Enter your current and new password.' }); return; }
+    if (pwNew !== pwConfirm) { setPwMsg({ type: 'error', text: "New passwords don't match." }); return; }
+    if (pwNew.length < 8) { setPwMsg({ type: 'error', text: 'New password must be at least 8 characters.' }); return; }
+    setPwSaving(true);
+    try {
+      await securityApi.changePassword(pwCurrent, pwNew);
+      setPwMsg({ type: 'success', text: 'Password updated.' });
+      setPwCurrent(''); setPwNew(''); setPwConfirm('');
+    } catch (e) {
+      setPwMsg({ type: 'error', text: e instanceof Error ? e.message : 'Failed to update password.' });
+    } finally {
+      setPwSaving(false);
+    }
+  }
   const [editing, setEditing] = useState(false);
 
   const sessionUser = (() => {
@@ -494,15 +516,55 @@ export default function CooperativeDashboard() {
   const isAdminAccess = sessionUser?.role === 'super_admin' || sessionUser?.role === 'admin';
 
   const [org, setOrg] = useState({
-    name: sessionUser?.name || (isAdminAccess ? 'Admin Access — Choma Valley Cooperative Society' : 'Choma Valley Cooperative Society'),
-    regNumber: sessionUser?.registrationId || 'COOP-2021-0047',
-    phone: sessionUser?.phone || '+260 977 100 200',
-    email: sessionUser?.email || 'chomavalley@cooperative.zm',
-    province: sessionUser?.scopeName || 'Southern Province',
-    district: 'Choma',
-    ward: 'Mapanza Ward',
-    address: 'Plot 12, Mapanza, Choma District',
+    name: sessionUser?.name || (isAdminAccess ? 'Admin Access — Preview Cooperative' : 'Cooperative'),
+    regNumber: sessionUser?.registrationId || '',
+    phone: sessionUser?.phone || '',
+    email: sessionUser?.email || '',
+    province: sessionUser?.scopeName || '',
+    district: '',
+    ward: '',
+    address: '',
   });
+  const [savingOrg, setSavingOrg] = useState(false);
+
+  // The org details above used to always be a mix of hardcoded fallback
+  // values ("Choma Valley Cooperative Society", etc.) regardless of who
+  // was actually logged in — replaced with the real registration record.
+  useEffect(() => {
+    registrationApi.mySelf('cooperative').then(res => {
+      const reg = res.registration;
+      setOrg({
+        name: String(reg.cooperativeName || org.name),
+        regNumber: String(reg.id || ''),
+        phone: String(reg.contactPhone || ''),
+        email: String(reg.email || ''),
+        province: String(reg.province || ''),
+        district: String(reg.district || ''),
+        ward: String(reg.ward || ''),
+        address: String(reg.address || ''),
+      });
+    }).catch(() => { /* no real application linked — keep the placeholder so the UI still renders */ });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function saveOrgDetails() {
+    setSavingOrg(true);
+    try {
+      await registrationApi.updateMySelf('cooperative', {
+        cooperativeName: org.name,
+        contactPhone: org.phone,
+        email: org.email,
+        district: org.district,
+        ward: org.ward,
+        address: org.address,
+      });
+      setEditing(false);
+    } catch {
+      // Keep the form open with the entered values on failure.
+    } finally {
+      setSavingOrg(false);
+    }
+  }
 
   function navigate_(key: SectionKey) {
     setActive(key);
@@ -574,11 +636,12 @@ export default function CooperativeDashboard() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl" style={{ color: NAVY }}>Organisation Details</h2>
               <button
-                onClick={() => setEditing(!editing)}
+                onClick={() => (editing ? saveOrgDetails() : setEditing(true))}
+                disabled={savingOrg}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm"
-                style={{ background: A }}
+                style={{ background: A, opacity: savingOrg ? 0.6 : 1 }}
               >
-                {editing ? <><Save size={14} /> Save</> : <><Edit2 size={14} /> Edit</>}
+                {editing ? <><Save size={14} /> {savingOrg ? 'Saving…' : 'Save'}</> : <><Edit2 size={14} /> Edit</>}
               </button>
             </div>
             <DashCard title="Organisation Information">
@@ -614,13 +677,21 @@ export default function CooperativeDashboard() {
             <h2 className="text-xl mb-6" style={{ color: NAVY }}>Security Settings</h2>
             <DashCard title="Change Password">
               <div className="max-w-md space-y-4">
-                {['Current Password', 'New Password', 'Confirm New Password'].map(label => (
+                {[
+                  { label: 'Current Password', value: pwCurrent, onChange: setPwCurrent },
+                  { label: 'New Password', value: pwNew, onChange: setPwNew },
+                  { label: 'Confirm New Password', value: pwConfirm, onChange: setPwConfirm },
+                ].map(({ label, value, onChange }) => (
                   <div key={label}>
                     <label className="text-xs text-white/40 mb-1 block">{label}</label>
-                    <input type="password" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="••••••••" />
+                    <input type="password" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="••••••••"
+                      value={value} onChange={e => onChange(e.target.value)} />
                   </div>
                 ))}
-                <button className="px-5 py-2 rounded-lg text-white text-sm" style={{ background: A }}>Update Password</button>
+                {pwMsg && <p className="text-sm" style={{ color: pwMsg.type === 'success' ? A : '#dc2626' }}>{pwMsg.text}</p>}
+                <button onClick={submitPasswordChange} disabled={pwSaving} className="px-5 py-2 rounded-lg text-white text-sm" style={{ background: A, opacity: pwSaving ? 0.6 : 1 }}>
+                  {pwSaving ? 'Updating…' : 'Update Password'}
+                </button>
               </div>
             </DashCard>
             <DashCard title="Two-Factor Authentication">
