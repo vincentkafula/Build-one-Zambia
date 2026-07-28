@@ -182,28 +182,6 @@ export function MainFooter() {
                   <span>{text}</span>
                 </li>
               ))}
-            </ul>
-
-            {/* App download badges — mobile app isn't published yet, so these
-                are intentionally non-clickable and marked "Coming Soon"
-                rather than linking to store pages that don't exist. */}
-            <p className="text-xs font-semibold mt-6 mb-3" style={{ color: '#9ca3af', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
-              GET THE APP
-            </p>
-            <div className="flex flex-col gap-2.5 mb-4">
-              <StoreBadge
-                icon={<AppleIcon />}
-                topLine="Download on the"
-                bottomLine="App Store"
-              />
-              <StoreBadge
-                icon={<PlayIcon />}
-                topLine="GET IT ON"
-                bottomLine="Google Play"
-              />
-            </div>
-
-            <ul className="space-y-4">
               <li>
                 <Link
                   to="/pages#transparency"
@@ -217,6 +195,25 @@ export function MainFooter() {
                 </Link>
               </li>
             </ul>
+
+            {/* App download badges — mobile app isn't published yet, so these
+                are intentionally non-clickable and marked "Coming Soon"
+                rather than linking to store pages that don't exist. */}
+            <p className="text-xs font-semibold mt-6 mb-3" style={{ color: '#9ca3af', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>
+              GET THE APP
+            </p>
+            <div className="flex flex-row flex-wrap gap-2.5">
+              <StoreBadge
+                icon={<AppleIcon />}
+                topLine="Download on the"
+                bottomLine="App Store"
+              />
+              <StoreBadge
+                icon={<PlayIcon />}
+                topLine="GET IT ON"
+                bottomLine="Google Play"
+              />
+            </div>
           </div>
         </div>
       </div>
