@@ -198,6 +198,58 @@ export const membershipApi = {
   myProfile: () => request<{ member: MemberProfile }>('GET', '/membership/my-profile', undefined, true),
 };
 
+export interface CertificateInfo {
+  eligible?: boolean;
+  certificateType: string;
+  membershipNumber?: string;
+  fullName?: string;
+  tier?: string;
+  province?: string; district?: string; constituency?: string; ward?: string;
+  joinDate?: string;
+  // Adoption-specific
+  adoptionCertNumber?: string;
+  electionPosition?: string; electionYear?: string;
+  adoptionProvince?: string; adoptionDistrict?: string; adoptionConstituency?: string; adoptionWard?: string;
+  adoptionGrantedAt?: string; adoptionGrantedBy?: string; adoptionGrantedByTitle?: string; adoptionReason?: string;
+  // Appointment-specific
+  appointmentNumber?: string;
+  appointmentPosition?: string; appointmentLevel?: string;
+  appointmentProvince?: string; appointmentDistrict?: string; appointmentConstituency?: string; appointmentWard?: string;
+  appointmentTermYears?: string; appointmentEffectiveDate?: string;
+  appointmentGrantedAt?: string; appointmentGrantedBy?: string; appointmentGrantedByTitle?: string;
+  issuedAt?: string;
+}
+
+export const certificateApi = {
+  get: (type: 'adoption' | 'appointment', email: string) =>
+    request<CertificateInfo>('GET', `/membership/certificate/${type}?email=${encodeURIComponent(email)}`, undefined, true),
+};
+
+// ─── Shop order history (Member self-service) ──────────────────────────
+export interface ShopOrder {
+  id: string;
+  items: { name?: string; qty: number; priceNum?: number }[];
+  total: number;
+  status: string;
+  paymentMethod?: string;
+  deliveryAddress?: string;
+  submittedAt: string;
+}
+export interface ShopPayment {
+  id: string;
+  orderId: string;
+  status: string;
+  amount: number;
+  method: string;
+  initiatedAt: string;
+}
+
+export const myOrdersApi = {
+  list: () => request<{ orders: ShopOrder[]; payments: ShopPayment[] }>('GET', '/shop/my-orders', undefined, true),
+  requestReturn: (orderId: string, reason: string) =>
+    request<{ success: boolean; order: ShopOrder }>('POST', `/shop/my-orders/${orderId}/request-return`, { reason }, true),
+};
+
 // ─── Self-service registration lookup (Cooperative, Chamber, Internship) ──
 // Mirrors GET /registrations/:type/my on the backend — an approved
 // applicant looking up their OWN application via their own auth token.
@@ -299,6 +351,15 @@ export interface CandidateVoteInput {
   votes: number;
 }
 
+export interface DocumentPayload {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  base64: string;
+  uploadedAt: string;
+}
+
 export const dataEntryApi = {
   checkSubmission: (pollingStationId: string, electionType: ElectionCategory, round?: 'round1' | 'runoff') =>
     request<{ submitted: boolean; submittedAt?: string; status?: string; id?: string; locked?: boolean }>(
@@ -312,5 +373,6 @@ export const dataEntryApi = {
     registeredVoters: number;
     rejectedBallots?: number;
     notes?: string;
+    documents: DocumentPayload[];
   }) => request<{ success: boolean; submission: { id: string; submittedAt: string; status: string } }>('POST', '/data-entry/result', input, true),
 };

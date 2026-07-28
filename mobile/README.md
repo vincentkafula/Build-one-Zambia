@@ -3,6 +3,48 @@
 A React Native (Expo) app for iOS and Android, talking to the exact same
 backend the website uses — no separate mobile API, no duplicated logic.
 
+## Cross-check against the website (what actually matched, what didn't)
+
+Did a full side-by-side audit of every dashboard against its web
+equivalent rather than assuming earlier passes had full parity. Two
+real things came out of it, both now fixed:
+
+**A pre-existing backend bug, not a mobile gap.** The website's Data
+Entry page has always required uploading a photo of the signed vote
+sheet before submitting — but `POST /data-entry/result` never actually
+read or stored that `documents` field. The requirement was purely
+cosmetic on the web; the evidence was silently discarded either way.
+Fixed for real: the backend now requires at least one document
+server-side (so it can't be bypassed by any client) and persists them
+properly — in their own kv key per submission rather than inline in
+the main submissions array, since base64 image data inline there would
+bloat a blob that's re-serialised on every single save and read by
+every results/dashboard query. A new `GET
+/data-entry/submissions/:id/documents` route lets a reviewer fetch them.
+Mobile's Election Agent screen now has real camera/photo-library
+capture (`expo-image-picker`) enforcing the same "at least one photo"
+rule the website's form does, wired to the same endpoint.
+
+**Two Member sections the website has that mobile didn't:**
+- **Adoption & Appointment Certificates** — real backend data (`GET
+  /membership/certificate/adoption` and `/appointment`), rendered as a
+  native certificate view matching the membership card's style. Shows
+  the same "not eligible yet" message the website shows when an admin
+  hasn't granted one.
+- **My Orders** — real order and payment history (`GET
+  /shop/my-orders`), with return requests for delivered orders (`POST
+  /shop/my-orders/:orderId/request-return`) — same endpoints the
+  website's Orders/Invoices/Returns sections use.
+
+**Also found, and deliberately did NOT replicate:** several web
+dashboard sections (Cooperative's Equipment Approved/Applied/Exports/
+Investors, Chamber's Investors/Cooperatives/Intern Coordinator/
+Amendments, Internship's Chamber/US Chambers/Internships/Cooperatives,
+and every "Address Book" section) are hardcoded mock arrays or static
+text on the website itself, not real per-user data. Building mobile
+equivalents of those would mean building fake features, not matching
+real functionality — so they were left out on purpose.
+
 ## What's actually built and verified working
 
 - **Login** — the same unified login as the website (`/auth/login`),

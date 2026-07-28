@@ -71,6 +71,12 @@ export default function MemberDashboardScreen() {
         <InfoRow label="Constituency" value={member.constituency} />
       </View>
 
+      <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('Certificates', { email: member.email })}>
+        <Text style={styles.secondaryButtonText}>Adoption &amp; Appointment Certificates</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('OrderHistory')}>
+        <Text style={styles.secondaryButtonText}>My Orders</Text>
+      </TouchableOpacity>
       <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('ChangePassword')}>
         <Text style={styles.secondaryButtonText}>Change Password</Text>
       </TouchableOpacity>

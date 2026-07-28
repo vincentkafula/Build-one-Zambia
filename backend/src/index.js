@@ -1292,9 +1292,19 @@ function saveElectionArchive() { kv.set('boz:election-archive', electionArchiveS
 
 app.post(`${BASE}/data-entry/result`, auth.requireAuth, async (req, res) => {
   try {
-    const { pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, candidates: rawCands, candidateResults, candidateVotes, totalVotesCast, totalVotes, totalRejectedBallots, totalRejected, rejectedBallots, registeredVoters, agentId, agentName, enteredBy, notes } = req.body;
+    const { pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, candidates: rawCands, candidateResults, candidateVotes, totalVotesCast, totalVotes, totalRejectedBallots, totalRejected, rejectedBallots, registeredVoters, agentId, agentName, enteredBy, notes, documents } = req.body;
     if (!pollingStationId || !electionType) return res.status(400).json({ error: 'pollingStationId and electionType required' });
     const electionRound = req.body.electionRound === 'runoff' ? 'runoff' : 'round1';
+
+    // The website's form has always required at least one photo of the
+    // signed vote sheet before it lets an agent submit — but the backend
+    // never actually checked for it (or stored it, see below), so that
+    // requirement was purely cosmetic. Enforcing it here for real, so it
+    // can't be bypassed by any client, mobile included.
+    const docList = Array.isArray(documents) ? documents : [];
+    if (docList.length === 0) {
+      return res.status(400).json({ error: 'At least one photo of the official signed vote sheet is required before submitting.' });
+    }
 
     // Enforce: polling agents can only submit for their assigned station
     const isAgent = ['polling_agent', 'agent', 'election_agent'].includes(req.user?.role || '');
@@ -1345,7 +1355,7 @@ app.post(`${BASE}/data-entry/result`, auth.requireAuth, async (req, res) => {
       province: { status: 'pending', by: null, at: null, notes: null },
       national: { status: 'pending', by: null, at: null, notes: null },
     });
-    let submission = { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, electionRound, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, totalRejectedBallots: rejectedNum, rejectedBallots: rejectedNum, registeredVoters: registeredNum, agentId, agentName: agentName || enteredBy, notes, status: 'pending', verificationChain: emptyVerificationChain(), isOfficial: false, submittedAt: now, locked: true };
+    let submission = { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, electionRound, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, totalRejectedBallots: rejectedNum, rejectedBallots: rejectedNum, registeredVoters: registeredNum, agentId, agentName: agentName || enteredBy, notes, status: 'pending', verificationChain: emptyVerificationChain(), isOfficial: false, submittedAt: now, locked: true, hasDocuments: true, documentCount: docList.length };
     // Check if station already submitted (for this round). Once a result is
     // submitted, it's locked — no further submission or edit is accepted
     // for that station/election/round until a super_admin/admin explicitly
@@ -1372,6 +1382,15 @@ app.post(`${BASE}/data-entry/result`, auth.requireAuth, async (req, res) => {
       dataEntryStore.submissions.push(submission);
     }
     saveDataEntry();
+    // Stored separately from dataEntryStore.submissions on purpose — that
+    // array gets serialised as one JSON blob on every single save
+    // (saveDataEntry()), and every results/list/dashboard read loads it.
+    // Base64 photo evidence inline in every submission would make that
+    // blob grow without bound over the course of an election and slow
+    // down every read, not just document lookups. One kv key per
+    // submission keeps the hot path fast; documents are only fetched
+    // when someone actually asks to see them (see GET route below).
+    kv.set(`data-entry:documents:${id}`, docList);
     // Write to results KV for immediate dashboard display. Round1 keeps the
     // original (unsuffixed) key for backward compatibility; runoff submissions
     // use a distinct key so they never overwrite the round-1 record.
@@ -1385,6 +1404,10 @@ app.post(`${BASE}/data-entry/result`, auth.requireAuth, async (req, res) => {
 });
 app.get(`${BASE}/data-entry/turnout`, (req, res) => res.json({ stats: { totalStations: 0, reportingStations: dataEntryStore.submissions.length, totalVotesCast: 0 } }));
 app.get(`${BASE}/data-entry/result/:pollingStationId/:electionType`, (req, res) => { const round = req.query.round === 'runoff' ? 'runoff' : 'round1'; const sub = dataEntryStore.submissions.find(s => s.pollingStationId === decodeURIComponent(req.params.pollingStationId) && s.electionType === req.params.electionType && (s.electionRound || 'round1') === round); res.json({ submitted: !!sub, submittedAt: sub?.submittedAt, status: sub?.status, id: sub?.id, locked: sub ? (sub.locked !== false) : false }); });
+app.get(`${BASE}/data-entry/submissions/:id/documents`, auth.requireAuth, (req, res) => {
+  const documents = kv.get(`data-entry:documents:${req.params.id}`) || [];
+  res.json({ documents });
+});
 
 // Super admin / admin only: releases the lock on one submission so the
 // agent can submit a corrected result exactly once. The lock re-applies

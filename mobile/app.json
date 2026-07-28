@@ -14,17 +14,30 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "org.bozplans.portal"
+      "bundleIdentifier": "org.bozplans.portal",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Polling agents use the camera to photograph the official signed vote result sheet as evidence when submitting results.",
+        "NSPhotoLibraryUsageDescription": "Polling agents can attach an existing photo of the official signed vote result sheet when submitting results."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#007A30"
       },
-      "package": "org.bozplans.portal"
+      "package": "org.bozplans.portal",
+      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Polling agents use the camera to photograph the official signed vote result sheet as evidence when submitting results."
+        }
+      ]
+    ]
   }
 }
