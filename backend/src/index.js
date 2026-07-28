@@ -654,6 +654,19 @@ app.get(`${BASE}/shop/stats`, auth.requireAuth, auth.requireRole('admin', 'super
 app.post(`${BASE}/orders`, (req, res) => { try { res.json({ success: true, message: 'Order received', order: shop.createOrder(req.body) }); } catch (err) { res.status(400).json({ error: err.message }); } });
 app.get(`${BASE}/orders`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const orders = shop.listOrders({ status: req.query.status }); res.json({ orders, count: orders.length }); });
 app.patch(`${BASE}/orders/:id/status`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const o = shop.updateOrderStatus(req.params.id, req.body.status, req.body.paymentRef); if (!o) return res.status(404).json({ error: 'Not found' }); res.json({ success: true, order: o }); });
+// Admin-only, and deliberately did not exist before — the only way to
+// touch an order used to be changing its status, which never actually
+// removed it from a customer's own order history. For cleaning out
+// test/erroneous orders (e.g. from development testing) rather than
+// disputing a real customer's order, delete is what's actually needed.
+app.delete(`${BASE}/orders/:id`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => {
+  const order = shop.getOrder(req.params.id);
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+  shop.deleteOrder(req.params.id);
+  dataEntryStore.auditLog.push({ id: `audit-${Date.now()}`, action: 'delete_order', by: req.user.username, at: new Date().toISOString(), orderId: req.params.id, orderSummary: `${order.customerName || order.customerEmail || 'unknown'} · K${order.total}` });
+  saveDataEntry();
+  res.json({ success: true });
+});
 
 // ─── Streams ──────────────────────────────────────────────────────────────────
 app.get(`${BASE}/streams`, (req, res) => { const list = streams.listStreams({ status: req.query.status, category: req.query.category }); res.json({ streams: list, count: list.length }); });

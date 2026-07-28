@@ -680,6 +680,9 @@ export const ordersApi = {
 
   updateStatus: (id: string, status: string, paymentRef?: string) =>
     request<{ success: boolean }>('PATCH', `/orders/${id}/status`, { status, paymentRef }, true),
+
+  delete: (id: string) =>
+    request<{ success: boolean }>('DELETE', `/orders/${id}`, undefined, true),
 };
 
 // ─── Donations ────────────────────────────────────────────────────────────────

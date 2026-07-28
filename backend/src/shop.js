@@ -214,6 +214,14 @@ export function createOrder(input) {
 
 export function getOrder(id) { return kv.get(`boz:shop:order:${id}`); }
 
+export function deleteOrder(id) {
+  const order = kv.get(`boz:shop:order:${id}`);
+  if (!order) return false;
+  kv.del(`boz:shop:order:${id}`);
+  setOrderIndex(getOrderIndex().filter(oid => oid !== id));
+  return true;
+}
+
 export function updateOrder(id, input) {
   const o = getOrder(id);
   if (!o) return null;

@@ -535,6 +535,13 @@ function OrdersTab() {
     setUpdating(null);
   };
 
+  const handleDelete = async (id: string, summary: string) => {
+    if (!confirm(`Permanently delete this order (${summary})? This cannot be undone and will remove it from the customer's own order history too.`)) return;
+    setUpdating(id);
+    try { await ordersApi.delete(id); load(); } catch { /* ignore */ }
+    setUpdating(null);
+  };
+
   const ORDER_STATUSES = ['pending', 'processing', 'paid', 'shipped', 'delivered', 'cancelled'];
 
   return (
@@ -607,7 +614,7 @@ function OrdersTab() {
                   </div>
                   <div>
                     <p style={{ fontWeight: 700, fontSize: '12px', color: '#374151', margin: '0 0 8px' }}>UPDATE STATUS</p>
-                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
                       {ORDER_STATUSES.filter(s => s !== order.status).map(s => (
                         <button
                           key={s}
@@ -618,6 +625,13 @@ function OrdersTab() {
                           {STATUS_CONFIG[s]?.label || s}
                         </button>
                       ))}
+                      <button
+                        onClick={() => handleDelete(order.id, `${order.customerName || order.customerEmail} · K${order.total}`)}
+                        disabled={updating === order.id}
+                        style={{ padding: '5px 12px', borderRadius: '14px', fontSize: '12px', border: '1px solid #dc2626', backgroundColor: 'transparent', color: '#dc2626', cursor: 'pointer', fontWeight: 600, marginLeft: 'auto' }}
+                      >
+                        Delete Order
+                      </button>
                     </div>
                   </div>
                 </div>
