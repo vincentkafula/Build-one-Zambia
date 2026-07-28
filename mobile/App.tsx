@@ -18,6 +18,8 @@ import RegistrationProfileScreen from './src/screens/RegistrationProfileScreen';
 import ManagerDashboardScreen from './src/screens/ManagerDashboardScreen';
 import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
 import VoterValidationScreen from './src/screens/VoterValidationScreen';
+import EczFigureEntryScreen from './src/screens/EczFigureEntryScreen';
+import VerificationQueueScreen from './src/screens/VerificationQueueScreen';
 
 const GREEN = '#007A30';
 
@@ -71,6 +73,8 @@ function RootNavigator() {
             <Stack.Screen name="Cart" component={CartScreen} options={{ title: 'Your Cart', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
             <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ title: 'Change Password', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
             <Stack.Screen name="VoterValidation" component={VoterValidationScreen} options={{ title: 'Voter Validation', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
+            <Stack.Screen name="EczFigureEntry" component={EczFigureEntryScreen} options={{ title: 'ECZ Official Figures', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
+            <Stack.Screen name="VerificationQueue" component={VerificationQueueScreen} options={{ title: 'Approval Queue', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
           </>
         )}
       </Stack.Navigator>

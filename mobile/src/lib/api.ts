@@ -236,6 +236,62 @@ export interface CoopCertificate {
 export const coopApi = {
   certificate: () => request<{ certificate: CoopCertificate }>('GET', '/coop/certificate', undefined, true),
 };
+
+// ─── ECZ Official Figures (Managers) ────────────────────────────────────
+export interface EczFigure {
+  levelType: string;
+  levelId: string;
+  levelName: string;
+  electionType: string;
+  figures: { candidateId: string; votes: number }[];
+  totalVotesCast: number;
+  registeredVoters: number;
+  rejectedBallots: number;
+  status: string;
+  savedAt: string;
+}
+
+export const eczApi = {
+  get: (levelType: string, levelId: string, electionType: ElectionCategory, levelName?: string) =>
+    request<{ exists: boolean; figure: EczFigure | null }>(
+      'GET', `/data-entry/ecz-figures/${levelType}/${encodeURIComponent(levelId)}/${electionType}${levelName ? `?levelName=${encodeURIComponent(levelName)}` : ''}`, undefined, true
+    ),
+  save: (input: {
+    levelType: string; levelId: string; levelName: string; electionType: ElectionCategory;
+    figures: { candidateId: string; votes: number }[];
+    totalVotesCast: number; registeredVoters: number; rejectedBallots: number;
+    constituencyId?: string; districtId?: string; provinceId?: string;
+  }) => request<{ success: boolean; figure: EczFigure }>('POST', '/data-entry/ecz-figures', input, true),
+};
+
+// ─── Level-by-level verification chain (Managers) ──────────────────────
+export type VerificationLevel = 'ward' | 'constituency' | 'district' | 'province' | 'national';
+export type VerificationDecision = 'approved' | 'rejected' | 'queried';
+
+export interface VerificationStep { status: string; by: string | null; at: string | null; notes: string | null }
+export interface Submission {
+  id: string;
+  pollingStationId: string;
+  pollingStationName?: string;
+  wardId?: string; constituencyId?: string; districtId?: string; provinceId?: string;
+  electionType: string;
+  candidateResults: { candidateId: string; votes: number }[];
+  totalVotesCast: number;
+  status: string;
+  isOfficial: boolean;
+  submittedAt: string;
+  verificationChain: Record<VerificationLevel, VerificationStep>;
+}
+
+export const verificationApi = {
+  listSubmissions: (filters: Record<string, string>) => {
+    const qs = new URLSearchParams(filters);
+    return request<{ submissions: Submission[]; count: number }>('GET', `/data-entry/submissions?${qs.toString()}`, undefined, true);
+  },
+  verifyLevel: (submissionId: string, level: VerificationLevel, decision: VerificationDecision, notes?: string) =>
+    request<{ success: boolean; submission: Submission }>('PATCH', `/data-entry/submissions/${submissionId}/verify-level`, { level, decision, notes }, true),
+};
+
 export interface CandidateVoteInput {
   candidateId: string;
   votes: number;

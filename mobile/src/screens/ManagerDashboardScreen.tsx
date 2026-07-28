@@ -96,6 +96,12 @@ export default function ManagerDashboardScreen() {
         </>
       )}
 
+      <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('EczFigureEntry')}>
+        <Text style={styles.secondaryButtonText}>Enter Official ECZ Figures</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('VerificationQueue')}>
+        <Text style={styles.secondaryButtonText}>Approval Queue</Text>
+      </TouchableOpacity>
       <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('ChangePassword')}>
         <Text style={styles.secondaryButtonText}>Change Password</Text>
       </TouchableOpacity>

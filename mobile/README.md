@@ -57,21 +57,35 @@ plausible, code that Expo's own build pipeline successfully compiled.
 
 ## What's NOT built yet — and why
 
-**Deeper sections within each dashboard — mostly closed now.** Every
-role has a real dashboard, every logged-in user can change their own
-password (`Change Password`, reachable from every dashboard — required
-a new backend endpoint, `POST /auth/change-password`, since one didn't
-exist: `changePassword()` existed in `auth.js` but nothing verified the
-current password first before calling it), and polling agents can look
-up any voter by card number, NRC, or name (`Voter Validation`, using
-the same `voter-roll/search` endpoint the website's page uses).
+**Genuinely still open:** Chamber/Internship applicants still can't edit
+their own details from the app (view-only). Everything else that was
+open before this pass is now real:
 
-Genuinely still open: Manager tiers' ECZ figure entry (comparing
-official ECZ-announced numbers against what's been collected — a
-bigger, more involved form than results viewing), and Chamber/
-Internship applicants still can't edit their own details from the app
-(view-only). International Political Party now has a real profile
-screen too, reusing the same self-service pattern as Chamber.
+- **Enter Official ECZ Figures** — managers enter the official
+  ECZ-announced vote counts for their own level (ward/constituency/
+  district/province/national), through the exact same `POST
+  /data-entry/ecz-figures` endpoint the website's ECZ Entry pages use.
+  These get compared against BOZ-collected results — that comparison
+  logic (real `agreementPercent`, not the fake hardcoded value that
+  used to be there) was fixed earlier this session and every consumer,
+  web or mobile, benefits from it automatically.
+- **Approval Queue** — the actual level-by-level verification chain,
+  not a read-only view of it. A ward manager approving a station moves
+  it to "awaiting constituency approval"; a constituency manager can
+  only act on it once the ward has signed off; and so on up to
+  national. Approve, reject, or query, with optional notes — through
+  the same `PATCH /data-entry/submissions/:id/verify-level` endpoint
+  the website's approval queue uses, including the exact same
+  sequential gating (can't approve at your level until every level
+  below has already approved) and scope restriction (a district
+  manager only sees submissions in their own district) the backend
+  already enforces. The mobile queue only shows submissions actually
+  ready for a decision at your level, rather than everything.
+
+No backend changes were needed for either of these — both endpoints
+already existed (built for the website earlier this session), so this
+was purely wiring the mobile app up to functionality that was already
+real and working.
 
 **Publishing to the App Store / Play Store.** This is not something
 achievable from an automated environment — it requires:
