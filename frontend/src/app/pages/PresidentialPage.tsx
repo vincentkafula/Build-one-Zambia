@@ -146,7 +146,7 @@ export function PresidentialPage() {
     .map((r, i) => ({ ...r, rank: i + 1 }));
 
   // Use live data for stats if backend is connected (even if liveResults is empty)
-  const usingLive = !live.usingMockData && live.liveResults.length > 0;
+  const usingLive = live.backendConnected && !live.usingMockData;
   const hasLiveStats = live.backendConnected && !live.usingMockData;
   const candidateResults = usingLive ? live.liveResults : mockResults;
 
@@ -300,7 +300,14 @@ export function PresidentialPage() {
                 </button>
               )}
             </div>
-            {showAllCandidates ? (
+            {candidateResults.length === 0 ? (
+              <div className="text-center py-12 px-6 rounded-xl border border-dashed border-border bg-muted/30">
+                <p className="text-foreground font-semibold mb-1">No results yet</p>
+                <p className="text-sm text-muted-foreground">
+                  No submissions have cleared verification for this stage yet. Figures will appear here as soon as they do.
+                </p>
+              </div>
+            ) : showAllCandidates ? (
               <div className="space-y-3">
                 {candidateResults.map((result, index) => (
                   <CandidateCard

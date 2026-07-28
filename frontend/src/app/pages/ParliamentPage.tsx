@@ -79,7 +79,7 @@ export function ParliamentPage() {
   const levelType = selectedWard ? 'ward' : selectedConstituency ? 'constituency' : selectedDistrict ? 'district' : selectedProvince ? 'province' : 'national';
   const levelId = selectedWard || selectedConstituency || selectedDistrict || selectedProvince || '';
   const live = useElectionResults('parliament' as any, levelType as any, levelId, resultStage);
-  const usingLive = !live.usingMockData && live.liveResults.length > 0;
+  const usingLive = live.backendConnected && !live.usingMockData;
   const hasLiveStats = live.backendConnected && !live.usingMockData;
 
   // Prefer live backend results (from actual agent submissions) when available;
