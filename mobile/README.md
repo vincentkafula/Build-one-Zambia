@@ -18,7 +18,23 @@ backend the website uses — no separate mobile API, no duplicated logic.
   same rule as the website. Checkout creates a real order via `POST
   /orders` and initiates payment via `POST /shop/payments/initiate`,
   the same endpoints the website's checkout uses.
-- **Account/Dashboard** — shows real account data via `GET /auth/me`
+- **Account/Dashboard** — routes to a real, role-specific screen when one
+  exists:
+  - **Member**: a real membership card (name, membership number, tier,
+    member-since date) rendered natively, plus contact details — both
+    pulled from `GET /membership/my-profile`
+  - **Polling Agent / Election Agent**: a real results-submission form —
+    fetches that agent's actual assigned candidates for their station,
+    lets them enter votes per candidate + registered voters + rejected
+    ballots, and submits through the exact same `POST /data-entry/result`
+    endpoint the website uses — including the same server-side lock
+    (can't resubmit/edit once submitted, same "must not exceed registered
+    voters" validation) built earlier. If the station's result is already
+    locked, the form doesn't even render — a clear locked-state message
+    does instead.
+  - Every other role (Cooperative, Chamber, Internship, Management/
+    Election-manager tiers) falls back to the generic account screen —
+    real data via `/auth/me`, just not that role's full section set yet
 
 This was verified by actually running `npx tsc --noEmit` (clean, zero
 errors) and `npx expo export` (a real Metro bundle was produced — 736
@@ -27,15 +43,14 @@ plausible, code that Expo's own build pipeline successfully compiled.
 
 ## What's NOT built yet — and why
 
-**Full per-role dashboard parity.** The website has ~6 dashboard types
-(Member, Election — itself 9 role tiers, Cooperative, Chamber,
-Internship, Management/Admin), each with several sections (data entry,
-voter validation, certificates, registration approval, and more).
-Replicating all of that natively is a genuinely large, multi-week build
-on its own — this first pass covers login, results, and shop end-to-end
-rather than doing a shallow, half-working pass at every single
-dashboard section. The `DashboardScreen` shows real account info today
-and is the natural place to add each role's sections incrementally.
+**Full per-role dashboard parity for the remaining roles.** Member and
+Polling/Election Agent are now real, working dashboards (see above) —
+not placeholders. Still not built: Cooperative, Chamber of Commerce,
+Internship, and the Management/Election-manager tiers (ward through
+national manager, each with their own sections like ECZ figure entry,
+voter validation, registration approval). Same reasoning as before:
+better to ship two dashboards that are actually complete and correctly
+wired to the real backend than a shallow, half-working pass at six.
 
 **Publishing to the App Store / Play Store.** This is not something
 achievable from an automated environment — it requires:

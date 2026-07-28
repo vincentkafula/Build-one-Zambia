@@ -150,3 +150,43 @@ export interface DashboardMe {
 export const accountApi = {
   me: () => request<{ user: DashboardMe }>('GET', '/auth/me', undefined, true),
 };
+
+// ─── Member self-service ───────────────────────────────────────────────
+export interface MemberProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  membershipNumber?: string;
+  tier?: string;
+  createdAt: string;
+  email?: string;
+  phone?: string;
+  ward?: string;
+  constituency?: string;
+}
+
+export const membershipApi = {
+  myProfile: () => request<{ member: MemberProfile }>('GET', '/membership/my-profile', undefined, true),
+};
+
+// ─── Election data entry (polling agents) ──────────────────────────────
+export interface CandidateVoteInput {
+  candidateId: string;
+  votes: number;
+}
+
+export const dataEntryApi = {
+  checkSubmission: (pollingStationId: string, electionType: ElectionCategory, round?: 'round1' | 'runoff') =>
+    request<{ submitted: boolean; submittedAt?: string; status?: string; id?: string; locked?: boolean }>(
+      'GET', `/data-entry/result/${encodeURIComponent(pollingStationId)}/${electionType}${round ? `?round=${round}` : ''}`, undefined, true
+    ),
+  submitResult: (input: {
+    pollingStationId: string;
+    pollingStationName?: string;
+    electionType: ElectionCategory;
+    candidates: CandidateVoteInput[];
+    registeredVoters: number;
+    rejectedBallots?: number;
+    notes?: string;
+  }) => request<{ success: boolean; submission: { id: string; submittedAt: string; status: string } }>('POST', '/data-entry/result', input, true),
+};

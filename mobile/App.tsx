@@ -11,16 +11,32 @@ import ResultsScreen from './src/screens/ResultsScreen';
 import ShopScreen from './src/screens/ShopScreen';
 import CartScreen from './src/screens/CartScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
+import MemberDashboardScreen from './src/screens/MemberDashboardScreen';
+import ElectionAgentDashboardScreen from './src/screens/ElectionAgentDashboardScreen';
 
 const GREEN = '#007A30';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
+const ELECTION_AGENT_ROLES = ['polling_agent', 'agent', 'election_agent'];
+
+function DashboardRouter() {
+  const { user } = useAuth();
+  if (user?.role === 'member') return <MemberDashboardScreen />;
+  if (user?.role && ELECTION_AGENT_ROLES.includes(user.role)) return <ElectionAgentDashboardScreen />;
+  // Cooperative, Chamber, Internship, and Management/Election-manager tiers
+  // don't have a dedicated mobile screen yet — see mobile/README.md for
+  // what's built and what's a real follow-on. They get the generic
+  // account screen (real data, just not the full section set) rather
+  // than a broken or missing screen.
+  return <DashboardScreen />;
+}
+
 function MainTabs() {
   return (
     <Tab.Navigator screenOptions={{ tabBarActiveTintColor: GREEN, headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }}>
-      <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Dashboard' }} />
+      <Tab.Screen name="Dashboard" component={DashboardRouter} options={{ title: 'Dashboard' }} />
       <Tab.Screen name="Results" component={ResultsScreen} options={{ title: 'Election Results' }} />
       <Tab.Screen name="Shop" component={ShopScreen} options={{ title: 'Shop' }} />
     </Tab.Navigator>
