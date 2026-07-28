@@ -22,6 +22,12 @@ import EczFigureEntryScreen from './src/screens/EczFigureEntryScreen';
 import VerificationQueueScreen from './src/screens/VerificationQueueScreen';
 import CertificatesScreen from './src/screens/CertificatesScreen';
 import OrderHistoryScreen from './src/screens/OrderHistoryScreen';
+import CoopEquipmentScreen from './src/screens/CoopEquipmentScreen';
+import CoopExportsScreen from './src/screens/CoopExportsScreen';
+import InvestorsScreen from './src/screens/InvestorsScreen';
+import NearbyCooperativesScreen from './src/screens/NearbyCooperativesScreen';
+import WardCoordinatorScreen from './src/screens/WardCoordinatorScreen';
+import InternshipChamberScreen from './src/screens/InternshipChamberScreen';
 
 const GREEN = '#007A30';
 
@@ -79,6 +85,12 @@ function RootNavigator() {
             <Stack.Screen name="VerificationQueue" component={VerificationQueueScreen} options={{ title: 'Approval Queue', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
             <Stack.Screen name="Certificates" component={CertificatesScreen} options={{ title: 'Certificates', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
             <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} options={{ title: 'My Orders', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
+            <Stack.Screen name="CoopEquipment" component={CoopEquipmentScreen} options={{ title: 'Equipment', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
+            <Stack.Screen name="CoopExports" component={CoopExportsScreen} options={{ title: 'Products Exported', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
+            <Stack.Screen name="Investors" component={InvestorsScreen} options={{ title: 'Investors', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
+            <Stack.Screen name="NearbyCooperatives" component={NearbyCooperativesScreen} options={{ title: 'Cooperatives', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
+            <Stack.Screen name="WardCoordinator" component={WardCoordinatorScreen} options={{ title: 'Intern Coordinator', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
+            <Stack.Screen name="InternshipChamber" component={InternshipChamberScreen} options={{ title: 'Ward Chamber', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
           </>
         )}
       </Stack.Navigator>

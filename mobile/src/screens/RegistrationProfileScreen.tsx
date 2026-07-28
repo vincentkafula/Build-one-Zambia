@@ -141,6 +141,29 @@ export default function RegistrationProfileScreen({
         </View>
       ) : null}
 
+      {type === 'chamber' && (
+        <>
+          <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('Investors', { source: 'chamber' })}>
+            <Text style={styles.secondaryButtonText}>Companies Willing to Invest</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('NearbyCooperatives', { source: 'chamber' })}>
+            <Text style={styles.secondaryButtonText}>Cooperatives in Ward</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('WardCoordinator')}>
+            <Text style={styles.secondaryButtonText}>Intern Coordinator Contact</Text>
+          </TouchableOpacity>
+        </>
+      )}
+      {type === 'internship' && (
+        <>
+          <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('NearbyCooperatives', { source: 'internship' })}>
+            <Text style={styles.secondaryButtonText}>Cooperatives in District</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('InternshipChamber')}>
+            <Text style={styles.secondaryButtonText}>Ward Chamber of Commerce</Text>
+          </TouchableOpacity>
+        </>
+      )}
       <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('ChangePassword')}>
         <Text style={styles.secondaryButtonText}>Change Password</Text>
       </TouchableOpacity>

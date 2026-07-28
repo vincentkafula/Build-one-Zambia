@@ -134,6 +134,15 @@ export default function CooperativeDashboardScreen() {
         </View>
       ) : null}
 
+      <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('CoopEquipment')}>
+        <Text style={styles.secondaryButtonText}>Equipment Approved / Applied</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('CoopExports')}>
+        <Text style={styles.secondaryButtonText}>Products Exported</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('Investors', { source: 'coop' })}>
+        <Text style={styles.secondaryButtonText}>List of Investors</Text>
+      </TouchableOpacity>
       <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('ChangePassword')}>
         <Text style={styles.secondaryButtonText}>Change Password</Text>
       </TouchableOpacity>

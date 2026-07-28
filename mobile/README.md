@@ -45,6 +45,12 @@ text on the website itself, not real per-user data. Building mobile
 equivalents of those would mean building fake features, not matching
 real functionality — so they were left out on purpose.
 
+**Update:** those mock sections got fixed on the website shortly after
+this was written — real Equipment/Exports/Investors backend built, and
+mobile has since been brought up to match (see below). The paragraph
+above is kept as a record of what was found, not a description of
+current state.
+
 ## What's actually built and verified working
 
 - **Login** — the same unified login as the website (`/auth/login`),
@@ -96,6 +102,27 @@ This was verified by actually running `npx tsc --noEmit` (clean, zero
 errors) and `npx expo export` (a real Metro bundle was produced — 736
 modules, a working Android JS bundle) — not just code that looks
 plausible, code that Expo's own build pipeline successfully compiled.
+
+## Cooperative/Chamber/Internship real-data parity
+
+The website's Cooperative, Chamber, and Internship dashboards used to
+have several sections that were hardcoded mock arrays, not real data
+(EQUIPMENT_APPROVED, EXPORTS, INVESTORS, COOPERATIVES, INTERN). Once
+those were replaced with a real backend (`orgResourcesApi` — equipment
+applications, export logging, an admin-managed investor directory, ward
+intern-coordinator assignments, and real cooperatives-by-ward/district
+lookups), mobile was brought up to match immediately rather than
+lagging behind:
+
+- **Cooperative**: Equipment Approved/Applied (with a real application
+  form), Products Exported (with a real logging form), List of Investors
+- **Chamber**: Companies Willing to Invest, Cooperatives in Ward, Intern
+  Coordinator Contact
+- **Internship**: Cooperatives in District, Ward Chamber of Commerce
+
+Same endpoints, same rules, same honest empty states as the website —
+this isn't a separate mobile implementation, it's the same backend
+calls from a native client.
 
 ## What's NOT built yet — and why
 

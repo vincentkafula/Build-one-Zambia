@@ -291,6 +291,46 @@ export const coopApi = {
   certificate: () => request<{ certificate: CoopCertificate }>('GET', '/coop/certificate', undefined, true),
 };
 
+// ─── Cooperative equipment / exports / investors ───────────────────────
+export interface EquipmentRecord {
+  id: string; name: string; category: string; condition: string;
+  status: 'pending' | 'under_review' | 'approved' | 'rejected';
+  appliedDate: string; approvedDate: string | null; assignedBy: string | null;
+  justification?: string; reviewNotes?: string | null;
+}
+export interface ExportRecord {
+  id: string; product: string; destination: string; quantity: string; value: string;
+  date: string; status: string;
+}
+export interface InvestorRecord {
+  id: string; name: string; country?: string; sector?: string;
+  contactPerson?: string; phone?: string; email?: string;
+  investmentInterest?: string; status: string;
+}
+export interface WardCoordinator {
+  wardId: string; name: string; title: string; phone?: string; email?: string;
+  availableHours?: string; note?: string;
+}
+
+export const orgResourcesApi = {
+  listEquipment: () => request<{ equipment: EquipmentRecord[] }>('GET', '/coop/equipment', undefined, true),
+  applyForEquipment: (data: { name: string; category: string; condition?: string; justification?: string }) =>
+    request<{ success: boolean; equipment: EquipmentRecord }>('POST', '/coop/equipment', data, true),
+
+  listExports: () => request<{ exports: ExportRecord[] }>('GET', '/coop/exports', undefined, true),
+  logExport: (data: { product: string; destination: string; quantity: string; value: string; date?: string; status?: string }) =>
+    request<{ success: boolean; export: ExportRecord }>('POST', '/coop/exports', data, true),
+
+  coopInvestors: () => request<{ investors: InvestorRecord[] }>('GET', '/coop/investors', undefined, true),
+  chamberInvestors: () => request<{ investors: InvestorRecord[] }>('GET', '/chamber/investors', undefined, true),
+
+  chamberCooperatives: () => request<{ cooperatives: Record<string, unknown>[]; ward: string }>('GET', '/chamber/cooperatives', undefined, true),
+  internshipCooperatives: () => request<{ cooperatives: Record<string, unknown>[]; district: string }>('GET', '/internship/cooperatives', undefined, true),
+  internshipChamber: () => request<{ chamber: Record<string, unknown> | null; district: string }>('GET', '/internship/chamber', undefined, true),
+
+  wardCoordinator: () => request<{ coordinator: WardCoordinator }>('GET', '/chamber/ward-coordinator', undefined, true),
+};
+
 // ─── ECZ Official Figures (Managers) ────────────────────────────────────
 export interface EczFigure {
   levelType: string;
