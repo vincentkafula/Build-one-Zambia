@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { membershipApi, MemberProfile } from '../lib/api';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../lib/AuthContext';
 
 const GREEN = '#007A30';
@@ -8,6 +9,7 @@ const ORANGE = '#EC6D01';
 
 export default function MemberDashboardScreen() {
   const { logout } = useAuth();
+  const navigation = useNavigation<any>();
   const [member, setMember] = useState<MemberProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -69,6 +71,10 @@ export default function MemberDashboardScreen() {
         <InfoRow label="Constituency" value={member.constituency} />
       </View>
 
+      <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('ChangePassword')}>
+        <Text style={styles.secondaryButtonText}>Change Password</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.logoutButton} onPress={logout}>
         <Text style={styles.logoutText}>Sign Out</Text>
       </TouchableOpacity>
@@ -86,6 +92,8 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
 }
 
 const styles = StyleSheet.create({
+  secondaryButton: { alignItems: 'center', paddingVertical: 14, borderRadius: 10, borderWidth: 1, borderColor: '#007A30', marginTop: 12 },
+  secondaryButtonText: { color: '#007A30', fontWeight: '700' },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   error: { color: '#dc2626', fontSize: 14, textAlign: 'center' },
   card: { borderRadius: 16, overflow: 'hidden', backgroundColor: '#fff', marginBottom: 20, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 5 },

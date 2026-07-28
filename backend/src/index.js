@@ -246,6 +246,32 @@ app.get(`${BASE}/auth/users`, auth.requireAuth, auth.requireRole('admin', 'super
 // on top of their password for irreversible actions (e.g. resetting
 // election results). Requires the current password to change it, same as
 // any sensitive account-security change.
+// Self-service password change — available to every role (unlike set-pin,
+// which is admin/super_admin only), since every account should be able to
+// change their own password. changePassword() in auth.js just sets a new
+// hash unconditionally; this route is what actually verifies the current
+// password first, the same direct-hash-check pattern set-pin uses below.
+app.post(`${BASE}/auth/change-password`, auth.requireAuth, loginLimiter, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body || {};
+    if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Current password and a new password are required.' });
+    if (String(newPassword).length < 8) return res.status(400).json({ error: 'New password must be at least 8 characters.' });
+
+    const isEnvAdmin = req.user.username === (process.env.ADMIN_USERNAME || 'superadmin');
+    if (isEnvAdmin) {
+      return res.status(400).json({ error: `The '${req.user.username}' shortcut login's password is set via the ADMIN_PASSWORD environment variable on Railway, not here.` });
+    }
+    const storedHash = kv.get(`password:${req.user.username}`);
+    const passOk = storedHash && await auth.verifyPassword(currentPassword, storedHash);
+    if (!passOk) return res.status(401).json({ error: 'Incorrect current password.' });
+
+    await auth.changePassword(req.user.username, String(newPassword));
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 app.post(`${BASE}/auth/set-pin`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), loginLimiter, async (req, res) => {
   try {
     const { currentPassword, newPin } = req.body || {};

@@ -57,13 +57,21 @@ plausible, code that Expo's own build pipeline successfully compiled.
 
 ## What's NOT built yet — and why
 
-**Deeper sections within each dashboard.** Every role now lands on a
-real, working dashboard rather than a placeholder — but the website's
-Manager tiers, for example, also have ECZ figure entry and voter
-validation beyond just viewing results, and Chamber/Internship
-applicants can't yet edit their own details from the app (view-only for
-now). International Political Party still has no dedicated screen.
-These are genuine next layers, not a rebuild of what's here.
+**Deeper sections within each dashboard — mostly closed now.** Every
+role has a real dashboard, every logged-in user can change their own
+password (`Change Password`, reachable from every dashboard — required
+a new backend endpoint, `POST /auth/change-password`, since one didn't
+exist: `changePassword()` existed in `auth.js` but nothing verified the
+current password first before calling it), and polling agents can look
+up any voter by card number, NRC, or name (`Voter Validation`, using
+the same `voter-roll/search` endpoint the website's page uses).
+
+Genuinely still open: Manager tiers' ECZ figure entry (comparing
+official ECZ-announced numbers against what's been collected — a
+bigger, more involved form than results viewing), and Chamber/
+Internship applicants still can't edit their own details from the app
+(view-only). International Political Party now has a real profile
+screen too, reusing the same self-service pattern as Chamber.
 
 **Publishing to the App Store / Play Store.** This is not something
 achievable from an automated environment — it requires:

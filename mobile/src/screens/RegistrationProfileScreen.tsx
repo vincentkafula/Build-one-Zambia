@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { registrationApi, RegistrationRecord } from '../lib/api';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../lib/AuthContext';
 
 const GREEN = '#007A30';
@@ -11,12 +12,14 @@ const GREEN = '#007A30';
 // of these commonly-used fields the record actually has.
 const DISPLAY_FIELDS: { key: string; label: string }[] = [
   { key: 'chamberName', label: 'Chamber Name' },
+  { key: 'partyName', label: 'Party Name' },
+  { key: 'country', label: 'Country' },
+  { key: 'affiliationType', label: 'Affiliation Type' },
   { key: 'university', label: 'University' },
   { key: 'course', label: 'Course' },
   { key: 'yearOfStudy', label: 'Year of Study' },
   { key: 'ward', label: 'Ward' },
   { key: 'district', label: 'District' },
-  { key: 'country', label: 'Country' },
   { key: 'memberBusinesses', label: 'Member Businesses' },
   { key: 'contactPerson', label: 'Contact Person' },
   { key: 'phone', label: 'Phone' },
@@ -26,11 +29,12 @@ const DISPLAY_FIELDS: { key: string; label: string }[] = [
 export default function RegistrationProfileScreen({
   type, title, subtitle,
 }: {
-  type: 'chamber' | 'internship';
+  type: 'chamber' | 'internship' | 'intlparty';
   title: string;
   subtitle: string;
 }) {
   const { logout } = useAuth();
+  const navigation = useNavigation<any>();
   const [reg, setReg] = useState<RegistrationRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -50,7 +54,7 @@ export default function RegistrationProfileScreen({
     <ScrollView style={{ flex: 1, backgroundColor: '#f9fafb' }} contentContainerStyle={{ padding: 16 }}>
       <View style={styles.hero}>
         <Text style={styles.heroTitle}>
-          {(reg?.chamberName as string) || (reg?.fullName as string) || title}
+          {(reg?.chamberName as string) || (reg?.partyName as string) || (reg?.fullName as string) || title}
         </Text>
         <Text style={styles.heroSub}>{subtitle}</Text>
       </View>
@@ -74,6 +78,10 @@ export default function RegistrationProfileScreen({
         </View>
       ) : null}
 
+      <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('ChangePassword')}>
+        <Text style={styles.secondaryButtonText}>Change Password</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.logoutButton} onPress={logout}>
         <Text style={styles.logoutText}>Sign Out</Text>
       </TouchableOpacity>
@@ -82,6 +90,8 @@ export default function RegistrationProfileScreen({
 }
 
 const styles = StyleSheet.create({
+  secondaryButton: { alignItems: 'center', paddingVertical: 14, borderRadius: 10, borderWidth: 1, borderColor: '#007A30', marginTop: 12 },
+  secondaryButtonText: { color: '#007A30', fontWeight: '700' },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   error: { color: '#dc2626', fontSize: 14, textAlign: 'center', marginTop: 12 },
   hero: { backgroundColor: GREEN, borderRadius: 14, padding: 18, marginBottom: 16 },

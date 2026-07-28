@@ -16,6 +16,8 @@ import ElectionAgentDashboardScreen from './src/screens/ElectionAgentDashboardSc
 import CooperativeDashboardScreen from './src/screens/CooperativeDashboardScreen';
 import RegistrationProfileScreen from './src/screens/RegistrationProfileScreen';
 import ManagerDashboardScreen from './src/screens/ManagerDashboardScreen';
+import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
+import VoterValidationScreen from './src/screens/VoterValidationScreen';
 
 const GREEN = '#007A30';
 
@@ -33,9 +35,7 @@ function DashboardRouter() {
   if (user?.role === 'chamber') return <RegistrationProfileScreen type="chamber" title="Chamber of Commerce" subtitle="Chamber Profile" />;
   if (user?.role === 'internship') return <RegistrationProfileScreen type="internship" title="Internship" subtitle="Internship Profile" />;
   if (user?.role && MANAGER_ROLES.includes(user.role)) return <ManagerDashboardScreen />;
-  // International Political Party doesn't have a dedicated screen yet —
-  // gets the generic account screen (real data, just not that role's
-  // full section set) rather than a broken or missing screen.
+  if (user?.role === 'intl_party') return <RegistrationProfileScreen type="intlparty" title="International Political Party" subtitle="Party Profile" />;
   return <DashboardScreen />;
 }
 
@@ -69,6 +69,8 @@ function RootNavigator() {
           <>
             <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
             <Stack.Screen name="Cart" component={CartScreen} options={{ title: 'Your Cart', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
+            <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ title: 'Change Password', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
+            <Stack.Screen name="VoterValidation" component={VoterValidationScreen} options={{ title: 'Voter Validation', headerStyle: { backgroundColor: GREEN }, headerTintColor: '#fff' }} />
           </>
         )}
       </Stack.Navigator>

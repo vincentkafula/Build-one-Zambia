@@ -149,6 +149,35 @@ export interface DashboardMe {
 
 export const accountApi = {
   me: () => request<{ user: DashboardMe }>('GET', '/auth/me', undefined, true),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    request<{ success: boolean }>('POST', '/auth/change-password', { currentPassword, newPassword }, true),
+};
+
+// ─── Voter Validation (polling agents) ─────────────────────────────────
+export interface VoterSearchResult {
+  found: boolean;
+  mode: string;
+  registeredHere?: boolean;
+  voter?: {
+    voterId?: string;
+    nrc?: string;
+    fullName?: string;
+    firstName?: string;
+    surname?: string;
+    pollingStationId?: string;
+    pollingStationName?: string;
+  };
+}
+
+export const voterRollApi = {
+  search: (params: { voterId?: string; nrc?: string; name?: string; pollingStationId?: string }) => {
+    const qs = new URLSearchParams();
+    if (params.voterId) qs.set('voterId', params.voterId);
+    if (params.nrc) qs.set('nrc', params.nrc);
+    if (params.name) qs.set('name', params.name);
+    if (params.pollingStationId) qs.set('pollingStationId', params.pollingStationId);
+    return request<VoterSearchResult>('GET', `/voter-roll/search?${qs.toString()}`, undefined, true);
+  },
 };
 
 // ─── Member self-service ───────────────────────────────────────────────

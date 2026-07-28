@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { coopApi, CoopCertificate } from '../lib/api';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../lib/AuthContext';
 
 const GREEN = '#007A30';
 
 export default function CooperativeDashboardScreen() {
   const { user, logout } = useAuth();
+  const navigation = useNavigation<any>();
   const [cert, setCert] = useState<CoopCertificate | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -57,6 +59,10 @@ export default function CooperativeDashboardScreen() {
         </View>
       ) : null}
 
+      <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('ChangePassword')}>
+        <Text style={styles.secondaryButtonText}>Change Password</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.logoutButton} onPress={logout}>
         <Text style={styles.logoutText}>Sign Out</Text>
       </TouchableOpacity>
@@ -74,6 +80,8 @@ function Row({ label, value }: { label: string; value?: string }) {
 }
 
 const styles = StyleSheet.create({
+  secondaryButton: { alignItems: 'center', paddingVertical: 14, borderRadius: 10, borderWidth: 1, borderColor: '#007A30', marginTop: 12 },
+  secondaryButtonText: { color: '#007A30', fontWeight: '700' },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   error: { color: '#dc2626', fontSize: 14, textAlign: 'center', marginTop: 12 },
   hero: { backgroundColor: GREEN, borderRadius: 14, padding: 18, marginBottom: 16 },

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../lib/AuthContext';
 import { dataEntryApi, candidatesApi, ElectionCategory } from '../lib/api';
 
@@ -14,6 +15,7 @@ const CATEGORIES: { key: ElectionCategory; label: string }[] = [
 
 export default function ElectionAgentDashboardScreen() {
   const { user, logout } = useAuth();
+  const navigation = useNavigation<any>();
   const [category, setCategory] = useState<ElectionCategory>('presidential');
   const [candidates, setCandidates] = useState<{ id: string; name: string; party?: string }[]>([]);
   const [votes, setVotes] = useState<Record<string, string>>({});
@@ -137,6 +139,13 @@ export default function ElectionAgentDashboardScreen() {
         </View>
       )}
 
+      <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('VoterValidation')}>
+        <Text style={styles.secondaryButtonText}>Voter Validation</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('ChangePassword')}>
+        <Text style={styles.secondaryButtonText}>Change Password</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.logoutButton} onPress={logout}>
         <Text style={styles.logoutText}>Sign Out</Text>
       </TouchableOpacity>
@@ -145,6 +154,8 @@ export default function ElectionAgentDashboardScreen() {
 }
 
 const styles = StyleSheet.create({
+  secondaryButton: { alignItems: 'center', paddingVertical: 14, borderRadius: 10, borderWidth: 1, borderColor: '#007A30', marginTop: 12 },
+  secondaryButtonText: { color: '#007A30', fontWeight: '700' },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   error: { color: '#dc2626', fontSize: 14, textAlign: 'center' },
   hero: { backgroundColor: GREEN, borderRadius: 14, padding: 18, marginBottom: 16 },

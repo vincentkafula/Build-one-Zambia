@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth, dashboardLabelForRole } from '../lib/AuthContext';
 import { accountApi, DashboardMe } from '../lib/api';
 
@@ -7,6 +8,7 @@ const GREEN = '#007A30';
 
 export default function DashboardScreen() {
   const { user, logout } = useAuth();
+  const navigation = useNavigation<any>();
   const [me, setMe] = useState<DashboardMe | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -48,6 +50,10 @@ export default function DashboardScreen() {
         </Text>
       </View>
 
+      <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('ChangePassword')}>
+        <Text style={styles.secondaryButtonText}>Change Password</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.logoutButton} onPress={logout}>
         <Text style={styles.logoutText}>Sign Out</Text>
       </TouchableOpacity>
@@ -65,6 +71,8 @@ function Row({ label, value }: { label: string; value?: string | null }) {
 }
 
 const styles = StyleSheet.create({
+  secondaryButton: { alignItems: 'center', paddingVertical: 14, borderRadius: 10, borderWidth: 1, borderColor: '#007A30', marginTop: 12 },
+  secondaryButtonText: { color: '#007A30', fontWeight: '700' },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   hero: { alignItems: 'center', backgroundColor: GREEN, borderRadius: 16, padding: 24, marginBottom: 16 },
   avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
