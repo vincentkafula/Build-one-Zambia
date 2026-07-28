@@ -22,7 +22,16 @@ const SHOP_COLORS = [
 ];
 
 const PRODUCTS = [
-  { id: 1,  name: 'BOZ Campaign T-Shirt',         price: 'K150',  priceNum: 150,  tag: 'APPAREL',     desc: 'Branded with the party logo, slogan, and candidate\'s name. Available in all sizes.',            img: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 1,  name: 'BOZ Campaign T-Shirt',         price: 'K150',  priceNum: 150,  tag: 'APPAREL',     desc: 'Branded with the party logo, slogan, and candidate\'s name. Available in all sizes.',            img: '/products/tshirt-gold.jpg',
+    colors: [
+      { name: 'Gold',   swatch: '#F0B429', img: '/products/tshirt-gold.jpg' },
+      { name: 'White',  swatch: '#FFFFFF', img: '/products/tshirt-white.jpg' },
+      { name: 'Green',  swatch: '#00712B', img: '/products/tshirt-green.jpg' },
+      { name: 'Black',  swatch: '#111111', img: '/products/tshirt-black.jpg' },
+      { name: 'Blue',   swatch: '#1D4ED8', img: '/products/tshirt-blue.jpg' },
+      { name: 'Gray',   swatch: '#9CA3AF', img: '/products/tshirt-gray.jpg' },
+    ],
+  },
   { id: 2,  name: 'BOZ Hoodie',                   price: 'K280',  priceNum: 280,  tag: 'APPAREL',     desc: 'Premium hoodie embroidered with the Build One Zambia logo and 2031 campaign slogan.',            img: 'https://images.unsplash.com/photo-1556821840-3a63f15732ce?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 3,  name: 'Build One Zambia Cap',          price: 'K120',  priceNum: 120,  tag: 'ACCESSORIES', desc: 'Baseball cap in party colours with embroidered BOZ logo. One size fits all.',                    img: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 4,  name: 'BOZ Beanie Hat',               price: 'K100',  priceNum: 100,  tag: 'ACCESSORIES', desc: 'Warm knit beanie in green and red party colours. Perfect for campaign events.',                   img: 'https://images.unsplash.com/photo-1510598969022-c4c6c5d05769?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
