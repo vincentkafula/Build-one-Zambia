@@ -11,6 +11,7 @@ import { clearToken, resultsApi, candidatesApi, type LevelType, type VoteTrendPo
 const DataEntryPage          = lazy(() => import('../DataEntryPage'));
 const VoterValidationPage    = lazy(() => import('../VoterValidationPage'));
 const ECZEntryPage           = lazy(() => import('../ECZEntryPage'));
+const PollingStationECZEntryPage = lazy(() => import('../PollingStationECZEntryPage'));
 const WardECZEntryPage       = lazy(() => import('../WardECZEntryPage'));
 const ConstituencyECZEntryPage = lazy(() => import('../ConstituencyECZEntryPage'));
 const DistrictECZEntryPage   = lazy(() => import('../DistrictECZEntryPage'));
@@ -535,7 +536,8 @@ export default function ElectionDashboard() {
               )}
             </div>
             <Suspense fallback={<SectionLoader/>}>
-              {role === 'ward_manager' ? <WardECZEntryPage/>
+              {(role === 'agent' || role === 'polling_agent' || role === 'election_agent') ? <PollingStationECZEntryPage/>
+                : role === 'ward_manager' ? <WardECZEntryPage/>
                 : role === 'constituency_manager' ? <ConstituencyECZEntryPage/>
                 : role === 'district_manager' ? <DistrictECZEntryPage/>
                 : (role === 'provincial_manager' || role === 'province_manager') ? <ProvinceECZEntryPage/>
