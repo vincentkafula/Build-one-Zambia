@@ -1,0 +1,152 @@
+/**
+ * API client for the BOZ Portal mobile app.
+ *
+ * Talks to the exact same backend the website uses — no separate mobile
+ * API, no duplicated business logic. Every endpoint here already exists
+ * and is already used by the web app; this is just a native client for it.
+ *
+ * IMPORTANT: confirm this is your backend's real public URL before
+ * building for release. It's the same Railway backend domain the
+ * website's frontend proxies to via /make-server-8fca9621.
+ */
+import * as SecureStore from 'expo-secure-store';
+
+const API_BASE = 'https://build-one-zambia-production.up.railway.app/make-server-8fca9621';
+
+const TOKEN_KEY = 'boz_mobile_token';
+const USER_KEY = 'boz_mobile_user';
+
+export async function getToken(): Promise<string | null> {
+  return SecureStore.getItemAsync(TOKEN_KEY);
+}
+
+export async function setSession(token: string, user: Record<string, unknown>): Promise<void> {
+  await SecureStore.setItemAsync(TOKEN_KEY, token);
+  await SecureStore.setItemAsync(USER_KEY, JSON.stringify(user));
+}
+
+export async function getStoredUser(): Promise<Record<string, unknown> | null> {
+  const raw = await SecureStore.getItemAsync(USER_KEY);
+  return raw ? JSON.parse(raw) : null;
+}
+
+export async function clearSession(): Promise<void> {
+  await SecureStore.deleteItemAsync(TOKEN_KEY);
+  await SecureStore.deleteItemAsync(USER_KEY);
+}
+
+async function request<T>(method: string, path: string, body?: unknown, auth = false): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (auth) {
+    const token = await getToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+  }
+  const res = await fetch(`${API_BASE}${path}`, {
+    method,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error((data as { error?: string }).error || `Request failed (${res.status})`);
+  }
+  return data as T;
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────
+// Mirrors the website's unified login exactly — one endpoint, the backend's
+// response tells the app which role/dashboard the person has, same as
+// DashboardLogin.tsx's routeForRole() on the web.
+export interface LoginResult {
+  token: string;
+  user: {
+    username: string;
+    name?: string;
+    role: string;
+    active?: boolean;
+    scopeId?: string;
+    scopeName?: string;
+    pollingStationId?: string;
+    pollingStationName?: string;
+    email?: string;
+  };
+}
+
+export const authApi = {
+  login: (username: string, password: string) =>
+    request<LoginResult>('POST', '/auth/login', { username, password }),
+};
+
+// ─── Election Results (login required, per the app's design) ──────────────
+export type LevelType = 'national' | 'province' | 'district' | 'constituency' | 'ward' | 'station';
+export type ElectionCategory = 'presidential' | 'parliament' | 'mayoral' | 'councillor';
+
+export interface CandidateResult {
+  candidateId: string;
+  votes: number;
+  percentage: number;
+  rank: number;
+}
+export interface LevelResult {
+  candidates: CandidateResult[];
+  totalVotesCast: number;
+  registeredVoters: number;
+  turnoutPercent: number;
+  stationsReporting: number;
+}
+
+export const resultsApi = {
+  level: (electionType: ElectionCategory, levelType: LevelType, levelId: string) =>
+    request<{ result: LevelResult }>('GET', `/results/level/${electionType}/${levelType}/${encodeURIComponent(levelId)}`, undefined, true),
+  national: (electionType: ElectionCategory) =>
+    request<{ result: LevelResult }>('GET', `/results/national/${electionType}`, undefined, true),
+};
+
+export const candidatesApi = {
+  list: (electionType: ElectionCategory, scopeId?: string) =>
+    request<{ candidates: { id: string; name: string; party?: string; partyColor?: string }[] }>(
+      'GET', `/candidates?electionType=${electionType}${scopeId ? `&scopeId=${scopeId}` : ''}`
+    ),
+};
+
+// ─── Shop ───────────────────────────────────────────────────────────────
+// The shop's product catalogue lives as static data in the website's
+// ShopPage.tsx, not a backend endpoint — see src/data/products.ts for the
+// mirrored list used here. Orders and payment go through the same
+// backend routes the website's checkout uses.
+export interface OrderItem {
+  productId: number;
+  name: string;
+  qty: number;
+  priceNum: number;
+  colour?: string;
+}
+
+export const shopApi = {
+  createOrder: (order: {
+    items: OrderItem[];
+    total: number;
+    customerName: string;
+    customerEmail: string;
+    customerPhone: string;
+    deliveryAddress: string;
+    paymentMethod?: string;
+  }) => request<{ success: boolean; order: { id: string } }>('POST', '/orders', order),
+
+  initiatePayment: (input: { orderId: string; method: string; amount: number; phone?: string }) =>
+    request<{ success: boolean; payment: { id: string; status: string } }>('POST', '/shop/payments/initiate', input),
+};
+
+export interface DashboardMe {
+  username: string;
+  name?: string;
+  role: string;
+  email?: string;
+  phone?: string;
+  scopeName?: string;
+  active?: boolean;
+}
+
+export const accountApi = {
+  me: () => request<{ user: DashboardMe }>('GET', '/auth/me', undefined, true),
+};
