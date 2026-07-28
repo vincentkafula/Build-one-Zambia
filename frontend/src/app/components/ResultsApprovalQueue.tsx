@@ -2,7 +2,7 @@ import { API_BASE } from '@/app/lib/apiBase';
 import { useState, useEffect, useCallback } from 'react';
 import {
   CheckCircle2, XCircle, Eye, RefreshCw, AlertCircle, Loader2,
-  MapPin, User, Vote, ChevronDown, ChevronUp, Circle, ShieldCheck,
+  MapPin, User, Vote, ChevronDown, ChevronUp, Circle, ShieldCheck, Lock,
 } from 'lucide-react';
 import { getToken } from '../lib/api';
 
@@ -65,6 +65,7 @@ interface Submission {
   provinceId?: string;
   verificationChain?: VerificationChain;
   isOfficial?: boolean;
+  locked?: boolean;
 }
 
 const ELECTION_LABELS: Record<string, string> = {
@@ -148,6 +149,20 @@ function SubmissionRow({
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [notes, setNotes] = useState('');
+  const [unlocking, setUnlocking] = useState(false);
+
+  const unlockSubmission = async () => {
+    if (!confirm(`Unlock "${sub.pollingStationName}"'s ${ELECTION_LABELS[sub.electionType] ?? sub.electionType} result for one corrected resubmission? The agent will be able to submit a replacement once, then it locks again automatically.`)) return;
+    setUnlocking(true);
+    try {
+      await apiFetch('POST', `/data-entry/submissions/${sub.id}/unlock`, undefined);
+      onStatusChange();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Failed to unlock submission');
+    } finally {
+      setUnlocking(false);
+    }
+  };
   const [overrideLevel, setOverrideLevel] = useState<VerificationLevel>('ward');
   const cfg = STATUS_CONFIG[sub.status] ?? STATUS_CONFIG.pending;
 
@@ -233,6 +248,27 @@ function SubmissionRow({
               </div>
             ))}
           </div>
+
+          {/* Lock status + admin-only unlock action */}
+          {isOverride && (
+            <div className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm ${sub.locked !== false ? 'bg-red-50 border border-red-200' : 'bg-amber-50 border border-amber-200'}`}>
+              <span className={sub.locked !== false ? 'text-red-800' : 'text-amber-800'}>
+                {sub.locked !== false
+                  ? 'Locked — the agent cannot resubmit or edit this result.'
+                  : 'Unlocked — the agent can submit one corrected result before it locks again.'}
+              </span>
+              {sub.locked !== false && (
+                <button
+                  onClick={unlockSubmission}
+                  disabled={unlocking}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-red-300 hover:bg-red-100 text-red-700 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 shrink-0"
+                >
+                  {unlocking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Lock className="w-3.5 h-3.5" />}
+                  Unlock for Resubmission
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Override level selector — admins/super_admins only */}
           {isOverride && (

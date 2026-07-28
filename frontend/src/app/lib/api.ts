@@ -805,7 +805,10 @@ export const dataEntryApi = {
   },
 
   checkSubmission: (pollingStationId: string, electionType: string, round?: 'round1' | 'runoff') =>
-    request<{ submitted: boolean; submittedAt?: string; status?: string; id?: string }>('GET', `/data-entry/result/${encodeURIComponent(pollingStationId)}/${electionType}${round ? `?round=${round}` : ''}`),
+    request<{ submitted: boolean; submittedAt?: string; status?: string; id?: string; locked?: boolean }>('GET', `/data-entry/result/${encodeURIComponent(pollingStationId)}/${electionType}${round ? `?round=${round}` : ''}`),
+
+  unlockSubmission: (id: string) =>
+    request<{ success: boolean; submission: Record<string, unknown> }>('POST', `/data-entry/submissions/${id}/unlock`, undefined, true),
 
   listSubmissions: (filters?: Record<string, string>) => {
     const qs = filters ? '?' + new URLSearchParams(filters).toString() : '';

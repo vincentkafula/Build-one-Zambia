@@ -2,7 +2,7 @@ import { API_BASE } from '@/app/lib/apiBase';
 import { useState, useEffect } from 'react';
 import { provinces, presidentialCandidates, Candidate } from '../data/mockData';
 import { candidatePhotos } from '../data/candidatePhotos';
-import { Save, CheckCircle2, AlertCircle, Upload, X, FileText, Loader2, WifiOff, CloudUpload } from 'lucide-react';
+import { Save, CheckCircle2, AlertCircle, Upload, X, FileText, Loader2, WifiOff, CloudUpload, Lock } from 'lucide-react';
 import { dataEntryApi, DocumentPayload, getToken, presidentialElectionApi, type PresidentialElectionConfig } from '../lib/api';
 import { useOfflineQueue } from '../hooks/useOfflineQueue';
 
@@ -99,7 +99,7 @@ export function DataEntryPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submissionId, setSubmissionId] = useState('');
-  const [alreadySubmitted, setAlreadySubmitted] = useState<{ submittedAt: string; status: string } | null>(null);
+  const [alreadySubmitted, setAlreadySubmitted] = useState<{ submittedAt: string; status: string; id?: string; locked: boolean } | null>(null);
   const [error, setError] = useState('');
   const [uploadError, setUploadError] = useState('');
 
@@ -147,7 +147,7 @@ export function DataEntryPage() {
     if (!stationToCheck || !electionType) { setAlreadySubmitted(null); return; }
     dataEntryApi.checkSubmission(stationToCheck, electionType, isPresidentialRunoff ? 'runoff' : 'round1')
       .then(res => {
-        if (res.submitted) setAlreadySubmitted({ submittedAt: res.submittedAt!, status: res.status! });
+        if (res.submitted) setAlreadySubmitted({ submittedAt: res.submittedAt!, status: res.status!, id: res.id, locked: res.locked !== false });
         else setAlreadySubmitted(null);
       })
       .catch(() => setAlreadySubmitted(null));
@@ -167,6 +167,12 @@ export function DataEntryPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (alreadySubmitted?.locked) {
+      setError('This polling station\u2019s result is locked and cannot be resubmitted or edited. Ask a super admin to unlock it if this needs correcting.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
 
     if (uploadedFiles.length === 0) {
       setError('You must upload at least one official signed vote sheet before submitting');
@@ -223,7 +229,7 @@ export function DataEntryPage() {
         const queueId = enqueue('/data-entry/result', payload, getToken());
         setSubmissionId(queueId);
         setSubmitted(true);
-        setAlreadySubmitted({ submittedAt: new Date().toISOString(), status: 'queued_offline' });
+        setAlreadySubmitted({ submittedAt: new Date().toISOString(), status: 'queued_offline', locked: false });
         return;
       }
 
@@ -231,7 +237,7 @@ export function DataEntryPage() {
 
       setSubmissionId(res.submission.id);
       setSubmitted(true);
-      setAlreadySubmitted({ submittedAt: res.submission.submittedAt, status: res.submission.status });
+      setAlreadySubmitted({ submittedAt: res.submission.submittedAt, status: res.submission.status, id: res.submission.id, locked: true });
     } catch (err) {
       if (!isOnline) {
         setError('You are offline. Your results have been saved and will sync automatically when you reconnect.');
@@ -337,20 +343,26 @@ export function DataEntryPage() {
 
         {/* Already submitted notice */}
         {alreadySubmitted && !submitted && (
-          <div className="bg-amber-50 border border-amber-400 rounded-lg p-4 mb-6">
+          <div className={`border rounded-lg p-4 mb-6 ${alreadySubmitted.locked ? 'bg-red-50 border-red-400' : 'bg-amber-50 border-amber-400'}`}>
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5" />
+              <AlertCircle className={`w-5 h-5 mt-0.5 ${alreadySubmitted.locked ? 'text-red-500' : 'text-amber-500'}`} />
               <div>
-                <h3 className="font-semibold text-amber-800 mb-1">Results Already Submitted</h3>
-                <p className="text-sm text-amber-700">
-                  This polling station has already submitted {electionType} results on{' '}
+                <h3 className={`font-semibold mb-1 ${alreadySubmitted.locked ? 'text-red-800' : 'text-amber-800'}`}>
+                  {alreadySubmitted.locked ? 'Result Locked — Cannot Resubmit' : 'Correction Window Open'}
+                </h3>
+                <p className={`text-sm ${alreadySubmitted.locked ? 'text-red-700' : 'text-amber-700'}`}>
+                  This polling station already submitted {electionType} results on{' '}
                   {new Date(alreadySubmitted.submittedAt).toLocaleString('en-ZM')}. Status: <strong>{alreadySubmitted.status}</strong>.
-                  Resubmitting will overwrite the previous entry.
+                  {alreadySubmitted.locked
+                    ? ' This result is locked and cannot be changed. Contact a super admin if this needs correcting — they can unlock it for exactly one more submission.'
+                    : ' A super admin has unlocked this result for one corrected submission. Submitting below will replace the previous entry and lock it again.'}
                 </p>
               </div>
             </div>
           </div>
         )}
+
+        {alreadySubmitted?.locked && !submitted ? null : (
 
         <form onSubmit={handleSubmit} className="bg-card border border-border rounded-lg p-6">
           {/* Election Type Selection */}
@@ -801,6 +813,16 @@ export function DataEntryPage() {
             </div>
           )}
         </form>
+        )}
+
+        {alreadySubmitted?.locked && !submitted && (
+          <div className="bg-card border border-border rounded-lg p-8 text-center">
+            <Lock className="w-10 h-10 text-red-400 mx-auto mb-3" />
+            <p className="text-muted-foreground">
+              The form is hidden because this station's result is locked. A super admin must unlock it before you can submit again.
+            </p>
+          </div>
+        )}
 
         {/* Important Notes */}
         <div className="mt-6 bg-muted border border-border rounded-lg p-4">

@@ -1299,6 +1299,17 @@ app.post(`${BASE}/data-entry/result`, auth.requireAuth, async (req, res) => {
     const totalVotesNum = normCandidates.reduce((s, c) => s + c.votes, 0) || Number(totalVotesCast || totalVotes || 0);
     const rejectedNum = Number(rejectedBallots || totalRejectedBallots || totalRejected || 0);
     const registeredNum = Number(registeredVoters || 0);
+
+    // Reject outright if the submitted vote count exceeds registered voters
+    // at this station — an agent should never be able to record more votes
+    // than there are registered voters, whatever the cause (typo, fraud,
+    // wrong station selected).
+    if (registeredNum > 0 && totalVotesNum > registeredNum) {
+      return res.status(400).json({
+        error: `Submitted votes (${totalVotesNum.toLocaleString()}) exceed the ${registeredNum.toLocaleString()} registered voters for this polling station. Please check the figures and try again.`,
+      });
+    }
+
     const id = `sub-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const now = new Date().toISOString();
     const emptyVerificationChain = () => ({
@@ -1308,16 +1319,28 @@ app.post(`${BASE}/data-entry/result`, auth.requireAuth, async (req, res) => {
       province: { status: 'pending', by: null, at: null, notes: null },
       national: { status: 'pending', by: null, at: null, notes: null },
     });
-    let submission = { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, electionRound, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, totalRejectedBallots: rejectedNum, rejectedBallots: rejectedNum, registeredVoters: registeredNum, agentId, agentName: agentName || enteredBy, notes, status: 'pending', verificationChain: emptyVerificationChain(), isOfficial: false, submittedAt: now };
-    // Check if station already submitted (for this round) — update instead of duplicate.
-    // Round is part of the match key so a runoff submission never clobbers the
-    // station's round-1 figures (and vice versa) — both stay available for the archive.
+    let submission = { id, pollingStationId, pollingStationName, wardId, wardName, constituencyId, constituencyName, districtId, districtName, provinceId, provinceName, electionType, electionRound, candidateResults: normCandidates, candidates: normCandidates, totalVotes: totalVotesNum, totalVotesCast: totalVotesNum, totalRejected: rejectedNum, totalRejectedBallots: rejectedNum, rejectedBallots: rejectedNum, registeredVoters: registeredNum, agentId, agentName: agentName || enteredBy, notes, status: 'pending', verificationChain: emptyVerificationChain(), isOfficial: false, submittedAt: now, locked: true };
+    // Check if station already submitted (for this round). Once a result is
+    // submitted, it's locked — no further submission or edit is accepted
+    // for that station/election/round until a super_admin/admin explicitly
+    // unlocks it (POST /data-entry/submissions/:id/unlock). This applies
+    // even to the same agent trying to correct their own figures.
     const existingIdx = dataEntryStore.submissions.findIndex(
       s => s.pollingStationId === pollingStationId && s.electionType === electionType && (s.electionRound || 'round1') === electionRound
     );
     if (existingIdx >= 0) {
-      // UPDATE existing submission (allows correction of rejected ballots)
-      dataEntryStore.submissions[existingIdx] = { ...dataEntryStore.submissions[existingIdx], ...submission, id: dataEntryStore.submissions[existingIdx].id, updatedAt: now };
+      const existing = dataEntryStore.submissions[existingIdx];
+      if (existing.locked !== false) {
+        return res.status(423).json({
+          error: 'A result has already been submitted for this polling station and cannot be changed. Ask a super admin to unlock it if this figure needs correcting.',
+          locked: true,
+          submittedAt: existing.submittedAt,
+        });
+      }
+      // Unlocked by an admin for exactly one corrected resubmission — accept
+      // it, then immediately re-lock so it goes back to needing another
+      // explicit unlock for any further change.
+      dataEntryStore.submissions[existingIdx] = { ...existing, ...submission, id: existing.id, updatedAt: now, locked: true, unlockedBy: null, unlockedAt: null };
       submission = dataEntryStore.submissions[existingIdx];
     } else {
       dataEntryStore.submissions.push(submission);
@@ -1335,7 +1358,23 @@ app.post(`${BASE}/data-entry/result`, auth.requireAuth, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 app.get(`${BASE}/data-entry/turnout`, (req, res) => res.json({ stats: { totalStations: 0, reportingStations: dataEntryStore.submissions.length, totalVotesCast: 0 } }));
-app.get(`${BASE}/data-entry/result/:pollingStationId/:electionType`, (req, res) => { const round = req.query.round === 'runoff' ? 'runoff' : 'round1'; const sub = dataEntryStore.submissions.find(s => s.pollingStationId === decodeURIComponent(req.params.pollingStationId) && s.electionType === req.params.electionType && (s.electionRound || 'round1') === round); res.json({ submitted: !!sub, submittedAt: sub?.submittedAt, status: sub?.status, id: sub?.id }); });
+app.get(`${BASE}/data-entry/result/:pollingStationId/:electionType`, (req, res) => { const round = req.query.round === 'runoff' ? 'runoff' : 'round1'; const sub = dataEntryStore.submissions.find(s => s.pollingStationId === decodeURIComponent(req.params.pollingStationId) && s.electionType === req.params.electionType && (s.electionRound || 'round1') === round); res.json({ submitted: !!sub, submittedAt: sub?.submittedAt, status: sub?.status, id: sub?.id, locked: sub ? (sub.locked !== false) : false }); });
+
+// Super admin / admin only: releases the lock on one submission so the
+// agent can submit a corrected result exactly once. The lock re-applies
+// automatically the moment that resubmission comes in (see POST
+// /data-entry/result above) — this never leaves a station permanently
+// open to arbitrary resubmission.
+app.post(`${BASE}/data-entry/submissions/:id/unlock`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
+  const idx = dataEntryStore.submissions.findIndex(s => s.id === req.params.id);
+  if (idx < 0) return res.status(404).json({ error: 'Submission not found' });
+  const now = new Date().toISOString();
+  dataEntryStore.submissions[idx] = { ...dataEntryStore.submissions[idx], locked: false, unlockedBy: req.user.username, unlockedAt: now };
+  saveDataEntry();
+  dataEntryStore.auditLog.push({ id: `audit-${Date.now()}`, action: 'unlock_submission', by: req.user.username, at: now, submissionId: req.params.id, pollingStationId: dataEntryStore.submissions[idx].pollingStationId });
+  saveDataEntry();
+  res.json({ success: true, submission: dataEntryStore.submissions[idx] });
+});
 app.get(`${BASE}/data-entry/submissions`, auth.requireAuth, (req, res) => {
   let subs = [...dataEntryStore.submissions];
   const { status, electionType, wardId, constituencyId, districtId, provinceId, pollingStationId, agentId } = req.query;
