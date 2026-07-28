@@ -1714,6 +1714,22 @@ function consolidatedRegRoutes(type, noun, api) {
     } catch (err) { res.status(400).json({ error: err.message }); }
   });
 
+  // Self-service: an approved applicant looking up their OWN registration,
+  // via their own auth token — not an admin looking up anyone by id. Mirrors
+  // the same pattern /membership/my-profile and /coop/certificate already
+  // use, generalised here so every type wired through this factory gets it
+  // for free instead of each needing its own copy.
+  app.get(`${BASE}/registrations/${type}/my`, auth.requireAuth, (req, res) => {
+    const fullUser = auth.getUser(req.user.username);
+    if (!fullUser || fullUser.registrationType !== type || !fullUser.registrationId) {
+      return res.status(404).json({ error: `No ${noun.toLowerCase()} application linked to this account.` });
+    }
+    const reg = api.getOne(fullUser.registrationId);
+    if (!reg) return res.status(404).json({ error: `${noun} application not found.` });
+    const { pendingPassword, ...safeReg } = reg;
+    res.json({ registration: safeReg });
+  });
+
   app.get(`${BASE}/registrations/${type}`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
     const regs = api.list({ status: req.query.status });
     res.json({ registrations: regs, count: regs.length });

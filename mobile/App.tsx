@@ -13,6 +13,9 @@ import CartScreen from './src/screens/CartScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import MemberDashboardScreen from './src/screens/MemberDashboardScreen';
 import ElectionAgentDashboardScreen from './src/screens/ElectionAgentDashboardScreen';
+import CooperativeDashboardScreen from './src/screens/CooperativeDashboardScreen';
+import RegistrationProfileScreen from './src/screens/RegistrationProfileScreen';
+import ManagerDashboardScreen from './src/screens/ManagerDashboardScreen';
 
 const GREEN = '#007A30';
 
@@ -20,16 +23,19 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 const ELECTION_AGENT_ROLES = ['polling_agent', 'agent', 'election_agent'];
+const MANAGER_ROLES = ['ward_manager', 'constituency_manager', 'district_manager', 'provincial_manager', 'province_manager', 'national_manager', 'super_admin', 'admin', 'manager'];
 
 function DashboardRouter() {
   const { user } = useAuth();
   if (user?.role === 'member') return <MemberDashboardScreen />;
   if (user?.role && ELECTION_AGENT_ROLES.includes(user.role)) return <ElectionAgentDashboardScreen />;
-  // Cooperative, Chamber, Internship, and Management/Election-manager tiers
-  // don't have a dedicated mobile screen yet — see mobile/README.md for
-  // what's built and what's a real follow-on. They get the generic
-  // account screen (real data, just not the full section set) rather
-  // than a broken or missing screen.
+  if (user?.role === 'cooperative') return <CooperativeDashboardScreen />;
+  if (user?.role === 'chamber') return <RegistrationProfileScreen type="chamber" title="Chamber of Commerce" subtitle="Chamber Profile" />;
+  if (user?.role === 'internship') return <RegistrationProfileScreen type="internship" title="Internship" subtitle="Internship Profile" />;
+  if (user?.role && MANAGER_ROLES.includes(user.role)) return <ManagerDashboardScreen />;
+  // International Political Party doesn't have a dedicated screen yet —
+  // gets the generic account screen (real data, just not that role's
+  // full section set) rather than a broken or missing screen.
   return <DashboardScreen />;
 }
 

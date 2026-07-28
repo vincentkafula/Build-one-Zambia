@@ -18,8 +18,8 @@ backend the website uses — no separate mobile API, no duplicated logic.
   same rule as the website. Checkout creates a real order via `POST
   /orders` and initiates payment via `POST /shop/payments/initiate`,
   the same endpoints the website's checkout uses.
-- **Account/Dashboard** — routes to a real, role-specific screen when one
-  exists:
+- **Account/Dashboard** — routes to a real, role-specific screen for
+  every role in the system:
   - **Member**: a real membership card (name, membership number, tier,
     member-since date) rendered natively, plus contact details — both
     pulled from `GET /membership/my-profile`
@@ -32,9 +32,23 @@ backend the website uses — no separate mobile API, no duplicated logic.
     voters" validation) built earlier. If the station's result is already
     locked, the form doesn't even render — a clear locked-state message
     does instead.
-  - Every other role (Cooperative, Chamber, Internship, Management/
-    Election-manager tiers) falls back to the generic account screen —
-    real data via `/auth/me`, just not that role's full section set yet
+  - **Cooperative**: the real registration certificate (certificate
+    number, registered office, all named members) via `GET
+    /coop/certificate` — including the same "sample/preview" honesty
+    the website has for admin accounts with no real application linked
+  - **Chamber of Commerce / Internship**: real application status and
+    details via a new backend endpoint, `GET /registrations/:type/my`
+    (added specifically for this — self-service lookup by the
+    applicant's own token, the same pattern `/membership/my-profile`
+    and `/coop/certificate` already used, just generalised so every
+    type wired through the shared registration-routes factory gets it)
+  - **Ward / Constituency / District / Provincial / National Manager,
+    Admin, Super Admin**: a results view scoped to that manager's own
+    jurisdiction (their ward, their district, etc.), reusing the same
+    `results.getLevel()` engine the website uses
+  - **International Political Party** falls back to the generic account
+    screen (real data, just not a dedicated view yet) — every other
+    role now has a real, working dashboard
 
 This was verified by actually running `npx tsc --noEmit` (clean, zero
 errors) and `npx expo export` (a real Metro bundle was produced — 736
@@ -43,14 +57,13 @@ plausible, code that Expo's own build pipeline successfully compiled.
 
 ## What's NOT built yet — and why
 
-**Full per-role dashboard parity for the remaining roles.** Member and
-Polling/Election Agent are now real, working dashboards (see above) —
-not placeholders. Still not built: Cooperative, Chamber of Commerce,
-Internship, and the Management/Election-manager tiers (ward through
-national manager, each with their own sections like ECZ figure entry,
-voter validation, registration approval). Same reasoning as before:
-better to ship two dashboards that are actually complete and correctly
-wired to the real backend than a shallow, half-working pass at six.
+**Deeper sections within each dashboard.** Every role now lands on a
+real, working dashboard rather than a placeholder — but the website's
+Manager tiers, for example, also have ECZ figure entry and voter
+validation beyond just viewing results, and Chamber/Internship
+applicants can't yet edit their own details from the app (view-only for
+now). International Political Party still has no dedicated screen.
+These are genuine next layers, not a rebuild of what's here.
 
 **Publishing to the App Store / Play Store.** This is not something
 achievable from an automated environment — it requires:

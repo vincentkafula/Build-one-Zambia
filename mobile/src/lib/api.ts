@@ -169,7 +169,44 @@ export const membershipApi = {
   myProfile: () => request<{ member: MemberProfile }>('GET', '/membership/my-profile', undefined, true),
 };
 
-// ─── Election data entry (polling agents) ──────────────────────────────
+// ─── Self-service registration lookup (Cooperative, Chamber, Internship) ──
+// Mirrors GET /registrations/:type/my on the backend — an approved
+// applicant looking up their OWN application via their own auth token.
+export interface RegistrationRecord {
+  id: string;
+  status: string;
+  createdAt: string;
+  [key: string]: unknown;
+}
+
+export const registrationApi = {
+  my: (type: 'cooperative' | 'chamber' | 'internship' | 'intlparty') =>
+    request<{ registration: RegistrationRecord }>('GET', `/registrations/${type}/my`, undefined, true),
+};
+
+export interface CoopCertificateMember {
+  position: number;
+  membershipNumber: string;
+  fullName: string | null;
+}
+export interface CoopCertificate {
+  isSample?: boolean;
+  certificateNo: string;
+  registrationNumber: string;
+  dateOfIssue: string;
+  cooperativeName: string;
+  legalStatus: string;
+  typeOfCooperative: string;
+  registeredOffice: string;
+  contactPerson: string;
+  contactPhone: string;
+  memberCount: number;
+  members: CoopCertificateMember[];
+}
+
+export const coopApi = {
+  certificate: () => request<{ certificate: CoopCertificate }>('GET', '/coop/certificate', undefined, true),
+};
 export interface CandidateVoteInput {
   candidateId: string;
   votes: number;
