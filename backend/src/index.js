@@ -1756,6 +1756,40 @@ function consolidatedRegRoutes(type, noun, api) {
     res.json({ registration: safeReg });
   });
 
+  // Self-service edit — the applicant updating their own contact/profile
+  // details, same "find via my own token" pattern as the GET above. Blocks
+  // a denylist of system/administrative fields (status, credentials,
+  // review trail, timestamps) rather than an allowlist, since each
+  // registration type has a different set of legitimate profile fields
+  // (chamber vs internship vs intlparty) and a denylist doesn't need
+  // updating every time a new type is wired through this factory.
+  const SELF_EDIT_BLOCKED_FIELDS = new Set([
+    'id', 'status', 'username', 'password', 'pendingPassword', 'pin',
+    'loginGranted', 'loginCreatedAt', 'loginActivatedAt', 'loginGrantedBy',
+    'reviewedBy', 'reviewedAt', 'reviewNotes', 'statusNote',
+    'createdAt', 'updatedAt', 'role',
+  ]);
+  app.patch(`${BASE}/registrations/${type}/my`, auth.requireAuth, (req, res) => {
+    const fullUser = auth.getUser(req.user.username);
+    if (!fullUser || fullUser.registrationType !== type || !fullUser.registrationId) {
+      return res.status(404).json({ error: `No ${noun.toLowerCase()} application linked to this account.` });
+    }
+    const existing = api.getOne(fullUser.registrationId);
+    if (!existing) return res.status(404).json({ error: `${noun} application not found.` });
+
+    const patch = {};
+    for (const [key, value] of Object.entries(req.body || {})) {
+      if (!SELF_EDIT_BLOCKED_FIELDS.has(key)) patch[key] = value;
+    }
+    if (Object.keys(patch).length === 0) {
+      return res.status(400).json({ error: 'No editable fields were provided.' });
+    }
+
+    const updated = api.update(fullUser.registrationId, patch);
+    const { pendingPassword, ...safeReg } = updated;
+    res.json({ success: true, registration: safeReg });
+  });
+
   app.get(`${BASE}/registrations/${type}`, auth.requireAuth, auth.requireRole('super_admin', 'admin'), (req, res) => {
     const regs = api.list({ status: req.query.status });
     res.json({ registrations: regs, count: regs.length });

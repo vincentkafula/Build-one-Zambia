@@ -57,9 +57,18 @@ plausible, code that Expo's own build pipeline successfully compiled.
 
 ## What's NOT built yet — and why
 
-**Genuinely still open:** Chamber/Internship applicants still can't edit
-their own details from the app (view-only). Everything else that was
-open before this pass is now real:
+**Nothing role-specific is view-only anymore.** The last remaining gap
+— Chamber/Internship/International Party applicants couldn't edit their
+own details — is now closed too: tap "Edit" on their dashboard. That
+needed a new backend endpoint, `PATCH /registrations/:type/my`, since
+only a self-service *read* existed before. It blocks a denylist of
+system/administrative fields (status, credentials, review trail,
+timestamps) rather than an allowlist of editable ones, since chamber,
+internship, and intlparty applications each have a different shape and
+a denylist doesn't need updating every time a new type is wired
+through the shared registration-routes factory.
+
+Everything else built in previous passes:
 
 - **Enter Official ECZ Figures** — managers enter the official
   ECZ-announced vote counts for their own level (ward/constituency/

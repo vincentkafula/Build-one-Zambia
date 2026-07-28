@@ -211,6 +211,8 @@ export interface RegistrationRecord {
 export const registrationApi = {
   my: (type: 'cooperative' | 'chamber' | 'internship' | 'intlparty') =>
     request<{ registration: RegistrationRecord }>('GET', `/registrations/${type}/my`, undefined, true),
+  updateMy: (type: 'cooperative' | 'chamber' | 'internship' | 'intlparty', patch: Record<string, unknown>) =>
+    request<{ success: boolean; registration: RegistrationRecord }>('PATCH', `/registrations/${type}/my`, patch, true),
 };
 
 export interface CoopCertificateMember {
