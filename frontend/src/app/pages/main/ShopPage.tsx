@@ -61,7 +61,16 @@ const PRODUCTS = [
   { id: 19, name: 'Wristbands (Pack of 5)',       price: 'K50',   priceNum: 50,   tag: 'ACCESSORIES', desc: 'Silicone wristbands debossed with campaign slogans in party colours.',                            img: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 20, name: 'BOZ 2031 Calendar',            price: 'K95',   priceNum: 95,   tag: 'PRINT',       desc: 'Annual wall calendar featuring party imagery, key election dates, and campaign milestones.',      img: 'https://images.unsplash.com/photo-1506784365847-bbad939e9501?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 21, name: 'BOZ Water Bottle',             price: 'K110',  priceNum: 110,  tag: 'HOMEWARE',    desc: 'Reusable stainless steel water bottle with party logo. 750ml capacity.',                          img: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
-  { id: 22, name: 'BOZ Campaign Jersey',          price: 'K320',  priceNum: 320,  tag: 'APPAREL',     desc: 'Sports-style jersey in party colours with logo and candidate\'s name. Premium fundraising item.',  img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 22, name: 'BOZ Campaign Jersey',          price: 'K320',  priceNum: 320,  tag: 'APPAREL',     desc: 'Sports-style jersey in party colours with logo and candidate\'s name. Premium fundraising item.',  img: '/products/jersey-green.jpg',
+    colors: [
+      { name: 'Green',  swatch: '#00712B', img: '/products/jersey-green.jpg' },
+      { name: 'Orange', swatch: '#EA580C', img: '/products/jersey-orange.jpg' },
+      { name: 'Black',  swatch: '#111111', img: '/products/jersey-black.jpg' },
+      { name: 'White',  swatch: '#FFFFFF', img: '/products/jersey-white.jpg' },
+      { name: 'Blue',   swatch: '#1D4ED8', img: '/products/jersey-blue.jpg' },
+      { name: 'Gray',   swatch: '#4b5563', img: '/products/jersey-gray.jpg' },
+    ],
+  },
   { id: 23, name: 'BOZ Branded Jacket',           price: 'K580',  priceNum: 580,  tag: 'APPAREL',     desc: 'Embroidered windbreaker/bomber jacket with party logo and colours. Premium collectible.',           img: '/products/jacket-black.jpg',
     colors: [
       { name: 'Black',  swatch: '#111111', img: '/products/jacket-black.jpg' },
