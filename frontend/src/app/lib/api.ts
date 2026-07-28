@@ -1524,6 +1524,9 @@ export const membershipApi = {
   getMyProfile: () =>
     request<{ member: Member }>('GET', '/membership/my-profile', undefined, true),
 
+  updateMyProfile: (patch: Partial<Member>) =>
+    request<{ success: boolean; member: Member }>('PATCH', '/membership/my-profile', patch, true),
+
   getMembershipCert: (emailOrNumber: string, byNumber = false) => {
     const qs = byNumber ? `number=${encodeURIComponent(emailOrNumber)}` : `email=${encodeURIComponent(emailOrNumber)}`;
     return request<MembershipCert>('GET', `/membership/certificate/membership?${qs}`);

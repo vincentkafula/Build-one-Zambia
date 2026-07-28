@@ -914,6 +914,41 @@ app.get(`${BASE}/membership/my-profile`, auth.requireAuth, (req, res) => {
   res.json({ member: safeMember });
 });
 
+// Self-service member profile edit — this genuinely did not exist before.
+// The website's Personal Details "SAVE CHANGES" button only ever called
+// setEditMode(false); it never sent the edited fields anywhere, so a
+// member typing in new details and clicking Save saw the form close with
+// nothing actually persisted. Same denylist pattern as
+// PATCH /registrations/:type/my — blocks status/credentials/admin-granted
+// fields (membershipNumber, tier, status, adoption/appointment grants,
+// timestamps), everything else the member can edit themselves.
+const MEMBER_SELF_EDIT_BLOCKED_FIELDS = new Set([
+  'id', 'status', 'username', 'password', 'pendingPassword', 'pin',
+  'membershipNumber', 'tier', 'role',
+  'adoptionGranted', 'adoptionGrantedAt', 'adoptionGrantedBy', 'adoptionCertNumber', 'adoptionRevokedAt', 'adoptionRevokedBy',
+  'appointmentGranted', 'appointmentGrantedAt', 'appointmentGrantedBy', 'appointmentNumber', 'appointmentRevokedAt', 'appointmentRevokedBy',
+  'certificateIssuedAt', 'createdAt', 'updatedAt',
+]);
+app.patch(`${BASE}/membership/my-profile`, auth.requireAuth, (req, res) => {
+  const fullUser = auth.getUser(req.user.username);
+  if (!fullUser || fullUser.registrationType !== 'member' || !fullUser.registrationId) {
+    return res.status(404).json({ error: 'No member profile linked to this account' });
+  }
+  const existing = registrations.getMember(fullUser.registrationId);
+  if (!existing) return res.status(404).json({ error: 'Member record not found' });
+
+  const patch = {};
+  for (const [key, value] of Object.entries(req.body || {})) {
+    if (!MEMBER_SELF_EDIT_BLOCKED_FIELDS.has(key)) patch[key] = value;
+  }
+  if (Object.keys(patch).length === 0) {
+    return res.status(400).json({ error: 'No editable fields were provided.' });
+  }
+  const updated = registrations.updateMember(fullUser.registrationId, patch);
+  const { pendingPassword, ...safeMember } = updated;
+  res.json({ success: true, member: safeMember });
+});
+
 app.get(`${BASE}/shop/my-orders`, auth.requireAuth, (req, res) => {
   const fullUser = auth.getUser(req.user.username);
   if (!fullUser || fullUser.registrationType !== 'member' || !fullUser.registrationId) {

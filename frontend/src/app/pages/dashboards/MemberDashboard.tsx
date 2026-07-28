@@ -174,6 +174,8 @@ export default function MemberDashboard() {
   const [profile, setProfile] = useState(memberData);
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileError, setProfileError] = useState('');
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileSaveMsg, setProfileSaveMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [orders, setOrders] = useState<ShopOrder[]>([]);
   const [payments, setPayments] = useState<ShopPayment[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
@@ -286,6 +288,23 @@ export default function MemberDashboard() {
   const [pwConfirm, setPwConfirm] = useState('');
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMessage, setPwMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const submitProfileChanges = async () => {
+    setProfileSaveMsg(null);
+    setProfileSaving(true);
+    try {
+      const EDITABLE_KEYS = ['firstName', 'lastName', 'email', 'phone', 'dob', 'gender', 'nationalId', 'province', 'district', 'constituency', 'ward', 'pollingStation'];
+      const patch: Record<string, string> = {};
+      EDITABLE_KEYS.forEach(k => { patch[k] = (profile as Record<string, string>)[k]; });
+      await membershipApi.updateMyProfile(patch);
+      setProfileSaveMsg({ type: 'success', text: 'Profile updated.' });
+      setEditMode(false);
+    } catch (e) {
+      setProfileSaveMsg({ type: 'error', text: e instanceof Error ? e.message : 'Failed to update profile.' });
+    } finally {
+      setProfileSaving(false);
+    }
+  };
 
   const submitPasswordChange = async () => {
     setPwMessage(null);
@@ -847,10 +866,15 @@ export default function MemberDashboard() {
                 </div>
               ))}
             </div>
+            {profileSaveMsg && (
+              <p className="mt-4 text-sm" style={{ color: profileSaveMsg.type === 'success' ? '#005D23' : '#dc2626' }}>{profileSaveMsg.text}</p>
+            )}
             {editMode && (
               <div className="mt-6 flex gap-3">
-                <button onClick={() => setEditMode(false)} className="px-6 py-3 rounded-lg" style={{ backgroundColor: A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>SAVE CHANGES</button>
-                <button onClick={() => setEditMode(false)} className="px-6 py-3 rounded-lg" style={{ border: '1px solid #e5e7eb', color: '#6b7280' }}>CANCEL</button>
+                <button onClick={submitProfileChanges} disabled={profileSaving} className="px-6 py-3 rounded-lg" style={{ backgroundColor: A, color: '#fff', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', opacity: profileSaving ? 0.6 : 1 }}>
+                  {profileSaving ? 'SAVING…' : 'SAVE CHANGES'}
+                </button>
+                <button onClick={() => { setEditMode(false); setProfileSaveMsg(null); }} className="px-6 py-3 rounded-lg" style={{ border: '1px solid #e5e7eb', color: '#6b7280' }}>CANCEL</button>
               </div>
             )}
           </DashCard>

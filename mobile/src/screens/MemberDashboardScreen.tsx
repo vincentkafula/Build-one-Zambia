@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { membershipApi, MemberProfile } from '../lib/api';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../lib/AuthContext';
@@ -7,12 +7,30 @@ import { useAuth } from '../lib/AuthContext';
 const GREEN = '#007A30';
 const ORANGE = '#EC6D01';
 
+const EDIT_FIELDS: { key: keyof MemberProfile; label: string }[] = [
+  { key: 'firstName', label: 'First Name' },
+  { key: 'lastName', label: 'Last Name' },
+  { key: 'email', label: 'Email' },
+  { key: 'phone', label: 'Phone' },
+  { key: 'dob', label: 'Date of Birth' },
+  { key: 'gender', label: 'Gender' },
+  { key: 'nationalId', label: 'National ID' },
+  { key: 'province', label: 'Province' },
+  { key: 'district', label: 'District' },
+  { key: 'constituency', label: 'Constituency' },
+  { key: 'ward', label: 'Ward' },
+  { key: 'pollingStation', label: 'Polling Station' },
+];
+
 export default function MemberDashboardScreen() {
   const { logout } = useAuth();
   const navigation = useNavigation<any>();
   const [member, setMember] = useState<MemberProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [draft, setDraft] = useState<Record<string, string>>({});
 
   useEffect(() => {
     membershipApi.myProfile()
@@ -34,6 +52,27 @@ export default function MemberDashboardScreen() {
   }
 
   const memberSince = new Date(member.createdAt).toLocaleDateString('en-ZM', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const startEditing = () => {
+    const initial: Record<string, string> = {};
+    EDIT_FIELDS.forEach(f => { initial[f.key] = String(member[f.key] ?? ''); });
+    setDraft(initial);
+    setEditing(true);
+  };
+
+  const saveEditing = async () => {
+    setSaving(true);
+    try {
+      const res = await membershipApi.updateMyProfile(draft);
+      setMember(res.member);
+      setEditing(false);
+      Alert.alert('Saved', 'Your profile has been updated.');
+    } catch (e) {
+      Alert.alert('Could not save', e instanceof Error ? e.message : 'Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#f9fafb' }} contentContainerStyle={{ padding: 16 }}>
@@ -64,11 +103,39 @@ export default function MemberDashboardScreen() {
       </View>
 
       <View style={styles.infoCard}>
-        <Text style={styles.infoTitle}>Contact Details</Text>
-        <InfoRow label="Email" value={member.email} />
-        <InfoRow label="Phone" value={member.phone} />
-        <InfoRow label="Ward" value={member.ward} />
-        <InfoRow label="Constituency" value={member.constituency} />
+        <View style={styles.infoHeaderRow}>
+          <Text style={styles.infoTitle}>Personal Details</Text>
+          {!editing && (
+            <TouchableOpacity onPress={startEditing}>
+              <Text style={styles.editLink}>Edit</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {editing ? (
+          <>
+            {EDIT_FIELDS.map(f => (
+              <View key={f.key} style={{ marginBottom: 12 }}>
+                <Text style={styles.infoLabel}>{f.label}</Text>
+                <TextInput
+                  style={styles.editInput}
+                  value={draft[f.key] ?? ''}
+                  onChangeText={t => setDraft(prev => ({ ...prev, [f.key]: t }))}
+                />
+              </View>
+            ))}
+            <View style={styles.editActions}>
+              <TouchableOpacity style={[styles.editActionButton, styles.cancelButton]} onPress={() => setEditing(false)} disabled={saving}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.editActionButton, styles.saveButton]} onPress={saveEditing} disabled={saving}>
+                {saving ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.saveButtonText}>Save Changes</Text>}
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : (
+          EDIT_FIELDS.map(f => <InfoRow key={f.key} label={f.label} value={member[f.key] as string} />)
+        )}
       </View>
 
       <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('Certificates', { email: member.email })}>
@@ -113,7 +180,16 @@ const styles = StyleSheet.create({
   cardRow: { flexDirection: 'row', marginTop: 4 },
   cardBottomBar: { height: 6, backgroundColor: ORANGE },
   infoCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#f0f0f0', marginBottom: 16 },
-  infoTitle: { fontSize: 13, fontWeight: '700', color: '#6b7280', marginBottom: 10, letterSpacing: 0.5 },
+  infoHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  infoTitle: { fontSize: 13, fontWeight: '700', color: '#6b7280', letterSpacing: 0.5 },
+  editLink: { color: GREEN, fontWeight: '700', fontSize: 13 },
+  editInput: { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, marginTop: 4, color: '#111827' },
+  editActions: { flexDirection: 'row', gap: 8, marginTop: 4 },
+  editActionButton: { flex: 1, paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
+  cancelButton: { backgroundColor: '#f3f4f6' },
+  cancelButtonText: { color: '#374151', fontWeight: '700', fontSize: 13 },
+  saveButton: { backgroundColor: GREEN },
+  saveButtonText: { color: '#fff', fontWeight: '700', fontSize: 13 },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
   infoLabel: { color: '#6b7280', fontSize: 13 },
   infoValue: { color: '#111827', fontSize: 13, fontWeight: '600' },

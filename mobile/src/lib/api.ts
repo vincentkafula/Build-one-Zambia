@@ -192,10 +192,18 @@ export interface MemberProfile {
   phone?: string;
   ward?: string;
   constituency?: string;
+  dob?: string;
+  gender?: string;
+  nationalId?: string;
+  province?: string;
+  district?: string;
+  pollingStation?: string;
 }
 
 export const membershipApi = {
   myProfile: () => request<{ member: MemberProfile }>('GET', '/membership/my-profile', undefined, true),
+  updateMyProfile: (patch: Partial<MemberProfile>) =>
+    request<{ success: boolean; member: MemberProfile }>('PATCH', '/membership/my-profile', patch, true),
 };
 
 export interface CertificateInfo {
