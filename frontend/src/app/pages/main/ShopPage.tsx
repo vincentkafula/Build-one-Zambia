@@ -197,7 +197,7 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt?: 'left' | 'right'; cart: CartItem[]; addedId: number | null; onAdd: (p: Product) => void }) {
+function ProductCard({ product, cart, addedId, onAdd, onBuyNow }: { product: Product; tilt?: 'left' | 'right'; cart: CartItem[]; addedId: number | null; onAdd: (p: Product) => void; onBuyNow: () => void }) {
   const hasColors = !!product.colors && product.colors.length > 0;
   const hasSizes = !!product.sizes && product.sizes.length > 0;
   const hasVariants = hasColors || hasSizes;
@@ -398,6 +398,7 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
           sizeWarning={sizeWarning}
           onAdd={handleAdd}
           onAddProduct={onAdd}
+          onBuyNow={onBuyNow}
           onClose={() => setShowDetail(false)}
         />,
         document.body
@@ -407,7 +408,7 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
 }
 
 function ProductDetailModal({
-  product, activeColor, displayImg, showTint, selectedColor, onSelectColor, selectedSize, onSelectSize, wasPrice, justAdded, colorWarning, sizeWarning, onAdd, onAddProduct, onClose,
+  product, activeColor, displayImg, showTint, selectedColor, onSelectColor, selectedSize, onSelectSize, wasPrice, justAdded, colorWarning, sizeWarning, onAdd, onAddProduct, onBuyNow, onClose,
 }: {
   product: Product;
   activeColor: { name: string; swatch: string; img?: string } | null;
@@ -424,6 +425,7 @@ function ProductDetailModal({
   sizeWarning: boolean;
   onAdd: () => void;
   onAddProduct: (p: Product) => void;
+  onBuyNow: () => void;
   onClose: () => void;
 }) {
   const hasColors = !!product.colors && product.colors.length > 0;
@@ -437,12 +439,14 @@ function ProductDetailModal({
   const bundleExtras = PRODUCTS.filter(p => p.id !== product.id && p.tag !== product.tag).slice(0, 2);
   const bundleTotal = product.priceNum + bundleExtras.reduce((s, p) => s + p.priceNum, 0);
 
+  const [qty, setQty] = useState(1);
+
   // A full opaque page, not a dimmed overlay — the product grid behind it
   // is genuinely gone from view until this closes, not just dimmed and
   // peeking through.
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 300, backgroundColor: '#fff', overflowY: 'auto' }}>
-      <div style={{ maxWidth: '760px', margin: '0 auto', padding: '20px 24px 60px' }}>
+      <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '20px 24px 60px' }}>
         <button
           onClick={onClose}
           style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#F3F3F3', border: '1px solid #D5D9D9', borderRadius: '18px', padding: '7px 16px', fontSize: '12.5px', fontFamily: 'Open Sans, sans-serif', cursor: 'pointer', color: '#0F1111', marginBottom: '24px' }}
@@ -450,6 +454,8 @@ function ProductDetailModal({
           ← Back to Shop
         </button>
 
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', gap: '36px' }} className="lg:grid-cols-[1fr_300px]">
+        <div>
         {/* One big product image */}
         <div style={{ position: 'relative', background: '#FAFAFA', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '360px', padding: '30px', border: `1px solid ${CARD_BORDER}`, marginBottom: '24px' }}>
           <img src={displayImg} alt={product.name} style={{ width: '100%', maxWidth: '340px', objectFit: 'contain', filter: showTint ? 'grayscale(0.5) brightness(1.05)' : 'none' }} />
@@ -459,6 +465,7 @@ function ProductDetailModal({
         </div>
 
         <h1 style={{ fontSize: '1.4rem', fontWeight: 600, lineHeight: 1.35, margin: '0 0 8px', color: '#0F1111' }}>{product.name}</h1>
+
 
         <div style={{ marginBottom: '14px' }}>
           <span style={{ fontSize: '24px', fontWeight: 700 }}>{product.price}</span>
@@ -557,14 +564,50 @@ function ProductDetailModal({
             {sizeWarning && <p style={{ fontSize: '11px', color: RED, fontWeight: 700, marginTop: '8px' }}>Please select a size</p>}
           </div>
         )}
+        </div>
 
-        {/* Add to cart */}
-        <button
-          onClick={onAdd}
-          style={{ width: '100%', maxWidth: '340px', background: justAdded ? '#2E7D32' : BUY_YELLOW, color: justAdded ? '#fff' : '#0F1111', border: `1px solid ${justAdded ? '#2E7D32' : '#FCD200'}`, borderRadius: '20px', padding: '12px 0', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif' }}
-        >
-          {justAdded ? '✓ Added to cart' : 'Add to Cart'}
-        </button>
+        {/* Buy box — real fields only. No fake "X% claimed" urgency bar and
+            no specific delivery-time promises: BOZ doesn't have Amazon's
+            fulfilment data to back a "delivery tomorrow 12pm-3pm" claim,
+            and a false delivery promise on real campaign merchandise
+            orders would cause real problems for actual buyers. */}
+        <div>
+          <div style={{ border: `1px solid ${CARD_BORDER}`, borderRadius: '8px', padding: '18px', position: 'sticky', top: '18px' }}>
+            <div style={{ marginBottom: '10px' }}>
+              <span style={{ fontSize: '22px', fontWeight: 700 }}>{product.price}</span>
+              {wasPrice && <span style={{ fontSize: '12px', color: '#565959', textDecoration: 'line-through', marginLeft: '8px' }}>K{wasPrice.toLocaleString()}</span>}
+            </div>
+            <p style={{ fontSize: '13px', color: '#007600', fontWeight: 600, margin: '0 0 14px' }}>In stock</p>
+
+            <label style={{ fontSize: '12px', color: '#0F1111', display: 'block', marginBottom: '6px' }}>Quantity</label>
+            <select
+              value={qty}
+              onChange={e => setQty(parseInt(e.target.value))}
+              style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: `1px solid ${CARD_BORDER}`, fontSize: '13px', marginBottom: '16px', background: '#F0F2F2' }}
+            >
+              {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+
+            <button
+              onClick={() => { for (let i = 0; i < qty; i++) onAdd(); }}
+              style={{ width: '100%', background: justAdded ? '#2E7D32' : BUY_YELLOW, color: justAdded ? '#fff' : '#0F1111', border: `1px solid ${justAdded ? '#2E7D32' : '#FCD200'}`, borderRadius: '20px', padding: '10px 0', fontSize: '13.5px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', marginBottom: '10px' }}
+            >
+              {justAdded ? '✓ Added to cart' : 'Add to Basket'}
+            </button>
+            <button
+              onClick={() => { for (let i = 0; i < qty; i++) onAdd(); onBuyNow(); }}
+              style={{ width: '100%', background: '#F08804', color: '#0F1111', border: '1px solid #DA7B00', borderRadius: '20px', padding: '10px 0', fontSize: '13.5px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', marginBottom: '16px' }}
+            >
+              Buy Now
+            </button>
+
+            <div style={{ borderTop: `1px solid ${CARD_BORDER}`, paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <p style={{ fontSize: '12px', color: '#565959', margin: 0 }}>Shipper / Seller <span style={{ color: '#0F1111' }}>Build One Zambia</span></p>
+              <p style={{ fontSize: '12px', color: '#565959', margin: 0 }}>Payment <span style={{ color: '#007185' }}>Secure transaction</span></p>
+            </div>
+          </div>
+        </div>
+        </div>
 
         {/* Frequently bought together — real BOZ products paired for a
             combined price, not a fabricated purchase-pattern stat */}
@@ -633,7 +676,7 @@ const VISIBLE_SLOTS = 5;
 const STEP_HOLD_MS = 5000;
 const STEP_TRANSITION_MS = 600;
 
-function MovingRow({ products, cart, addedId, onAdd }: { products: Product[]; cart: CartItem[]; addedId: number | null; onAdd: (p: Product) => void }) {
+function MovingRow({ products, cart, addedId, onAdd, onBuyNow }: { products: Product[]; cart: CartItem[]; addedId: number | null; onAdd: (p: Product) => void; onBuyNow: () => void }) {
   const n = products.length;
   const [step, setStep] = useState(n);
   const [animate, setAnimate] = useState(true);
@@ -663,7 +706,7 @@ function MovingRow({ products, cart, addedId, onAdd }: { products: Product[]; ca
     <div className="boz-row-mask" style={{ maxWidth: `${VISIBLE_SLOTS * CARD_UNIT - 18}px`, margin: '0 auto' }}>
       <div style={{ display: 'flex', gap: '18px', transform: `translateX(-${step * CARD_UNIT}px)`, transition: animate ? `transform ${STEP_TRANSITION_MS}ms ease` : 'none' }}>
         {loop.map((product, i) => (
-          <ProductCard key={`${product.id}-${i}`} product={product} tilt={i % 2 === 0 ? 'left' : 'right'} cart={cart} addedId={addedId} onAdd={onAdd} />
+          <ProductCard key={`${product.id}-${i}`} product={product} tilt={i % 2 === 0 ? 'left' : 'right'} cart={cart} addedId={addedId} onAdd={onAdd} onBuyNow={onBuyNow} />
         ))}
       </div>
     </div>
@@ -861,7 +904,7 @@ export function ShopPage() {
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '20px' }}>
                 {searchFiltered.map((product, i) => (
-                  <ProductCard key={product.id} product={product} tilt={i % 2 === 0 ? 'left' : 'right'} cart={cart} addedId={addedId} onAdd={addToCart} />
+                  <ProductCard key={product.id} product={product} tilt={i % 2 === 0 ? 'left' : 'right'} cart={cart} addedId={addedId} onAdd={addToCart} onBuyNow={openCheckout} />
                 ))}
               </div>
             )}
@@ -872,7 +915,7 @@ export function ShopPage() {
             if (rowProducts.length === 0) return null;
             return (
               <div key={cat} style={{ marginBottom: '20px' }}>
-                <MovingRow products={rowProducts} cart={cart} addedId={addedId} onAdd={addToCart} />
+                <MovingRow products={rowProducts} cart={cart} addedId={addedId} onAdd={addToCart} onBuyNow={openCheckout} />
               </div>
             );
           })
