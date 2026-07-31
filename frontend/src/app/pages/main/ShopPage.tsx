@@ -46,7 +46,6 @@ export const PRODUCTS = [
     ],
   },
   { id: 3,  name: 'Build One Zambia Cap',          price: 'K120',  priceNum: 120,  tag: 'ACCESSORIES', desc: 'Baseball cap in party colours with embroidered BOZ logo. One size fits all.',                    img: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
-  { id: 46, name: 'BOZ Snapback Cap',              price: 'K165',  priceNum: 165,  tag: 'ACCESSORIES', desc: 'Premium 6-panel snapback with an embroidered Build One Zambia logo and a flat-peak, classic streetwear look. Adjustable snapback closure fits most heads — one size fits all.', img: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 4,  name: 'BOZ Beanie Hat',               price: 'K100',  priceNum: 100,  tag: 'ACCESSORIES', desc: 'Warm knit beanie in green and red party colours. Perfect for campaign events.',                   img: 'https://images.unsplash.com/photo-1510598969022-c4c6c5d05769?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 5,  name: 'Lapel Pin Buttons (Set of 3)', price: 'K60',   priceNum: 60,   tag: 'ACCESSORIES', desc: 'Pinback buttons featuring the party logo and campaign slogans. Great for rallies.',               img: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 6,  name: 'Bumper Stickers (Pack of 5)',  price: 'K40',   priceNum: 40,   tag: 'STICKERS',    desc: 'Weatherproof vinyl stickers with party messages and candidate name for your car.',               img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
@@ -146,7 +145,7 @@ export const PRODUCTS = [
       { name: 'Gray',   swatch: '#4b5563', img: '/products/windbreaker-gray.png' },
     ],
   },
-  { id: 45, name: 'BOZ Snapback Cap',             price: 'K130',  priceNum: 130,  tag: 'ACCESSORIES', desc: 'Flat-brim snapback cap with an embroidered front logo.',                                        img: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 45, name: 'BOZ Snapback Cap',             price: 'K130',  priceNum: 130,  tag: 'ACCESSORIES', desc: 'Flat-brim snapback cap with an embroidered front logo.',                                        img: '/products/snapback-black.png', colors: [{ name: 'Black', swatch: '#111111', img: '/products/snapback-black.png' }, ...SHOP_COLORS.slice(1)] },
 ];
 
 const CATEGORIES = ['ALL', 'APPAREL', 'ACCESSORIES', 'HOMEWARE', 'STATIONERY', 'PRINT', 'STICKERS', 'SIGNAGE', 'BAGS', 'TECH'];
