@@ -396,6 +396,7 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
           colorWarning={colorWarning}
           sizeWarning={sizeWarning}
           onAdd={handleAdd}
+          onAddProduct={onAdd}
           onClose={() => setShowDetail(false)}
         />
       )}
@@ -404,7 +405,7 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
 }
 
 function ProductDetailModal({
-  product, activeColor, displayImg, showTint, selectedColor, onSelectColor, selectedSize, onSelectSize, wasPrice, justAdded, colorWarning, sizeWarning, onAdd, onClose,
+  product, activeColor, displayImg, showTint, selectedColor, onSelectColor, selectedSize, onSelectSize, wasPrice, justAdded, colorWarning, sizeWarning, onAdd, onAddProduct, onClose,
 }: {
   product: Product;
   activeColor: { name: string; swatch: string; img?: string } | null;
@@ -420,10 +421,19 @@ function ProductDetailModal({
   colorWarning: boolean;
   sizeWarning: boolean;
   onAdd: () => void;
+  onAddProduct: (p: Product) => void;
   onClose: () => void;
 }) {
   const hasColors = !!product.colors && product.colors.length > 0;
   const hasSizes = !!product.sizes && product.sizes.length > 0;
+
+  // Real BOZ products only — same category for "related", a couple of
+  // other real items for "frequently bought together". No fabricated
+  // ratings or review counts here (unlike the reference), since that
+  // would mean inventing customer activity that never happened.
+  const related = PRODUCTS.filter(p => p.tag === product.tag && p.id !== product.id).slice(0, 4);
+  const bundleExtras = PRODUCTS.filter(p => p.id !== product.id && p.tag !== product.tag).slice(0, 2);
+  const bundleTotal = product.priceNum + bundleExtras.reduce((s, p) => s + p.priceNum, 0);
 
   // A full opaque page, not a dimmed overlay — the product grid behind it
   // is genuinely gone from view until this closes, not just dimmed and
@@ -523,6 +533,61 @@ function ProductDetailModal({
         >
           {justAdded ? '✓ Added to cart' : 'Add to Cart'}
         </button>
+
+        {/* Frequently bought together — real BOZ products paired for a
+            combined price, not a fabricated purchase-pattern stat */}
+        {bundleExtras.length > 0 && (
+          <div style={{ marginTop: '40px', paddingTop: '32px', borderTop: `1px solid ${CARD_BORDER}` }}>
+            <p style={{ fontSize: '17px', fontWeight: 700, color: '#0F1111', margin: '0 0 16px', fontFamily: 'Open Sans, sans-serif' }}>Frequently bought together</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '16px' }}>
+              {[product, ...bundleExtras].map((p, i) => (
+                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '76px', height: '76px', background: '#FAFAFA', borderRadius: '6px', border: `1px solid ${CARD_BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px' }}>
+                    <img src={p.img} alt={p.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                  </div>
+                  {i < bundleExtras.length && <span style={{ fontSize: '18px', color: '#565959' }}>+</span>}
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: '13px', color: '#0F1111', margin: '0 0 4px' }}>
+              <strong>This item:</strong> {product.name}
+            </p>
+            {bundleExtras.map(p => (
+              <p key={p.id} style={{ fontSize: '13px', color: '#565959', margin: '0 0 4px' }}>{p.name} — {p.price}</p>
+            ))}
+            <p style={{ fontSize: '16px', fontWeight: 700, color: '#0F1111', margin: '10px 0 12px' }}>Total price: K{bundleTotal.toLocaleString()}</p>
+            <button
+              onClick={() => { onAdd(); bundleExtras.forEach(p => onAddProduct(p)); }}
+              style={{ background: BUY_YELLOW, color: '#0F1111', border: '1px solid #FCD200', borderRadius: '20px', padding: '9px 20px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif' }}
+            >
+              Add all {1 + bundleExtras.length} to Cart
+            </button>
+          </div>
+        )}
+
+        {/* Related products — other real items in the same category */}
+        {related.length > 0 && (
+          <div style={{ marginTop: '36px', paddingTop: '28px', borderTop: `1px solid ${CARD_BORDER}` }}>
+            <p style={{ fontSize: '17px', fontWeight: 700, color: '#0F1111', margin: '0 0 16px', fontFamily: 'Open Sans, sans-serif' }}>More from {product.tag.charAt(0) + product.tag.slice(1).toLowerCase()}</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '14px' }}>
+              {related.map(p => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => onAddProduct(p)}
+                  title={`Add ${p.name} to cart`}
+                  style={{ textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  <div style={{ background: '#FAFAFA', borderRadius: '6px', border: `1px solid ${CARD_BORDER}`, height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px', marginBottom: '6px' }}>
+                    <img src={p.img} alt={p.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                  </div>
+                  <p style={{ fontSize: '11.5px', color: '#0F1111', margin: '0 0 3px', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.name}</p>
+                  <p style={{ fontSize: '13px', fontWeight: 700, color: '#0F1111', margin: 0 }}>{p.price}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
