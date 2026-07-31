@@ -203,6 +203,13 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
   const [selectedColor, setSelectedColor] = useState<number | null>(null);
   const [colorWarning, setColorWarning] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
+  useEffect(() => {
+    if (showDetail) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [showDetail]);
   const meta = productMeta(product.id);
   const priceNum = product.priceNum;
   const wasPrice = meta.hasDiscount ? Math.round(priceNum / (1 - meta.discountPct / 100)) : null;
@@ -368,56 +375,81 @@ function ProductDetailModal({
   onClose: () => void;
 }) {
   const hasColors = !!product.colors && product.colors.length > 0;
-  return (
-    <div
-      onClick={onClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 300, backgroundColor: 'rgba(15,17,17,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{ background: '#fff', color: '#0F1111', width: '100%', maxWidth: '640px', maxHeight: '88vh', overflowY: 'auto', borderRadius: '10px', position: 'relative' }}
-      >
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 2, width: '28px', height: '28px', borderRadius: '50%', border: 'none', background: 'rgba(15,17,17,0.06)', cursor: 'pointer', fontSize: '16px', lineHeight: 1 }}
-        >
-          ✕
-        </button>
+  const [qty, setQty] = useState(1);
 
-        <div className="grid grid-cols-1 sm:grid-cols-2" style={{ display: 'grid' }}>
-          <div style={{ position: 'relative', background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '260px', padding: '24px' }}>
-            <img src={displayImg} alt={product.name} style={{ width: '100%', maxWidth: '260px', objectFit: 'contain', filter: showTint ? 'grayscale(0.5) brightness(1.05)' : 'none' }} />
-            {showTint && activeColor && (
-              <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: activeColor.swatch, opacity: 0.32, mixBlendMode: 'multiply' }} />
-            )}
+  // A full opaque page, not a dimmed overlay — the product grid behind it
+  // is genuinely gone from view until this closes, not just dimmed and
+  // peeking through, matching a real product-page navigation rather than
+  // a modal stacked on top of the grid.
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 300, backgroundColor: '#fff', overflowY: 'auto' }}>
+      <div style={{ maxWidth: '1180px', margin: '0 auto', padding: '18px 24px 60px' }}>
+        {/* Breadcrumb + close */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+          <div style={{ fontSize: '12px', color: '#565959', fontFamily: 'Open Sans, sans-serif' }}>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', padding: 0, color: '#007185', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline' }}>
+              Shop
+            </button>
+            <span style={{ margin: '0 6px' }}>›</span>
+            <span>{product.tag}</span>
+            <span style={{ margin: '0 6px' }}>›</span>
+            <span style={{ color: '#0F1111' }}>{product.name}</span>
+          </div>
+          <button
+            onClick={onClose}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#F3F3F3', border: '1px solid #D5D9D9', borderRadius: '18px', padding: '7px 16px', fontSize: '12.5px', fontFamily: 'Open Sans, sans-serif', cursor: 'pointer', color: '#0F1111' }}
+          >
+            ← Back to Shop
+          </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', gap: '32px' }} className="lg:grid-cols-[1fr_1.15fr_320px]">
+          {/* Image */}
+          <div>
+            <div style={{ position: 'relative', background: '#FAFAFA', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '380px', padding: '30px', border: `1px solid ${CARD_BORDER}` }}>
+              <img src={displayImg} alt={product.name} style={{ width: '100%', maxWidth: '340px', objectFit: 'contain', filter: showTint ? 'grayscale(0.5) brightness(1.05)' : 'none' }} />
+              {showTint && activeColor && (
+                <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: activeColor.swatch, opacity: 0.32, mixBlendMode: 'multiply', borderRadius: '8px' }} />
+              )}
+            </div>
           </div>
 
-          <div style={{ padding: '24px' }}>
-            <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '9px', letterSpacing: '0.08em', color: RED_DARK, margin: '0 0 6px' }}>{product.tag}</p>
-            <h2 style={{ fontSize: '1.05rem', fontWeight: 600, lineHeight: 1.3, margin: '0 0 8px' }}>{product.name}</h2>
+          {/* Details */}
+          <div>
+            {meta.badge && (
+              <span style={{ display: 'inline-block', background: meta.badge === 'BESTSELLER' ? '#232F3E' : RED, color: '#fff', fontSize: '10px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.05em', padding: '3px 8px', borderRadius: '3px', marginBottom: '10px' }}>
+                {meta.badge}
+              </span>
+            )}
+            <h1 style={{ fontSize: '1.4rem', fontWeight: 500, lineHeight: 1.35, margin: '0 0 6px', color: '#0F1111' }}>{product.name}</h1>
+            <p style={{ fontSize: '12px', color: '#565959', margin: '0 0 10px' }}>
+              Brand: <span style={{ color: '#007185' }}>Build One Zambia</span>
+            </p>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '14px' }}>
               <Stars rating={meta.rating} />
-              <span style={{ fontSize: '11px', color: '#007185' }}>{meta.reviews.toLocaleString()} ratings</span>
+              <span style={{ fontSize: '13px', color: '#007185' }}>{meta.rating}</span>
+              <span style={{ fontSize: '12px', color: '#565959' }}>({meta.reviews.toLocaleString()})</span>
             </div>
+            <hr style={{ border: 'none', borderTop: `1px solid ${CARD_BORDER}`, margin: '0 0 14px' }} />
 
-            <div style={{ marginBottom: '10px' }}>
-              {meta.hasDiscount && <span style={{ fontSize: '12px', color: RED, fontWeight: 700, marginRight: '8px' }}>-{meta.discountPct}%</span>}
-              <span style={{ fontSize: '22px', fontWeight: 700 }}>{product.price}</span>
-              {wasPrice && <span style={{ fontSize: '12px', color: '#565959', textDecoration: 'line-through', marginLeft: '8px' }}>K{wasPrice.toLocaleString()}</span>}
+            {meta.hasDiscount && (
+              <span style={{ display: 'inline-block', background: RED, color: '#fff', fontSize: '12px', fontWeight: 700, padding: '2px 7px', borderRadius: '3px', marginBottom: '8px' }}>-{meta.discountPct}%</span>
+            )}
+            <div style={{ marginBottom: '4px' }}>
+              <span style={{ fontSize: '13px', verticalAlign: 'top', position: 'relative', top: '4px' }}>K</span>
+              <span style={{ fontSize: '30px', fontWeight: 500 }}>{product.price.replace(/^K/, '')}</span>
             </div>
-            <p style={{ fontSize: '11px', color: '#007600', margin: '0 0 14px' }}>In stock</p>
+            {wasPrice && <p style={{ fontSize: '12px', color: '#565959', margin: '0 0 16px' }}>List Price: <span style={{ textDecoration: 'line-through' }}>K{wasPrice.toLocaleString()}</span></p>}
 
-            <p style={{ fontSize: '11px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', color: '#565959', margin: '0 0 4px' }}>ABOUT THIS ITEM</p>
-            <p style={{ fontSize: '13px', lineHeight: 1.6, color: '#333', margin: '0 0 16px' }}>{product.desc}</p>
+            <hr style={{ border: 'none', borderTop: `1px solid ${CARD_BORDER}`, margin: '0 0 16px' }} />
 
             {hasColors && (
-              <div style={{ marginBottom: '16px' }}>
-                <p style={{ fontSize: '11px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', color: '#565959', margin: '0 0 6px' }}>
-                  COLOUR{activeColor ? `: ${activeColor.name}` : ''}
+              <div style={{ marginBottom: '18px' }}>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: '#0F1111', margin: '0 0 8px' }}>
+                  Colour: <span style={{ fontWeight: 400 }}>{activeColor ? activeColor.name : 'Select a colour'}</span>
                 </p>
-                <div style={{ display: 'flex', gap: '7px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   {product.colors!.map((c, i) => (
                     <button
                       key={c.name}
@@ -426,24 +458,54 @@ function ProductDetailModal({
                       title={c.name}
                       aria-label={`Select colour ${c.name}`}
                       style={{
-                        width: '24px', height: '24px', borderRadius: '50%', background: c.swatch, cursor: 'pointer',
+                        width: '30px', height: '30px', borderRadius: '50%', background: c.swatch, cursor: 'pointer',
                         border: selectedColor === i ? '2px solid #0F1111' : '1px solid rgba(0,0,0,0.2)',
-                        outline: selectedColor === i ? `2px solid ${BUY_YELLOW}` : 'none', outlineOffset: '1px',
+                        outline: selectedColor === i ? `2px solid ${BUY_YELLOW}` : 'none', outlineOffset: '2px',
                         padding: 0, flexShrink: 0,
                       }}
                     />
                   ))}
                 </div>
-                {colorWarning && <p style={{ fontSize: '11px', color: RED, fontWeight: 700, marginTop: '6px' }}>Please select a colour</p>}
+                {colorWarning && <p style={{ fontSize: '11px', color: RED, fontWeight: 700, marginTop: '8px' }}>Please select a colour</p>}
               </div>
             )}
 
-            <button
-              onClick={onAdd}
-              style={{ width: '100%', background: justAdded ? '#2E7D32' : BUY_YELLOW, color: justAdded ? '#fff' : '#0F1111', border: `1px solid ${justAdded ? '#2E7D32' : '#FCD200'}`, borderRadius: '20px', padding: '11px 0', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif' }}
-            >
-              {justAdded ? '✓ Added to cart' : 'Add to Cart'}
-            </button>
+            <p style={{ fontSize: '13px', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.05em', color: '#565959', margin: '0 0 8px' }}>ABOUT THIS ITEM</p>
+            <p style={{ fontSize: '13.5px', lineHeight: 1.7, color: '#333', margin: 0 }}>{product.desc}</p>
+          </div>
+
+          {/* Buy box */}
+          <div>
+            <div style={{ border: `1px solid ${CARD_BORDER}`, borderRadius: '8px', padding: '18px', position: 'sticky', top: '18px' }}>
+              <div style={{ marginBottom: '10px' }}>
+                <span style={{ fontSize: '12px', verticalAlign: 'top', position: 'relative', top: '2px' }}>K</span>
+                <span style={{ fontSize: '22px', fontWeight: 700 }}>{product.price.replace(/^K/, '')}</span>
+              </div>
+              <p style={{ fontSize: '13px', color: '#007600', fontWeight: 600, margin: '0 0 4px' }}>In stock</p>
+              <p style={{ fontSize: '12px', color: '#565959', margin: '0 0 16px' }}>Ships from and sold by Build One Zambia.</p>
+
+              <label style={{ fontSize: '12px', color: '#0F1111', display: 'block', marginBottom: '6px' }}>Quantity</label>
+              <select
+                value={qty}
+                onChange={e => setQty(parseInt(e.target.value))}
+                style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: `1px solid ${CARD_BORDER}`, fontSize: '13px', marginBottom: '14px', background: '#F0F2F2' }}
+              >
+                {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+              </select>
+
+              <button
+                onClick={() => { for (let i = 0; i < qty; i++) onAdd(); }}
+                style={{ width: '100%', background: justAdded ? '#2E7D32' : BUY_YELLOW, color: justAdded ? '#fff' : '#0F1111', border: `1px solid ${justAdded ? '#2E7D32' : '#FCD200'}`, borderRadius: '20px', padding: '10px 0', fontSize: '13.5px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', marginBottom: '10px' }}
+              >
+                {justAdded ? '✓ Added to cart' : 'Add to Cart'}
+              </button>
+              <button
+                onClick={onClose}
+                style={{ width: '100%', background: '#F3F3F3', color: '#0F1111', border: '1px solid #D5D9D9', borderRadius: '20px', padding: '10px 0', fontSize: '13.5px', fontWeight: 500, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif' }}
+              >
+                Continue Shopping
+              </button>
+            </div>
           </div>
         </div>
       </div>
