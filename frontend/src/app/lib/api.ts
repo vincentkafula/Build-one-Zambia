@@ -66,7 +66,18 @@ async function request<T>(method: string, path: string, body?: unknown, auth = f
     throw new Error(text || `HTTP ${res.status}`);
   }
 
-  if (!res.ok) throw new Error((data.error as string) || (data.details as string) || `HTTP ${res.status}`);
+  if (!res.ok) {
+    const generic = (data.error as string) || (data.details as string) || `HTTP ${res.status}`;
+    const detail = data.message as string | undefined;
+    // The backend's catch-all error handler always includes both a
+    // generic `error` and the actual `err.message` as `message` — but
+    // this only ever surfaced the generic one, so a real server error
+    // (like a missing-error-handling bug throwing through to that
+    // catch-all) just showed "Internal server error" with no way to
+    // tell what actually broke. Append the detail when it's genuinely
+    // more specific than the generic message.
+    throw new Error(detail && detail !== generic ? `${generic}: ${detail}` : generic);
+  }
   return data as T;
 }
 

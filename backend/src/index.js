@@ -1103,11 +1103,49 @@ app.patch(`${BASE}/membership/members/:id`, auth.requireAuth, auth.requireRole('
   }
   res.json({ member: m });
 });
-app.post(`${BASE}/membership/members/:id/grant-adoption`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const certNumber = `BOZ-ADOPT-${req.body.electionYear || new Date().getFullYear()}-${req.params.id.slice(-6).toUpperCase()}`; const member = registrations.updateMember(req.params.id, { adoptionGranted: true, adoptionGrantedAt: new Date().toISOString(), adoptionGrantedBy: req.user?.username, ...req.body, adoptionCertNumber: certNumber }); if (!member) return res.status(404).json({ error: 'Not found' }); res.json({ success: true, member }); });
-app.post(`${BASE}/membership/members/:id/revoke-adoption`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const member = registrations.updateMember(req.params.id, { adoptionGranted: false, adoptionRevokedAt: new Date().toISOString(), adoptionRevokedBy: req.user?.username }); if (!member) return res.status(404).json({ error: 'Not found' }); res.json({ success: true, member }); });
+app.post(`${BASE}/membership/members/:id/grant-adoption`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => {
+  try {
+    const certNumber = `BOZ-ADOPT-${req.body.electionYear || new Date().getFullYear()}-${req.params.id.slice(-6).toUpperCase()}`;
+    const member = registrations.updateMember(req.params.id, { adoptionGranted: true, adoptionGrantedAt: new Date().toISOString(), adoptionGrantedBy: req.user?.username, ...req.body, adoptionCertNumber: certNumber });
+    if (!member) return res.status(404).json({ error: 'Member not found' });
+    res.json({ success: true, member });
+  } catch (err) {
+    console.error('[grant-adoption] failed:', err);
+    res.status(500).json({ error: 'Failed to grant adoption certificate', message: err.message });
+  }
+});
+app.post(`${BASE}/membership/members/:id/revoke-adoption`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => {
+  try {
+    const member = registrations.updateMember(req.params.id, { adoptionGranted: false, adoptionRevokedAt: new Date().toISOString(), adoptionRevokedBy: req.user?.username });
+    if (!member) return res.status(404).json({ error: 'Member not found' });
+    res.json({ success: true, member });
+  } catch (err) {
+    console.error('[revoke-adoption] failed:', err);
+    res.status(500).json({ error: 'Failed to revoke adoption certificate', message: err.message });
+  }
+});
 
-app.post(`${BASE}/membership/members/:id/grant-appointment`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const appointmentNumber = `BOZ-APPT-${new Date().getFullYear()}-${req.params.id.slice(-6).toUpperCase()}`; const member = registrations.updateMember(req.params.id, { appointmentGranted: true, appointmentGrantedAt: new Date().toISOString(), appointmentGrantedBy: req.user?.username, ...req.body, appointmentNumber }); if (!member) return res.status(404).json({ error: 'Not found' }); res.json({ success: true, member }); });
-app.post(`${BASE}/membership/members/:id/revoke-appointment`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => { const member = registrations.updateMember(req.params.id, { appointmentGranted: false, appointmentRevokedAt: new Date().toISOString(), appointmentRevokedBy: req.user?.username }); if (!member) return res.status(404).json({ error: 'Not found' }); res.json({ success: true, member }); });
+app.post(`${BASE}/membership/members/:id/grant-appointment`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => {
+  try {
+    const appointmentNumber = `BOZ-APPT-${new Date().getFullYear()}-${req.params.id.slice(-6).toUpperCase()}`;
+    const member = registrations.updateMember(req.params.id, { appointmentGranted: true, appointmentGrantedAt: new Date().toISOString(), appointmentGrantedBy: req.user?.username, ...req.body, appointmentNumber });
+    if (!member) return res.status(404).json({ error: 'Member not found' });
+    res.json({ success: true, member });
+  } catch (err) {
+    console.error('[grant-appointment] failed:', err);
+    res.status(500).json({ error: 'Failed to grant appointment certificate', message: err.message });
+  }
+});
+app.post(`${BASE}/membership/members/:id/revoke-appointment`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => {
+  try {
+    const member = registrations.updateMember(req.params.id, { appointmentGranted: false, appointmentRevokedAt: new Date().toISOString(), appointmentRevokedBy: req.user?.username });
+    if (!member) return res.status(404).json({ error: 'Member not found' });
+    res.json({ success: true, member });
+  } catch (err) {
+    console.error('[revoke-appointment] failed:', err);
+    res.status(500).json({ error: 'Failed to revoke appointment certificate', message: err.message });
+  }
+});
 app.post(`${BASE}/membership/members/:id/link-order`, auth.requireAuth, (req, res) => { const member = registrations.updateMember(req.params.id, { orderId: req.body.orderId }); if (!member) return res.status(404).json({ error: 'Not found' }); res.json({ success: true, member }); });
 
 // ─── Membership certificates ────────────────────────────────────────────────
