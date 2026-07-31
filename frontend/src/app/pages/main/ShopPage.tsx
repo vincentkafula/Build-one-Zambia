@@ -465,6 +465,36 @@ function ProductDetailModal({
           {wasPrice && <span style={{ fontSize: '13px', color: '#565959', textDecoration: 'line-through', marginLeft: '10px' }}>K{wasPrice.toLocaleString()}</span>}
         </div>
 
+        {/* Product information — only fields we actually have real data
+            for (brand, category, available colours/sizes). Not padded
+            out with invented specs like "Item form" or "Unit count"
+            that don't apply to a t-shirt or don't exist in the catalog. */}
+        <table style={{ width: '100%', maxWidth: '420px', borderCollapse: 'collapse', margin: '0 0 24px' }}>
+          <tbody>
+            <tr>
+              <td style={{ padding: '6px 16px 6px 0', fontSize: '13px', fontWeight: 700, color: '#0F1111', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Brand</td>
+              <td style={{ padding: '6px 0', fontSize: '13px', color: '#0F1111' }}>Build One Zambia</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '6px 16px 6px 0', fontSize: '13px', fontWeight: 700, color: '#0F1111', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Category</td>
+              <td style={{ padding: '6px 0', fontSize: '13px', color: '#0F1111' }}>{product.tag.charAt(0) + product.tag.slice(1).toLowerCase()}</td>
+            </tr>
+            {hasColors && (
+              <tr>
+                <td style={{ padding: '6px 16px 6px 0', fontSize: '13px', fontWeight: 700, color: '#0F1111', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Colours available</td>
+                <td style={{ padding: '6px 0', fontSize: '13px', color: '#0F1111' }}>{product.colors!.map(c => c.name).join(', ')}</td>
+              </tr>
+            )}
+            {hasSizes && (
+              <tr>
+                <td style={{ padding: '6px 16px 6px 0', fontSize: '13px', fontWeight: 700, color: '#0F1111', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Sizes available</td>
+                <td style={{ padding: '6px 0', fontSize: '13px', color: '#0F1111' }}>{product.sizes!.join(', ')}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+        <hr style={{ border: 'none', borderTop: `1px solid ${CARD_BORDER}`, margin: '0 0 24px' }} />
+
         {/* Description — split into bullet points like Amazon's "About this
             item" list, since each product description is written as short
             1-2 sentence facts rather than one paragraph */}
