@@ -300,6 +300,9 @@ function ProductCard({ product, cart, addedId, onAdd, onBuyNow }: { product: Pro
       >
         {product.name}
       </p>
+      <p style={{ fontSize: '10px', color: '#565959', margin: '0 0 4px', fontFamily: 'Open Sans, sans-serif' }}>
+        Brand: <span style={{ color: '#007185' }}>Build One Zambia</span>
+      </p>
       <button
         type="button"
         onClick={() => setShowDetail(true)}
