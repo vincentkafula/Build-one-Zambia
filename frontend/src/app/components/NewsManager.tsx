@@ -437,7 +437,7 @@ function PostRow({ post, onEdit, onChangeImage, onAction, actionLoading }: {
           <p style={{ margin: '0 0 3px', fontSize: '14px', fontWeight: 700, color: '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{post.title}</p>
           <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>
             {post.author} · {pub} · {post.viewCount} views
-            {post.tags.length > 0 && <span> · {post.tags.slice(0, 3).join(', ')}</span>}
+            {(post.tags?.length ?? 0) > 0 && <span> · {post.tags.slice(0, 3).join(', ')}</span>}
           </p>
         </div>
 

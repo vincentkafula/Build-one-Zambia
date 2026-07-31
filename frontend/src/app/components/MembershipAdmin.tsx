@@ -132,7 +132,7 @@ function MemberRow({ member, onGrant, onRevoke, onUpdateTier, onUpdateStatus, lo
               ['Constituency', member.constituency],
               ['Ward',         member.ward],
               ['Joined',       new Date(member.joinDate).toLocaleDateString('en-ZM')],
-              ['Orders',       member.shopOrderIds.length + ' linked'],
+              ['Orders',       (member.shopOrderIds?.length ?? 0) + ' linked'],
               ['Discount',     member.memberDiscountPct + '%'],
             ].map(([label, val]) => (
               <div key={label}>

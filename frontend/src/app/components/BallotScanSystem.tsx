@@ -632,7 +632,7 @@ function TemplatesTab({ onRefresh }: { onRefresh: () => void }) {
                       <Badge text={String(t.electionYear)} color={GOLD} />
                       {t.constituencyName && <Badge text={t.constituencyName} color={'rgba(255,255,255,0.3)'} />}
                     </div>
-                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', margin: 0 }}>{t.candidates.length} candidates · Created by {t.createdBy} · {new Date(t.createdAt).toLocaleDateString()}</p>
+                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', margin: 0 }}>{t.candidates?.length ?? 0} candidates · Created by {t.createdBy} · {new Date(t.createdAt).toLocaleDateString()}</p>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button onClick={() => setPreview(preview?.id === t.id ? null : t)} style={{ padding: '6px 12px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: 'rgba(255,255,255,0.6)', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
