@@ -730,7 +730,7 @@ export function ShopPage() {
       {cartCount > 0 && !checkoutOpen && (
         <button
           onClick={openCheckout}
-          style={{ position: 'fixed', bottom: '28px', right: '24px', zIndex: 200, display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: RED, color: '#fff', border: 'none', padding: '14px 24px', cursor: 'pointer', fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.1em', boxShadow: '0 8px 32px rgba(220,38,38,0.45)' }}
+          style={{ position: 'fixed', top: '52px', right: '24px', zIndex: 200, display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: RED, color: '#fff', border: 'none', padding: '14px 24px', cursor: 'pointer', fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.1em', boxShadow: '0 8px 32px rgba(220,38,38,0.45)' }}
         >
           <ShoppingCart style={{ width: '18px', height: '18px' }} />
           VIEW CART ({cartCount}) — K{cart.reduce((s, i) => s + i.priceNum * i.qty, 0).toLocaleString()}
