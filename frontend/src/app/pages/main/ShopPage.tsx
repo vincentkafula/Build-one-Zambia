@@ -453,8 +453,17 @@ function ProductDetailModal({
           {wasPrice && <span style={{ fontSize: '13px', color: '#565959', textDecoration: 'line-through', marginLeft: '10px' }}>K{wasPrice.toLocaleString()}</span>}
         </div>
 
-        {/* Description */}
-        <p style={{ fontSize: '14.5px', lineHeight: 1.7, color: '#333', margin: '0 0 22px' }}>{product.desc}</p>
+        {/* Description — split into bullet points like Amazon's "About this
+            item" list, since each product description is written as short
+            1-2 sentence facts rather than one paragraph */}
+        <p style={{ fontSize: '15px', fontWeight: 700, color: '#0F1111', margin: '0 0 12px', fontFamily: 'Open Sans, sans-serif' }}>About this item</p>
+        <ul style={{ margin: '0 0 26px', padding: '0 0 0 20px', listStyle: 'disc' }}>
+          {product.desc.split(/(?<=[.!])\s+/).filter(Boolean).map((sentence, i) => (
+            <li key={i} style={{ fontSize: '16px', lineHeight: 1.8, color: '#0F1111', marginBottom: '6px' }}>
+              {sentence}
+            </li>
+          ))}
+        </ul>
 
         {hasColors && (
           <div style={{ marginBottom: '22px' }}>
