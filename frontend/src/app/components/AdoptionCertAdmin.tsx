@@ -223,7 +223,7 @@ export function AdoptionCertAdmin() {
                 {/* Election year */}
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', color: '#4b5563', marginBottom: '5px' }}>Election Year *</label>
-                  <input type="number" value={year} onChange={e => setYear(parseInt(e.target.value))} required min={2020} max={2050}
+                  <input type="number" value={year} onChange={e => setYear(parseInt(e.target.value) || new Date().getFullYear())} required min={2020} max={2050}
                     style={{ width: '100%', padding: '9px 12px', border: '1px solid #d1d5db', borderRadius: '7px', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
 

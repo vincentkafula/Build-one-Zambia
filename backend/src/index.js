@@ -57,6 +57,22 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
+// express.json() throws a SyntaxError, handled by Express's own error
+// pipeline, when the request body isn't valid JSON — this happens BEFORE
+// any route handler runs, so a per-route try/catch never sees it. That's
+// exactly the shape of error reported: "Unexpected token '"'... is not
+// valid JSON", surfaced through the *global* catch-all rather than any
+// route-specific one. Handling it explicitly here, right after the
+// parser that throws it, makes this diagnosable instead of a generic
+// 500 — and logs the actual request body Express received, which is the
+// key piece of information for finding what's sending malformed JSON.
+app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed' || err instanceof SyntaxError && 'body' in err) {
+    console.error(`[body-parse] ${req.method} ${req.path} — malformed JSON body:`, err.message, '| raw body received:', err.body);
+    return res.status(400).json({ error: 'Request body was not valid JSON', message: err.message });
+  }
+  next(err);
+});
 app.set('trust proxy', 1);
 
 // ─── Rate limiting ────────────────────────────────────────────────────────────
