@@ -23,6 +23,7 @@ export const SHOP_COLORS = [
 
 export const PRODUCTS = [
   { id: 1,  name: 'BOZ Campaign T-Shirt',         price: 'K150',  priceNum: 150,  tag: 'APPAREL',     desc: 'Branded with the party logo, slogan, and candidate\'s name. Available in all sizes.',            img: '/products/tshirt-gold.png',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: [
       { name: 'Gold',   swatch: '#F0B429', img: '/products/tshirt-gold.png' },
       { name: 'White',  swatch: '#FFFFFF', img: '/products/tshirt-white.png' },
@@ -33,6 +34,7 @@ export const PRODUCTS = [
     ],
   },
   { id: 2,  name: 'BOZ Hoodie',                   price: 'K280',  priceNum: 280,  tag: 'APPAREL',     desc: 'Premium hoodie embroidered with the Build One Zambia logo and 2031 campaign slogan.',            img: '/products/hoodie-green.png',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: [
       { name: 'Green',  swatch: '#00712B', img: '/products/hoodie-green.png' },
       { name: 'Orange', swatch: '#EA580C', img: '/products/hoodie-orange.png' },
@@ -62,6 +64,7 @@ export const PRODUCTS = [
   { id: 20, name: 'BOZ 2031 Calendar',            price: 'K95',   priceNum: 95,   tag: 'PRINT',       desc: 'Annual wall calendar featuring party imagery, key election dates, and campaign milestones.',      img: 'https://images.unsplash.com/photo-1506784365847-bbad939e9501?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 21, name: 'BOZ Water Bottle',             price: 'K110',  priceNum: 110,  tag: 'HOMEWARE',    desc: 'Reusable stainless steel water bottle with party logo. 750ml capacity.',                          img: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 22, name: 'BOZ Campaign Jersey',          price: 'K320',  priceNum: 320,  tag: 'APPAREL',     desc: 'Sports-style jersey in party colours with logo and candidate\'s name. Premium fundraising item.',  img: '/products/jersey-green.png',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: [
       { name: 'Green',  swatch: '#00712B', img: '/products/jersey-green.png' },
       { name: 'Orange', swatch: '#EA580C', img: '/products/jersey-orange.png' },
@@ -72,6 +75,7 @@ export const PRODUCTS = [
     ],
   },
   { id: 23, name: 'BOZ Branded Jacket',           price: 'K580',  priceNum: 580,  tag: 'APPAREL',     desc: 'Embroidered windbreaker/bomber jacket with party logo and colours. Premium collectible.',           img: '/products/jacket-black.png',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: [
       { name: 'Black',  swatch: '#111111', img: '/products/jacket-black.png' },
       { name: 'Green',  swatch: '#00712B', img: '/products/jacket-green.png' },
@@ -94,6 +98,7 @@ export const PRODUCTS = [
   { id: 25, name: 'Manifesto & Policy Books',     price: 'K20',   priceNum: 20,   tag: 'PRINT',       desc: 'The full 2031 manifesto, policy pamphlets, and ideology guides — sold as collectibles.',           img: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 26, name: 'BOZ Umbrella',                 price: 'K220',  priceNum: 220,  tag: 'ACCESSORIES', desc: 'Full-size automatic umbrella in party colours with the Build One Zambia logo printed on each panel. Ideal for outdoor rallies and events.', img: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 27, name: 'BOZ Polo Shirt',               price: 'K195',  priceNum: 195,  tag: 'APPAREL',     desc: 'Premium cotton polo shirt embroidered with the Build One Zambia logo on the chest. Available in 6 colours. Sizes S–3XL.', img: '/products/polo-green.png',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL'],
     colors: [
       { name: 'Green',  swatch: '#00712B', img: '/products/polo-green.png' },
       { name: 'Orange', swatch: '#EA580C', img: '/products/polo-orange.png' },
@@ -129,6 +134,7 @@ export const PRODUCTS = [
   { id: 42, name: 'BOZ Laptop Sleeve',            price: 'K165',  priceNum: 165,  tag: 'BAGS',        desc: 'Padded 13–15" laptop sleeve with embroidered BOZ logo.',                                         img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 43, name: 'Campaign Duffel Bag',          price: 'K420',  priceNum: 420,  tag: 'BAGS',        desc: 'Large duffel bag for agents and volunteers travelling between wards.',                          img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 44, name: 'BOZ Windbreaker',              price: 'K380',  priceNum: 380,  tag: 'APPAREL',     desc: 'Lightweight windbreaker in party colours, ideal for outdoor canvassing.',                       img: '/products/windbreaker-green.png',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: [
       { name: 'Green',  swatch: '#00712B', img: '/products/windbreaker-green.png' },
       { name: 'Orange', swatch: '#EA580C', img: '/products/windbreaker-orange.png' },
@@ -192,16 +198,20 @@ function Stars({ rating }: { rating: number }) {
 
 function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt?: 'left' | 'right'; cart: CartItem[]; addedId: number | null; onAdd: (p: Product) => void }) {
   const hasColors = !!product.colors && product.colors.length > 0;
-  // Colour variants live under synthetic ids (product.id * 100 + variant + 1),
-  // so "in cart" / "just added" need to check the whole family of ids for
-  // this product, not just the base id.
-  const inCartQty = hasColors
-    ? cart.filter(ci => Math.floor(ci.id / 100) === product.id).reduce((s, ci) => s + ci.qty, 0)
+  const hasSizes = !!product.sizes && product.sizes.length > 0;
+  const hasVariants = hasColors || hasSizes;
+  // Variant ids are product.id*1000 + colourIndex*10 + sizeIndex + 1 (both
+  // default to 0 when not applicable), so "in cart" / "just added" need to
+  // check the whole family of ids for this product, not just the base id.
+  const inCartQty = hasVariants
+    ? cart.filter(ci => Math.floor(ci.id / 1000) === product.id).reduce((s, ci) => s + ci.qty, 0)
     : (cart.find(ci => ci.id === product.id)?.qty ?? 0);
-  const justAdded = addedId !== null && (hasColors ? Math.floor(addedId / 100) === product.id : addedId === product.id);
+  const justAdded = addedId !== null && (hasVariants ? Math.floor(addedId / 1000) === product.id : addedId === product.id);
   const [hover, setHover] = useState(false);
   const [selectedColor, setSelectedColor] = useState<number | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [colorWarning, setColorWarning] = useState(false);
+  const [sizeWarning, setSizeWarning] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   useEffect(() => {
     if (showDetail) {
@@ -226,11 +236,19 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
       setTimeout(() => setColorWarning(false), 2000);
       return;
     }
-    if (hasColors && activeColor) {
-      // Each colour becomes its own cart line (distinct id), so the exact
-      // colour the buyer picked carries through to checkout instead of
-      // collapsing into a single generic "jacket" line.
-      onAdd({ ...product, id: product.id * 100 + selectedColor! + 1, name: `${product.name} — ${activeColor.name}`, img: activeColor.img ?? product.img });
+    if (hasSizes && selectedSize === null) {
+      setSizeWarning(true);
+      setTimeout(() => setSizeWarning(false), 2000);
+      return;
+    }
+    if (hasVariants) {
+      const colorIdx = selectedColor ?? 0;
+      const sizeIdx = hasSizes ? product.sizes!.indexOf(selectedSize!) : 0;
+      const variantLabel = [activeColor?.name, hasSizes ? `Size ${selectedSize}` : null].filter(Boolean).join(', ');
+      // Each colour+size combination becomes its own cart line (distinct
+      // id), so the exact variant the buyer picked carries through to
+      // checkout instead of collapsing into a single generic line.
+      onAdd({ ...product, id: product.id * 1000 + colorIdx * 10 + sizeIdx + 1, name: variantLabel ? `${product.name} — ${variantLabel}` : product.name, img: activeColor?.img ?? product.img });
     } else {
       onAdd(product);
     }
@@ -318,6 +336,30 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
         </div>
       )}
 
+      {hasSizes && (
+        <div style={{ marginBottom: '8px' }}>
+          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '3px' }}>
+            {product.sizes!.map(s => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => { setSelectedSize(s); setSizeWarning(false); }}
+                style={{
+                  minWidth: '24px', height: '22px', padding: '0 4px', borderRadius: '4px', fontSize: '10px', cursor: 'pointer',
+                  background: selectedSize === s ? '#0F1111' : '#fff', color: selectedSize === s ? '#fff' : '#0F1111',
+                  border: selectedSize === s ? '1px solid #0F1111' : `1px solid ${CARD_BORDER}`,
+                }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+          <p style={{ fontSize: '9.5px', color: sizeWarning ? RED : '#565959', margin: 0, fontWeight: sizeWarning ? 700 : 400 }}>
+            {sizeWarning ? 'Please select a size' : (selectedSize ? `Size: ${selectedSize}` : 'Select a size')}
+          </p>
+        </div>
+      )}
+
       <div style={{ marginBottom: '4px' }}>
         {meta.hasDiscount && (
           <span style={{ fontSize: '11px', color: RED, fontWeight: 700, marginRight: '6px' }}>-{meta.discountPct}%</span>
@@ -346,10 +388,13 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
           showTint={showTint}
           selectedColor={selectedColor}
           onSelectColor={i => { setSelectedColor(i); setColorWarning(false); }}
+          selectedSize={selectedSize}
+          onSelectSize={s => { setSelectedSize(s); setSizeWarning(false); }}
           meta={meta}
           wasPrice={wasPrice}
           justAdded={justAdded}
           colorWarning={colorWarning}
+          sizeWarning={sizeWarning}
           onAdd={handleAdd}
           onClose={() => setShowDetail(false)}
         />
@@ -359,7 +404,7 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
 }
 
 function ProductDetailModal({
-  product, activeColor, displayImg, showTint, selectedColor, onSelectColor, wasPrice, justAdded, colorWarning, onAdd, onClose,
+  product, activeColor, displayImg, showTint, selectedColor, onSelectColor, selectedSize, onSelectSize, wasPrice, justAdded, colorWarning, sizeWarning, onAdd, onClose,
 }: {
   product: Product;
   activeColor: { name: string; swatch: string; img?: string } | null;
@@ -367,14 +412,18 @@ function ProductDetailModal({
   showTint: boolean;
   selectedColor: number | null;
   onSelectColor: (i: number) => void;
+  selectedSize: string | null;
+  onSelectSize: (s: string) => void;
   meta: ReturnType<typeof productMeta>;
   wasPrice: number | null;
   justAdded: boolean;
   colorWarning: boolean;
+  sizeWarning: boolean;
   onAdd: () => void;
   onClose: () => void;
 }) {
   const hasColors = !!product.colors && product.colors.length > 0;
+  const hasSizes = !!product.sizes && product.sizes.length > 0;
 
   // A full opaque page, not a dimmed overlay — the product grid behind it
   // is genuinely gone from view until this closes, not just dimmed and
@@ -430,6 +479,31 @@ function ProductDetailModal({
               ))}
             </div>
             {colorWarning && <p style={{ fontSize: '11px', color: RED, fontWeight: 700, marginTop: '8px' }}>Please select a colour</p>}
+          </div>
+        )}
+
+        {hasSizes && (
+          <div style={{ marginBottom: '22px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 600, color: '#0F1111', margin: '0 0 8px' }}>
+              Size: <span style={{ fontWeight: 400 }}>{selectedSize || 'Select a size'}</span>
+            </p>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {product.sizes!.map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => onSelectSize(s)}
+                  style={{
+                    minWidth: '42px', height: '38px', padding: '0 10px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer', fontWeight: 500,
+                    background: selectedSize === s ? '#0F1111' : '#fff', color: selectedSize === s ? '#fff' : '#0F1111',
+                    border: selectedSize === s ? '1px solid #0F1111' : `1px solid ${CARD_BORDER}`,
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+            {sizeWarning && <p style={{ fontSize: '11px', color: RED, fontWeight: 700, marginTop: '8px' }}>Please select a size</p>}
           </div>
         )}
 
