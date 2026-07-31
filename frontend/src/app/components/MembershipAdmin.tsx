@@ -44,7 +44,7 @@ function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label:
 
 function MemberRow({ member, onGrant, onRevoke, onUpdateTier, onUpdateStatus, loading }: {
   member: Member;
-  onGrant: (reason: string) => void;
+  onGrant: (data: { electionPosition: 'presidential' | 'mp' | 'mayoral' | 'councillor'; electionYear: number; grantedBy: string; reason?: string }) => void;
   onRevoke: () => void;
   onUpdateTier: (tier: MemberTier) => void;
   onUpdateStatus: (status: MemberStatus) => void;
@@ -52,6 +52,8 @@ function MemberRow({ member, onGrant, onRevoke, onUpdateTier, onUpdateStatus, lo
 }) {
   const [expanded, setExpanded] = useState(false);
   const [grantReason, setGrantReason] = useState('');
+  const [grantPosition, setGrantPosition] = useState<'presidential' | 'mp' | 'mayoral' | 'councillor'>('presidential');
+  const [grantedByName, setGrantedByName] = useState('');
   const [showGrantForm, setShowGrantForm] = useState(false);
 
   const fullName = `${member.firstName} ${member.lastName}`;
@@ -104,13 +106,31 @@ function MemberRow({ member, onGrant, onRevoke, onUpdateTier, onUpdateStatus, lo
       {/* Grant reason form */}
       {showGrantForm && !member.adoptionGranted && (
         <div style={{ padding: '12px 16px', backgroundColor: '#f0fdf4', borderTop: '1px solid #dcfce7' }}>
-          <p style={{ margin: '0 0 8px', fontSize: '12px', fontWeight: 600, color: '#15803d' }}>Reason for granting adoption (optional)</p>
+          <p style={{ margin: '0 0 8px', fontSize: '12px', fontWeight: 600, color: '#15803d' }}>Grant Adoption Certificate</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+            <select value={grantPosition} onChange={e => setGrantPosition(e.target.value as typeof grantPosition)}
+              style={{ padding: '8px 10px', border: '1px solid #bbf7d0', borderRadius: '6px', fontSize: '13px', outline: 'none', backgroundColor: '#fff' }}>
+              <option value="presidential">Presidential</option>
+              <option value="mp">National Assembly (MP)</option>
+              <option value="mayoral">Mayoral / Council Chairperson</option>
+              <option value="councillor">Ward Councillor</option>
+            </select>
+            <input value={grantedByName} onChange={e => setGrantedByName(e.target.value)}
+              placeholder="Granted by (Secretary General)"
+              style={{ padding: '8px 10px', border: '1px solid #bbf7d0', borderRadius: '6px', fontSize: '13px', outline: 'none' }} />
+          </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <input value={grantReason} onChange={e => setGrantReason(e.target.value)}
-              placeholder="e.g. Active participant, ward mobiliser…"
+              placeholder="Reason for granting adoption (optional) — e.g. Active participant, ward mobiliser…"
               style={{ flex: 1, padding: '8px 12px', border: '1px solid #bbf7d0', borderRadius: '6px', fontSize: '13px', outline: 'none' }} />
-            <button onClick={() => { onGrant(grantReason); setShowGrantForm(false); }} disabled={loading}
-              style={{ padding: '8px 16px', backgroundColor: '#16a34a', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
+            <button
+              onClick={() => {
+                if (!grantedByName.trim()) return;
+                onGrant({ electionPosition: grantPosition, electionYear: new Date().getFullYear(), grantedBy: grantedByName.trim(), reason: grantReason.trim() || undefined });
+                setShowGrantForm(false);
+              }}
+              disabled={loading || !grantedByName.trim()}
+              style={{ padding: '8px 16px', backgroundColor: '#16a34a', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', opacity: !grantedByName.trim() ? 0.5 : 1 }}>
               Confirm
             </button>
             <button onClick={() => setShowGrantForm(false)}
@@ -118,6 +138,7 @@ function MemberRow({ member, onGrant, onRevoke, onUpdateTier, onUpdateStatus, lo
               Cancel
             </button>
           </div>
+          {!grantedByName.trim() && <p style={{ margin: '6px 0 0', fontSize: '11px', color: '#b45309' }}>"Granted by" is required — this name appears on the certificate.</p>}
         </div>
       )}
 
@@ -217,10 +238,10 @@ export function MembershipAdmin() {
     return true;
   });
 
-  const handleGrant = async (id: string, reason: string) => {
+  const handleGrant = async (id: string, data: { electionPosition: 'presidential' | 'mp' | 'mayoral' | 'councillor'; electionYear: number; grantedBy: string; reason?: string }) => {
     setActionId(id);
     try {
-      await membershipApi.grantAdoption(id, reason);
+      await membershipApi.grantAdoption(id, data);
       setMsg('Adoption granted successfully');
       load();
     } catch (e) { setMsg(e instanceof Error ? e.message : 'Failed'); }
@@ -366,7 +387,7 @@ export function MembershipAdmin() {
               <p style={{ margin: '0 0 12px', fontSize: '12px', color: '#9ca3af' }}>{filtered.length} of {members.length} members</p>
               {filtered.map(m => (
                 <MemberRow key={m.id} member={m}
-                  onGrant={reason => handleGrant(m.id, reason)}
+                  onGrant={data => handleGrant(m.id, data)}
                   onRevoke={() => handleRevoke(m.id)}
                   onUpdateTier={tier => handleUpdate(m.id, { tier })}
                   onUpdateStatus={status => handleUpdate(m.id, { status })}
@@ -411,7 +432,7 @@ export function MembershipAdmin() {
               </p>
               {filtered.map(m => (
                 <MemberRow key={m.id} member={m}
-                  onGrant={reason => handleGrant(m.id, reason)}
+                  onGrant={data => handleGrant(m.id, data)}
                   onRevoke={() => handleRevoke(m.id)}
                   onUpdateTier={tier => handleUpdate(m.id, { tier })}
                   onUpdateStatus={status => handleUpdate(m.id, { status })}
