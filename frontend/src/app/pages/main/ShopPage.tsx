@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router';
 import { ShoppingBag, Search, ShoppingCart, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import { ShopCheckout, CartItem } from '../../components/ShopCheckout';
@@ -380,7 +381,7 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
         {justAdded ? '✓ Added to cart' : 'Add to Cart'}
       </button>
 
-      {showDetail && (
+      {showDetail && createPortal(
         <ProductDetailModal
           product={product}
           activeColor={activeColor}
@@ -398,7 +399,8 @@ function ProductCard({ product, cart, addedId, onAdd }: { product: Product; tilt
           onAdd={handleAdd}
           onAddProduct={onAdd}
           onClose={() => setShowDetail(false)}
-        />
+        />,
+        document.body
       )}
     </div>
   );
