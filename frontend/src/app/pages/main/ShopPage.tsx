@@ -79,7 +79,14 @@ export const PRODUCTS = [
       { name: 'Yellow', swatch: '#F0B429', img: '/products/tumbler-yellow.png' },
     ] },
   { id: 10, name: 'Campaign Tote Bag',            price: 'K80',   priceNum: 80,   tag: 'BAGS',        desc: 'Heavy-duty reusable cotton shopping bag with BOZ logo and slogan. Eco-friendly.',                img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
-  { id: 11, name: 'Campaign Art Print (A2)',       price: 'K110',  priceNum: 110,  tag: 'PRINT',       desc: 'Framing-quality campaign art print. Bold patriotic design. Signed edition available.',           img: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 11, name: 'Campaign Art Print (A2)',       price: 'K110',  priceNum: 110,  tag: 'PRINT',       desc: 'Framing-quality campaign art print. Bold patriotic design. Signed edition available.',           img: '/products/art-green.png', colors: [
+      { name: 'Green',  swatch: '#00712B', img: '/products/art-green.png' },
+      { name: 'Orange', swatch: '#EA580C', img: '/products/art-orange.png' },
+      { name: 'Blue',   swatch: '#1D4ED8', img: '/products/art-blue.png' },
+      { name: 'Red',    swatch: '#C81E3A', img: '/products/art-red.png' },
+      { name: 'Black',  swatch: '#111111', img: '/products/art-black.png' },
+      { name: 'Yellow', swatch: '#F0B429', img: '/products/art-yellow.png' },
+    ] },
   { id: 12, name: 'BOZ Fridge Magnet',            price: 'K30',   priceNum: 30,   tag: 'ACCESSORIES', desc: 'Full-colour fridge or car magnet featuring the Build One Zambia logo and 2031 date.',            img: '/products/magnet-color.png', colors: SHOP_COLORS },
   { id: 13, name: 'Branded Pen Set (Pack of 5)',  price: 'K50',   priceNum: 50,   tag: 'STATIONERY',  desc: 'Quality ballpoint pens with BOZ branding. Great for offices, schools, and events.',              img: '/products/pen-green.png', colors: [
       { name: 'Green',  swatch: '#00712B', img: '/products/pen-green.png' },
