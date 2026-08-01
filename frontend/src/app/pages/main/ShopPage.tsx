@@ -45,7 +45,7 @@ export const PRODUCTS = [
       { name: 'Gray',   swatch: '#4b5563', img: '/products/hoodie-gray.png' },
     ],
   },
-  { id: 3,  name: 'Build One Zambia Cap',          price: 'K120',  priceNum: 120,  tag: 'ACCESSORIES', desc: 'Baseball cap in party colours with embroidered BOZ logo. One size fits all.',                    img: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 3,  name: 'Build One Zambia Cap',          price: 'K120',  priceNum: 120,  tag: 'ACCESSORIES', desc: 'Baseball cap in party colours with embroidered BOZ logo. One size fits all.',                    img: '/products/cap-green.png', colors: [SHOP_COLORS[0], { name: 'Green', swatch: '#00712B', img: '/products/cap-green.png' }, ...SHOP_COLORS.slice(2)] },
   { id: 4,  name: 'BOZ Beanie Hat',               price: 'K100',  priceNum: 100,  tag: 'ACCESSORIES', desc: 'Warm knit beanie in green and red party colours. Perfect for campaign events.',                   img: '/products/beanie-black.png', colors: [{ name: 'Black', swatch: '#111111', img: '/products/beanie-black.png' }, ...SHOP_COLORS.slice(1)] },
   { id: 5,  name: 'Lapel Pin Buttons (Set of 3)', price: 'K60',   priceNum: 60,   tag: 'ACCESSORIES', desc: 'Pinback buttons featuring the party logo and campaign slogans. Great for rallies.',               img: '/products/pins-color.png', colors: SHOP_COLORS },
   { id: 6,  name: 'Bumper Stickers (Pack of 5)',  price: 'K40',   priceNum: 40,   tag: 'STICKERS',    desc: 'Weatherproof vinyl stickers with party messages and candidate name for your car.',               img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
