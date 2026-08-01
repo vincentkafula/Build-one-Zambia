@@ -17,6 +17,29 @@ function withStatus(post) {
   return { ...post, status };
 }
 
+// The admin form sends a single `status` field ('draft' | 'published' |
+// 'archived') rather than the published/archived booleans directly — this
+// translates it into those booleans (and sets/clears publishedAt to match)
+// so the value the form actually saves is the value that changes what
+// listPosts/withStatus derive. Also strips the raw `status` string from the
+// object before storing, so a stale literal string can never linger on the
+// stored post and be mistaken for the derived value.
+function applyStatusInput(post, input) {
+  const { status, ...rest } = input;
+  const merged = { ...post, ...rest };
+  if (status === 'published') {
+    merged.published = true;
+    merged.archived = false;
+    if (!merged.publishedAt) merged.publishedAt = new Date().toISOString();
+  } else if (status === 'archived') {
+    merged.archived = true;
+  } else if (status === 'draft') {
+    merged.published = false;
+    merged.archived = false;
+  }
+  return merged;
+}
+
 export function listPosts(filters = {}) {
   const index = getIndex();
   let posts = index
@@ -48,23 +71,32 @@ export function getPostImage(id) { return kv.get(`boz:news:image:${id}`); }
 export function createPost(input, author) {
   const id = uid();
   const now = new Date().toISOString();
-  const post = {
+  let post = {
     id,
     title: (input.title || '').trim(),
     summary: (input.summary || '').trim(),
-    content: (input.content || '').trim(),
-    category: input.category || 'general',
+    // Bug fix: this used to read input.content, but the admin form has
+    // always sent `body` (matching the Post type/frontend everywhere
+    // else) — input.content was always undefined, so every new post's
+    // text was silently discarded regardless of what was actually
+    // typed. Same issue below for the cover image URL (imageUrl vs
+    // coverImageUrl).
+    body: (input.body || '').trim(),
+    category: input.category || 'NEWS',
     tags: input.tags || [],
     published: false,
     archived: false,
     featured: !!input.featured,
     publishedAt: null,
     author,
-    imageUrl: input.imageUrl || '',
+    coverImageUrl: input.coverImageUrl || '',
     hasCustomImage: false,
     createdAt: now,
     updatedAt: now,
   };
+
+  // Respect a status of 'published' set at creation time, same as updatePost.
+  post = applyStatusInput(post, { status: input.status });
 
   kv.set(`boz:news:post:${id}`, post);
 
@@ -81,7 +113,7 @@ export function createPost(input, author) {
 export function updatePost(id, input) {
   const post = kv.get(`boz:news:post:${id}`);
   if (!post) return null;
-  const updated = { ...post, ...input, updatedAt: new Date().toISOString() };
+  const updated = { ...applyStatusInput(post, input), updatedAt: new Date().toISOString() };
   kv.set(`boz:news:post:${id}`, updated);
   return withStatus(updated);
 }
