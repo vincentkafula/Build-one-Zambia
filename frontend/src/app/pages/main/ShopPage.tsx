@@ -546,6 +546,7 @@ function ProductDetailModal({
 }) {
   const hasColors = !!product.colors && product.colors.length > 0;
   const hasSizes = !!product.sizes && product.sizes.length > 0;
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
   // Real BOZ products only — same category for "related", a couple of
   // other real items for "frequently bought together". No fabricated
@@ -572,9 +573,33 @@ function ProductDetailModal({
 
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', gap: '36px' }} className="lg:grid-cols-[1fr_300px]">
         <div>
-        {/* One big product image */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '360px', padding: '30px', marginBottom: '24px' }}>
-          <img src={displayImg} alt={product.name} style={{ width: '100%', maxWidth: '340px', objectFit: 'contain', filter: showTint ? 'grayscale(1) brightness(1.5) contrast(1.1)' : 'none' }} />
+        {/* One big product image — real 3D tilt, following the cursor, using
+            a CSS perspective transform on the actual product photo. This
+            isn't a multi-angle 3D model (only one photo angle exists per
+            product), but it is a genuine, interactive 3D effect on the real
+            image, not a static flat picture. */}
+        <div
+          onMouseMove={e => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const px = (e.clientX - rect.left) / rect.width - 0.5;
+            const py = (e.clientY - rect.top) / rect.height - 0.5;
+            setTilt({ x: py * -14, y: px * 16 });
+          }}
+          onMouseLeave={() => setTilt({ x: 0, y: 0 })}
+          style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '360px', padding: '30px', marginBottom: '24px', perspective: '900px' }}
+        >
+          <img
+            src={displayImg}
+            alt={product.name}
+            style={{
+              width: '100%', maxWidth: '340px', objectFit: 'contain',
+              filter: showTint ? 'grayscale(1) brightness(1.5) contrast(1.1)' : 'none',
+              transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${tilt.x || tilt.y ? 1.04 : 1})`,
+              transition: 'transform 0.15s ease-out',
+              transformStyle: 'preserve-3d',
+              willChange: 'transform',
+            }}
+          />
           {showTint && activeColor && (
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: activeColor.swatch, mixBlendMode: 'color', borderRadius: '8px' }} />
           )}
