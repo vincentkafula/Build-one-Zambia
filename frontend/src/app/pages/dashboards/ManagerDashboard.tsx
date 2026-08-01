@@ -2,7 +2,7 @@ import { useState, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router';
 import {
   LayoutDashboard, BarChart2, MapPin, UserCircle, Lock, ShieldCheck,
-  Edit2, Save, TrendingUp, Users, CheckCircle, Clock, ExternalLink, Radio, FileText, Activity, Scale, ShoppingBag, Newspaper, Crown, Building2, Mail, Award, Vote, ScanLine, Server, Shield, Calendar, User, Upload
+  Edit2, Save, TrendingUp, Users, CheckCircle, Clock, ExternalLink, Radio, FileText, Activity, Scale, ShoppingBag, Newspaper, Crown, Building2, Mail, Award, Vote, ScanLine, Server, Shield, Calendar, User, Upload, Music
 } from 'lucide-react';
 import { DashboardShell, DashCard, StatCard } from '../../components/DashboardShell';
 import { SuperAdminGate, getSuperAdminToken } from '../../components/SuperAdminGate';
@@ -38,6 +38,7 @@ const VoterRollUpload         = lazy(() => import('../../components/VoterRollUpl
 const ElectionUserManager     = lazy(() => import('../../components/ElectionUserManager').then(m => ({ default: m.ElectionUserManager })));
 const NoticeBoard             = lazy(() => import('../../components/NoticeBoard').then(m => ({ default: m.NoticeBoard })));
 const EventsManager           = lazy(() => import('../../components/EventsManager').then(m => ({ default: m.EventsManager })));
+const MusicManager            = lazy(() => import('../../components/MusicManager').then(m => ({ default: m.MusicManager })));
 
 function SectionLoader() {
   return (
@@ -54,7 +55,7 @@ type SectionKey = 'overview' | 'notice-board' | 'system-setup' | 'election-users
   'ecz-figures' | 'results-by-province' | 'admin' | 'candidates' | 'ecz-comparison' |
   'results-approval' | 'live-results' | 'voter-verify' | 'voter-roll-upload' |
   'voter-turnout' | 'ballot-scan' | 'registrations' | 'security-centre' |
-  'events' | 'shop' | 'news' | 'leadership' | 'membership-admin' | 'adoption-certs' | 'appointment-certs' |
+  'events' | 'music' | 'shop' | 'news' | 'leadership' | 'membership-admin' | 'adoption-certs' | 'appointment-certs' |
   'press-statements' | 'email' | 'chamber-amendments' | 'live-streams' | 'documents' |
   'personal-details' | 'security' | 'presidential-runoff';
 
@@ -296,7 +297,7 @@ export default function ManagerDashboard() {
   const ADMIN_ONLY_SECTIONS = new Set<SectionKey>([
     'system-setup', 'election-users', 'candidates', 'shadow-cabinet', 'shop', 'news', 'leadership',
     'membership-admin', 'registrations', 'press-statements', 'email', 'adoption-certs', 'appointment-certs',
-    'chamber-amendments', 'security-centre', 'live-streams', 'documents', 'events',
+    'chamber-amendments', 'security-centre', 'live-streams', 'documents', 'events', 'music',
     'voter-roll-upload',
   ]);
 
@@ -393,6 +394,7 @@ export default function ManagerDashboard() {
       case 'live-streams':       return <Suspense fallback={<SectionLoader />}><LiveStreamAdmin /></Suspense>;
       case 'documents':          return <Suspense fallback={<SectionLoader />}><DocumentLibraryAdmin /></Suspense>;
       case 'events':             return <Suspense fallback={<SectionLoader />}><EventsManager /></Suspense>;
+      case 'music':              return <Suspense fallback={<SectionLoader />}><MusicManager /></Suspense>;
 
       case 'voter-verify':
         return (
@@ -493,6 +495,7 @@ export default function ManagerDashboard() {
                   { key: 'press-statements',  label: 'Press Statements',      desc: 'Upload and manage press releases.',                                 icon: <Newspaper size={18} />,   color: '#00712B' },
                   { key: 'live-streams',      label: 'Live Streaming',        desc: 'Go live and manage stream sessions.',                               icon: <Radio size={18} />,       color: A },
                   { key: 'events',            label: 'Events Manager',        desc: 'Create and manage party events.',                                   icon: <Calendar size={18} />,    color: '#00712B' },
+                  { key: 'music',             label: 'Party Music',           desc: 'Add and manage campaign tracks (YouTube-based).',                    icon: <Music size={18} />,       color: '#00712B' },
                   { key: 'membership-admin',  label: 'Membership',            desc: 'View and manage party members.',                                    icon: <Users size={18} />,       color: '#00712B' },
                   { key: 'registrations',     label: 'Registrations',         desc: 'Approve or reject member registrations.',                           icon: <CheckCircle size={18} />, color: '#00712B' },
                   { key: 'results-approval',  label: 'Results Approval',      desc: 'Verify and approve polling station results.',                       icon: <CheckCircle size={18} />, color: '#00712B' },

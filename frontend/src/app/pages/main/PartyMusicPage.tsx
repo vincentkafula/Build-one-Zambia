@@ -1,78 +1,45 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Play, Music, ExternalLink, Youtube, Mic2, Radio } from 'lucide-react';
+import { API_BASE } from '../../lib/apiBase';
 
-// Replace video IDs with real BOZ music video IDs from YouTube
-const FEATURED = {
-  title: 'Build One Zambia — Official Campaign Anthem 2031',
-  artist: 'BOZ Campaign Music',
-  videoId: 'dQw4w9WgXcQ',
-  description: 'The official Build One Zambia 2031 election anthem — a unifying call to every Zambian to rise, vote, and build the nation we deserve.',
-};
-
-const TRACKS = [
-  {
-    id: 'track-1',
-    title: 'One Zambia, One Nation',
-    artist: 'BOZ Choir',
-    videoId: 'dQw4w9WgXcQ',
-    duration: '4:12',
-    thumb: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop&auto=format',
-  },
-  {
-    id: 'track-2',
-    title: 'Rise Up Zambia',
-    artist: 'Vincent Kafula ft. BOZ Youth Choir',
-    videoId: 'dQw4w9WgXcQ',
-    duration: '3:45',
-    thumb: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&h=400&fit=crop&auto=format',
-  },
-  {
-    id: 'track-3',
-    title: 'Build the Nation',
-    artist: 'BOZ Campaign Band',
-    videoId: 'dQw4w9WgXcQ',
-    duration: '5:02',
-    thumb: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400&h=400&fit=crop&auto=format',
-  },
-  {
-    id: 'track-4',
-    title: 'Zambia Forward',
-    artist: 'BOZ Cultural Ensemble',
-    videoId: 'dQw4w9WgXcQ',
-    duration: '3:58',
-    thumb: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop&auto=format',
-  },
-  {
-    id: 'track-5',
-    title: 'Vote for the Future',
-    artist: 'BOZ Youth Voices',
-    videoId: 'dQw4w9WgXcQ',
-    duration: '4:30',
-    thumb: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop&auto=format',
-  },
-  {
-    id: 'track-6',
-    title: 'Unity Song',
-    artist: 'All Provinces Combined Choir',
-    videoId: 'dQw4w9WgXcQ',
-    duration: '6:15',
-    thumb: 'https://images.unsplash.com/photo-1468164016595-6a78abb985a2?w=400&h=400&fit=crop&auto=format',
-  },
-];
+interface Track {
+  id: string;
+  title: string;
+  artist: string;
+  youtubeVideoId: string;
+  duration?: string;
+  thumbnailUrl?: string;
+  featured?: boolean;
+}
 
 const YOUTUBE_CHANNEL = 'https://www.youtube.com/@BuildOneZambia';
 const YOUTUBE_MUSIC_PLAYLIST = 'https://www.youtube.com/@BuildOneZambia/videos';
 
+function thumbUrl(t: Track) {
+  return t.thumbnailUrl || `https://img.youtube.com/vi/${t.youtubeVideoId}/hqdefault.jpg`;
+}
+
 export function PartyMusicPage() {
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [loading, setLoading] = useState(true);
   const [featuredActive, setFeaturedActive] = useState(false);
   const [playingId, setPlayingId] = useState<string | null>(null);
 
-  const handlePlay = (id: string) => {
-    setPlayingId(prev => prev === id ? null : id);
-  };
+  useEffect(() => {
+    fetch(`${API_BASE}/music`)
+      .then(r => r.json())
+      .then(data => setTracks(data.tracks || []))
+      .catch(() => { /* empty state below handles this */ })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const featured = tracks.find(t => t.featured) || tracks[0];
+  const rest = tracks.filter(t => t.id !== featured?.id);
+
+  const handlePlay = (id: string) => setPlayingId(prev => prev === id ? null : id);
 
   return (
-    <div style={{ backgroundcolor: '#111111', fontFamily: 'Open Sans, sans-serif', color: '#111111', minHeight: '100vh' }}>
+    <div style={{ backgroundColor: '#111111', fontFamily: 'Open Sans, sans-serif', color: '#111111', minHeight: '100vh' }}>
 
       {/* Hero */}
       <section style={{ position: 'relative', padding: '100px 16px 72px', overflow: 'hidden', background: 'linear-gradient(135deg, #080808 0%, #1a0000 60%, #080808 100%)' }}>
@@ -109,173 +76,149 @@ export function PartyMusicPage() {
         </div>
       </section>
 
-      {/* Featured track — embedded player */}
-      <section style={{ padding: '0 16px 72px' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-          <div style={{ marginBottom: '24px' }}>
-            <p style={{ fontSize: '11px', letterSpacing: '0.2em', color: '#dc2626', fontFamily: 'Oswald, sans-serif', marginBottom: '8px' }}>FEATURED TRACK</p>
-            <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.4rem, 3vw, 2rem)', letterSpacing: '0.04em', margin: 0 }}>{FEATURED.title}</h2>
-            <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>{FEATURED.artist}</p>
-          </div>
+      {loading && (
+        <p style={{ textAlign: 'center', color: '#4b5563', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em', padding: '40px 16px' }}>Loading tracks…</p>
+      )}
 
-          {/* YouTube embed */}
-          <div
-            style={{ position: 'relative', aspectRatio: '16/9', backgroundcolor: '#111111', border: '1px solid #1f1f1f', overflow: 'hidden', cursor: featuredActive ? 'default' : 'pointer' }}
-            onClick={() => !featuredActive && setFeaturedActive(true)}
-          >
-            {featuredActive ? (
-              <iframe
-                src={`https://www.youtube.com/embed/${FEATURED.videoId}?autoplay=1&rel=0`}
-                title={FEATURED.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-              />
-            ) : (
-              <>
-                <img
-                  src={`https://img.youtube.com/vi/${FEATURED.videoId}/maxresdefault.jpg`}
-                  alt={FEATURED.title}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'brightness(0.5)' }}
-                  onError={e => { (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200&h=675&fit=crop&auto=format'; }}
-                />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%)' }} />
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'rgba(220,38,38,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 16px rgba(220,38,38,0.18)' }}>
-                    <Play style={{ width: '32px', height: '32px', color: '#111111', marginLeft: '5px' }} />
-                  </div>
-                </div>
-                <div style={{ position: 'absolute', bottom: '20px', left: '24px' }}>
-                  <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1rem', color: '#111111', margin: 0, letterSpacing: '0.04em' }}>{FEATURED.title}</p>
-                  <p style={{ fontSize: '12px', color: 'rgba(17,17,17,0.6)', margin: '4px 0 0' }}>Click to play</p>
-                </div>
-              </>
-            )}
-          </div>
-
-          <p style={{ fontSize: '13px', lineHeight: 1.8, color: '#6b7280', marginTop: '16px' }}>{FEATURED.description}</p>
-
-          <a
-            href={`https://www.youtube.com/watch?v=${FEATURED.videoId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '12px', fontSize: '12px', color: '#dc2626', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em', textDecoration: 'none' }}
-          >
-            <ExternalLink style={{ width: '12px', height: '12px' }} /> WATCH ON YOUTUBE
-          </a>
+      {!loading && tracks.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '40px 16px 80px', color: '#4b5563' }}>
+          <Music style={{ width: '32px', height: '32px', margin: '0 auto 16px', opacity: 0.5 }} />
+          <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1.05rem', letterSpacing: '0.05em' }}>No tracks have been added yet.</p>
         </div>
-      </section>
+      )}
 
-      {/* Track list */}
-      <section style={{ padding: '0 16px 96px', borderTop: '1px solid #1a1a1a' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto', paddingTop: '64px' }}>
-          <div style={{ marginBottom: '40px' }}>
-            <p style={{ fontSize: '11px', letterSpacing: '0.2em', color: '#dc2626', fontFamily: 'Oswald, sans-serif', marginBottom: '8px' }}>PLAYLIST</p>
-            <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.4rem, 3vw, 2rem)', letterSpacing: '0.04em', margin: 0 }}>
-              ALL <span style={{ color: '#dc2626' }}>TRACKS</span>
-            </h2>
-          </div>
+      {!loading && featured && (
+        <>
+          {/* Featured track — embedded player */}
+          <section style={{ padding: '0 16px 72px' }}>
+            <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+              <div style={{ marginBottom: '24px' }}>
+                <p style={{ fontSize: '11px', letterSpacing: '0.2em', color: '#dc2626', fontFamily: 'Oswald, sans-serif', marginBottom: '8px' }}>FEATURED TRACK</p>
+                <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(1.4rem, 3vw, 2rem)', letterSpacing: '0.04em', margin: 0 }}>{featured.title}</h2>
+                <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>{featured.artist}</p>
+              </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', backgroundcolor: '#111111' }}>
-            {TRACKS.map((track, index) => (
-              <div key={track.id}>
-                {/* Player row */}
-                {playingId === track.id && (
-                  <div style={{ backgroundcolor: '#111111' }}>
-                    <iframe
-                      src={`https://www.youtube.com/embed/${track.videoId}?autoplay=1&rel=0`}
-                      title={track.title}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      style={{ width: '100%', aspectRatio: '16/9', border: 'none', display: 'block' }}
+              <div
+                style={{ position: 'relative', aspectRatio: '16/9', backgroundColor: '#111111', border: '1px solid #1f1f1f', overflow: 'hidden', cursor: featuredActive ? 'default' : 'pointer' }}
+                onClick={() => !featuredActive && setFeaturedActive(true)}
+              >
+                {featuredActive ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${featured.youtubeVideoId}?autoplay=1&rel=0`}
+                    title={featured.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+                  />
+                ) : (
+                  <>
+                    <img
+                      src={thumbUrl(featured)}
+                      alt={featured.title}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'brightness(0.5)' }}
+                      onError={e => { (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200&h=675&fit=crop&auto=format'; }}
                     />
-                  </div>
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%)' }} />
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'rgba(220,38,38,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 16px rgba(220,38,38,0.18)' }}>
+                        <Play style={{ width: '32px', height: '32px', color: '#111111', marginLeft: '5px' }} />
+                      </div>
+                    </div>
+                    <div style={{ position: 'absolute', bottom: '20px', left: '24px' }}>
+                      <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '1rem', color: '#fff', margin: 0, letterSpacing: '0.04em' }}>{featured.title}</p>
+                      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: '4px 0 0' }}>Click to play</p>
+                    </div>
+                  </>
                 )}
+              </div>
+            </div>
+          </section>
 
-                {/* Track row */}
-                <div
-                  style={{
-                    backgroundColor: playingId === track.id ? '#130000' : '#0d0d0d',
-                    display: 'grid',
-                    gridTemplateColumns: '48px 56px 1fr auto auto',
-                    alignItems: 'center',
-                    gap: '16px',
-                    padding: '16px 20px',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.15s',
-                    borderLeft: playingId === track.id ? '3px solid #dc2626' : '3px solid transparent',
-                  }}
-                  onMouseEnter={e => { if (playingId !== track.id) (e.currentTarget as HTMLElement).style.backgroundColor = '#111'; }}
-                  onMouseLeave={e => { if (playingId !== track.id) (e.currentTarget as HTMLElement).style.backgroundColor = '#0d0d0d'; }}
-                  onClick={() => handlePlay(track.id)}
-                >
-                  {/* Track number / play indicator */}
-                  <div style={{ textAlign: 'center' }}>
-                    {playingId === track.id ? (
-                      <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', justifyContent: 'center', height: '20px' }}>
-                        {[1, 2, 3].map(b => (
-                          <div key={b} style={{ width: '3px', backgroundColor: '#dc2626', borderRadius: '1px', animation: `eq${b} 0.8s ease-in-out infinite alternate`, height: `${8 + b * 4}px` }} />
-                        ))}
+          {/* Track list */}
+          {rest.length > 0 && (
+            <section style={{ padding: '0 16px 72px' }}>
+              <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+                <p style={{ fontSize: '11px', letterSpacing: '0.2em', color: '#dc2626', fontFamily: 'Oswald, sans-serif', marginBottom: '16px' }}>MORE TRACKS</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  {rest.map((track, index) => (
+                    <div key={track.id} style={{ backgroundColor: '#0d0d0d' }}>
+                      <div
+                        style={{ display: 'grid', gridTemplateColumns: '32px 48px 1fr auto auto', gap: '16px', alignItems: 'center', padding: '12px 16px', cursor: 'pointer', transition: 'background-color 0.15s' }}
+                        onMouseEnter={e => { if (playingId !== track.id) (e.currentTarget as HTMLElement).style.backgroundColor = '#111'; }}
+                        onMouseLeave={e => { if (playingId !== track.id) (e.currentTarget as HTMLElement).style.backgroundColor = '#0d0d0d'; }}
+                        onClick={() => handlePlay(track.id)}
+                      >
+                        <div style={{ textAlign: 'center' }}>
+                          {playingId === track.id ? (
+                            <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', justifyContent: 'center', height: '20px' }}>
+                              {[1, 2, 3].map(b => (
+                                <div key={b} style={{ width: '3px', backgroundColor: '#dc2626', borderRadius: '1px', animation: `eq${b} 0.8s ease-in-out infinite alternate`, height: `${8 + b * 4}px` }} />
+                              ))}
+                            </div>
+                          ) : (
+                            <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', color: '#4b5563' }}>{String(index + 1).padStart(2, '0')}</span>
+                          )}
+                        </div>
+
+                        <div style={{ width: '48px', height: '48px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                          <img src={thumbUrl(track)} alt={track.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          {playingId !== track.id && (
+                            <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <Play style={{ width: '14px', height: '14px', color: '#fff' }} />
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '14px', letterSpacing: '0.04em', color: playingId === track.id ? '#dc2626' : '#fff', margin: 0 }}>{track.title}</p>
+                          <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0 0', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Mic2 style={{ width: '10px', height: '10px' }} /> {track.artist}
+                          </p>
+                        </div>
+
+                        <span style={{ fontSize: '12px', color: '#4b5563', fontFamily: 'Oswald, sans-serif' }}>{track.duration}</span>
+
+                        <a
+                          href={`https://www.youtube.com/watch?v=${track.youtubeVideoId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', color: '#4b5563', textDecoration: 'none' }}
+                          title="Open on YouTube"
+                        >
+                          <ExternalLink style={{ width: '14px', height: '14px' }} />
+                        </a>
                       </div>
-                    ) : (
-                      <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '13px', color: '#4b5563' }}>{String(index + 1).padStart(2, '0')}</span>
-                    )}
-                  </div>
+                      {playingId === track.id && (
+                        <div style={{ aspectRatio: '16/9', backgroundColor: '#000' }}>
+                          <iframe
+                            src={`https://www.youtube.com/embed/${track.youtubeVideoId}?autoplay=1&rel=0`}
+                            title={track.title}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
 
-                  {/* Thumb */}
-                  <div style={{ width: '48px', height: '48px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
-                    <img src={track.thumb} alt={track.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    {playingId !== track.id && (
-                      <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Play style={{ width: '14px', height: '14px', color: '#111111' }} />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div>
-                    <p style={{ fontFamily: 'Oswald, sans-serif', fontSize: '14px', letterSpacing: '0.04em', color: playingId === track.id ? '#dc2626' : '#fff', margin: 0 }}>{track.title}</p>
-                    <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0 0', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Mic2 style={{ width: '10px', height: '10px' }} /> {track.artist}
-                    </p>
-                  </div>
-
-                  {/* Duration */}
-                  <span style={{ fontSize: '12px', color: '#4b5563', fontFamily: 'Oswald, sans-serif' }}>{track.duration}</span>
-
-                  {/* YouTube link */}
+                <div style={{ marginTop: '32px', textAlign: 'center' }}>
                   <a
-                    href={`https://www.youtube.com/watch?v=${track.videoId}`}
+                    href={YOUTUBE_MUSIC_PLAYLIST}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={e => e.stopPropagation()}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', color: '#4b5563', textDecoration: 'none' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#dc2626'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = '#4b5563'}
-                    title="Open on YouTube"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', border: '1px solid #dc2626', color: '#dc2626', padding: '14px 32px', fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.1em', textDecoration: 'none' }}
                   >
-                    <ExternalLink style={{ width: '14px', height: '14px' }} />
+                    <Youtube style={{ width: '16px', height: '16px' }} /> VIEW ALL ON YOUTUBE
                   </a>
                 </div>
               </div>
-            ))}
-          </div>
-
-          {/* View all on YouTube */}
-          <div style={{ marginTop: '32px', textAlign: 'center' }}>
-            <a
-              href={YOUTUBE_MUSIC_PLAYLIST}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', border: '1px solid #dc2626', color: '#dc2626', padding: '14px 32px', fontFamily: 'Oswald, sans-serif', fontSize: '13px', letterSpacing: '0.1em', textDecoration: 'none' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = '#dc2626'; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#dc2626'; }}
-            >
-              <Youtube style={{ width: '16px', height: '16px' }} /> VIEW ALL ON YOUTUBE
-            </a>
-          </div>
-        </div>
-      </section>
+            </section>
+          )}
+        </>
+      )}
 
       {/* CTA */}
       <section style={{ padding: '72px 16px', backgroundColor: '#dc2626', textAlign: 'center' }}>

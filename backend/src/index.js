@@ -1893,6 +1893,50 @@ app.get(`${BASE}/data-entry/audit-log`, auth.requireAuth, (req, res) => { const 
 // ─── Events ───────────────────────────────────────────────────────────────────
 const eventsStore = { events: kv.get('events') || [] };
 function saveEvents() { kv.set('events', eventsStore.events); }
+
+// ─── Party Music ───────────────────────────────────────────────────────────
+// Genuinely new — there was no backend for this at all before; the public
+// page was showing fabricated tracks that all linked to the same YouTube
+// video regardless of title. Real tracks are just a YouTube video ID plus
+// metadata; playback happens via YouTube's own embed, no audio hosting
+// needed here.
+const musicStore = { tracks: kv.get('music:tracks') || [] };
+function saveMusic() { kv.set('music:tracks', musicStore.tracks); }
+
+app.get(`${BASE}/music`, (req, res) => {
+  let tracks = [...musicStore.tracks];
+  if (req.query.featured === 'true') tracks = tracks.filter(t => t.featured);
+  res.json({ tracks, count: tracks.length });
+});
+app.get(`${BASE}/music/:id`, (req, res) => {
+  const t = musicStore.tracks.find(t => t.id === req.params.id);
+  if (!t) return res.status(404).json({ error: 'Not found' });
+  res.json({ track: t });
+});
+app.post(`${BASE}/music`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => {
+  const { title, artist, youtubeVideoId, duration, thumbnailUrl, featured } = req.body || {};
+  if (!title || !youtubeVideoId) return res.status(400).json({ error: 'title and youtubeVideoId are required.' });
+  const track = {
+    id: `track-${Date.now()}`, title, artist: artist || 'Build One Zambia',
+    youtubeVideoId, duration: duration || '', thumbnailUrl: thumbnailUrl || '',
+    featured: !!featured, createdAt: new Date().toISOString(),
+  };
+  musicStore.tracks.unshift(track);
+  saveMusic();
+  res.json({ track });
+});
+app.patch(`${BASE}/music/:id`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => {
+  const idx = musicStore.tracks.findIndex(t => t.id === req.params.id);
+  if (idx < 0) return res.status(404).json({ error: 'Not found' });
+  musicStore.tracks[idx] = { ...musicStore.tracks[idx], ...req.body, id: req.params.id, updatedAt: new Date().toISOString() };
+  saveMusic();
+  res.json({ track: musicStore.tracks[idx] });
+});
+app.delete(`${BASE}/music/:id`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => {
+  musicStore.tracks = musicStore.tracks.filter(t => t.id !== req.params.id);
+  saveMusic();
+  res.json({ success: true });
+});
 app.get(`${BASE}/events`, (req, res) => { let evts = [...eventsStore.events]; if (req.query.status) evts = evts.filter(e => e.status === req.query.status); res.json({ events: evts, count: evts.length }); });
 app.get(`${BASE}/events/:id`, (req, res) => { const evt = eventsStore.events.find(e => e.id === req.params.id); if (!evt) return res.status(404).json({ error: 'Not found' }); res.json({ event: evt }); });
 app.get(`${BASE}/events/:id/photo`, (req, res) => { const photo = kv.get(`events:photo:${req.params.id}`); if (!photo) return res.status(404).json({ error: 'No photo' }); const [meta, b64] = photo.split(','); res.setHeader('Content-Type', meta.replace('data:', '').replace(';base64', '')); res.send(Buffer.from(b64, 'base64')); });
