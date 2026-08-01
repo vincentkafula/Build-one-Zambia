@@ -18,7 +18,13 @@ const HERO_SLIDES = [
 ];
 
 const RALLY_IMG     = rallyImg;
-const COMMUNITY_IMG = '/images/tower-crane.png';
+// Images for the "ABOUT THE MOVEMENT" section — slides through these one
+// after another. Add more image paths here as they come in; nothing else
+// needs to change for a new one to start appearing in the rotation.
+const COMMUNITY_IMAGES = [
+  '/images/tower-crane.png',
+  '/images/tractor-harvester.png',
+];
 
 const PROMISES = [
   {
@@ -45,12 +51,21 @@ const PROMISES = [
 
 export default function MainHomePage() {
   const [slideIndex, setSlideIndex] = useState(0);
+  const [communityIndex, setCommunityIndex] = useState(0);
   const [showElectionPopup, setShowElectionPopup] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setSlideIndex(i => (i + 1) % HERO_SLIDES.length);
     }, 3500);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (COMMUNITY_IMAGES.length <= 1) return;
+    const timer = setInterval(() => {
+      setCommunityIndex(i => (i + 1) % COMMUNITY_IMAGES.length);
+    }, 4000);
     return () => clearInterval(timer);
   }, []);
 
@@ -245,13 +260,29 @@ export default function MainHomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="relative">
-              <div className="overflow-hidden" style={{ height: '480px' }}>
-                <ImageWithFallback
-                  src={COMMUNITY_IMG}
-                  alt="Build One Zambia — tower crane on an active construction site"
-                  className="w-full h-full object-cover"
-                />
+              <div className="overflow-hidden relative" style={{ height: '480px' }}>
+                {COMMUNITY_IMAGES.map((src, i) => (
+                  <ImageWithFallback
+                    key={src}
+                    src={src}
+                    alt="Build One Zambia — building a better tomorrow"
+                    className="w-full h-full object-cover absolute inset-0"
+                    style={{ opacity: i === communityIndex ? 1 : 0, transition: 'opacity 1s ease' }}
+                  />
+                ))}
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(220,38,38,0.25) 0%, transparent 60%)' }} />
+                {COMMUNITY_IMAGES.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                    {COMMUNITY_IMAGES.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCommunityIndex(i)}
+                        aria-label={`Show image ${i + 1}`}
+                        style={{ width: '8px', height: '8px', borderRadius: '50%', border: 'none', cursor: 'pointer', backgroundColor: i === communityIndex ? '#fff' : 'rgba(255,255,255,0.45)' }}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="absolute -bottom-4 -right-4 w-48 h-48 -z-10" style={{ backgroundColor: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.25)' }} />
             </div>
