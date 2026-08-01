@@ -25,6 +25,7 @@ const COMMUNITY_IMAGES = [
   '/images/tower-crane.png',
   '/images/tractor-harvester.png',
   '/images/road-grader.png',
+  '/images/tractor-prow.png',
 ];
 
 const PROMISES = [
