@@ -22,7 +22,7 @@ const RALLY_IMG     = rallyImg;
 // after another. Add more image paths here as they come in; nothing else
 // needs to change for a new one to start appearing in the rotation.
 const COMMUNITY_IMAGES = [
-  '/images/tower-crane.png',
+  '/images/tower-crane-v2.png',
   '/images/tractor-harvester.png',
   '/images/road-grader.png',
   '/images/tractor-prow.png',
