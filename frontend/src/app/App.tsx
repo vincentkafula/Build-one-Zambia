@@ -12,6 +12,7 @@ import { PageLoader } from './components/PageLoader';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { bootstrapProduction } from './lib/production';
+import { getToken } from './lib/api';
 import MainHomePage from './pages/main/MainHomePage';
 import VerifyMembershipPage from './pages/VerifyMembershipPage';
 
@@ -77,6 +78,35 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   if (isLoading) return <PageLoader variant="dark" message="Verifying session…" />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+// A second, separate auth system: DashboardLogin (the /dashboard-login
+// flow used by members, cooperatives, election agents/managers, and the
+// super_admin/admin/manager content-management dashboard) stores its
+// session directly via setToken()/sessionStorage rather than through
+// AuthContext — so it needs its own guard, not the one above, which
+// checks a completely different session store and would incorrectly
+// reject every legitimately logged-in dashboard user.
+//
+// Previously none of these /dashboard/* routes had ANY route-level
+// guard at all — navigating straight to a URL like /dashboard/manager
+// (the super_admin/admin dashboard, with News, Shop, Music, Events,
+// Security Centre, System Setup, etc.) rendered the full dashboard
+// shell for anyone, logged in or not, regardless of role. Individual
+// admin API calls inside it would fail without a valid token, but the
+// UI itself — navigation, section list, layout — was fully visible.
+function DashboardProtectedRoute({ allowedRoles, children }: { allowedRoles?: string[]; children: React.ReactNode }) {
+  const token = getToken();
+  if (!token) return <Navigate to="/dashboard-login" replace />;
+  if (allowedRoles) {
+    let role: string | undefined;
+    try {
+      const stored = sessionStorage.getItem('boz_election_user');
+      role = stored ? JSON.parse(stored).role : undefined;
+    } catch { /* malformed session — treat as no role, redirect below */ }
+    if (!role || !allowedRoles.includes(role)) return <Navigate to="/dashboard-login" replace />;
+  }
   return <>{children}</>;
 }
 
@@ -167,14 +197,14 @@ function AppRoutes() {
 
         {/* Dashboard Login and Dashboards */}
         <Route path="/dashboard-login" element={<DashboardLogin />} />
-        <Route path="/dashboard/member" element={<MemberDashboard />} />
-        <Route path="/dashboard/cooperative" element={<CooperativeDashboard />} />
-        <Route path="/dashboard/chamber" element={<ChamberDashboard />} />
-        <Route path="/dashboard/intl-party" element={<IntlPartyDashboard />} />
-        <Route path="/dashboard/internship" element={<InternshipDashboard />} />
-        <Route path="/dashboard/agent"      element={<ElectionAgentDashboard />} />
-        <Route path="/dashboard/manager"    element={<ManagerDashboard />} />
-        <Route path="/dashboard/election"   element={<ElectionDashboard />} />
+        <Route path="/dashboard/member" element={<DashboardProtectedRoute allowedRoles={['member']}><MemberDashboard /></DashboardProtectedRoute>} />
+        <Route path="/dashboard/cooperative" element={<DashboardProtectedRoute allowedRoles={['cooperative']}><CooperativeDashboard /></DashboardProtectedRoute>} />
+        <Route path="/dashboard/chamber" element={<DashboardProtectedRoute allowedRoles={['chamber']}><ChamberDashboard /></DashboardProtectedRoute>} />
+        <Route path="/dashboard/intl-party" element={<DashboardProtectedRoute allowedRoles={['intl_party']}><IntlPartyDashboard /></DashboardProtectedRoute>} />
+        <Route path="/dashboard/internship" element={<DashboardProtectedRoute allowedRoles={['internship']}><InternshipDashboard /></DashboardProtectedRoute>} />
+        <Route path="/dashboard/agent"      element={<DashboardProtectedRoute allowedRoles={['polling_agent', 'agent', 'election_agent', 'ward_manager', 'constituency_manager', 'district_manager', 'provincial_manager', 'province_manager', 'national_manager']}><ElectionAgentDashboard /></DashboardProtectedRoute>} />
+        <Route path="/dashboard/manager"    element={<DashboardProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}><ManagerDashboard /></DashboardProtectedRoute>} />
+        <Route path="/dashboard/election"   element={<DashboardProtectedRoute allowedRoles={['polling_agent', 'agent', 'election_agent', 'ward_manager', 'constituency_manager', 'district_manager', 'provincial_manager', 'province_manager', 'national_manager']}><ElectionDashboard /></DashboardProtectedRoute>} />
         <Route path="/shop/account"         element={<BuyerDashboard />} />
 
         <Route
