@@ -1,88 +1,18 @@
 import { useState, useEffect } from 'react';
 import { FileText, Download, Search, BookOpen, Scale, FileCheck, Shield, ChevronRight,
-  Eye, FileSpreadsheet, X, Loader2, ExternalLink, AlertCircle } from 'lucide-react';
+  Eye, FileSpreadsheet, X, Loader2, ExternalLink } from 'lucide-react';
 import { documentsApi, DocumentMeta } from '../../lib/api';
-
-// ─── Fallback static documents (shown when backend has nothing) ───────────────
-const STATIC_DOCS = [
-  {
-    id: 'constitution',
-    category: 'founding' as const,
-    icon: Scale,
-    title: 'Build One Zambia Constitution',
-    description: 'The supreme governing document of the party. Sets out the structure, objectives, membership rules, and operational procedures of Build One Zambia.',
-    version: 'Edition 2026',
-    pages: 48,
-    sizeBytes: 2.4 * 1024 * 1024,
-    format: 'pdf' as const,
-    mimeType: 'application/pdf',
-    originalName: 'boz-constitution.pdf',
-    hasContent: false,
-    externalUrl: undefined as string | undefined,
-    featured: true,
-    downloadCount: 0,
-    uploadedBy: '', uploadedAt: '', updatedAt: '',
-  },
-  {
-    id: 'manifesto',
-    category: 'manifesto' as const,
-    icon: BookOpen,
-    title: 'Build One Zambia 2031 Manifesto',
-    description: 'Our comprehensive policy blueprint for the 2031 General Election — 120 pages of costed, evidence-based commitments across agriculture, health, education, economy, and infrastructure.',
-    version: '2031 Edition',
-    pages: 120,
-    sizeBytes: 5.8 * 1024 * 1024,
-    format: 'pdf' as const,
-    mimeType: 'application/pdf',
-    originalName: 'boz-manifesto-2031.pdf',
-    hasContent: false,
-    externalUrl: undefined as string | undefined,
-    featured: true,
-    downloadCount: 0,
-    uploadedBy: '', uploadedAt: '', updatedAt: '',
-  },
-  {
-    id: 'policy',
-    category: 'policy' as const,
-    icon: FileCheck,
-    title: 'Policy Documents',
-    description: 'Detailed sector-specific policy papers covering economic development, mining, agriculture, health, education, women empowerment, and youth development.',
-    version: 'Series 2026',
-    pages: 210,
-    sizeBytes: 8.1 * 1024 * 1024,
-    format: 'pdf' as const,
-    mimeType: 'application/pdf',
-    originalName: 'boz-policy-documents.pdf',
-    hasContent: false,
-    externalUrl: undefined as string | undefined,
-    featured: false,
-    downloadCount: 0,
-    uploadedBy: '', uploadedAt: '', updatedAt: '',
-  },
-  {
-    id: 'rules',
-    category: 'governance' as const,
-    icon: Shield,
-    title: 'Party Rules and Regulations',
-    description: 'The internal rules, codes of conduct, disciplinary procedures, and electoral guidelines that govern all members, officials, and structures of Build One Zambia.',
-    version: 'Revised 2026',
-    pages: 36,
-    sizeBytes: 1.9 * 1024 * 1024,
-    format: 'pdf' as const,
-    mimeType: 'application/pdf',
-    originalName: 'boz-rules-regulations.pdf',
-    hasContent: false,
-    externalUrl: undefined as string | undefined,
-    featured: false,
-    downloadCount: 0,
-    uploadedBy: '', uploadedAt: '', updatedAt: '',
-  },
-];
 
 const CATEGORY_LABELS: Record<string, string> = {
   founding: 'Founding Document', manifesto: 'Manifesto', policy: 'Policy Framework',
   governance: 'Governance', report: 'Report', budget: 'Budget',
   election: 'Election', press: 'Press Release', other: 'Other',
+};
+
+// Icon shown per category — purely cosmetic, based on the real document's
+// own category field rather than any hardcoded per-document mapping.
+const CATEGORY_ICONS: Record<string, typeof Scale> = {
+  founding: Scale, manifesto: BookOpen, policy: FileCheck, governance: Shield,
 };
 
 function formatBytes(bytes: number): string {
@@ -91,10 +21,12 @@ function formatBytes(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-function DocIcon({ format, size = 24 }: { format: string; size?: number }) {
+function DocIcon({ category, format, size = 24 }: { category: string; format: string; size?: number }) {
+  const CategoryIcon = CATEGORY_ICONS[category];
+  if (CategoryIcon) return <CategoryIcon style={{ width: size, height: size, color: '#dc2626' }} />;
   if (format === 'pdf') return <FileText style={{ width: size, height: size, color: '#dc2626' }} />;
   if (['xlsx', 'xls', 'csv'].includes(format)) return <FileSpreadsheet style={{ width: size, height: size, color: '#16a34a' }} />;
-  return <FileText style={{ width: size, height: size, color: '#6b7280' }} />;
+  return <FileText style={{ width: size, height: size, color: '#dc2626' }} />;
 }
 
 function PDFViewerModal({ doc, onClose }: { doc: DocumentMeta; onClose: () => void }) {
@@ -103,7 +35,7 @@ function PDFViewerModal({ doc, onClose }: { doc: DocumentMeta; onClose: () => vo
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 9999, display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: '#0d0d0d', borderBottom: '1px solid #1f1f1f', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <DocIcon format={doc.format} size={18} />
+          <DocIcon category={doc.category} format={doc.format} size={18} />
           <span style={{ fontFamily: 'Oswald, sans-serif', fontSize: '15px', letterSpacing: '0.06em', color: '#e5e7eb' }}>{doc.title}</span>
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -126,27 +58,18 @@ function PDFViewerModal({ doc, onClose }: { doc: DocumentMeta; onClose: () => vo
   );
 }
 
-type AnyDoc = DocumentMeta | typeof STATIC_DOCS[0];
-
 export function DocumentsPage() {
   const [search, setSearch] = useState('');
-  const [documents, setDocuments] = useState<AnyDoc[]>([]);
+  const [documents, setDocuments] = useState<DocumentMeta[]>([]);
   const [loading, setLoading] = useState(true);
-  const [backendOk, setBackendOk] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [downloading, setDownloading] = useState<string | null>(null);
   const [viewing, setViewing] = useState<DocumentMeta | null>(null);
 
   useEffect(() => {
     documentsApi.list()
-      .then(res => {
-        if (res.documents.length > 0) {
-          setDocuments(res.documents);
-          setBackendOk(true);
-        } else {
-          setDocuments(STATIC_DOCS);
-        }
-      })
-      .catch(() => setDocuments(STATIC_DOCS))
+      .then(res => setDocuments(res.documents))
+      .catch(() => setLoadError('Could not load documents right now. Please try again shortly.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -156,30 +79,28 @@ export function DocumentsPage() {
     (CATEGORY_LABELS[d.category] || d.category).toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDownload = (doc: AnyDoc) => {
+  const handleDownload = (doc: DocumentMeta) => {
     setDownloading(doc.id);
-    if (backendOk && doc.hasContent) {
-      // Trigger real download from backend
+    if (doc.hasContent) {
       const a = document.createElement('a');
       a.href = documentsApi.downloadUrl(doc.id);
-      a.download = (doc as DocumentMeta).originalName || doc.title;
+      a.download = doc.originalName || doc.title;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    } else if ((doc as AnyDoc).externalUrl) {
-      window.open((doc as AnyDoc).externalUrl, '_blank');
+    } else if (doc.externalUrl) {
+      window.open(doc.externalUrl, '_blank');
     } else {
-      // No real file — show friendly message
       alert('This document is not yet available for download. Please check back soon or contact the BOZ secretariat.');
     }
     setTimeout(() => setDownloading(null), 1500);
   };
 
-  const handleView = (doc: AnyDoc) => {
-    if (backendOk && doc.hasContent) {
-      setViewing(doc as DocumentMeta);
-    } else if ((doc as AnyDoc).externalUrl) {
-      window.open((doc as AnyDoc).externalUrl, '_blank');
+  const handleView = (doc: DocumentMeta) => {
+    if (doc.hasContent) {
+      setViewing(doc);
+    } else if (doc.externalUrl) {
+      window.open(doc.externalUrl, '_blank');
     } else {
       alert('Online preview is not yet available for this document.');
     }
@@ -189,15 +110,14 @@ export function DocumentsPage() {
 
   const STATS = [
     { value: String(documents.length), label: 'Documents' },
-    { value: String(totalPages || '414'), label: 'Total Pages' },
+    { value: String(totalPages), label: 'Total Pages' },
     { value: 'Free', label: 'Public Access' },
     { value: 'PDF & XLSX', label: 'Formats' },
   ];
 
   return (
-    <div style={{ backgroundcolor: '#111111', fontFamily: 'Open Sans, sans-serif', color: '#111111', minHeight: '100vh' }}>
+    <div style={{ backgroundColor: '#111111', fontFamily: 'Open Sans, sans-serif', color: '#111111', minHeight: '100vh' }}>
 
-      {/* PDF Viewer Modal */}
       {viewing && <PDFViewerModal doc={viewing} onClose={() => setViewing(null)} />}
 
       {/* Hero */}
@@ -218,14 +138,14 @@ export function DocumentsPage() {
               placeholder="Search documents…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width: '100%', boxSizing: 'border-box', padding: '14px 16px 14px 44px', backgroundcolor: '#111111', border: '1px solid #2a2a2a', color: '#111111', fontSize: '14px', outline: 'none', fontFamily: 'Open Sans, sans-serif' }}
+              style={{ width: '100%', boxSizing: 'border-box', padding: '14px 16px 14px 44px', backgroundColor: '#111111', border: '1px solid #2a2a2a', color: '#111111', fontSize: '14px', outline: 'none', fontFamily: 'Open Sans, sans-serif' }}
             />
           </div>
         </div>
       </section>
 
       {/* Stats bar */}
-      <div style={{ backgroundcolor: '#111111', borderTop: '1px solid #005020', borderBottom: '1px solid #005020' }}>
+      <div style={{ backgroundColor: '#111111', borderTop: '1px solid #005020', borderBottom: '1px solid #005020' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
           {STATS.map((s, i) => (
             <div key={s.label} style={{ padding: '24px 16px', textAlign: 'center', borderRight: i < 3 ? '1px solid #1a1a1a' : 'none' }}>
@@ -247,7 +167,20 @@ export function DocumentsPage() {
             </div>
           )}
 
-          {!loading && filtered.length === 0 && (
+          {!loading && loadError && (
+            <div style={{ textAlign: 'center', padding: '64px 16px', color: '#dc2626' }}>
+              <p style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>{loadError}</p>
+            </div>
+          )}
+
+          {!loading && !loadError && filtered.length === 0 && documents.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '64px 16px', color: '#4b5563' }}>
+              <FileText style={{ width: '48px', height: '48px', margin: '0 auto 16px', display: 'block' }} />
+              <p style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>No documents have been published yet.</p>
+            </div>
+          )}
+
+          {!loading && !loadError && filtered.length === 0 && documents.length > 0 && (
             <div style={{ textAlign: 'center', padding: '64px 16px', color: '#4b5563' }}>
               <FileText style={{ width: '48px', height: '48px', margin: '0 auto 16px', display: 'block' }} />
               <p style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.06em' }}>No documents match your search.</p>
@@ -257,22 +190,19 @@ export function DocumentsPage() {
           {!loading && filtered.map(doc => {
             const isDownloading = downloading === doc.id;
             const hasFile = doc.hasContent;
-            const hasExternal = !!(doc as AnyDoc).externalUrl;
-            const canDownload = hasFile || hasExternal;
+            const hasExternal = !!doc.externalUrl;
 
-            // Pick a static icon for static docs, generic for backend docs
-            const StaticIcon = (doc as typeof STATIC_DOCS[0]).icon;
             return (
               <div
                 key={doc.id}
-                style={{ backgroundcolor: '#111111', border: '1px solid #1f1f1f', display: 'grid', gridTemplateColumns: '1fr auto', gap: '24px', padding: '32px', alignItems: 'center', transition: 'border-color 0.2s' }}
+                style={{ backgroundColor: '#111111', border: '1px solid #1f1f1f', display: 'grid', gridTemplateColumns: '1fr auto', gap: '24px', padding: '32px', alignItems: 'center', transition: 'border-color 0.2s' }}
                 onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = '#dc2626'}
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = '#1f1f1f'}
               >
                 {/* Left */}
                 <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
                   <div style={{ width: '56px', height: '56px', backgroundColor: 'rgba(220,38,38,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderTop: '3px solid #dc2626' }}>
-                    {StaticIcon ? <StaticIcon style={{ width: '24px', height: '24px', color: '#dc2626' }} /> : <DocIcon format={doc.format} size={24} />}
+                    <DocIcon category={doc.category} format={doc.format} size={24} />
                   </div>
                   <div>
                     <span style={{ fontSize: '10px', letterSpacing: '0.18em', color: '#dc2626', fontFamily: 'Oswald, sans-serif', display: 'block', marginBottom: '6px' }}>
@@ -286,7 +216,7 @@ export function DocumentsPage() {
                     </p>
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                       {[
-                        (doc as DocumentMeta).version,
+                        doc.version,
                         doc.pages ? `${doc.pages} pages` : null,
                         doc.sizeBytes ? formatBytes(doc.sizeBytes) : null,
                         doc.format?.toUpperCase(),
