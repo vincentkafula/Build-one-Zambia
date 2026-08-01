@@ -22,18 +22,6 @@ export const SHOP_COLORS = [
   { name: 'Red',    swatch: '#C81E3A' },
 ];
 
-// A light, mostly-white version of a colour swatch, used as the backdrop
-// behind a product image once that colour is selected — so picking a
-// colour changes both the product itself (tint overlay) and the space
-// around it, not just the product.
-export function tintBackground(hex: string): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  const mix = (c: number) => Math.round(c * 0.12 + 255 * 0.88);
-  return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
-}
-
 export const PRODUCTS = [
   { id: 1,  name: 'BOZ Campaign T-Shirt',         price: 'K150',  priceNum: 150,  tag: 'APPAREL',     desc: 'Branded with the party logo, slogan, and candidate\'s name. Available in all sizes.',            img: '/products/tshirt-gold.png',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
@@ -68,7 +56,7 @@ export const PRODUCTS = [
       { name: 'Black',  swatch: '#111111', img: '/products/sticker-black.png' },
       { name: 'Yellow', swatch: '#F0B429', img: '/products/sticker-yellow.png' },
     ] },
-  { id: 7,  name: 'BOZ Yard Sign',                price: 'K90',   priceNum: 90,   tag: 'SIGNAGE',     desc: 'Durable corrugated plastic lawn sign for displaying party support at your home.',                img: 'https://images.unsplash.com/photo-1531844251246-9a1bfaae09fc?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 7,  name: 'BOZ Yard Sign',                price: 'K90',   priceNum: 90,   tag: 'SIGNAGE',     desc: 'Durable corrugated plastic lawn sign for displaying party support at your home.',                img: 'https://images.unsplash.com/photo-1531844251246-9a1bfaae09fc?w=500&h=500&fit=crop&auto=format&fm=png', colors: SHOP_COLORS },
   { id: 8,  name: 'Campaign Mug',                 price: 'K80',   priceNum: 80,   tag: 'HOMEWARE',    desc: 'Ceramic coffee mug printed with the Build One Zambia logo and 2031 election branding.',          img: '/products/mug-green.png', colors: [
       { name: 'Green',  swatch: '#00712B', img: '/products/mug-green.png' },
       { name: 'Orange', swatch: '#EA580C', img: '/products/mug-orange.png' },
@@ -85,7 +73,7 @@ export const PRODUCTS = [
       { name: 'Black',  swatch: '#111111', img: '/products/tumbler-black.png' },
       { name: 'Yellow', swatch: '#F0B429', img: '/products/tumbler-yellow.png' },
     ] },
-  { id: 10, name: 'Campaign Tote Bag',            price: 'K80',   priceNum: 80,   tag: 'BAGS',        desc: 'Heavy-duty reusable cotton shopping bag with BOZ logo and slogan. Eco-friendly.',                img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 10, name: 'Campaign Tote Bag',            price: 'K80',   priceNum: 80,   tag: 'BAGS',        desc: 'Heavy-duty reusable cotton shopping bag with BOZ logo and slogan. Eco-friendly.',                img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format&fm=png', colors: SHOP_COLORS },
   { id: 11, name: 'Campaign Art Print (A2)',       price: 'K110',  priceNum: 110,  tag: 'PRINT',       desc: 'Framing-quality campaign art print. Bold patriotic design. Signed edition available.',           img: '/products/art-green.png', colors: [
       { name: 'Green',  swatch: '#00712B', img: '/products/art-green.png' },
       { name: 'Orange', swatch: '#EA580C', img: '/products/art-orange.png' },
@@ -111,9 +99,9 @@ export const PRODUCTS = [
       { name: 'Black',  swatch: '#111111', img: '/products/notepad-black.png' },
       { name: 'Yellow', swatch: '#F0B429', img: '/products/notepad-yellow.png' },
     ] },
-  { id: 15, name: 'Custom Phone Case',            price: 'K120',  priceNum: 120,  tag: 'TECH',        desc: 'Printed phone case for popular models with Build One Zambia artwork. Specify your model.',        img: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
-  { id: 16, name: 'BOZ Mini Desk Flag',           price: 'K60',   priceNum: 60,   tag: 'SIGNAGE',     desc: 'Small desk-sized party flag on a stand. Perfect for offices and event tables.',                   img: 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
-  { id: 17, name: 'BOZ Outdoor Banner',           price: 'K350',  priceNum: 350,  tag: 'SIGNAGE',     desc: 'Full-sized durable outdoor banner with party logo and candidate name. Weather-resistant.',        img: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 15, name: 'Custom Phone Case',            price: 'K120',  priceNum: 120,  tag: 'TECH',        desc: 'Printed phone case for popular models with Build One Zambia artwork. Specify your model.',        img: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=500&h=500&fit=crop&auto=format&fm=png', colors: SHOP_COLORS },
+  { id: 16, name: 'BOZ Mini Desk Flag',           price: 'K60',   priceNum: 60,   tag: 'SIGNAGE',     desc: 'Small desk-sized party flag on a stand. Perfect for offices and event tables.',                   img: 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=500&h=500&fit=crop&auto=format&fm=png', colors: SHOP_COLORS },
+  { id: 17, name: 'BOZ Outdoor Banner',           price: 'K350',  priceNum: 350,  tag: 'SIGNAGE',     desc: 'Full-sized durable outdoor banner with party logo and candidate name. Weather-resistant.',        img: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&h=500&fit=crop&auto=format&fm=png', colors: SHOP_COLORS },
   { id: 18, name: 'BOZ Keychain',                 price: 'K35',   priceNum: 35,   tag: 'ACCESSORIES', desc: 'Metal or acrylic keyring laser-engraved with the Build One Zambia logo.',                        img: '/products/keychain-color.png', colors: SHOP_COLORS },
   { id: 19, name: 'Wristbands (Pack of 5)',       price: 'K50',   priceNum: 50,   tag: 'ACCESSORIES', desc: 'Silicone wristbands debossed with campaign slogans in party colours.',                            img: '/products/wristbands5-color.png', colors: SHOP_COLORS },
   { id: 20, name: 'BOZ 2031 Calendar',            price: 'K95',   priceNum: 95,   tag: 'PRINT',       desc: 'Annual wall calendar featuring party imagery, key election dates, and campaign milestones.',      img: '/products/calendar-green.png', colors: [
@@ -184,8 +172,8 @@ export const PRODUCTS = [
       { name: 'Gray',   swatch: '#4b5563', img: '/products/polo-gray.png' },
     ],
   },
-  { id: 28, name: 'Campaign Backpack',            price: 'K450',  priceNum: 450,  tag: 'BAGS',        desc: 'Durable 25L backpack with the BOZ logo and slogan. Multiple compartments, padded laptop sleeve, and water-resistant fabric. Perfect for agents and volunteers.', img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
-  { id: 29, name: 'Hand-Held Rally Flag',         price: 'K45',   priceNum: 45,   tag: 'SIGNAGE',     desc: 'Small hand-held party flag on a stick, perfect for waving at rallies and motorcades.',            img: 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 28, name: 'Campaign Backpack',            price: 'K450',  priceNum: 450,  tag: 'BAGS',        desc: 'Durable 25L backpack with the BOZ logo and slogan. Multiple compartments, padded laptop sleeve, and water-resistant fabric. Perfect for agents and volunteers.', img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format&fm=png', colors: SHOP_COLORS },
+  { id: 29, name: 'Hand-Held Rally Flag',         price: 'K45',   priceNum: 45,   tag: 'SIGNAGE',     desc: 'Small hand-held party flag on a stick, perfect for waving at rallies and motorcades.',            img: 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=500&h=500&fit=crop&auto=format&fm=png', colors: SHOP_COLORS },
   { id: 30, name: 'BOZ Chitenge Wrap',            price: 'K85',   priceNum: 85,   tag: 'APPAREL',     desc: 'Traditional chitenge fabric printed with the Build One Zambia pattern and colours.',              img: '/products/chitenge-green.png',
     colors: [
       { name: 'Green',        swatch: '#00712B', img: '/products/chitenge-green.png' },
@@ -198,7 +186,7 @@ export const PRODUCTS = [
   },
   { id: 31, name: 'BOZ Enamel Pin (Single)',      price: 'K25',   priceNum: 25,   tag: 'ACCESSORIES', desc: 'Single hard-enamel lapel pin featuring the party crest.',                                        img: '/products/enamelpin-color.png', colors: SHOP_COLORS },
   { id: 32, name: 'Rally Wristband',              price: 'K25',   priceNum: 25,   tag: 'ACCESSORIES', desc: 'Single silicone wristband debossed with a campaign slogan.',                                     img: '/products/wristband-color.png', colors: SHOP_COLORS },
-  { id: 33, name: 'BOZ Car Window Flag',          price: 'K55',   priceNum: 55,   tag: 'SIGNAGE',     desc: 'Clip-on window flag for cars and trucks, visible from both sides.',                              img: 'https://images.unsplash.com/photo-1531844251246-9a1bfaae09fc?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 33, name: 'BOZ Car Window Flag',          price: 'K55',   priceNum: 55,   tag: 'SIGNAGE',     desc: 'Clip-on window flag for cars and trucks, visible from both sides.',                              img: 'https://images.unsplash.com/photo-1531844251246-9a1bfaae09fc?w=500&h=500&fit=crop&auto=format&fm=png', colors: SHOP_COLORS },
   { id: 34, name: 'Campaign Canvas Print (A3)',   price: 'K140',  priceNum: 140,  tag: 'PRINT',       desc: 'Larger framing-quality canvas print of official campaign artwork.',                             img: '/products/canvas-green.png', colors: [
       { name: 'Green',  swatch: '#00712B', img: '/products/canvas-green.png' },
       { name: 'Orange', swatch: '#EA580C', img: '/products/canvas-orange.png' },
@@ -255,9 +243,9 @@ export const PRODUCTS = [
       { name: 'Black',  swatch: '#111111', img: '/products/diary-black.png' },
       { name: 'Yellow', swatch: '#F0B429', img: '/products/diary-yellow.png' },
     ] },
-  { id: 41, name: 'BOZ Phone Grip',               price: 'K35',   priceNum: 35,   tag: 'TECH',        desc: 'Collapsible phone grip and stand with the party logo.',                                          img: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
-  { id: 42, name: 'BOZ Laptop Sleeve',            price: 'K165',  priceNum: 165,  tag: 'BAGS',        desc: 'Padded 13–15" laptop sleeve with embroidered BOZ logo.',                                         img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
-  { id: 43, name: 'Campaign Duffel Bag',          price: 'K420',  priceNum: 420,  tag: 'BAGS',        desc: 'Large duffel bag for agents and volunteers travelling between wards.',                          img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 41, name: 'BOZ Phone Grip',               price: 'K35',   priceNum: 35,   tag: 'TECH',        desc: 'Collapsible phone grip and stand with the party logo.',                                          img: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=500&h=500&fit=crop&auto=format&fm=png', colors: SHOP_COLORS },
+  { id: 42, name: 'BOZ Laptop Sleeve',            price: 'K165',  priceNum: 165,  tag: 'BAGS',        desc: 'Padded 13–15" laptop sleeve with embroidered BOZ logo.',                                         img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format&fm=png', colors: SHOP_COLORS },
+  { id: 43, name: 'Campaign Duffel Bag',          price: 'K420',  priceNum: 420,  tag: 'BAGS',        desc: 'Large duffel bag for agents and volunteers travelling between wards.',                          img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop&auto=format&fm=png', colors: SHOP_COLORS },
   { id: 44, name: 'BOZ Windbreaker',              price: 'K380',  priceNum: 380,  tag: 'APPAREL',     desc: 'Lightweight windbreaker in party colours, ideal for outdoor canvassing.',                       img: '/products/windbreaker-green.png',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: [
@@ -398,7 +386,7 @@ function ProductCard({ product, cart, addedId, onAdd, onBuyNow }: { product: Pro
 
       <div
         onClick={() => setShowDetail(true)}
-        style={{ height: '130px', borderRadius: '4px', overflow: 'hidden', marginBottom: '10px', background: activeColor ? tintBackground(activeColor.swatch) : '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer', transition: 'background 0.2s ease' }}
+        style={{ height: '130px', borderRadius: '4px', overflow: 'hidden', marginBottom: '10px', background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer' }}
       >
         <img
           src={displayImg} alt={product.name}
@@ -584,7 +572,7 @@ function ProductDetailModal({
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', gap: '36px' }} className="lg:grid-cols-[1fr_300px]">
         <div>
         {/* One big product image */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '360px', padding: '30px', marginBottom: '24px', borderRadius: '8px', background: activeColor ? tintBackground(activeColor.swatch) : 'transparent', transition: 'background 0.2s ease' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '360px', padding: '30px', marginBottom: '24px' }}>
           <img src={displayImg} alt={product.name} style={{ width: '100%', maxWidth: '340px', objectFit: 'contain', filter: showTint ? 'grayscale(0.5) brightness(1.05)' : 'none' }} />
           {showTint && activeColor && (
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: activeColor.swatch, opacity: 0.32, mixBlendMode: 'multiply', borderRadius: '8px' }} />

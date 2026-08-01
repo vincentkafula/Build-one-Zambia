@@ -10,7 +10,7 @@ import {
 import { DashboardShell, DashCard } from '../../components/DashboardShell';
 import { MembershipCertSection, MembershipCardSection, AdoptionCertSection, AppointmentCertSection } from '../../components/MemberCertificates';
 import { ShopCheckout, CartItem } from '../../components/ShopCheckout';
-import { PRODUCTS as SHOP_PRODUCTS, tintBackground } from '../main/ShopPage';
+import { PRODUCTS as SHOP_PRODUCTS } from '../main/ShopPage';
 import { membershipApi, shopApi, securityApi, ShopOrder, ShopPayment, ShopProduct } from '../../lib/api';
 
 const A = '#00712B';
@@ -208,7 +208,7 @@ function MemberShopCard({
 
   return (
     <div className="rounded-xl p-5 border flex flex-col gap-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-      <div className="w-full rounded-lg flex items-center justify-center" style={{ height: '160px', backgroundColor: active ? tintBackground(active.swatch) : '#F7F5EF', padding: '10px', transition: 'background-color 0.2s ease' }}>
+      <div className="w-full rounded-lg flex items-center justify-center" style={{ height: '160px', backgroundColor: '#F7F5EF', padding: '10px' }}>
         <img src={displayImg} alt={product.name} className="max-w-full max-h-full" style={{ objectFit: 'contain' }} />
       </div>
       <div>
