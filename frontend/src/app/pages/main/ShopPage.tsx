@@ -215,7 +215,14 @@ export const PRODUCTS = [
       { name: 'Black',  swatch: '#111111', img: '/products/sheet-black.png' },
       { name: 'Yellow', swatch: '#F0B429', img: '/products/sheet-yellow.png' },
     ] },
-  { id: 36, name: 'BOZ Vinyl Decal',              price: 'K35',   priceNum: 35,   tag: 'STICKERS',    desc: 'Large single vinyl decal for car windows and shopfronts.',                                       img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 36, name: 'BOZ Vinyl Decal',              price: 'K35',   priceNum: 35,   tag: 'STICKERS',    desc: 'Large single vinyl decal for car windows and shopfronts.',                                       img: '/products/decal-green.png', colors: [
+      { name: 'Green',  swatch: '#00712B', img: '/products/decal-green.png' },
+      { name: 'Orange', swatch: '#EA580C', img: '/products/decal-orange.png' },
+      { name: 'Blue',   swatch: '#1D4ED8', img: '/products/decal-blue.png' },
+      { name: 'Red',    swatch: '#C81E3A', img: '/products/decal-red.png' },
+      { name: 'Black',  swatch: '#111111', img: '/products/decal-black.png' },
+      { name: 'Yellow', swatch: '#F0B429', img: '/products/decal-yellow.png' },
+    ] },
   { id: 37, name: 'BOZ Insulated Bottle',         price: 'K140',  priceNum: 140,  tag: 'HOMEWARE',    desc: 'Double-walled insulated bottle with the party crest, 500ml.',                                    img: '/products/insulated-green.png', colors: [
       { name: 'Green',  swatch: '#00712B', img: '/products/insulated-green.png' },
       { name: 'Orange', swatch: '#EA580C', img: '/products/insulated-orange.png' },
