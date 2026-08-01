@@ -18,7 +18,7 @@ const HERO_SLIDES = [
 ];
 
 const RALLY_IMG     = rallyImg;
-const COMMUNITY_IMG = 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=800&h=600&fit=crop&auto=format';
+const COMMUNITY_IMG = '/images/tower-crane.jpg';
 
 const PROMISES = [
   {
@@ -248,7 +248,7 @@ export default function MainHomePage() {
               <div className="overflow-hidden" style={{ height: '480px' }}>
                 <ImageWithFallback
                   src={COMMUNITY_IMG}
-                  alt="Build One Zambia supporters"
+                  alt="Build One Zambia — tower crane on an active construction site"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(220,38,38,0.25) 0%, transparent 60%)' }} />
