@@ -178,7 +178,14 @@ export const PRODUCTS = [
   { id: 31, name: 'BOZ Enamel Pin (Single)',      price: 'K25',   priceNum: 25,   tag: 'ACCESSORIES', desc: 'Single hard-enamel lapel pin featuring the party crest.',                                        img: '/products/enamelpin-color.png', colors: SHOP_COLORS },
   { id: 32, name: 'Rally Wristband',              price: 'K25',   priceNum: 25,   tag: 'ACCESSORIES', desc: 'Single silicone wristband debossed with a campaign slogan.',                                     img: '/products/wristband-color.png', colors: SHOP_COLORS },
   { id: 33, name: 'BOZ Car Window Flag',          price: 'K55',   priceNum: 55,   tag: 'SIGNAGE',     desc: 'Clip-on window flag for cars and trucks, visible from both sides.',                              img: 'https://images.unsplash.com/photo-1531844251246-9a1bfaae09fc?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
-  { id: 34, name: 'Campaign Canvas Print (A3)',   price: 'K140',  priceNum: 140,  tag: 'PRINT',       desc: 'Larger framing-quality canvas print of official campaign artwork.',                             img: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 34, name: 'Campaign Canvas Print (A3)',   price: 'K140',  priceNum: 140,  tag: 'PRINT',       desc: 'Larger framing-quality canvas print of official campaign artwork.',                             img: '/products/canvas-green.png', colors: [
+      { name: 'Green',  swatch: '#00712B', img: '/products/canvas-green.png' },
+      { name: 'Orange', swatch: '#EA580C', img: '/products/canvas-orange.png' },
+      { name: 'Blue',   swatch: '#1D4ED8', img: '/products/canvas-blue.png' },
+      { name: 'Red',    swatch: '#C81E3A', img: '/products/canvas-red.png' },
+      { name: 'Black',  swatch: '#111111', img: '/products/canvas-black.png' },
+      { name: 'Yellow', swatch: '#F0B429', img: '/products/canvas-yellow.png' },
+    ] },
   { id: 35, name: 'BOZ Sticker Sheet',            price: 'K20',   priceNum: 20,   tag: 'STICKERS',    desc: 'A5 sheet of assorted logo and slogan stickers for laptops and notebooks.',                       img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 36, name: 'BOZ Vinyl Decal',              price: 'K35',   priceNum: 35,   tag: 'STICKERS',    desc: 'Large single vinyl decal for car windows and shopfronts.',                                       img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 37, name: 'BOZ Insulated Bottle',         price: 'K140',  priceNum: 140,  tag: 'HOMEWARE',    desc: 'Double-walled insulated bottle with the party crest, 500ml.',                                    img: '/products/insulated-green.png', colors: [
