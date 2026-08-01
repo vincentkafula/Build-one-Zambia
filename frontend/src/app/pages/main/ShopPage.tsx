@@ -390,12 +390,12 @@ function ProductCard({ product, cart, addedId, onAdd, onBuyNow }: { product: Pro
       >
         <img
           src={displayImg} alt={product.name}
-          style={{ width: '82%', height: '82%', objectFit: 'contain', transition: 'transform 0.25s ease, filter 0.2s ease', transform: hover ? 'scale(1.06)' : 'scale(1)', filter: showTint ? 'grayscale(0.5) brightness(1.05)' : 'none' }}
+          style={{ width: '82%', height: '82%', objectFit: 'contain', transition: 'transform 0.25s ease, filter 0.2s ease', transform: hover ? 'scale(1.06)' : 'scale(1)', filter: showTint ? 'grayscale(1) brightness(1.5) contrast(1.1)' : 'none' }}
         />
         {showTint && (
           <div style={{
             position: 'absolute', inset: 0, pointerEvents: 'none',
-            background: activeColor!.swatch, opacity: 0.32, mixBlendMode: 'multiply',
+            background: activeColor!.swatch, mixBlendMode: 'color',
           }} />
         )}
         {showTint && (
@@ -573,9 +573,9 @@ function ProductDetailModal({
         <div>
         {/* One big product image */}
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '360px', padding: '30px', marginBottom: '24px' }}>
-          <img src={displayImg} alt={product.name} style={{ width: '100%', maxWidth: '340px', objectFit: 'contain', filter: showTint ? 'grayscale(0.5) brightness(1.05)' : 'none' }} />
+          <img src={displayImg} alt={product.name} style={{ width: '100%', maxWidth: '340px', objectFit: 'contain', filter: showTint ? 'grayscale(1) brightness(1.5) contrast(1.1)' : 'none' }} />
           {showTint && activeColor && (
-            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: activeColor.swatch, opacity: 0.32, mixBlendMode: 'multiply', borderRadius: '8px' }} />
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: activeColor.swatch, mixBlendMode: 'color', borderRadius: '8px' }} />
           )}
         </div>
 

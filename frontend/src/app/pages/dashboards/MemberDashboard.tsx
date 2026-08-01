@@ -186,7 +186,12 @@ function MemberShopCard({
   const [warning, setWarning] = useState(false);
 
   const active = hasColors && selectedColor !== null ? colors[selectedColor] : null;
-  const displayImg = active && 'img' in active && active.img ? active.img : productImgSrc(product);
+  const activeHasImg = !!(active && 'img' in active && active.img);
+  const displayImg = activeHasImg ? (active as { img: string }).img : productImgSrc(product);
+  // A colour selected without its own real photo still needs to visibly
+  // change the product — recolour the base photo instead of just
+  // reshowing whatever the default photo happens to be.
+  const showTint = hasColors && !!active && !activeHasImg;
 
   // Colour variants live under composite cart ids (index*100 + colourIdx+1),
   // so "in cart" needs to sum across the whole colour family for this
@@ -203,13 +208,16 @@ function MemberShopCard({
       setTimeout(() => setWarning(false), 2000);
       return;
     }
-    onAdd(product, index, hasColors ? selectedColor : null, active?.name, active && 'img' in active ? active.img : undefined);
+    onAdd(product, index, hasColors ? selectedColor : null, active?.name, activeHasImg ? (active as { img: string }).img : undefined);
   }
 
   return (
     <div className="rounded-xl p-5 border flex flex-col gap-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-      <div className="w-full rounded-lg flex items-center justify-center" style={{ height: '160px', backgroundColor: '#F7F5EF', padding: '10px' }}>
-        <img src={displayImg} alt={product.name} className="max-w-full max-h-full" style={{ objectFit: 'contain' }} />
+      <div className="w-full rounded-lg flex items-center justify-center" style={{ height: '160px', backgroundColor: '#F7F5EF', padding: '10px', position: 'relative', overflow: 'hidden' }}>
+        <img src={displayImg} alt={product.name} className="max-w-full max-h-full" style={{ objectFit: 'contain', filter: showTint ? 'grayscale(1) brightness(1.5) contrast(1.1)' : 'none' }} />
+        {showTint && active && (
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: active.swatch, mixBlendMode: 'color' }} />
+        )}
       </div>
       <div>
         <h4 style={{ color: navy, fontFamily: 'Oswald, sans-serif', letterSpacing: '0.04em' }}>{product.name}</h4>
