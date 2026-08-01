@@ -18,7 +18,7 @@ const HERO_SLIDES = [
 ];
 
 const RALLY_IMG     = rallyImg;
-const COMMUNITY_IMG = '/images/tower-crane.jpg';
+const COMMUNITY_IMG = '/images/tower-crane.png';
 
 const PROMISES = [
   {
