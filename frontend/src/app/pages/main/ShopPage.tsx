@@ -190,7 +190,14 @@ export const PRODUCTS = [
       { name: 'Black',  swatch: '#111111', img: '/products/coaster-black.png' },
       { name: 'Yellow', swatch: '#F0B429', img: '/products/coaster-yellow.png' },
     ] },
-  { id: 39, name: 'BOZ Sticky Notes',             price: 'K25',   priceNum: 25,   tag: 'STATIONERY',  desc: 'Branded sticky note pad for offices, schools, and volunteer desks.',                             img: 'https://images.unsplash.com/photo-1585336261022-680e295ce3fe?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 39, name: 'BOZ Sticky Notes',             price: 'K25',   priceNum: 25,   tag: 'STATIONERY',  desc: 'Branded sticky note pad for offices, schools, and volunteer desks.',                             img: '/products/sticky-green.png', colors: [
+      { name: 'Green',  swatch: '#00712B', img: '/products/sticky-green.png' },
+      { name: 'Orange', swatch: '#EA580C', img: '/products/sticky-orange.png' },
+      { name: 'Blue',   swatch: '#1D4ED8', img: '/products/sticky-blue.png' },
+      { name: 'Red',    swatch: '#C81E3A', img: '/products/sticky-red.png' },
+      { name: 'Black',  swatch: '#111111', img: '/products/sticky-black.png' },
+      { name: 'Yellow', swatch: '#F0B429', img: '/products/sticky-yellow.png' },
+    ] },
   { id: 40, name: 'BOZ Desk Diary',               price: 'K85',   priceNum: 85,   tag: 'STATIONERY',  desc: 'A5 hardcover desk diary printed with the 2031 campaign calendar.',                               img: '/products/diary-green.png', colors: [
       { name: 'Green',  swatch: '#00712B', img: '/products/diary-green.png' },
       { name: 'Orange', swatch: '#EA580C', img: '/products/diary-orange.png' },
