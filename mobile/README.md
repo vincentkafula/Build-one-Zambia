@@ -210,3 +210,83 @@ npx expo start
 Scan the QR code with the Expo Go app (iOS/Android) to run it on your
 own phone without any build step — the fastest way to actually see and
 test this before investing in a full store submission.
+
+## Deploying to the app stores
+
+This has never been built or submitted — everything below is real,
+accurate setup for doing that for the first time, not a description of
+something already done.
+
+### 1. Create accounts (do this first — approval can take days)
+
+- **Apple**: an [Apple Developer account](https://developer.apple.com/programs/) — $99/year, and Apple's identity
+  verification for a new account can itself take a few days
+- **Google**: a [Google Play Console account](https://play.google.com/console/) — one-time $25 fee, account review is
+  usually much faster than Apple's
+
+Start these now even if the app isn't ready — the account approval
+wait is often the longest part of the whole process, not the build.
+
+### 2. Install and log in to EAS CLI
+
+```bash
+npm install -g eas-cli
+eas login
+```
+
+### 3. Build config
+
+`eas.json` is already in this repo with `development`, `preview`, and
+`production` profiles. No changes needed to start.
+
+### 4. Build
+
+```bash
+cd mobile
+
+# Android — internal APK, install directly on a device to test, no store needed
+eas build --platform android --profile preview
+
+# iOS — needs an Apple Developer account linked; EAS walks you through
+# provisioning profiles and signing certificates interactively the first time
+eas build --platform ios --profile preview
+
+# Once a preview build is confirmed working on a real device, build the
+# store-ready versions:
+eas build --platform android --profile production   # produces an .aab
+eas build --platform ios --profile production        # produces an .ipa
+```
+
+Builds run on Expo's servers, not locally — each one takes roughly
+10–20 minutes, and EAS gives you a download link when it's done.
+
+### 5. Submit
+
+```bash
+eas submit --platform android
+eas submit --platform ios
+```
+
+This uploads the production build to Play Console / App Store Connect.
+From there:
+
+- **Android**: create the store listing in Play Console (screenshots,
+  description, privacy policy URL), submit for review — typically
+  hours to a couple of days
+- **iOS**: create the store listing in App Store Connect, submit for
+  review — typically 1–3 days, and Apple's review is stricter about
+  app completeness and clear functionality than Google's
+
+### Before submitting either one
+
+- Confirm `API_BASE` in `src/lib/api.ts` is the real backend URL (see
+  above) — a build pointed at a dev/staging backend will pass review
+  and then not actually work for real users
+- Replace `assets/icon.png`, `splash.png`, and `adaptive-icon.png` —
+  they're currently all the same source image reused for every
+  purpose. An app icon needs to be a clean square mark with no text
+  cropped off; Google and Apple will both reject icons that look
+  auto-generated or use inappropriate padding
+- Both stores require a **privacy policy URL** in the listing — point
+  it at a real page on bozplans.org, since the app collects phone
+  numbers (OTP verification) and camera access (result-sheet photos)

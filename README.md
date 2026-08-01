@@ -81,13 +81,52 @@ Open **http://localhost:3000** in your browser.
 
 ## Environment Variables
 
-### backend/.env
+### backend/.env — required for the app to start safely
 
 ```env
 PORT=3001
-JWT_SECRET=boz-jwt-secret-change-in-production-2024
+JWT_SECRET=              # required in production — a long random string. If unset, a
+                          # random one is generated at boot, which invalidates every
+                          # login on restart. Never reuse the example value below.
 ADMIN_USERNAME=superadmin
-ADMIN_PASSWORD=Admin@BOZ2024
+ADMIN_PASSWORD=          # required to enable the superadmin shortcut login at all —
+                          # if unset, that login is disabled entirely rather than
+                          # falling back to a known default (this repo is public).
+ADMIN_PIN=                # required for admin actions that ask for a confirmation PIN
+```
+
+### backend/.env — required for specific features to work
+
+Each of these powers one feature; the app runs without them, but that feature won't.
+
+```env
+# Payments (Flutterwave) — without these, checkout card/mobile-money payment fails
+FLUTTERWAVE_PUBLIC_KEY=
+FLUTTERWAVE_SECRET_KEY=
+
+# SMS OTP verification (Twilio Verify) — without these, phone verification during
+# registration fails
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_VERIFY_SERVICE_SID=
+
+# Transactional email (Resend) — without this, no confirmation/notification emails send
+RESEND_API_KEY=
+EMAIL_FROM_ADDRESS=
+EMAIL_FROM_NAME=
+
+# Durable Postgres persistence — without this, data only lives in the in-memory
+# store + a local JSON file, which is lost on redeploy on most hosts (Railway's
+# filesystem is ephemeral). Strongly recommended for any real deployment.
+DATABASE_URL=
+
+# CORS — comma-separated list of frontend origins allowed to call this API
+ALLOWED_ORIGINS=https://www.bozplans.org,https://bozplans.org
+
+# Used to build links inside outgoing emails (password reset, verification, etc.)
+SITE_URL=https://www.bozplans.org
+BACKEND_URL=https://api.bozplans.org
+VERIFY_BASE_URL=https://www.bozplans.org
 ```
 
 ### frontend/.env
