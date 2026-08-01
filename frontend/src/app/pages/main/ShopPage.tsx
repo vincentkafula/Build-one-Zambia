@@ -60,7 +60,14 @@ export const PRODUCTS = [
   { id: 3,  name: 'Build One Zambia Cap',          price: 'K120',  priceNum: 120,  tag: 'ACCESSORIES', desc: 'Baseball cap in party colours with embroidered BOZ logo. One size fits all.',                    img: '/products/cap-green.png', colors: [SHOP_COLORS[0], { name: 'Green', swatch: '#00712B', img: '/products/cap-green.png' }, ...SHOP_COLORS.slice(2)] },
   { id: 4,  name: 'BOZ Beanie Hat',               price: 'K100',  priceNum: 100,  tag: 'ACCESSORIES', desc: 'Warm knit beanie in green and red party colours. Perfect for campaign events.',                   img: '/products/beanie-black.png', colors: [{ name: 'Black', swatch: '#111111', img: '/products/beanie-black.png' }, ...SHOP_COLORS.slice(1)] },
   { id: 5,  name: 'Lapel Pin Buttons (Set of 3)', price: 'K60',   priceNum: 60,   tag: 'ACCESSORIES', desc: 'Pinback buttons featuring the party logo and campaign slogans. Great for rallies.',               img: '/products/pins-color.png', colors: SHOP_COLORS },
-  { id: 6,  name: 'Bumper Stickers (Pack of 5)',  price: 'K40',   priceNum: 40,   tag: 'STICKERS',    desc: 'Weatherproof vinyl stickers with party messages and candidate name for your car.',               img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 6,  name: 'Bumper Stickers (Pack of 5)',  price: 'K40',   priceNum: 40,   tag: 'STICKERS',    desc: 'Weatherproof vinyl stickers with party messages and candidate name for your car.',               img: '/products/sticker-green.png', colors: [
+      { name: 'Green',  swatch: '#00712B', img: '/products/sticker-green.png' },
+      { name: 'Orange', swatch: '#EA580C', img: '/products/sticker-orange.png' },
+      { name: 'Blue',   swatch: '#1D4ED8', img: '/products/sticker-blue.png' },
+      { name: 'Red',    swatch: '#C81E3A', img: '/products/sticker-red.png' },
+      { name: 'Black',  swatch: '#111111', img: '/products/sticker-black.png' },
+      { name: 'Yellow', swatch: '#F0B429', img: '/products/sticker-yellow.png' },
+    ] },
   { id: 7,  name: 'BOZ Yard Sign',                price: 'K90',   priceNum: 90,   tag: 'SIGNAGE',     desc: 'Durable corrugated plastic lawn sign for displaying party support at your home.',                img: 'https://images.unsplash.com/photo-1531844251246-9a1bfaae09fc?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 8,  name: 'Campaign Mug',                 price: 'K80',   priceNum: 80,   tag: 'HOMEWARE',    desc: 'Ceramic coffee mug printed with the Build One Zambia logo and 2031 election branding.',          img: '/products/mug-green.png', colors: [
       { name: 'Green',  swatch: '#00712B', img: '/products/mug-green.png' },
