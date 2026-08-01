@@ -22,6 +22,18 @@ export const SHOP_COLORS = [
   { name: 'Red',    swatch: '#C81E3A' },
 ];
 
+// A light, mostly-white version of a colour swatch, used as the backdrop
+// behind a product image once that colour is selected — so picking a
+// colour changes both the product itself (tint overlay) and the space
+// around it, not just the product.
+export function tintBackground(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const mix = (c: number) => Math.round(c * 0.12 + 255 * 0.88);
+  return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
+}
+
 export const PRODUCTS = [
   { id: 1,  name: 'BOZ Campaign T-Shirt',         price: 'K150',  priceNum: 150,  tag: 'APPAREL',     desc: 'Branded with the party logo, slogan, and candidate\'s name. Available in all sizes.',            img: '/products/tshirt-gold.png',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
@@ -274,7 +286,7 @@ function ProductCard({ product, cart, addedId, onAdd, onBuyNow }: { product: Pro
 
       <div
         onClick={() => setShowDetail(true)}
-        style={{ height: '130px', borderRadius: '4px', overflow: 'hidden', marginBottom: '10px', background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer' }}
+        style={{ height: '130px', borderRadius: '4px', overflow: 'hidden', marginBottom: '10px', background: activeColor ? tintBackground(activeColor.swatch) : '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer', transition: 'background 0.2s ease' }}
       >
         <img
           src={displayImg} alt={product.name}
@@ -460,7 +472,7 @@ function ProductDetailModal({
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', gap: '36px' }} className="lg:grid-cols-[1fr_300px]">
         <div>
         {/* One big product image */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '360px', padding: '30px', marginBottom: '24px' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '360px', padding: '30px', marginBottom: '24px', borderRadius: '8px', background: activeColor ? tintBackground(activeColor.swatch) : 'transparent', transition: 'background 0.2s ease' }}>
           <img src={displayImg} alt={product.name} style={{ width: '100%', maxWidth: '340px', objectFit: 'contain', filter: showTint ? 'grayscale(0.5) brightness(1.05)' : 'none' }} />
           {showTint && activeColor && (
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: activeColor.swatch, opacity: 0.32, mixBlendMode: 'multiply', borderRadius: '8px' }} />
