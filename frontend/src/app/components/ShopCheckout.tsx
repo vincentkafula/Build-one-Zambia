@@ -774,6 +774,11 @@ export function ShopCheckout({ cart, onClose, onUpdateQty, onRemove, buyer }: Pr
                 PROCEED TO CHECKOUT <ChevronRight style={{ width: '16px', height: '16px' }} />
               </button>
             )}
+            {step === 'cart' && cart.length === 0 && (
+              <button style={s.btnRed} onClick={onClose}>
+                Your cart is empty — back to shop
+              </button>
+            )}
             {step === 'details' && (
               <button style={s.btnRed} onClick={next}>
                 CONTINUE TO PAYMENT <ChevronRight style={{ width: '16px', height: '16px' }} />

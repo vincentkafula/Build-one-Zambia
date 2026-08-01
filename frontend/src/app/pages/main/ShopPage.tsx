@@ -343,16 +343,16 @@ function ProductCard({ product, cart, addedId, onAdd, onBuyNow }: { product: Pro
   // the same base photo is tinted to preview the chosen colour instead.
   const showTint = !!activeColor && !activeColor.img;
 
-  function handleAdd() {
+  function handleAdd(): boolean {
     if (hasColors && selectedColor === null) {
       setColorWarning(true);
       setTimeout(() => setColorWarning(false), 2000);
-      return;
+      return false;
     }
     if (hasSizes && selectedSize === null) {
       setSizeWarning(true);
       setTimeout(() => setSizeWarning(false), 2000);
-      return;
+      return false;
     }
     if (hasVariants) {
       const colorIdx = selectedColor ?? 0;
@@ -365,6 +365,7 @@ function ProductCard({ product, cart, addedId, onAdd, onBuyNow }: { product: Pro
     } else {
       onAdd(product);
     }
+    return true;
   }
 
   return (
@@ -538,7 +539,7 @@ function ProductDetailModal({
   justAdded: boolean;
   colorWarning: boolean;
   sizeWarning: boolean;
-  onAdd: () => void;
+  onAdd: () => boolean;
   onAddProduct: (p: Product) => void;
   onBuyNow: () => void;
   onClose: () => void;
@@ -710,7 +711,11 @@ function ProductDetailModal({
               {justAdded ? '✓ Added to cart' : 'Add to Basket'}
             </button>
             <button
-              onClick={() => { for (let i = 0; i < qty; i++) onAdd(); onBuyNow(); }}
+              onClick={() => {
+                let ok = true;
+                for (let i = 0; i < qty; i++) { if (!onAdd()) { ok = false; break; } }
+                if (ok) onBuyNow();
+              }}
               style={{ width: '100%', background: '#F08804', color: '#0F1111', border: '1px solid #DA7B00', borderRadius: '20px', padding: '10px 0', fontSize: '13.5px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', marginBottom: '16px' }}
             >
               Buy Now
