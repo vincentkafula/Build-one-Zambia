@@ -1716,9 +1716,9 @@ app.post(`${BASE}/admin/reset-votes`, auth.requireAuth, auth.requireRole('super_
     if (req.body?.confirm !== 'RESET') {
       return res.status(400).json({ error: 'Confirmation required — send { "confirm": "RESET" } to proceed.' });
     }
-    const stepUpOk = await auth.verifyStepUp(req.user.username, req.body?.password, req.body?.pin);
+    const stepUpOk = await auth.verifyStepUp(req.user.username, req.body?.password);
     if (!stepUpOk) {
-      return res.status(401).json({ error: 'Incorrect password or PIN. Re-enter both to confirm this action.' });
+      return res.status(401).json({ error: 'Incorrect password, or this account is not the Railway-configured admin login.' });
     }
     const stationsCleared = kv.delByPrefix('boz:results:');
     const submissionsCleared = dataEntryStore.submissions.length;
@@ -1744,7 +1744,7 @@ app.post(`${BASE}/admin/reset-votes`, auth.requireAuth, auth.requireRole('super_
 // provincial, and national managers. admin/super_admin accounts are NOT
 // included — those are administrative accounts, not election roles. Their
 // original registration/application records are left intact; only the
-// ability to log in is removed. Same confirm + password + PIN step-up gate
+// ability to log in is removed. Same confirm + password step-up gate
 // as reset-votes above, since this is equally irreversible.
 const ELECTION_AGENT_ROLES = [
   'polling_agent', 'agent', 'election_agent',
@@ -1755,9 +1755,9 @@ app.post(`${BASE}/admin/reset-agents`, auth.requireAuth, auth.requireRole('super
     if (req.body?.confirm !== 'RESET AGENTS') {
       return res.status(400).json({ error: 'Confirmation required — send { "confirm": "RESET AGENTS" } to proceed.' });
     }
-    const stepUpOk = await auth.verifyStepUp(req.user.username, req.body?.password, req.body?.pin);
+    const stepUpOk = await auth.verifyStepUp(req.user.username, req.body?.password);
     if (!stepUpOk) {
-      return res.status(401).json({ error: 'Incorrect password or PIN. Re-enter both to confirm this action.' });
+      return res.status(401).json({ error: 'Incorrect password, or this account is not the Railway-configured admin login.' });
     }
     const targets = auth.listUsers().filter(u => ELECTION_AGENT_ROLES.includes(u.role));
     for (const u of targets) auth.deleteUser(u.username);

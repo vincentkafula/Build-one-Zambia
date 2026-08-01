@@ -89,13 +89,11 @@ export function SystemSetupDashboard() {
   const [actionResults, setActionResults] = useState<Record<string, string>>({});
   const [resetConfirmText, setResetConfirmText] = useState('');
   const [resetPassword, setResetPassword] = useState('');
-  const [resetPin, setResetPin] = useState('');
   const [resetting, setResetting] = useState(false);
   const [resetResult, setResetResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   const [agentsConfirmText, setAgentsConfirmText] = useState('');
   const [agentsPassword, setAgentsPassword] = useState('');
-  const [agentsPin, setAgentsPin] = useState('');
   const [agentsResetting, setAgentsResetting] = useState(false);
   const [agentsResult, setAgentsResult] = useState<{ ok: boolean; message: string } | null>(null);
 
@@ -139,18 +137,17 @@ export function SystemSetupDashboard() {
 
   const resetVotes = async () => {
     if (resetConfirmText !== 'RESET') return;
-    if (!resetPassword || !resetPin) { setResetResult({ ok: false, message: 'Enter your password and PIN to confirm.' }); return; }
+    if (!resetPassword) { setResetResult({ ok: false, message: 'Enter the Railway-configured admin password to confirm.' }); return; }
     if (!confirm('This will permanently wipe every submitted vote/result from the system. This is meant for clearing test data before election day. Are you absolutely sure?')) return;
     setResetting(true);
     setResetResult(null);
     try {
       const res = await apiFetch<{ success: boolean; stationsCleared: number; submissionsCleared: number }>(
-        'POST', '/admin/reset-votes', { confirm: 'RESET', password: resetPassword, pin: resetPin }
+        'POST', '/admin/reset-votes', { confirm: 'RESET', password: resetPassword }
       );
       setResetResult({ ok: true, message: `✓ Cleared ${res.stationsCleared} station result(s) and ${res.submissionsCleared} submission(s). All votes are back to zero.` });
       setResetConfirmText('');
       setResetPassword('');
-      setResetPin('');
     } catch (e) {
       setResetResult({ ok: false, message: e instanceof Error ? e.message : 'Reset failed' });
     } finally {
@@ -164,7 +161,7 @@ export function SystemSetupDashboard() {
     setPinResult(null);
     try {
       await apiFetch<{ success: boolean }>('POST', '/auth/set-pin', { currentPassword: pinCurrentPassword, newPin: pinNew });
-      setPinResult({ ok: true, message: 'PIN updated. Use it alongside your password for actions like resetting votes.' });
+      setPinResult({ ok: true, message: 'PIN updated.' });
       setPinCurrentPassword('');
       setPinNew('');
     } catch (e) {
@@ -176,18 +173,17 @@ export function SystemSetupDashboard() {
 
   const resetAgents = async () => {
     if (agentsConfirmText !== 'RESET AGENTS') return;
-    if (!agentsPassword || !agentsPin) { setAgentsResult({ ok: false, message: 'Enter your password and PIN to confirm.' }); return; }
+    if (!agentsPassword) { setAgentsResult({ ok: false, message: 'Enter the Railway-configured admin password to confirm.' }); return; }
     if (!confirm('This will PERMANENTLY DELETE every election-role login account — polling agents through ward, constituency, district, provincial, and national managers. They will not be able to log in again until re-registered and re-approved from scratch. Admin/super_admin accounts are NOT affected. Are you absolutely sure?')) return;
     setAgentsResetting(true);
     setAgentsResult(null);
     try {
       const res = await apiFetch<{ success: boolean; accountsDeleted: number }>(
-        'POST', '/admin/reset-agents', { confirm: 'RESET AGENTS', password: agentsPassword, pin: agentsPin }
+        'POST', '/admin/reset-agents', { confirm: 'RESET AGENTS', password: agentsPassword }
       );
       setAgentsResult({ ok: true, message: `✓ Deleted ${res.accountsDeleted} agent account(s). They'll need to re-register.` });
       setAgentsConfirmText('');
       setAgentsPassword('');
-      setAgentsPin('');
     } catch (e) {
       setAgentsResult({ ok: false, message: e instanceof Error ? e.message : 'Reset failed' });
     } finally {
@@ -436,13 +432,15 @@ Authorization: Bearer <your-token>
         })}
       </div>
 
-      {/* Set/change PIN — needed before the reset action below can be used */}
+      {/* Set/change PIN — general-purpose second factor, not used by the
+          reset actions below (those are gated by the Railway admin
+          password only, on purpose — see that section) */}
       <div className="bg-card border border-border rounded-xl p-5">
         <h3 className="text-sm font-bold text-foreground mb-1 flex items-center gap-2">
           <Key className="w-4 h-4 text-primary" /> Set / Change Your PIN
         </h3>
         <p className="text-sm text-muted-foreground mb-4">
-          A 4–8 digit PIN, separate from your password, required to confirm irreversible actions like resetting votes below.
+          A 4–8 digit PIN, separate from your password, used to confirm other sensitive actions.
         </p>
         {pinResult && (
           <p className={`text-sm px-3 py-2 rounded-lg mb-3 border ${pinResult.ok ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
@@ -498,8 +496,11 @@ Authorization: Bearer <your-token>
         )}
 
         <label className="block text-xs font-semibold text-red-700 mb-1">
-          Type <span className="font-mono bg-red-100 px-1 rounded">RESET</span>, then your password and PIN, to confirm:
+          Type <span className="font-mono bg-red-100 px-1 rounded">RESET</span>, then the Railway-configured admin password, to confirm:
         </label>
+        <p className="text-xs text-red-700/70 mb-2">
+          This is the <span className="font-mono bg-red-100 px-1 rounded">ADMIN_PASSWORD</span> set on this service in Railway — not any account's own password, and it can't be changed from within the app.
+        </p>
         <div className="flex flex-wrap items-center gap-2">
           <input
             value={resetConfirmText}
@@ -511,20 +512,12 @@ Authorization: Bearer <your-token>
             type="password"
             value={resetPassword}
             onChange={e => setResetPassword(e.target.value)}
-            placeholder="Password"
-            className="px-3 py-2 border border-red-300 rounded-lg text-sm bg-background w-36 focus:outline-none focus:ring-1 focus:ring-red-500"
-          />
-          <input
-            type="password"
-            inputMode="numeric"
-            value={resetPin}
-            onChange={e => setResetPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
-            placeholder="PIN"
-            className="px-3 py-2 border border-red-300 rounded-lg text-sm bg-background w-24 focus:outline-none focus:ring-1 focus:ring-red-500"
+            placeholder="Railway ADMIN_PASSWORD"
+            className="px-3 py-2 border border-red-300 rounded-lg text-sm bg-background w-48 focus:outline-none focus:ring-1 focus:ring-red-500"
           />
           <button
             onClick={resetVotes}
-            disabled={resetConfirmText !== 'RESET' || !resetPassword || !resetPin || resetting}
+            disabled={resetConfirmText !== 'RESET' || !resetPassword || resetting}
             className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {resetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}
@@ -551,8 +544,11 @@ Authorization: Bearer <your-token>
         )}
 
         <label className="block text-xs font-semibold text-red-700 mb-1">
-          Type <span className="font-mono bg-red-100 px-1 rounded">RESET AGENTS</span>, then your password and PIN, to confirm:
+          Type <span className="font-mono bg-red-100 px-1 rounded">RESET AGENTS</span>, then the Railway-configured admin password, to confirm:
         </label>
+        <p className="text-xs text-red-700/70 mb-2">
+          This is the <span className="font-mono bg-red-100 px-1 rounded">ADMIN_PASSWORD</span> set on this service in Railway — not any account's own password, and it can't be changed from within the app.
+        </p>
         <div className="flex flex-wrap items-center gap-2">
           <input
             value={agentsConfirmText}
@@ -564,20 +560,12 @@ Authorization: Bearer <your-token>
             type="password"
             value={agentsPassword}
             onChange={e => setAgentsPassword(e.target.value)}
-            placeholder="Password"
-            className="px-3 py-2 border border-red-300 rounded-lg text-sm bg-background w-36 focus:outline-none focus:ring-1 focus:ring-red-500"
-          />
-          <input
-            type="password"
-            inputMode="numeric"
-            value={agentsPin}
-            onChange={e => setAgentsPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
-            placeholder="PIN"
-            className="px-3 py-2 border border-red-300 rounded-lg text-sm bg-background w-24 focus:outline-none focus:ring-1 focus:ring-red-500"
+            placeholder="Railway ADMIN_PASSWORD"
+            className="px-3 py-2 border border-red-300 rounded-lg text-sm bg-background w-48 focus:outline-none focus:ring-1 focus:ring-red-500"
           />
           <button
             onClick={resetAgents}
-            disabled={agentsConfirmText !== 'RESET AGENTS' || !agentsPassword || !agentsPin || agentsResetting}
+            disabled={agentsConfirmText !== 'RESET AGENTS' || !agentsPassword || agentsResetting}
             className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {agentsResetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}

@@ -153,22 +153,22 @@ if (!ADMIN_PIN) {
   console.error('└──────────────────────────────────────────────────────────────────┘');
 }
 
-// Re-verifies both the account password AND a separate PIN. Used as a
-// step-up check immediately before an irreversible action — being logged
-// in is not sufficient on its own for those.
-export async function verifyStepUp(username, password, pin) {
-  if (!password || !pin) return false;
-
-  if (ADMIN_PASSWORD && username === ADMIN_USERNAME) {
-    if (!ADMIN_PIN) return false;
-    return password === ADMIN_PASSWORD && pin === ADMIN_PIN;
-  }
-
-  const storedHash = kv.get(`password:${username}`);
-  if (!storedHash) return false;
-  const passOk = await verifyPassword(password, storedHash);
-  if (!passOk) return false;
-  return verifyPin(username, pin);
+// Re-verifies the password for irreversible actions (wiping election
+// results, deleting every election-role account) as a step-up check —
+// being logged in as any super_admin is not sufficient on its own.
+//
+// Deliberately only accepts the Railway-configured ADMIN_USERNAME +
+// ADMIN_PASSWORD, not any database-stored super_admin password. A
+// database password can be changed by whoever is logged in at the time
+// (see /security/change-password) — using that as the gate for an
+// irreversible, whole-election-wiping action would mean the check could
+// be satisfied by a password the same session just set. The Railway
+// variable can only be changed by whoever has access to the Railway
+// project itself, which is the actual boundary this needs.
+export async function verifyStepUp(username, password) {
+  if (!password) return false;
+  if (!ADMIN_PASSWORD) return false;
+  return username === ADMIN_USERNAME && password === ADMIN_PASSWORD;
 }
 
 export async function loginUser(username, password) {
