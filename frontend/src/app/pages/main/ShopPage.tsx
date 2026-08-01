@@ -207,7 +207,14 @@ export const PRODUCTS = [
       { name: 'Black',  swatch: '#111111', img: '/products/canvas-black.png' },
       { name: 'Yellow', swatch: '#F0B429', img: '/products/canvas-yellow.png' },
     ] },
-  { id: 35, name: 'BOZ Sticker Sheet',            price: 'K20',   priceNum: 20,   tag: 'STICKERS',    desc: 'A5 sheet of assorted logo and slogan stickers for laptops and notebooks.',                       img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 35, name: 'BOZ Sticker Sheet',            price: 'K20',   priceNum: 20,   tag: 'STICKERS',    desc: 'A5 sheet of assorted logo and slogan stickers for laptops and notebooks.',                       img: '/products/sheet-green.png', colors: [
+      { name: 'Green',  swatch: '#00712B', img: '/products/sheet-green.png' },
+      { name: 'Orange', swatch: '#EA580C', img: '/products/sheet-orange.png' },
+      { name: 'Blue',   swatch: '#1D4ED8', img: '/products/sheet-blue.png' },
+      { name: 'Red',    swatch: '#C81E3A', img: '/products/sheet-red.png' },
+      { name: 'Black',  swatch: '#111111', img: '/products/sheet-black.png' },
+      { name: 'Yellow', swatch: '#F0B429', img: '/products/sheet-yellow.png' },
+    ] },
   { id: 36, name: 'BOZ Vinyl Decal',              price: 'K35',   priceNum: 35,   tag: 'STICKERS',    desc: 'Large single vinyl decal for car windows and shopfronts.',                                       img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
   { id: 37, name: 'BOZ Insulated Bottle',         price: 'K140',  priceNum: 140,  tag: 'HOMEWARE',    desc: 'Double-walled insulated bottle with the party crest, 500ml.',                                    img: '/products/insulated-green.png', colors: [
       { name: 'Green',  swatch: '#00712B', img: '/products/insulated-green.png' },
