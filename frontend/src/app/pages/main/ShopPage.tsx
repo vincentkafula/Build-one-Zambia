@@ -855,7 +855,23 @@ export function ShopPage() {
   ];
   const heroPrev = () => setHeroIndex(i => (i - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
   const heroNext = () => setHeroIndex(i => (i + 1) % HERO_SLIDES.length);
-  const heroCollage = [PRODUCTS[2], PRODUCTS[0], PRODUCTS[8], PRODUCTS[9], PRODUCTS[18]];
+  // A different set of 5 products per hero slide, so the collage actually
+  // changes (not just the headline text) — and auto-advances below, so it
+  // slides on its own rather than only on manual chevron clicks.
+  const HERO_COLLAGES = [
+    [PRODUCTS[2], PRODUCTS[0], PRODUCTS[8], PRODUCTS[9], PRODUCTS[18]],
+    [PRODUCTS[29], PRODUCTS[22], PRODUCTS[13], PRODUCTS[35], PRODUCTS[6]],
+    [PRODUCTS[19], PRODUCTS[31], PRODUCTS[24], PRODUCTS[4], PRODUCTS[40]],
+  ];
+  const heroCollage = HERO_COLLAGES[heroIndex % HERO_COLLAGES.length];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHeroIndex(i => (i + 1) % HERO_SLIDES.length);
+    }, 4500);
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const addToCart = (product: Product) => {
     setCart(prev => {
@@ -968,21 +984,29 @@ export function ShopPage() {
         {/* product collage on the orange panel */}
         <div style={{ position: 'absolute', right: 'clamp(4%, 6vw, 8%)', bottom: 0, top: 0, zIndex: 2, width: 'clamp(120px, 16vw, 200px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
           <div style={{ position: 'absolute', bottom: '10%', left: '50%', transform: 'translateX(-50%)', width: '92%', height: '30%', background: '#B5824C', clipPath: 'polygon(8% 0, 92% 0, 100% 100%, 0% 100%)' }} />
-          {heroCollage.map((p, i) => {
-            const positions = [
-              { top: '4%',  left: '10%', w: '48%', rot: '-8deg' },
-              { top: '2%',  left: '46%', w: '46%', rot: '6deg' },
-              { top: '30%', left: '2%',  w: '42%', rot: '-4deg' },
-              { top: '34%', left: '56%', w: '42%', rot: '9deg' },
-              { top: '18%', left: '30%', w: '40%', rot: '2deg' },
-            ][i];
-            return (
-              <img key={p.id} src={p.img} alt={p.name}
-                style={{ position: 'absolute', top: positions.top, left: positions.left, width: positions.w, aspectRatio: '1/1', objectFit: 'cover', borderRadius: '6px', transform: `rotate(${positions.rot})`, boxShadow: '0 6px 14px rgba(0,0,0,0.35)', border: '2px solid #fff' }}
-              />
-            );
-          })}
+          <div key={heroIndex} style={{ position: 'absolute', inset: 0, animation: 'boz-hero-collage-in 0.6s ease' }}>
+            {heroCollage.map((p, i) => {
+              const positions = [
+                { top: '4%',  left: '10%', w: '48%', rot: '-8deg' },
+                { top: '2%',  left: '46%', w: '46%', rot: '6deg' },
+                { top: '30%', left: '2%',  w: '42%', rot: '-4deg' },
+                { top: '34%', left: '56%', w: '42%', rot: '9deg' },
+                { top: '18%', left: '30%', w: '40%', rot: '2deg' },
+              ][i];
+              return (
+                <img key={p.id} src={p.img} alt={p.name}
+                  style={{ position: 'absolute', top: positions.top, left: positions.left, width: positions.w, aspectRatio: '1/1', objectFit: 'cover', borderRadius: '6px', transform: `rotate(${positions.rot})`, boxShadow: '0 6px 14px rgba(0,0,0,0.35)', border: '2px solid #fff' }}
+                />
+              );
+            })}
+          </div>
         </div>
+        <style>{`
+          @keyframes boz-hero-collage-in {
+            from { opacity: 0; transform: translateX(14px); }
+            to { opacity: 1; transform: translateX(0); }
+          }
+        `}</style>
 
         {/* chevrons */}
         <button onClick={heroPrev} aria-label="Previous" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', zIndex: 3, padding: '6px' }}>
