@@ -89,7 +89,14 @@ export const PRODUCTS = [
   { id: 18, name: 'BOZ Keychain',                 price: 'K35',   priceNum: 35,   tag: 'ACCESSORIES', desc: 'Metal or acrylic keyring laser-engraved with the Build One Zambia logo.',                        img: '/products/keychain-color.png', colors: SHOP_COLORS },
   { id: 19, name: 'Wristbands (Pack of 5)',       price: 'K50',   priceNum: 50,   tag: 'ACCESSORIES', desc: 'Silicone wristbands debossed with campaign slogans in party colours.',                            img: '/products/wristbands5-color.png', colors: SHOP_COLORS },
   { id: 20, name: 'BOZ 2031 Calendar',            price: 'K95',   priceNum: 95,   tag: 'PRINT',       desc: 'Annual wall calendar featuring party imagery, key election dates, and campaign milestones.',      img: 'https://images.unsplash.com/photo-1506784365847-bbad939e9501?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
-  { id: 21, name: 'BOZ Water Bottle',             price: 'K110',  priceNum: 110,  tag: 'HOMEWARE',    desc: 'Reusable stainless steel water bottle with party logo. 750ml capacity.',                          img: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&h=500&fit=crop&auto=format', colors: SHOP_COLORS },
+  { id: 21, name: 'BOZ Water Bottle',             price: 'K110',  priceNum: 110,  tag: 'HOMEWARE',    desc: 'Reusable stainless steel water bottle with party logo. 750ml capacity.',                          img: '/products/bottle-green.png', colors: [
+      { name: 'Green',  swatch: '#00712B', img: '/products/bottle-green.png' },
+      { name: 'Orange', swatch: '#EA580C', img: '/products/bottle-orange.png' },
+      { name: 'Blue',   swatch: '#1D4ED8', img: '/products/bottle-blue.png' },
+      { name: 'Red',    swatch: '#C81E3A', img: '/products/bottle-red.png' },
+      { name: 'Black',  swatch: '#111111', img: '/products/bottle-black.png' },
+      { name: 'Yellow', swatch: '#F0B429', img: '/products/bottle-yellow.png' },
+    ] },
   { id: 22, name: 'BOZ Campaign Jersey',          price: 'K320',  priceNum: 320,  tag: 'APPAREL',     desc: 'Sports-style jersey in party colours with logo and candidate\'s name. Premium fundraising item.',  img: '/products/jersey-green.png',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: [
