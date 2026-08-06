@@ -29,6 +29,7 @@ import * as memberCard from './membershipCard.js';
 import * as adoptionCert from './adoptionCertificate.js';
 import * as appointmentCert from './appointmentCertificate.js';
 import { kv, getPersistenceStatus } from './db.js';
+import { findExactVoterMatch } from './voterRollVerify.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -96,6 +97,21 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
   skipSuccessfulRequests: true,
   message: { error: 'Too many login attempts. Please wait 15 minutes before trying again.' },
+});
+
+// SECURITY: the registration-credentials-by-id endpoints below are
+// unauthenticated by design (an applicant has no login yet), and return a
+// plaintext one-time password once approved. Their only protection is the
+// reference number being hard to guess — but that number is only a
+// timestamp plus 6 random hex chars, which is brute-forceable without a
+// tight limiter. This caps guesses per IP the same way login attempts are
+// capped.
+const credentialsLookupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many lookup attempts. Please wait before trying again.' },
 });
 
 // ─── Uploads ─────────────────────────────────────────────────────────────────
@@ -873,7 +889,7 @@ app.post(`${BASE}/registrations/agent/:id/grant-login`, auth.requireAuth, auth.r
 // Public by design, same reasoning as the equivalent member endpoint above:
 // the applicant has no login yet at this point, and the registration id
 // doubles as their reference number to retrieve credentials once approved.
-app.get(`${BASE}/registrations/agent/:id/credentials`, (req, res) => {
+app.get(`${BASE}/registrations/agent/:id/credentials`, credentialsLookupLimiter, (req, res) => {
   const reg = registrations.getAgent(req.params.id);
   if (!reg) return res.status(404).json({ success: false, credentials: null, error: 'Registration not found' });
   if (!reg.loginGranted || !reg.username) {
@@ -1531,7 +1547,29 @@ app.get(`${BASE}/ecz/discrepancy-analysis/:electionType/:levelType/:levelId`, au
 // ─── Voter Roll ───────────────────────────────────────────────────────────────
 app.get(`${BASE}/voter-roll`, auth.requireAuth, (req, res) => res.json({ meta: null }));
 app.delete(`${BASE}/voter-roll`, auth.requireAuth, auth.requireRole('super_admin'), (req, res) => res.json({ success: true, message: 'Voter roll cleared' }));
-app.post(`${BASE}/voter-roll/verify`, (req, res) => { const roll = kv.get('voter-roll:data') || []; const voter = roll.find(v => v.nrc === req.body.nrc || (req.body.name && v.name?.toLowerCase().includes(req.body.name.toLowerCase()))); res.json({ found: !!voter, voter: voter || null }); });
+// SECURITY: this used to match on `nrc === req.body.nrc` OR a loose
+// substring match on name alone, and returned the full matched voter
+// record (including NRC) to an unauthenticated caller. That let anyone
+// enumerate NRCs and other voter PII just by trying partial names. Now
+// requires the caller to already know their own full name, NRC, AND voter
+// number (a normal citizen-eligibility check, not a lookup tool), and the
+// response never echoes PII back — just a match result. Response shape is
+// also corrected to {valid, message}, which is what the frontend
+// (voterApi.verify) actually reads; the old {found, voter} shape meant
+// `valid` was always undefined on the client.
+app.post(`${BASE}/voter-roll/verify`, credentialsLookupLimiter, (req, res) => {
+  const { name, nrcId, voterNumber } = req.body || {};
+  const roll = kv.get('voter-roll:data') || [];
+  if (roll.length === 0) {
+    // No roll uploaded yet — don't block registration flows on this.
+    return res.json({ valid: true, message: 'Voter roll not yet available for verification.' });
+  }
+  if (!name || !nrcId || !voterNumber) {
+    return res.status(400).json({ valid: false, message: 'Full name, NRC number, and voter number are all required.' });
+  }
+  const match = findExactVoterMatch(roll, { name, nrcId, voterNumber });
+  res.json({ valid: !!match, message: match ? 'Verified' : 'Voter not found in register. Please check the details and try again.' });
+});
 app.post(`${BASE}/voter/verify`, (req, res) => res.json({ valid: false, message: 'Voter not found. Please check the details and try again.' }));
 app.post(`${BASE}/voter/mark-voted`, auth.requireAuth, (req, res) => res.json({ success: true, voterNumber: req.body.voterNumber, markedAt: new Date().toISOString() }));
 app.get(`${BASE}/voter/stats/:pollingStationId`, auth.requireAuth, (req, res) => res.json({ stats: { pollingStationId: req.params.pollingStationId, totalRegistered: 0, totalVoted: 0, turnout: 0 } }));
@@ -2354,7 +2392,7 @@ app.get(`${BASE}/registrations/member/:id/documents`, auth.requireAuth, auth.req
 // credentials. The registration id doubles as that reference number/lookup
 // key. The password is returned once, then cleared from storage, so it
 // can't be re-fetched after the real registrant has already collected it.
-app.get(`${BASE}/registrations/member/:id/credentials`, (req, res) => {
+app.get(`${BASE}/registrations/member/:id/credentials`, credentialsLookupLimiter, (req, res) => {
   const reg = registrations.getMember(req.params.id);
   if (!reg) return res.status(404).json({ success: false, credentials: null, error: 'Registration not found' });
   if (!reg.loginGranted || !reg.username) {
@@ -3013,7 +3051,11 @@ app.patch(`${BASE}/notices/:id/read`, auth.requireAuth, (req, res) => { const n 
 
 
 // ─── Rejected ballots debug (temporary) ──────────────────────────────────────
-app.get(`${BASE}/results/rejected-debug`, (req, res) => {
+// SECURITY: this was unauthenticated, exposing internal per-station result
+// submission data to anyone. Gated to admin roles rather than removed
+// outright, since it's still in active use for debugging — flag for
+// removal once it's no longer needed.
+app.get(`${BASE}/results/rejected-debug`, auth.requireAuth, auth.requireRole('admin', 'super_admin'), (req, res) => {
   const keys = kv.getKeysByPrefix('boz:results:');
   const entries = keys.map(k => {
     const v = kv.get(k);
