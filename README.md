@@ -70,12 +70,9 @@ Open **http://localhost:3000** in your browser.
 
 ## Admin Login
 
-| Field    | Value              |
-|----------|--------------------|
-| Username | `superadmin`       |
-| Password | `Admin@BOZ2024`    |
+There is no default admin password. Set `ADMIN_USERNAME` and `ADMIN_PASSWORD` yourself in `backend/.env` before starting the server — if `ADMIN_PASSWORD` is unset, the superadmin shortcut login is disabled entirely (see Environment Variables below).
 
-> ⚠️ **Change these before deploying to production** — edit `backend/.env`
+> ⚠️ **Never commit real values for these to git.** Choose your own strong, unique password — don't reuse any password that has ever appeared in this repo's history.
 
 ---
 
