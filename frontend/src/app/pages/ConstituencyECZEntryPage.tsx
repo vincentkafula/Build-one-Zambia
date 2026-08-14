@@ -77,11 +77,17 @@ export function ConstituencyECZEntryForm({ constituencyId, constituencyNameFallb
   // announcement directly, for constituencies where BOZ didn't have agents
   // covering every (or any) polling station/ward — so there's nothing to
   // aggregate bottom-up, but the ECZ's own published constituency total is
-  // still a legitimate, official figure worth recording. Off by default;
-  // when on, the ward-aggregation equality gate is skipped and the saved
-  // figure is tagged so it's clearly distinguishable from a ward-verified
-  // entry in the data.
-  const [directEczMode, setDirectEczMode] = useState(false);
+  // still a legitimate, official figure worth recording. When on, the
+  // ward-aggregation equality gate is skipped and the saved figure is
+  // tagged and promoted to the public results as official (see
+  // handleSave and the backend's /data-entry/ecz-figures route).
+  //
+  // Defaults to on: for this election there will be no polling-station or
+  // ward-level BOZ data at all, so the constituency figure entered here is
+  // always the authoritative record, not an occasional fallback. Left as a
+  // toggle (not removed) so it can be switched off later if ward-level
+  // coverage does start coming in for a given constituency.
+  const [directEczMode, setDirectEczMode] = useState(true);
 
   const [wardFigures, setWardFigures] = useState<WardFigure[]>([]);
   const [loadingWards, setLoadingWards] = useState(false);
@@ -277,38 +283,43 @@ export function ConstituencyECZEntryForm({ constituencyId, constituencyNameFallb
             for this race.
           </p>
         </div>
-      ) : !canEnterFigures ? (
-        <div className="flex flex-col gap-3 px-4 py-3 rounded-xl" style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
-          <div className="flex items-start gap-3">
-            <AlertCircle size={16} style={{ color: '#f59e0b', marginTop: 2, flexShrink: 0 }} />
-            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', lineHeight: 1.5 }}>
-              {wardFigures.length === 0
-                ? 'No ward manager figures have been received yet for this election type in your constituency. If your own polling agents haven\u2019t covered every station here, you can enter the figures officially announced by ECZ at constituency level directly instead of waiting on ward aggregation.'
-                : `${pendingCount} ward manager figure${pendingCount !== 1 ? 's' : ''} still need review. Go to Ward Manager Figures and mark each as Approved or Not Approved before entering ECZ figures \u2014 or, if some wards were never covered by your agents at all, use direct ECZ entry below instead.`}
-            </p>
-          </div>
-          <label className="flex items-center gap-2 pl-7 cursor-pointer select-none">
+      ) : (
+        <div className="space-y-3">
+          <label className="flex items-center gap-2 cursor-pointer select-none">
             <input type="checkbox" checked={directEczMode} onChange={e => setDirectEczMode(e.target.checked)} className="w-4 h-4 accent-amber-500" />
             <span style={{ color: '#f59e0b', fontSize: '0.78rem', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.03em' }}>
-              Enter the ECZ-announced constituency result directly (not verified against ward-level BOZ data)
+              Enter the ECZ-announced constituency result directly and mark it official (not verified against ward-level BOZ data)
             </span>
           </label>
-        </div>
-      ) : directEczMode ? (
-        <div className="flex items-start gap-3 px-4 py-3 rounded-xl" style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
-          <AlertCircle size={16} style={{ color: '#f59e0b', marginTop: 2, flexShrink: 0 }} />
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', lineHeight: 1.5 }}>
-            Direct ECZ entry mode is on — the figures below will be saved as officially announced by ECZ at constituency level, without requiring them to match ward-level totals. This will be clearly marked in the record.
-          </p>
-        </div>
-      ) : (
-        <div className="flex items-start gap-3 px-4 py-3 rounded-xl" style={{ backgroundColor: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.2)' }}>
-          <CheckCircle2 size={16} style={{ color: '#16a34a', marginTop: 2, flexShrink: 0 }} />
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', lineHeight: 1.5 }}>
-            All {wardFigures.length} ward manager figure{wardFigures.length !== 1 ? 's' : ''} reviewed
-            ({approvedFigs.length} approved, out of {totalWardsInConstituency || wardFigures.length} wards). Enter the ECZ
-            announced figures below — they must equal the approved ward totals shown for this constituency.
-          </p>
+
+          {!canEnterFigures ? (
+            <div className="flex items-start gap-3 px-4 py-3 rounded-xl" style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
+              <AlertCircle size={16} style={{ color: '#f59e0b', marginTop: 2, flexShrink: 0 }} />
+              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', lineHeight: 1.5 }}>
+                {wardFigures.length === 0
+                  ? 'No ward manager figures have been received yet for this election type in your constituency. Turn on direct ECZ entry above to enter the figures officially announced by ECZ at constituency level.'
+                  : `${pendingCount} ward manager figure${pendingCount !== 1 ? 's' : ''} still need review. Go to Ward Manager Figures and mark each as Approved or Not Approved before entering ward-verified ECZ figures \u2014 or turn on direct ECZ entry above instead.`}
+              </p>
+            </div>
+          ) : directEczMode ? (
+            <div className="flex items-start gap-3 px-4 py-3 rounded-xl" style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
+              <AlertCircle size={16} style={{ color: '#f59e0b', marginTop: 2, flexShrink: 0 }} />
+              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', lineHeight: 1.5 }}>
+                Direct ECZ entry is on — the figures below will be saved as the official result for this constituency,
+                officially announced by ECZ, without requiring them to match ward-level totals. This appears on the
+                public results pages immediately upon saving.
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-start gap-3 px-4 py-3 rounded-xl" style={{ backgroundColor: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.2)' }}>
+              <CheckCircle2 size={16} style={{ color: '#16a34a', marginTop: 2, flexShrink: 0 }} />
+              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', lineHeight: 1.5 }}>
+                All {wardFigures.length} ward manager figure{wardFigures.length !== 1 ? 's' : ''} reviewed
+                ({approvedFigs.length} approved, out of {totalWardsInConstituency || wardFigures.length} wards). Enter the ECZ
+                announced figures below — they must equal the approved ward totals shown for this constituency.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
