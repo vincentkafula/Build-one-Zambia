@@ -1902,11 +1902,98 @@ app.patch(`${BASE}/data-entry/submissions/:id/verify-level`, auth.requireAuth, (
 // correctly-resolved by the entry page) is unique nationally, so it's
 // included in every match below to close that off. Harmless no-op for
 // ward/constituency/province, whose ids are already globally unique.
-app.post(`${BASE}/data-entry/ecz-figures`, auth.requireAuth, (req, res) => { const { levelType, levelId, levelName, electionType, candidates: rawC, figures, totalVotes, totalVotesCast, rejectedBallots, registeredVoters, enteredBy, source, notes, constituencyId, districtId, provinceId } = req.body; if (!levelType || !levelId || !electionType) return res.status(400).json({ error: 'levelType, levelId, electionType required' }); const idx = dataEntryStore.eczFigures.findIndex(f => f.levelType === levelType && f.levelId === levelId && f.electionType === electionType && (f.levelName || f.levelId) === (levelName || levelId)); const figure = { levelType, levelId, levelName: levelName || levelId, electionType, figures: figures || rawC || [], totalVotes: Number(totalVotesCast ?? totalVotes ?? 0), totalVotesCast: Number(totalVotesCast ?? totalVotes ?? 0), rejectedBallots: Number(rejectedBallots || 0), registeredVoters: Number(registeredVoters || 0), enteredBy: enteredBy || req.user?.username || '', source, notes, constituencyId, districtId, provinceId, status: 'pending', reviewedBy: null, reviewedAt: null, savedAt: new Date().toISOString(), savedBy: req.user?.username }; if (idx >= 0) dataEntryStore.eczFigures[idx] = figure; else dataEntryStore.eczFigures.push(figure); saveDataEntry(); res.json({ success: true, figure }); });
+app.post(`${BASE}/data-entry/ecz-figures`, auth.requireAuth, (req, res) => {
+  const { levelType, levelId, levelName, electionType, candidates: rawC, figures, totalVotes, totalVotesCast, rejectedBallots, registeredVoters, enteredBy, source, notes, constituencyId, districtId, provinceId, constituencyName, districtName, provinceName } = req.body;
+  if (!levelType || !levelId || !electionType) return res.status(400).json({ error: 'levelType, levelId, electionType required' });
+  const idx = dataEntryStore.eczFigures.findIndex(f => f.levelType === levelType && f.levelId === levelId && f.electionType === electionType && (f.levelName || f.levelId) === (levelName || levelId));
+  const figuresList = figures || rawC || [];
+  const figure = {
+    levelType, levelId, levelName: levelName || levelId, electionType,
+    figures: figuresList,
+    totalVotes: Number(totalVotesCast ?? totalVotes ?? 0),
+    totalVotesCast: Number(totalVotesCast ?? totalVotes ?? 0),
+    rejectedBallots: Number(rejectedBallots || 0),
+    registeredVoters: Number(registeredVoters || 0),
+    enteredBy: enteredBy || req.user?.username || '',
+    source, notes, constituencyId, districtId, provinceId,
+    status: 'pending', reviewedBy: null, reviewedAt: null,
+    savedAt: new Date().toISOString(), savedBy: req.user?.username,
+  };
+  if (idx >= 0) dataEntryStore.eczFigures[idx] = figure; else dataEntryStore.eczFigures.push(figure);
+  saveDataEntry();
+
+  // Direct constituency-level ECZ entry is the one case where the figure
+  // entered here IS the authoritative record for that constituency — it's
+  // only ever used when there's no bottom-up station/ward data at all to
+  // rely on instead (see ConstituencyECZEntryForm's directEczMode). Every
+  // other ECZ figure (ward-verified constituency entries, district,
+  // province, national) exists purely as a comparison/audit check against
+  // results that already flow through the normal agent-submission ->
+  // verification-chain pipeline, and promoting those here too would let an
+  // unverified figure silently override or duplicate an already-official
+  // one. So only this specific source gets written into the public results
+  // dataset (results.js / boz:results:), using a stable synthetic "station"
+  // key derived from the constituency ID so re-saving updates the same
+  // entry rather than accumulating duplicates on every save.
+  if (levelType === 'constituency') {
+    const category = electionType === 'parliament' ? 'parliamentary' : electionType;
+    const syntheticStationId = `direct-constituency-${levelId}`;
+    const officialKey = `boz:results:${category}:station:${syntheticStationId}`;
+    // Always clear any previous synthetic entry first — if this save has
+    // switched away from direct-entry mode (e.g. ward data has since come
+    // in and the manager re-saved as a normal ward-verified figure), the
+    // old synthetic official result must not linger and keep showing
+    // stale data on the public site.
+    kv.del(officialKey);
+    if (source === 'ecz_direct_constituency') {
+      const now = new Date().toISOString();
+      const normCandidates = figuresList.map(c => ({ candidateId: c.candidateId, name: '', party: '', votes: Number(c.votes || 0) }));
+      kv.set(officialKey, {
+        id: syntheticStationId,
+        pollingStationId: syntheticStationId,
+        pollingStationName: `${levelName || levelId} (ECZ-announced, direct constituency entry — no BOZ station coverage)`,
+        wardId: null, wardName: null,
+        constituencyId: levelId, constituencyName: levelName || constituencyName,
+        districtId, districtName, provinceId, provinceName,
+        category, electionType, electionRound: 'round1',
+        candidateVotes: normCandidates, candidateResults: normCandidates, candidates: normCandidates,
+        totalVotes: figure.totalVotesCast, totalVotesCast: figure.totalVotesCast,
+        totalRejected: figure.rejectedBallots, rejectedBallots: figure.rejectedBallots,
+        registeredVoters: figure.registeredVoters,
+        status: 'official', verified: true,
+        // isOfficial: true bypasses the normal 5-level verificationChain
+        // check in results.js — there's no ward/district/province chain to
+        // approve here by definition, so requiring one would make this
+        // figure permanently unofficial regardless of intent.
+        isOfficial: true,
+        isDirectEczEntry: true,
+        submittedBy: figure.enteredBy,
+        submittedAt: now, updatedAt: now,
+      });
+    }
+  }
+
+  res.json({ success: true, figure });
+});
 app.get(`${BASE}/data-entry/ecz-figures`, auth.requireAuth, (req, res) => { let figs = [...dataEntryStore.eczFigures]; const { electionType, levelType, constituencyId, districtId, provinceId, status } = req.query; if (electionType) figs = figs.filter(f => f.electionType === electionType); if (levelType) figs = figs.filter(f => f.levelType === levelType); if (constituencyId) figs = figs.filter(f => f.constituencyId === constituencyId); if (districtId) figs = figs.filter(f => f.districtId === districtId); if (provinceId) figs = figs.filter(f => f.provinceId === provinceId); if (status) figs = figs.filter(f => (f.status || 'pending') === status); res.json({ figures: figs, count: figs.length }); });
 app.get(`${BASE}/data-entry/ecz-figures/:levelType/:levelId/:electionType`, auth.requireAuth, (req, res) => { const levelName = req.query.levelName; const figure = dataEntryStore.eczFigures.find(f => f.levelType === req.params.levelType && f.levelId === decodeURIComponent(req.params.levelId) && f.electionType === req.params.electionType && (!levelName || (f.levelName || f.levelId) === levelName)); res.json({ exists: !!figure, figure: figure || null }); });
 app.patch(`${BASE}/data-entry/ecz-figures/:levelType/:levelId/:electionType/status`, auth.requireAuth, (req, res) => { const { status, notes, levelName } = req.body; const idx = dataEntryStore.eczFigures.findIndex(f => f.levelType === req.params.levelType && f.levelId === decodeURIComponent(req.params.levelId) && f.electionType === req.params.electionType && (!levelName || (f.levelName || f.levelId) === levelName)); if (idx < 0) return res.status(404).json({ error: 'Not found' }); if (!['approved', 'rejected', 'pending'].includes(status)) return res.status(400).json({ error: 'status must be approved, rejected, or pending' }); dataEntryStore.eczFigures[idx] = { ...dataEntryStore.eczFigures[idx], status, reviewNotes: notes, reviewedBy: req.user?.username, reviewedAt: new Date().toISOString() }; saveDataEntry(); res.json({ success: true, figure: dataEntryStore.eczFigures[idx] }); });
-app.delete(`${BASE}/data-entry/ecz-figures/:levelType/:levelId/:electionType`, auth.requireAuth, (req, res) => { const levelName = req.query.levelName; const before = dataEntryStore.eczFigures.length; dataEntryStore.eczFigures = dataEntryStore.eczFigures.filter(f => !(f.levelType === req.params.levelType && f.levelId === decodeURIComponent(req.params.levelId) && f.electionType === req.params.electionType && (!levelName || (f.levelName || f.levelId) === levelName))); saveDataEntry(); res.json({ success: dataEntryStore.eczFigures.length < before }); });
+app.delete(`${BASE}/data-entry/ecz-figures/:levelType/:levelId/:electionType`, auth.requireAuth, (req, res) => {
+  const levelName = req.query.levelName;
+  const { levelType, electionType } = req.params;
+  const levelId = decodeURIComponent(req.params.levelId);
+  const before = dataEntryStore.eczFigures.length;
+  dataEntryStore.eczFigures = dataEntryStore.eczFigures.filter(f => !(f.levelType === levelType && f.levelId === levelId && f.electionType === electionType && (!levelName || (f.levelName || f.levelId) === levelName)));
+  saveDataEntry();
+  // Deleting a direct-constituency ECZ entry should also remove whatever
+  // synthetic official result it produced — otherwise the public results
+  // page keeps showing a figure whose source record no longer exists.
+  if (levelType === 'constituency') {
+    const category = electionType === 'parliament' ? 'parliamentary' : electionType;
+    kv.del(`boz:results:${category}:station:direct-constituency-${levelId}`);
+  }
+  res.json({ success: dataEntryStore.eczFigures.length < before });
+});
 
 // ── Voter Roll (polling-station voter validation) ────────────────────────────
 app.post(`${BASE}/voter-roll/upload`, auth.requireAuth, (req, res) => {
