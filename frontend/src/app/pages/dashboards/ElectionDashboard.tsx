@@ -536,7 +536,16 @@ export default function ElectionDashboard() {
               )}
             </div>
             <Suspense fallback={<SectionLoader/>}>
-              {(role === 'agent' || role === 'polling_agent' || role === 'election_agent') ? <PollingStationECZEntryPage/>
+              {/* Routed primarily by role, but a constituency-level scope
+                  takes priority over an 'agent' role label — this is what
+                  lets an account still labelled 'polling_agent' reach
+                  constituency-level entry if it's actually been assigned a
+                  constituency (not a single station) as its scope, e.g.
+                  when full station-level coverage wasn't achievable and the
+                  organisation is relying on ECZ's own constituency-level
+                  announcement instead. */}
+              {profile.scopeType === 'constituency' ? <ConstituencyECZEntryPage/>
+                : (role === 'agent' || role === 'polling_agent' || role === 'election_agent') ? <PollingStationECZEntryPage/>
                 : role === 'ward_manager' ? <WardECZEntryPage/>
                 : role === 'constituency_manager' ? <ConstituencyECZEntryPage/>
                 : role === 'district_manager' ? <DistrictECZEntryPage/>

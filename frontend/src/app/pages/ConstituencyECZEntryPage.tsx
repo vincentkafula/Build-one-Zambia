@@ -52,6 +52,15 @@ export function ConstituencyECZEntryPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [existing, setExisting] = useState<{ enteredBy?: string; savedAt?: string } | null>(null);
+  // Lets a constituency manager enter the ECZ's own constituency-level
+  // announcement directly, for constituencies where BOZ didn't have agents
+  // covering every (or any) polling station/ward — so there's nothing to
+  // aggregate bottom-up, but the ECZ's own published constituency total is
+  // still a legitimate, official figure worth recording. Off by default;
+  // when on, the ward-aggregation equality gate is skipped and the saved
+  // figure is tagged so it's clearly distinguishable from a ward-verified
+  // entry in the data.
+  const [directEczMode, setDirectEczMode] = useState(false);
 
   const [wardFigures, setWardFigures] = useState<WardFigure[]>([]);
   const [loadingWards, setLoadingWards] = useState(false);
@@ -118,7 +127,7 @@ export function ConstituencyECZEntryPage() {
     return { perCandidate, rejected, total, registered };
   }, [approvedFigs]);
 
-  const canEnterFigures = pendingCount === 0 && wardFigures.length > 0;
+  const canEnterFigures = directEczMode || (pendingCount === 0 && wardFigures.length > 0);
   const isCouncillor = electionType === 'councillor';
 
   // Registered voters comes from ECZ's own published register for this
@@ -159,23 +168,28 @@ export function ConstituencyECZEntryPage() {
     // approved ward manager figures for this constituency and election type.
     // Registered voters and total votes cast are auto-derived, so they can
     // only mismatch through the candidate/rejected-ballot figures themselves.
-    const mismatches: string[] = [];
-    if (rejectedInt !== approvedTotals.rejected) {
-      mismatches.push(`Rejected ballots: ECZ ${rejectedInt.toLocaleString()} vs Wards ${approvedTotals.rejected.toLocaleString()}`);
-    }
-    if (totalInt !== approvedTotals.total) {
-      mismatches.push(`Total votes cast: ECZ ${totalInt.toLocaleString()} vs Wards ${approvedTotals.total.toLocaleString()}`);
-    }
-    for (const f of figures) {
-      const wardVotes = approvedTotals.perCandidate[f.candidateId] || 0;
-      if (f.votes !== wardVotes) {
-        const name = candidates.find(c => c.id === f.candidateId)?.name || f.candidateId;
-        mismatches.push(`${name}: ECZ ${f.votes.toLocaleString()} vs Wards ${wardVotes.toLocaleString()}`);
+    // Skipped entirely in direct-entry mode — there's no BOZ ward data to
+    // reconcile against by definition in that case, so requiring equality
+    // with zero would make direct entry impossible rather than optional.
+    if (!directEczMode) {
+      const mismatches: string[] = [];
+      if (rejectedInt !== approvedTotals.rejected) {
+        mismatches.push(`Rejected ballots: ECZ ${rejectedInt.toLocaleString()} vs Wards ${approvedTotals.rejected.toLocaleString()}`);
       }
-    }
-    if (mismatches.length > 0) {
-      setError(`ECZ figures must equal the approved ward manager totals for ${resolvedConstituencyName}. Mismatch found:\n${mismatches.join('\n')}`);
-      return;
+      if (totalInt !== approvedTotals.total) {
+        mismatches.push(`Total votes cast: ECZ ${totalInt.toLocaleString()} vs Wards ${approvedTotals.total.toLocaleString()}`);
+      }
+      for (const f of figures) {
+        const wardVotes = approvedTotals.perCandidate[f.candidateId] || 0;
+        if (f.votes !== wardVotes) {
+          const name = candidates.find(c => c.id === f.candidateId)?.name || f.candidateId;
+          mismatches.push(`${name}: ECZ ${f.votes.toLocaleString()} vs Wards ${wardVotes.toLocaleString()}`);
+        }
+      }
+      if (mismatches.length > 0) {
+        setError(`ECZ figures must equal the approved ward manager totals for ${resolvedConstituencyName}. Mismatch found:\n${mismatches.join('\n')}`);
+        return;
+      }
     }
 
     setSaving(true);
@@ -192,6 +206,10 @@ export function ConstituencyECZEntryPage() {
         enteredBy: enteredBy.trim(),
         districtId: chain?.district.id,
         provinceId: chain?.province.id,
+        source: directEczMode ? 'ecz_direct_constituency' : 'ward_aggregation',
+        notes: directEczMode
+          ? `Entered directly from ECZ's constituency-level announcement — ${wardFigures.length === 0 ? 'no' : 'incomplete'} ward-level BOZ coverage for this constituency.`
+          : undefined,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 4000);
@@ -251,12 +269,27 @@ export function ConstituencyECZEntryPage() {
           </p>
         </div>
       ) : !canEnterFigures ? (
+        <div className="flex flex-col gap-3 px-4 py-3 rounded-xl" style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
+          <div className="flex items-start gap-3">
+            <AlertCircle size={16} style={{ color: '#f59e0b', marginTop: 2, flexShrink: 0 }} />
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', lineHeight: 1.5 }}>
+              {wardFigures.length === 0
+                ? 'No ward manager figures have been received yet for this election type in your constituency. If your own polling agents haven\u2019t covered every station here, you can enter the figures officially announced by ECZ at constituency level directly instead of waiting on ward aggregation.'
+                : `${pendingCount} ward manager figure${pendingCount !== 1 ? 's' : ''} still need review. Go to Ward Manager Figures and mark each as Approved or Not Approved before entering ECZ figures \u2014 or, if some wards were never covered by your agents at all, use direct ECZ entry below instead.`}
+            </p>
+          </div>
+          <label className="flex items-center gap-2 pl-7 cursor-pointer select-none">
+            <input type="checkbox" checked={directEczMode} onChange={e => setDirectEczMode(e.target.checked)} className="w-4 h-4 accent-amber-500" />
+            <span style={{ color: '#f59e0b', fontSize: '0.78rem', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.03em' }}>
+              Enter the ECZ-announced constituency result directly (not verified against ward-level BOZ data)
+            </span>
+          </label>
+        </div>
+      ) : directEczMode ? (
         <div className="flex items-start gap-3 px-4 py-3 rounded-xl" style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
           <AlertCircle size={16} style={{ color: '#f59e0b', marginTop: 2, flexShrink: 0 }} />
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', lineHeight: 1.5 }}>
-            {wardFigures.length === 0
-              ? 'No ward manager figures have been received yet for this election type in your constituency. ECZ figures cannot be entered until ward managers submit and you approve their results.'
-              : `${pendingCount} ward manager figure${pendingCount !== 1 ? 's' : ''} still need review. Go to Ward Manager Figures and mark each as Approved or Not Approved before entering ECZ figures.`}
+            Direct ECZ entry mode is on — the figures below will be saved as officially announced by ECZ at constituency level, without requiring them to match ward-level totals. This will be clearly marked in the record.
           </p>
         </div>
       ) : (

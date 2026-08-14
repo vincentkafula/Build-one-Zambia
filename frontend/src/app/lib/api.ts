@@ -851,6 +851,8 @@ export const dataEntryApi = {
     constituencyId?: string;
     districtId?: string;
     provinceId?: string;
+    source?: string;
+    notes?: string;
   }) => request<{ success: boolean; figure: unknown }>('POST', '/data-entry/ecz-figures', data as unknown as Record<string, unknown>, true),
 
   getECZFigure: (levelType: string, levelId: string, electionType: string, levelName?: string) =>
