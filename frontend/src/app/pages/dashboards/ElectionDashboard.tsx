@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import {
   LayoutDashboard, ClipboardList, UserCircle, Lock,
   Scale, AlertTriangle, BarChart2, LogOut, ChevronRight,
-  Menu, X, Shield, CheckCircle2, Users, UserCheck, TrendingUp, Target,
+  Menu, X, Shield, CheckCircle2, Users, UserCheck, TrendingUp, Target, MapPin,
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { clearToken, resultsApi, candidatesApi, type LevelType, type VoteTrendPoint } from '../../lib/api';
@@ -17,6 +17,7 @@ const ConstituencyECZEntryPage = lazy(() => import('../ConstituencyECZEntryPage'
 const DistrictECZEntryPage   = lazy(() => import('../DistrictECZEntryPage'));
 const ProvinceECZEntryPage   = lazy(() => import('../ProvinceECZEntryPage'));
 const NationalECZEntryPage   = lazy(() => import('../NationalECZEntryPage'));
+const NationalConstituencyEntryPage = lazy(() => import('../NationalConstituencyEntryPage'));
 const PollingAgentFiguresPage = lazy(() => import('../PollingAgentFiguresPage'));
 const WardManagerFiguresPage = lazy(() => import('../WardManagerFiguresPage'));
 const ConstituencyManagerFiguresPage = lazy(() => import('../ConstituencyManagerFiguresPage'));
@@ -34,7 +35,7 @@ function SectionLoader() {
   );
 }
 
-type SectionKey = 'overview'|'data-entry'|'voter-validation'|'polling-agents'|'ward-managers'|'constituency-managers'|'district-managers'|'province-managers'|'ecz-entry'|'comparison'|'discrepancy'|'personal-details'|'security';
+type SectionKey = 'overview'|'data-entry'|'voter-validation'|'polling-agents'|'ward-managers'|'constituency-managers'|'district-managers'|'province-managers'|'ecz-entry'|'constituency-entry'|'comparison'|'discrepancy'|'personal-details'|'security';
 
 interface RoleConfig {
   label: string; color: string; eczLevel: string;
@@ -51,10 +52,10 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
   district_manager:     { label:'District Manager',       color: '#00712B', eczLevel:'district',        canEnterPollingResults:false, sections:['overview','constituency-managers','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (District)', eczEntryTitle:'ECZ Announced Figures — District Level' },
   provincial_manager:   { label:'Provincial Manager',     color: '#00712B', eczLevel:'province',        canEnterPollingResults:false, sections:['overview','district-managers','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (Province)', eczEntryTitle:'ECZ Announced Figures — Province Level' },
   province_manager:     { label:'Provincial Manager',     color: '#00712B', eczLevel:'province',        canEnterPollingResults:false, sections:['overview','district-managers','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Polling Station Results vs ECZ (Province)', eczEntryTitle:'ECZ Announced Figures — Province Level' },
-  national_manager:     { label:'National Manager',       color: '#00712B', eczLevel:'national',        canEnterPollingResults:false, sections:['overview','province-managers','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Results vs ECZ (National)', eczEntryTitle:'ECZ Announced Figures — National Level' },
-  super_admin:          { label:'Super Administrator',    color: '#00712B', eczLevel:'national',        canEnterPollingResults:false, sections:['overview','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Results vs ECZ (National)', eczEntryTitle:'ECZ Announced Figures — National Level' },
-  admin:                { label:'Administrator',          color: '#00712B', eczLevel:'national',        canEnterPollingResults:false, sections:['overview','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Results vs ECZ (National)', eczEntryTitle:'ECZ Announced Figures — National Level' },
-  manager:              { label:'Manager',                color: '#00712B', eczLevel:'national',        canEnterPollingResults:false, sections:['overview','ecz-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Results vs ECZ (National)', eczEntryTitle:'ECZ Announced Figures — National Level' },
+  national_manager:     { label:'National Manager',       color: '#00712B', eczLevel:'national',        canEnterPollingResults:false, sections:['overview','province-managers','ecz-entry','constituency-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Results vs ECZ (National)', eczEntryTitle:'ECZ Announced Figures — National Level' },
+  super_admin:          { label:'Super Administrator',    color: '#00712B', eczLevel:'national',        canEnterPollingResults:false, sections:['overview','ecz-entry','constituency-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Results vs ECZ (National)', eczEntryTitle:'ECZ Announced Figures — National Level' },
+  admin:                { label:'Administrator',          color: '#00712B', eczLevel:'national',        canEnterPollingResults:false, sections:['overview','ecz-entry','constituency-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Results vs ECZ (National)', eczEntryTitle:'ECZ Announced Figures — National Level' },
+  manager:              { label:'Manager',                color: '#00712B', eczLevel:'national',        canEnterPollingResults:false, sections:['overview','ecz-entry','constituency-entry','comparison','discrepancy','personal-details','security'], comparisonTitle:'All Results vs ECZ (National)', eczEntryTitle:'ECZ Announced Figures — National Level' },
 };
 
 interface NavItem { key: SectionKey; label: string; icon: React.ReactNode; group: string }
@@ -68,6 +69,7 @@ const ALL_NAV: NavItem[] = [
   { key:'district-managers', label:'District Manager Figures', icon:<Users size={16}/>,       group:'ELECTION' },
   { key:'province-managers', label:'Province Manager Figures', icon:<Users size={16}/>,        group:'ELECTION' },
   { key:'ecz-entry',        label:'ECZ Official Figures', icon:<Scale size={16}/>,           group:'ELECTION' },
+  { key:'constituency-entry', label:'Enter Constituency Results', icon:<MapPin size={16}/>,  group:'ELECTION' },
   { key:'comparison',       label:'Results vs ECZ',       icon:<BarChart2 size={16}/>,       group:'ELECTION' },
   { key:'discrepancy',      label:'Discrepancy Notices',  icon:<AlertTriangle size={16}/>,   group:'ELECTION' },
   { key:'personal-details', label:'Personal Details',     icon:<UserCircle size={16}/>,      group:'PROFILE' },
@@ -553,6 +555,21 @@ export default function ElectionDashboard() {
                 : role === 'national_manager' ? <NationalECZEntryPage/>
                 : <ECZEntryPage/>}
             </Suspense>
+          </div>
+        );
+
+      case 'constituency-entry':
+        return (
+          <div>
+            <div className="mb-5">
+              <h2 style={{fontFamily:'Oswald, sans-serif',fontSize:'1.4rem',letterSpacing:'0.04em',color:'#fff'}}>Enter Constituency Results</h2>
+              <p style={{color:'rgba(255,255,255,0.78)',fontSize:'0.82rem',marginTop:4,maxWidth:640}}>
+                Enter ECZ-announced figures directly for any constituency in the country — useful where there's no
+                Constituency Manager assigned, or where BOZ agents didn't cover every polling station and you're
+                relying on the ECZ's own constituency-level announcement instead.
+              </p>
+            </div>
+            <Suspense fallback={<SectionLoader/>}><NationalConstituencyEntryPage/></Suspense>
           </div>
         );
 

@@ -41,8 +41,29 @@ export function ConstituencyECZEntryPage() {
   const constituencyId: string = user?.scopeId || '';
   const constituencyNameFallback: string = user?.scopeName || '';
 
+  if (!constituencyId) {
+    return (
+      <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center" style={{ backgroundColor: '#0A5D25', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <ShieldAlert size={32} style={{ color: '#f59e0b' }} />
+        <p style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '1rem' }}>Constituency Not Configured</p>
+        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', maxWidth: 420 }}>
+          Your account isn't linked to a specific constituency yet. Please contact your Build One Zambia administrator.
+        </p>
+      </div>
+    );
+  }
+
+  return <ConstituencyECZEntryForm constituencyId={constituencyId} constituencyNameFallback={constituencyNameFallback} locked />;
+}
+
+// The actual entry form, reusable wherever a specific constituency needs its
+// ECZ figures entered — either locked to the logged-in constituency
+// manager's own assigned area (the page above), or picked freely by a
+// national manager who needs to enter for any constituency in the country
+// (see NationalConstituencyEntryPage).
+export function ConstituencyECZEntryForm({ constituencyId, constituencyNameFallback, locked = false }: { constituencyId: string; constituencyNameFallback?: string; locked?: boolean }) {
   const chain = useMemo(() => (constituencyId ? findConstituencyChain(constituencyId) : null), [constituencyId]);
-  const resolvedConstituencyName = chain?.constituency.name || constituencyNameFallback;
+  const resolvedConstituencyName = chain?.constituency.name || constituencyNameFallback || '';
 
   const [electionType, setElectionType] = useState<ElectionType>('presidential');
   const [enteredBy, setEnteredBy] = useState('');
@@ -220,18 +241,6 @@ export function ConstituencyECZEntryPage() {
     }
   }
 
-  if (!constituencyId) {
-    return (
-      <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center" style={{ backgroundColor: '#0A5D25', border: '1px solid rgba(255,255,255,0.07)' }}>
-        <ShieldAlert size={32} style={{ color: '#f59e0b' }} />
-        <p style={{ color: '#fff', fontFamily: 'Oswald, sans-serif', fontSize: '1rem' }}>Constituency Not Configured</p>
-        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', maxWidth: 420 }}>
-          Your account isn't linked to a specific constituency yet. Please contact your Build One Zambia administrator.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap gap-2">
@@ -255,7 +264,7 @@ export function ConstituencyECZEntryPage() {
       <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(22,163,74,0.1)', border: '1px solid rgba(22,163,74,0.3)' }}>
         <Lock size={13} style={{ color: '#16a34a' }} />
         <span style={{ color: '#16a34a', fontSize: '0.75rem', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.08em' }}>
-          {resolvedConstituencyName?.toUpperCase() || 'YOUR CONSTITUENCY'} — LOCKED TO YOUR ASSIGNED CONSTITUENCY
+          {resolvedConstituencyName?.toUpperCase() || 'CONSTITUENCY'}{locked ? ' — LOCKED TO YOUR ASSIGNED CONSTITUENCY' : ''}
         </span>
       </div>
 
