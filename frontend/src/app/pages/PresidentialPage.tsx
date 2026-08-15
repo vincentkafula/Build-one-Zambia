@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { LiveResultsPanel } from '../components/LiveResultsPanel';
+import { DeclaredConstituenciesList } from '../components/DeclaredConstituenciesList';
 import { DrillDownFilters } from '../components/DrillDownFilters';
 import { CandidateCard } from '../components/CandidateCard';
 import { CandidateCardCompact } from '../components/CandidateCardCompact';
@@ -486,6 +487,16 @@ export function PresidentialPage() {
           />
         </div>
         )}
+
+        {/* Declared Constituencies — every constituency with at least one
+            result, whether from real polling-station data or a direct
+            ECZ constituency-level entry. Shown regardless of the
+            'All Candidates' toggle above, since this is a distinct view
+            (which constituencies have reported) rather than a
+            candidate-by-candidate breakdown. */}
+        <div className="mt-8 bg-card border border-border rounded-2xl p-6">
+          <DeclaredConstituenciesList electionType="presidential" />
+        </div>
 
 
         {/* Polling Station Details */}

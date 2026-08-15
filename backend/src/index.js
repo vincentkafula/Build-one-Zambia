@@ -1478,6 +1478,7 @@ app.get(`${BASE}/results/export-breakdown/:electionType/:levelType/:levelId?`, (
   res.json({ rows, count: rows.length });
 });
 app.get(`${BASE}/results/leaderboard/:electionType`, (req, res) => res.json({ leaderboard: results.getLeaderboard(req.params.electionType) }));
+app.get(`${BASE}/results/declared-constituencies/:electionType`, (req, res) => res.json({ constituencies: results.getDeclaredConstituencies(req.params.electionType) }));
 app.get(`${BASE}/results/coverage`, (req, res) => res.json({ stats: results.getCoverage(req.query.electionType) }));
 app.get(`${BASE}/results/heatmap/:electionType`, (req, res) => res.json({ heatmap: results.getHeatmap(req.params.electionType) }));
 app.get(`${BASE}/results/trend/:electionType`, (req, res) => res.json({ trend: results.getTrend(req.params.electionType, req.query.levelType, req.query.levelId ? decodeURIComponent(req.query.levelId) : undefined) }));

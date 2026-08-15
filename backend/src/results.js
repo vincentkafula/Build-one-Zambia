@@ -94,6 +94,39 @@ export function getLevel(electionType, levelType, levelId, stage, round) {
   return buildResult(electionType, levelType, levelId, filtered);
 }
 
+// Every constituency nationwide with at least one submission of any kind —
+// a real polling-station result or a direct-entry constituency figure
+// (synthetic 'station' entries created by the direct ECZ constituency
+// entry feature; getAllSubmissions doesn't distinguish between the two,
+// since both live in the same boz:results: dataset by design). Used for
+// the "Declared Constituencies" list on the public results pages, so a
+// constituency shows up there the moment ANY result exists for it,
+// regardless of how it was entered.
+export function getDeclaredConstituencies(electionType) {
+  const all = getAllSubmissions(electionType);
+  const groups = {};
+  for (const s of all) {
+    const id = s.constituencyId;
+    if (!id) continue;
+    if (!groups[id]) groups[id] = { name: s.constituencyName || id, districtId: s.districtId, districtName: s.districtName, provinceId: s.provinceId, provinceName: s.provinceName, subs: [] };
+    groups[id].subs.push(s);
+    // Prefer a real (non-synthetic) submission's name/parent fields if one
+    // exists in the group, since a direct-entry figure's own name field is
+    // just whatever the manager typed and may be less complete.
+    if (!s.isDirectEczEntry && s.constituencyName) groups[id].name = s.constituencyName;
+  }
+  return Object.entries(groups).map(([id, g]) => {
+    const result = buildResult(electionType, 'constituency', id, g.subs);
+    return {
+      ...result,
+      levelName: g.name,
+      districtId: g.districtId, districtName: g.districtName,
+      provinceId: g.provinceId, provinceName: g.provinceName,
+      isDirectEntry: g.subs.every(s => s.isDirectEczEntry),
+    };
+  }).sort((a, b) => a.levelName.localeCompare(b.levelName));
+}
+
 export function getBreakdown(electionType, groupField, parentField, parentId) {
   const all = getAllSubmissions(electionType);
   const filtered = parentField && parentId ? all.filter(s => s[parentField] === parentId) : all;

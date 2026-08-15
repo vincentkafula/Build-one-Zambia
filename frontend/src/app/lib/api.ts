@@ -1181,6 +1181,11 @@ export const resultsApi = {
   breakdownWard: (electionType: ElectionCategory, constituencyId: string) =>
     request<{ breakdown: Record<string, LevelResult> }>('GET', `/results/breakdown/${electionType}/ward/${encodeURIComponent(constituencyId)}`),
 
+  declaredConstituencies: (electionType: ElectionCategory) =>
+    request<{ constituencies: (LevelResult & { levelName: string; districtId?: string; districtName?: string; provinceId?: string; provinceName?: string; isDirectEntry: boolean })[] }>(
+      'GET', `/results/declared-constituencies/${electionType}`
+    ),
+
   leaderboard: (electionType: ElectionCategory) =>
     request<{ leaderboard: NationalLeaderboard }>('GET', `/results/leaderboard/${electionType}`),
 
