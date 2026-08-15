@@ -106,11 +106,22 @@ function mergeRosterWithResults(
   submitted: StationBreakdownRow[],
 ): StationBreakdownRow[] {
   const byStation = new Map(submitted.map(r => [r.pollingStationId, r]));
-  return roster.map(stub => {
+  const matched = roster.map(stub => {
     const actual = byStation.get(stub.pollingStationId);
     if (actual) return actual;
     return { ...stub, candidateVotes: [], status: 'not-yet-reported' };
   });
+
+  // Any submitted result that doesn't correspond to a real polling station
+  // in the roster would otherwise be silently dropped here — this includes
+  // direct constituency-level ECZ entries (see the direct-entry feature),
+  // which represent a whole constituency rather than one station and so
+  // can never match a roster stub by pollingStationId. Append those
+  // separately so they still appear in the export rather than vanishing.
+  const rosterStationIds = new Set(roster.map(r => r.pollingStationId));
+  const unmatched = submitted.filter(r => !rosterStationIds.has(r.pollingStationId));
+
+  return [...matched, ...unmatched];
 }
 
 function aggregateStats(rows: StationBreakdownRow[], roster: RosterCandidate[]) {
